@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, Cell } from "recharts";
 
 export default function ContactCenter() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetContactCenterKpis({}, { query: { refetchInterval: 30000 } });
-  const { data: reasons, isLoading: isReasonsLoading } = useGetTopCallReasons({ query: { refetchInterval: 30000 } });
-  const { data: hourly, isLoading: isHourlyLoading } = useGetHourlyCallVolume({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetContactCenterKpis({});
+  const { data: reasons, isLoading: isReasonsLoading } = useGetTopCallReasons();
+  const { data: hourly, isLoading: isHourlyLoading } = useGetHourlyCallVolume();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

@@ -8,11 +8,11 @@ import { Badge } from "@/components/ui/badge";
 const COLORS = ['#0f62fe', '#24a148', '#8a3ffc', '#002d9c', '#da1e28'];
 
 export default function Claims() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetClaimsKpis({}, { query: { refetchInterval: 30000 } });
-  const { data: lobData, isLoading: isLobLoading } = useGetClaimsByLineOfBusiness({ query: { refetchInterval: 30000 } });
-  const { data: denialReasons, isLoading: isDenialLoading } = useGetDenialReasons({ query: { refetchInterval: 30000 } });
-  const { data: queueData, isLoading: isQueueLoading } = useGetClaimsQueue({}, { query: { refetchInterval: 30000 } });
-  const { data: agingData, isLoading: isAgingLoading } = useGetClaimsAging({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetClaimsKpis({});
+  const { data: lobData, isLoading: isLobLoading } = useGetClaimsByLineOfBusiness();
+  const { data: denialReasons, isLoading: isDenialLoading } = useGetDenialReasons();
+  const { data: queueData, isLoading: isQueueLoading } = useGetClaimsQueue({});
+  const { data: agingData, isLoading: isAgingLoading } = useGetClaimsAging();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

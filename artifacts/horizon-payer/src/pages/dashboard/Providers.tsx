@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from "lucide-react";
 
 export default function Providers() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetProviderKpis({ query: { refetchInterval: 30000 } });
-  const { data: providersList, isLoading: isProvidersLoading } = useGetProviderList({}, { query: { refetchInterval: 30000 } });
-  const { data: issues, isLoading: isIssuesLoading } = useGetProviderIssues({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetProviderKpis();
+  const { data: providersList, isLoading: isProvidersLoading } = useGetProviderList({});
+  const { data: issues, isLoading: isIssuesLoading } = useGetProviderIssues();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

@@ -5,8 +5,8 @@ import { UsersIcon, FileTextIcon, StethoscopeIcon, BuildingIcon, PhoneCallIcon, 
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from "recharts";
 
 export default function ExecutiveOverview() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetExecutiveKpis({ query: { refetchInterval: 30000 } });
-  const { data: trends, isLoading: isTrendsLoading } = useGetExecutiveTrends({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetExecutiveKpis();
+  const { data: trends, isLoading: isTrendsLoading } = useGetExecutiveTrends();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

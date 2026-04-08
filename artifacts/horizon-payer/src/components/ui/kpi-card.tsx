@@ -6,7 +6,7 @@ import { ArrowDownIcon, ArrowUpIcon, MinusIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { KpiMetric } from "@workspace/api-client-react/src/generated/api.schemas"
+import { KpiMetric } from "@workspace/api-client-react"
 
 interface KpiCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;

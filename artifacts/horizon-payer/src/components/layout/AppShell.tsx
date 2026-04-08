@@ -86,7 +86,7 @@ function IbmMarkInline({ size = 26 }: { size?: number }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const { data: user } = useGetCurrentUser();
-  const { data: alerts } = useGetAlerts({ query: { refetchInterval: 30000 } });
+  const { data: alerts } = useGetAlerts();
   const { theme, setTheme } = useTheme();
   
   const [sidebarOpen, setSidebarOpen] = useState(true);

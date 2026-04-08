@@ -493,18 +493,14 @@ export default function VendorInvoices() {
   const [drillDown, setDrillDown] = useState<Invoice | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
 
-  const q = { refetchInterval: 30000 };
-  const { data: invoices } = useGetVendorInvoiceList(
-    {
-      status: selectedStatus ?? undefined,
-      workNumber: selectedWorkNumber ?? undefined,
-      serviceCategory: selectedCategory ?? undefined,
-      dateFrom: dateFrom || undefined,
-      dateTo: dateTo || undefined,
-    },
-    { query: q }
-  );
-  const allInvoices = useGetVendorInvoiceList({}, { query: q }).data ?? [];
+  const { data: invoices } = useGetVendorInvoiceList({
+    status: selectedStatus ?? undefined,
+    workNumber: selectedWorkNumber ?? undefined,
+    serviceCategory: selectedCategory ?? undefined,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+  });
+  const allInvoices = useGetVendorInvoiceList({}).data ?? [];
 
   const displayInvoices = (invoices ?? allInvoices) as Invoice[];
   const hasFilters = !!(selectedStatus || selectedWorkNumber || selectedCategory || dateFrom || dateTo);

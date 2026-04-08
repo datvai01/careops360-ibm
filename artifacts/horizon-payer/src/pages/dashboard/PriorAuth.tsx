@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 const COLORS = ['#24a148', '#da1e28', '#f1c21b', '#0f62fe'];
 
 export default function PriorAuth() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetPriorAuthKpis({}, { query: { refetchInterval: 30000 } });
-  const { data: aging, isLoading: isAgingLoading } = useGetPriorAuthAging({ query: { refetchInterval: 30000 } });
-  const { data: procedures, isLoading: isProceduresLoading } = useGetTopProcedures({ query: { refetchInterval: 30000 } });
-  const { data: workload, isLoading: isWorkloadLoading } = useGetReviewerWorkload({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetPriorAuthKpis({});
+  const { data: aging, isLoading: isAgingLoading } = useGetPriorAuthAging();
+  const { data: procedures, isLoading: isProceduresLoading } = useGetTopProcedures();
+  const { data: workload, isLoading: isWorkloadLoading } = useGetReviewerWorkload();
 
   const authData = [
     { name: 'Approved', value: kpis?.approved.value || 0 },

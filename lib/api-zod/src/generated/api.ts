@@ -871,6 +871,8 @@ export const GetVendorInvoiceListQueryParams = zod.object({
   status: zod.coerce.string().optional(),
   workNumber: zod.coerce.string().optional(),
   serviceCategory: zod.coerce.string().optional(),
+  dateFrom: zod.date().optional(),
+  dateTo: zod.date().optional(),
 });
 
 export const GetVendorInvoiceListResponseItem = zod.object({

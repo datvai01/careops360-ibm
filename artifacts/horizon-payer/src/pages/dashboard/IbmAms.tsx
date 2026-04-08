@@ -7,11 +7,11 @@ import { CpuIcon, ArrowRightIcon, ZapIcon, LightbulbIcon, ShieldCheckIcon } from
 import { Button } from "@/components/ui/button";
 
 export default function IbmAms() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetIbmAmsKpis({ query: { refetchInterval: 30000 } });
-  const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends({ query: { refetchInterval: 30000 } });
-  const { data: runbooks, isLoading: isRunbooksLoading } = useGetAutomationRunbooks({ query: { refetchInterval: 30000 } });
-  const { data: savings, isLoading: isSavingsLoading } = useGetCostSavings({ query: { refetchInterval: 30000 } });
-  const { data: insights, isLoading: isInsightsLoading } = useGetAiInsights({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetIbmAmsKpis();
+  const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends();
+  const { data: runbooks, isLoading: isRunbooksLoading } = useGetAutomationRunbooks();
+  const { data: savings, isLoading: isSavingsLoading } = useGetCostSavings();
+  const { data: insights, isLoading: isInsightsLoading } = useGetAiInsights();
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-10">

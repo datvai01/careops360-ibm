@@ -18,7 +18,9 @@ import AppHealth from "@/pages/dashboard/AppHealth";
 import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
+});
 
 function ProtectedRoute({ component: Component, ...rest }: any) {
   const token = localStorage.getItem("horizon_token");

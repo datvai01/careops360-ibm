@@ -6,9 +6,9 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 const COLORS = ['#0f62fe', '#24a148', '#8a3ffc', '#002d9c', '#da1e28'];
 
 export default function Members() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetMemberKpis({}, { query: { refetchInterval: 30000 } });
-  const { data: trends, isLoading: isTrendsLoading } = useGetEnrollmentTrends({ query: { refetchInterval: 30000 } });
-  const { data: products, isLoading: isProductsLoading } = useGetMembersByProduct({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetMemberKpis({});
+  const { data: trends, isLoading: isTrendsLoading } = useGetEnrollmentTrends();
+  const { data: products, isLoading: isProductsLoading } = useGetMembersByProduct();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">

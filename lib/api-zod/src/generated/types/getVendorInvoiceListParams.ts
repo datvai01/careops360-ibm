@@ -11,4 +11,6 @@ export type GetVendorInvoiceListParams = {
   status?: string;
   workNumber?: string;
   serviceCategory?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
 };

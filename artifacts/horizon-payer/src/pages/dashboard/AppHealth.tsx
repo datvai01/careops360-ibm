@@ -7,11 +7,11 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AppHealth() {
-  const { data: kpis, isLoading: isKpisLoading } = useGetApplicationKpis({ query: { refetchInterval: 30000 } });
-  const { data: appList, isLoading: isAppListLoading } = useGetApplicationList({ query: { refetchInterval: 30000 } });
-  const { data: incidents, isLoading: isIncidentsLoading } = useGetIncidents({}, { query: { refetchInterval: 30000 } });
-  const { data: batchJobs, isLoading: isBatchJobsLoading } = useGetBatchJobs({ query: { refetchInterval: 30000 } });
-  const { data: interfaces, isLoading: isInterfacesLoading } = useGetInterfaceHealth({ query: { refetchInterval: 30000 } });
+  const { data: kpis, isLoading: isKpisLoading } = useGetApplicationKpis();
+  const { data: appList, isLoading: isAppListLoading } = useGetApplicationList();
+  const { data: incidents, isLoading: isIncidentsLoading } = useGetIncidents({});
+  const { data: batchJobs, isLoading: isBatchJobsLoading } = useGetBatchJobs();
+  const { data: interfaces, isLoading: isInterfacesLoading } = useGetInterfaceHealth();
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
