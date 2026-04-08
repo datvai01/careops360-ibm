@@ -109,11 +109,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="p-4 border-t border-sidebar-border bg-sidebar-accent/30 text-xs flex flex-col gap-2">
           {sidebarOpen ? (
             <>
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-muted-foreground">Managed by</span>
-                <span className="font-bold">IBM AMS</span>
-              </div>
-              <div className="text-muted-foreground">Command Center v2.4</div>
+              <div className="font-semibold">Managed by IBM</div>
+              <div className="text-muted-foreground">Powered by AIOps</div>
             </>
           ) : (
             <div className="font-bold text-center">IBM</div>
