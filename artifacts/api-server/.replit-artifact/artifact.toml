@@ -12,3 +12,14 @@ paths = ["/api"]
 [services.development]
 run = "pnpm --filter @workspace/api-server run dev"
 
+[services.production]
+run = "NODE_ENV=production node --enable-source-maps artifacts/api-server/dist/index.mjs"
+
+[services.production.build]
+args = ["sh", "-c", "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run seed"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+
+[services.production.health.startup]
+path = "/api/healthz"
