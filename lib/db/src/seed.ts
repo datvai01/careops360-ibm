@@ -1,4 +1,7 @@
-import { db, pool } from "./index.js";
+import { execSync } from "child_process";
+import { fileURLToPath } from "url";
+import path from "path";
+import { db } from "./index.js";
 import {
   usersTable,
   executiveAlertsTable,
@@ -29,24 +32,29 @@ import {
   ibmamsTicketTrendsTable,
 } from "./schema/index.js";
 
-async function ensureSchema() {
-  console.log("Ensuring schema is up to date...");
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS vendor_invoice_alerts (
-      id serial PRIMARY KEY,
-      alert_type varchar(50) NOT NULL,
-      invoice_id varchar(20),
-      vendor varchar(100) NOT NULL,
-      message text NOT NULL,
-      severity varchar(10) NOT NULL,
-      amount integer
-    )
-  `);
-  console.log("  schema check complete");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+/** Root of the @workspace/db package (one level up from src/) */
+const DB_ROOT = path.resolve(__dirname, "..");
+
+function ensureSchema() {
+  console.log("Pushing schema to ensure all tables exist...");
+  try {
+    execSync(
+      "npx drizzle-kit push --force --config ./drizzle.config.ts",
+      { stdio: "inherit", cwd: DB_ROOT }
+    );
+    console.log("  schema push complete");
+  } catch (err) {
+    console.warn(
+      "Schema push warning (non-fatal — tables may already be current):",
+      err instanceof Error ? err.message : err
+    );
+  }
 }
 
 async function seed() {
-  await ensureSchema();
+  ensureSchema();
   console.log("Seeding database...");
 
   // Users
