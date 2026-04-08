@@ -74,28 +74,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="h-16 flex items-center px-4 border-b gap-3">
-          {/* Horizon H mark */}
+          {/* CareOps360 mark */}
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 select-none"
             style={{
               background: "linear-gradient(135deg, #1565c0 0%, #0f62fe 55%, #002d9c 100%)",
               boxShadow: "0 2px 8px rgba(15,98,254,0.4)",
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 32 32" fill="none">
-              <path d="M4 4h5v10h14V4h5v24h-5V19H9v9H4V4z" fill="white" />
-            </svg>
+            <span style={{ color: "white", fontSize: 15, fontWeight: 900, fontFamily: "'Arial Black', Helvetica, sans-serif", lineHeight: 1 }}>C</span>
           </div>
           {sidebarOpen && (
-            <div className="flex items-center gap-1.5 truncate min-w-0">
-              <span className="font-bold tracking-tight text-sm">Horizon</span>
-              <span className="text-muted-foreground/60 font-light text-sm">+</span>
-              <span
-                className="font-black text-sm tracking-wider"
-                style={{ color: "#0f62fe" }}
-              >
-                IBM
-              </span>
+            <div className="flex items-baseline gap-0 truncate min-w-0">
+              <span className="font-bold tracking-tight text-sm">CareOps</span>
+              <span className="font-black text-sm" style={{ color: "#0f62fe" }}>360</span>
             </div>
           )}
         </div>
@@ -124,14 +116,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </ScrollArea>
         
-        <div className="p-4 border-t border-sidebar-border bg-sidebar-accent/30 text-xs flex flex-col gap-2">
+        <div className="p-4 border-t border-sidebar-border bg-sidebar-accent/30 text-xs flex flex-col gap-1">
           {sidebarOpen ? (
             <>
-              <div className="font-semibold">Managed by IBM</div>
-              <div className="text-muted-foreground">Powered by AIOps</div>
+              <div className="text-muted-foreground/80 font-medium">Powered by IBM AIOps</div>
+              <div className="text-muted-foreground/50">© 2026 CareOps360</div>
             </>
           ) : (
-            <div className="font-bold text-center">IBM</div>
+            <div className="font-black text-center text-[10px]" style={{ color: "#0f62fe" }}>360</div>
           )}
         </div>
       </div>

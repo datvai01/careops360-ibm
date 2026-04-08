@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
-function HorizonMark({ size = 64 }: { size?: number }) {
+function CareOps360Mark({ size = 68 }: { size?: number }) {
   return (
     <div
-      className="rounded-2xl flex items-center justify-center flex-shrink-0"
+      className="rounded-2xl flex items-center justify-center flex-shrink-0 select-none"
       style={{
         width: size,
         height: size,
@@ -18,74 +18,23 @@ function HorizonMark({ size = 64 }: { size?: number }) {
         boxShadow: "0 8px 32px rgba(15,98,254,0.45), inset 0 1px 0 rgba(255,255,255,0.15)",
       }}
     >
-      <svg width={size * 0.52} height={size * 0.52} viewBox="0 0 32 32" fill="none">
-        <path d="M4 4h5v10h14V4h5v24h-5V19H9v9H4V4z" fill="white" />
-      </svg>
-    </div>
-  );
-}
-
-function IbmMark({ size = 64 }: { size?: number }) {
-  const stripeH = size * 0.055;
-  const gap = size * 0.07;
-  const stripes = 8;
-  const totalH = stripes * stripeH + (stripes - 1) * gap;
-  const offsetY = (size - totalH) / 2;
-
-  return (
-    <div
-      className="rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-      style={{
-        width: size,
-        height: size,
-        background: "#1a56db",
-        boxShadow: "0 8px 32px rgba(15,98,254,0.45), inset 0 1px 0 rgba(255,255,255,0.15)",
-      }}
-    >
-      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-        {/* 8 horizontal white stripes */}
-        {Array.from({ length: stripes }).map((_, i) => (
-          <rect
-            key={i}
-            x={size * 0.08}
-            y={offsetY + i * (stripeH + gap)}
-            width={size * 0.84}
-            height={stripeH}
-            fill="white"
-          />
-        ))}
-        {/* IBM text mask — blue cutouts that erase stripes outside letter shapes */}
-        {/* Left gap (before I) */}
-        <rect x={0} y={0} width={size * 0.08} height={size} fill="#1a56db" />
-        {/* Right gap (after M) */}
-        <rect x={size * 0.92} y={0} width={size * 0.08} height={size} fill="#1a56db" />
-        {/* Blue overlay with IBM cut-out using text */}
-        <text
-          x={size / 2}
-          y={size * 0.665}
-          textAnchor="middle"
-          fill="white"
-          fontSize={size * 0.35}
-          fontWeight="900"
-          fontFamily="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
-          letterSpacing={size * 0.018}
-        >
-          IBM
-        </text>
-        {/* Re-draw stripes over the text to get the stripe-through-letters effect */}
-        {Array.from({ length: stripes }).map((_, i) =>
-          i % 2 === 1 ? (
-            <rect
-              key={`mask-${i}`}
-              x={size * 0.08}
-              y={offsetY + i * (stripeH + gap)}
-              width={size * 0.84}
-              height={stripeH}
-              fill="#1a56db"
-            />
-          ) : null
-        )}
-      </svg>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}>
+        <span style={{
+          color: "white",
+          fontSize: size * 0.38,
+          fontWeight: 900,
+          lineHeight: 1,
+          fontFamily: "'Arial Black', Helvetica, sans-serif",
+          letterSpacing: "-0.02em",
+        }}>C</span>
+        <span style={{
+          color: "rgba(255,255,255,0.65)",
+          fontSize: size * 0.21,
+          fontWeight: 700,
+          lineHeight: 1,
+          fontFamily: "Arial, sans-serif",
+        }}>360</span>
+      </div>
     </div>
   );
 }
@@ -124,21 +73,15 @@ export default function Login() {
 
         {/* Brand lockup */}
         <div className="text-center">
-          <div className="flex items-center justify-center gap-4 mb-5">
-            <HorizonMark size={68} />
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-px h-5 bg-border/60" />
-              <span className="text-xl font-light text-muted-foreground/70 leading-none">+</span>
-              <div className="w-px h-5 bg-border/60" />
-            </div>
-            <IbmMark size={68} />
+          <div className="flex items-center justify-center mb-5">
+            <CareOps360Mark size={68} />
           </div>
 
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Horizon <span style={{ color: "#0f62fe" }}>+ IBM</span>
+            <span>CareOps</span><span style={{ color: "#0f62fe" }}>360</span>
           </h1>
-          <p className="text-muted-foreground mt-2 text-sm tracking-wide uppercase font-medium letter-spacing-widest">
-            Executive Command Center
+          <p className="text-muted-foreground mt-2 text-sm font-medium">
+            From Operations to Outcomes — All in One Place
           </p>
 
           {/* Divider rule */}
@@ -201,11 +144,10 @@ export default function Login() {
         </Card>
 
         {/* Footer */}
-        <div className="text-center text-xs text-muted-foreground/70 flex items-center justify-center gap-2">
-          <span>Powered by</span>
-          <span className="font-semibold text-[#0f62fe]">AIOps</span>
+        <div className="text-center text-xs text-muted-foreground/50 flex items-center justify-center gap-2">
+          <span>© 2026 CareOps360</span>
           <span className="text-border">·</span>
-          <span>Managed by IBM</span>
+          <span>Powered by IBM AIOps</span>
         </div>
       </div>
     </div>

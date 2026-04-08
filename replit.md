@@ -1,8 +1,10 @@
-# Horizon Payer Command Center
+# CareOps360 — Horizon Payer Command Center
+
+> From Operations to Outcomes — All in One Place
 
 ## Overview
 
-IBM-managed executive operations portal for Horizon BCBS (Blue Cross Blue Shield) leadership, built as a full-stack pnpm monorepo. Showcases IBM Application Management Services value across all payer operations domains.
+**CareOps360** is an executive operations portal for Horizon BCBS (Blue Cross Blue Shield) payer leadership, built as a full-stack pnpm monorepo. Powered by IBM Application Management Services, it showcases real-time operational intelligence across all payer domains — from claims and members to vendor invoicing and app health.
 
 ## Stack
 
