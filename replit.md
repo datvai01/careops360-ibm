@@ -54,6 +54,24 @@ IBM-managed executive operations portal for Horizon BCBS (Blue Cross Blue Shield
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks from OpenAPI spec
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
 - `pnpm --filter @workspace/horizon-payer run dev` — run frontend locally
+- `pnpm --filter @workspace/db run push` — push Drizzle schema to PostgreSQL
+- `pnpm --filter @workspace/db run seed` — seed the database with realistic demo data
+
+## Database
+
+PostgreSQL via Replit's built-in database (DATABASE_URL env var). Drizzle ORM is used for schema and queries in `lib/db`.
+
+**27 tables** spanning all dashboard domains:
+- `users` — auth/login (4 demo accounts)
+- `executive_alerts`, `daily_trends`, `ai_insights` — executive dashboard data
+- `member_enrollments`, `member_exceptions` — member operations
+- `claims`, `claims_denial_reasons`, `claims_lob_stats`, `claims_aging` — claims operations (500 seeded claims)
+- `priorauth_aging`, `priorauth_procedures`, `priorauth_reviewers` — prior auth workflow
+- `providers`, `provider_issues` — provider directory & issues
+- `contactcenter_call_reasons`, `contactcenter_hourly` — contact center volume
+- `finance_billing_exceptions`, `finance_premium_trend` — finance & billing
+- `applications`, `incidents`, `batch_jobs`, `interfaces`, `sla_compliance` — application health
+- `ibmams_runbooks`, `ibmams_savings_trend`, `ibmams_ticket_trends` — IBM AMS value
 
 ## Architecture
 

@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { db, contactcenterCallReasonsTable, contactcenterHourlyTable } from "@workspace/db";
+import { desc, asc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -21,33 +23,13 @@ router.get("/contactcenter/kpis", async (_req, res): Promise<void> => {
 });
 
 router.get("/contactcenter/call-reasons", async (_req, res): Promise<void> => {
-  res.json([
-    { reason: "Benefits & Coverage Inquiry", count: 1842, percentage: 21.9, trend: "flat" },
-    { reason: "Claims Status Check", count: 1687, percentage: 20.0, trend: "up" },
-    { reason: "Prior Authorization Status", count: 1241, percentage: 14.7, trend: "up" },
-    { reason: "ID Card / Documents Request", count: 842, percentage: 10.0, trend: "down" },
-    { reason: "Provider Network Inquiry", count: 714, percentage: 8.48, trend: "flat" },
-    { reason: "Billing & Payment Issues", count: 612, percentage: 7.27, trend: "up" },
-    { reason: "Enrollment Changes", count: 487, percentage: 5.78, trend: "flat" },
-    { reason: "Prescription Drug Coverage", count: 412, percentage: 4.89, trend: "up" },
-    { reason: "Appeals & Grievances", count: 341, percentage: 4.05, trend: "up" },
-    { reason: "Other", count: 241, percentage: 2.86, trend: "flat" },
-  ]);
+  const rows = await db.select().from(contactcenterCallReasonsTable).orderBy(desc(contactcenterCallReasonsTable.count));
+  res.json(rows.map((r) => ({ reason: r.reason, count: r.count, percentage: r.percentage, trend: r.trend })));
 });
 
 router.get("/contactcenter/hourly-volume", async (_req, res): Promise<void> => {
-  const hours = Array.from({ length: 10 }, (_, i) => {
-    const hour = i + 8;
-    const label = `${hour}:00 ${hour < 12 ? "AM" : "PM"}`.replace("12:00 PM", "12:00 PM").replace("13:00 PM", "1:00 PM");
-    const isBusy = hour >= 10 && hour <= 14;
-    return {
-      hour: `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? "PM" : "AM"}`,
-      calls: isBusy ? Math.floor(Math.random() * 400) + 600 : Math.floor(Math.random() * 300) + 200,
-      chats: isBusy ? Math.floor(Math.random() * 150) + 200 : Math.floor(Math.random() * 100) + 80,
-      emails: Math.floor(Math.random() * 80) + 40,
-    };
-  });
-  res.json(hours);
+  const rows = await db.select().from(contactcenterHourlyTable).orderBy(asc(contactcenterHourlyTable.id));
+  res.json(rows.map((r) => ({ hour: r.hourLabel, calls: r.calls, chats: r.chats, emails: r.emails })));
 });
 
 export default router;

@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { db, executiveAlertsTable, dailyTrendsTable } from "@workspace/db";
+import { asc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -24,52 +26,24 @@ router.get("/executive/kpis", async (_req, res): Promise<void> => {
 });
 
 router.get("/executive/alerts", async (_req, res): Promise<void> => {
-  res.json([
-    {
-      id: "ALT-001",
-      severity: "critical",
-      category: "Prior Authorization",
-      title: "Prior Auth Backlog Spike Detected",
-      description: "Prior auth backlog increased 47% in the last 2 hours. 892 requests pending review exceeding 48-hour SLA threshold.",
-      timestamp: new Date(Date.now() - 25 * 60000).toISOString(),
-      status: "active",
-      impactedSystem: "Prior Authorization Workflow",
-      drillDownPath: "/dashboard/prior-auth",
-    },
-    {
-      id: "ALT-002",
-      severity: "high",
-      category: "Application Health",
-      title: "Claims Adjudication Platform - Degraded Performance",
-      description: "Claims Adjudication Platform response time averaging 8.2 seconds (SLA: 3 sec). Auto-adjudication rate dropped from 87% to 72%.",
-      timestamp: new Date(Date.now() - 52 * 60000).toISOString(),
-      status: "acknowledged",
-      impactedSystem: "Claims Adjudication Platform",
-      drillDownPath: "/dashboard/app-health",
-    },
-    {
-      id: "ALT-003",
-      severity: "high",
-      category: "Claims",
-      title: "Claims Settlement Delay - EDI 835 Interface",
-      description: "EDI 835 remittance file transmission delayed by 3.5 hours. 14,200 claim settlements pending. Estimated $2.1M payment delay.",
-      timestamp: new Date(Date.now() - 95 * 60000).toISOString(),
-      status: "in_progress",
-      impactedSystem: "EDI Hub / Claims Settlement",
-      drillDownPath: "/dashboard/claims",
-    },
-    {
-      id: "ALT-004",
-      severity: "medium",
-      category: "Contact Center",
-      title: "Call Center Wait Times Above Threshold",
-      description: "Average speed to answer reached 47 seconds (threshold: 30 sec). Abandonment rate at 8.2%.",
-      timestamp: new Date(Date.now() - 15 * 60000).toISOString(),
-      status: "active",
-      impactedSystem: "CRM / Contact Center",
-      drillDownPath: "/dashboard/contact-center",
-    },
-  ]);
+  const alerts = await db
+    .select()
+    .from(executiveAlertsTable)
+    .orderBy(asc(executiveAlertsTable.alertTimestamp));
+
+  res.json(
+    alerts.map((a) => ({
+      id: a.id,
+      severity: a.severity,
+      category: a.category,
+      title: a.title,
+      description: a.description,
+      timestamp: a.alertTimestamp,
+      status: a.status,
+      impactedSystem: a.impactedSystem,
+      drillDownPath: a.drillDownPath,
+    }))
+  );
 });
 
 router.get("/executive/snapshot", async (_req, res): Promise<void> => {
@@ -96,23 +70,22 @@ router.get("/executive/snapshot", async (_req, res): Promise<void> => {
 });
 
 router.get("/executive/trends", async (_req, res): Promise<void> => {
-  const points = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    const baseEnrollments = 1600 + Math.floor(Math.random() * 500);
-    const baseClaims = 84000 + Math.floor(Math.random() * 8000);
-    const basePriorAuths = 2800 + Math.floor(Math.random() * 700);
-    return {
-      date: date.toISOString().split("T")[0],
-      claims: baseClaims,
-      enrollments: baseEnrollments,
-      priorAuths: basePriorAuths,
-      availability: 99.1 + Math.random() * 0.8,
-      incidents: Math.floor(Math.random() * 5),
-    };
-  });
+  const rows = await db
+    .select()
+    .from(dailyTrendsTable)
+    .orderBy(asc(dailyTrendsTable.trendDate));
 
-  res.json({ points, period: "30d" });
+  res.json({
+    points: rows.map((r) => ({
+      date: r.trendDate,
+      claims: r.claims,
+      enrollments: r.enrollments,
+      priorAuths: r.priorAuths,
+      availability: r.availability,
+      incidents: r.incidents,
+    })),
+    period: "30d",
+  });
 });
 
 export default router;

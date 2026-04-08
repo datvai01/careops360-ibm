@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { db, memberEnrollmentsTable, memberExceptionsTable } from "@workspace/db";
+import { eq, asc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -20,35 +22,22 @@ router.get("/members/kpis", async (_req, res): Promise<void> => {
 });
 
 router.get("/members/enrollments", async (_req, res): Promise<void> => {
-  const daily = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    return {
-      date: date.toISOString().split("T")[0],
-      enrollments: 1400 + Math.floor(Math.random() * 700),
-      terminations: 500 + Math.floor(Math.random() * 300),
-    };
-  });
+  const all = await db
+    .select()
+    .from(memberEnrollmentsTable)
+    .orderBy(asc(memberEnrollmentsTable.id));
 
-  const weekly = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (11 - i) * 7);
-    return {
-      date: `Week of ${date.toISOString().split("T")[0]}`,
-      enrollments: 8500 + Math.floor(Math.random() * 2000),
-      terminations: 3000 + Math.floor(Math.random() * 1000),
-    };
-  });
+  const daily = all
+    .filter((r) => r.periodType === "daily")
+    .map((r) => ({ date: r.periodLabel, enrollments: r.enrollments, terminations: r.terminations }));
 
-  const monthly = Array.from({ length: 12 }, (_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - (11 - i));
-    return {
-      date: date.toLocaleString("default", { month: "short", year: "2-digit" }),
-      enrollments: 34000 + Math.floor(Math.random() * 8000),
-      terminations: 12000 + Math.floor(Math.random() * 4000),
-    };
-  });
+  const weekly = all
+    .filter((r) => r.periodType === "weekly")
+    .map((r) => ({ date: r.periodLabel, enrollments: r.enrollments, terminations: r.terminations }));
+
+  const monthly = all
+    .filter((r) => r.periodType === "monthly")
+    .map((r) => ({ date: r.periodLabel, enrollments: r.enrollments, terminations: r.terminations }));
 
   res.json({ daily, weekly, monthly });
 });
@@ -59,8 +48,7 @@ router.get("/members/by-product", async (_req, res): Promise<void> => {
     { product: "Medicare Advantage", count: 944216, percentage: 22.0, change: 3.4 },
     { product: "Medicaid", count: 728847, percentage: 17.0, change: -0.8 },
     { product: "Exchange / ACA", count: 472608, percentage: 11.0, change: 5.7 },
-    { product: "Federal Employee", count: 0, percentage: 0, change: 0 },
-  ].filter(p => p.count > 0));
+  ]);
 });
 
 router.get("/members/by-region", async (_req, res): Promise<void> => {
@@ -74,21 +62,10 @@ router.get("/members/by-region", async (_req, res): Promise<void> => {
 });
 
 router.get("/members/exceptions", async (_req, res): Promise<void> => {
-  const types = ["Missing SSN", "Duplicate Member ID", "Coverage Gap", "Invalid DOB", "Address Verification Failed", "Plan Code Mismatch", "Dependent Age Override", "Retroactive Change"];
-  const products = ["Commercial", "Medicare Advantage", "Medicaid", "Exchange"];
-  const statuses = ["Pending Review", "In Progress", "Escalated", "Awaiting Member"];
-  const priorities: ("high" | "medium" | "low")[] = ["high", "medium", "low"];
-
-  const exceptions = Array.from({ length: 20 }, (_, i) => ({
-    id: `EXC-${String(i + 1001).padStart(5, "0")}`,
-    memberId: `HBC${String(Math.floor(Math.random() * 9000000) + 1000000)}`,
-    memberName: `Member ${i + 1}`,
-    exceptionType: types[Math.floor(Math.random() * types.length)],
-    product: products[Math.floor(Math.random() * products.length)],
-    ageDays: Math.floor(Math.random() * 30) + 1,
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    priority: priorities[Math.floor(Math.random() * priorities.length)],
-  }));
+  const exceptions = await db
+    .select()
+    .from(memberExceptionsTable)
+    .orderBy(asc(memberExceptionsTable.id));
 
   res.json(exceptions);
 });

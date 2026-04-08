@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { db, financeBillingExceptionsTable, financePremiumTrendTable } from "@workspace/db";
+import { asc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -19,32 +21,13 @@ router.get("/finance/kpis", async (_req, res): Promise<void> => {
 });
 
 router.get("/finance/billing-exceptions", async (_req, res): Promise<void> => {
-  const types = ["Premium Overpayment", "NSF / Returned Payment", "Duplicate Payment", "Address Mismatch", "Account Number Error", "Retroactive Premium Adjustment", "Group Billing Discrepancy"];
-  const statuses = ["Pending Review", "In Progress", "Escalated", "Pending Member Response"];
-  const priorities: ("high" | "medium" | "low")[] = ["high", "medium", "low"];
-
-  const exceptions = Array.from({ length: 15 }, (_, i) => ({
-    id: `BEX-${String(i + 5001).padStart(5, "0")}`,
-    memberId: `HBC${Math.floor(Math.random() * 9000000) + 1000000}`,
-    memberName: `Member ${i + 1}`,
-    exceptionType: types[Math.floor(Math.random() * types.length)],
-    amount: Math.floor(Math.random() * 5000) + 100,
-    ageDays: Math.floor(Math.random() * 45) + 1,
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    priority: priorities[Math.floor(Math.random() * priorities.length)],
-  }));
-
-  res.json(exceptions);
+  const rows = await db.select().from(financeBillingExceptionsTable).orderBy(asc(financeBillingExceptionsTable.id));
+  res.json(rows);
 });
 
 router.get("/finance/premium-trend", async (_req, res): Promise<void> => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const trend = months.map((month, i) => ({
-    month: `${month} '25`,
-    billed: 462000000 + i * 3000000 + Math.floor(Math.random() * 5000000),
-    received: 440000000 + i * 2800000 + Math.floor(Math.random() * 4000000),
-  }));
-  res.json(trend);
+  const rows = await db.select().from(financePremiumTrendTable).orderBy(asc(financePremiumTrendTable.id));
+  res.json(rows.map((r) => ({ month: r.monthLabel, billed: r.billed, received: r.received })));
 });
 
 export default router;

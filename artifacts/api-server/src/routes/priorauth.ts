@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import { db, priorauthAgingTable, priorauthProceduresTable, priorauthReviewersTable } from "@workspace/db";
+import { asc, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -20,40 +22,25 @@ router.get("/priorauth/kpis", async (_req, res): Promise<void> => {
 });
 
 router.get("/priorauth/aging", async (_req, res): Promise<void> => {
-  res.json([
-    { bucket: "0-24 hours", count: 412, percentage: 33.0, severity: "green" },
-    { bucket: "24-48 hours", count: 287, percentage: 23.0, severity: "green" },
-    { bucket: "48-72 hours (SLA)", count: 341, percentage: 27.3, severity: "yellow" },
-    { bucket: "72-96 hours", count: 142, percentage: 11.4, severity: "red" },
-    { bucket: "96+ hours (Breach)", count: 65, percentage: 5.21, severity: "red" },
-  ]);
+  const rows = await db.select().from(priorauthAgingTable).orderBy(asc(priorauthAgingTable.id));
+  res.json(rows.map((r) => ({ bucket: r.bucket, count: r.count, percentage: r.percentage, severity: r.severity })));
 });
 
 router.get("/priorauth/top-procedures", async (_req, res): Promise<void> => {
-  res.json([
-    { category: "Inpatient Surgery", requests: 487, approvalRate: 78.2, avgDays: 1.8 },
-    { category: "Outpatient MRI/CT", requests: 412, approvalRate: 84.1, avgDays: 0.9 },
-    { category: "Specialty Drugs (Biologics)", requests: 387, approvalRate: 62.4, avgDays: 3.2 },
-    { category: "Home Health Services", requests: 341, approvalRate: 91.2, avgDays: 0.7 },
-    { category: "Physical/OT Therapy (Extended)", requests: 298, approvalRate: 87.6, avgDays: 0.5 },
-    { category: "Behavioral Health", requests: 274, approvalRate: 89.4, avgDays: 0.8 },
-    { category: "Durable Medical Equipment", requests: 241, approvalRate: 93.1, avgDays: 0.4 },
-    { category: "Oncology Treatment", requests: 187, approvalRate: 71.7, avgDays: 2.4 },
-    { category: "Cardiac Procedures", requests: 163, approvalRate: 74.2, avgDays: 2.1 },
-    { category: "Transplant Services", requests: 51, approvalRate: 58.8, avgDays: 5.7 },
-  ]);
+  const rows = await db.select().from(priorauthProceduresTable).orderBy(desc(priorauthProceduresTable.requests));
+  res.json(rows.map((r) => ({ category: r.category, requests: r.requests, approvalRate: r.approvalRate, avgDays: r.avgDays })));
 });
 
 router.get("/priorauth/workload", async (_req, res): Promise<void> => {
-  const reviewers = [
-    { reviewerId: "RV001", reviewerName: "Dr. Lisa Park", openCases: 87, completedToday: 34, avgDaysToDecision: 1.2, status: "high" as const },
-    { reviewerId: "RV002", reviewerName: "Dr. James Wilson", openCases: 62, completedToday: 28, avgDaysToDecision: 1.0, status: "normal" as const },
-    { reviewerId: "RV003", reviewerName: "RN Patricia Gomez", openCases: 124, completedToday: 41, avgDaysToDecision: 1.8, status: "critical" as const },
-    { reviewerId: "RV004", reviewerName: "Dr. Aisha Johnson", openCases: 53, completedToday: 22, avgDaysToDecision: 0.9, status: "normal" as const },
-    { reviewerId: "RV005", reviewerName: "RN Mark Stevens", openCases: 98, completedToday: 31, avgDaysToDecision: 1.5, status: "high" as const },
-    { reviewerId: "RV006", reviewerName: "Dr. Sarah Kim", openCases: 41, completedToday: 19, avgDaysToDecision: 0.8, status: "normal" as const },
-  ];
-  res.json(reviewers);
+  const rows = await db.select().from(priorauthReviewersTable).orderBy(desc(priorauthReviewersTable.openCases));
+  res.json(rows.map((r) => ({
+    reviewerId: r.reviewerId,
+    reviewerName: r.reviewerName,
+    openCases: r.openCases,
+    completedToday: r.completedToday,
+    avgDaysToDecision: r.avgDaysToDecision,
+    status: r.status,
+  })));
 });
 
 export default router;
