@@ -1,4 +1,4 @@
-import { db } from "./index.js";
+import { db, pool } from "./index.js";
 import {
   usersTable,
   executiveAlertsTable,
@@ -29,7 +29,24 @@ import {
   ibmamsTicketTrendsTable,
 } from "./schema/index.js";
 
+async function ensureSchema() {
+  console.log("Ensuring schema is up to date...");
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS vendor_invoice_alerts (
+      id serial PRIMARY KEY,
+      alert_type varchar(50) NOT NULL,
+      invoice_id varchar(20),
+      vendor varchar(100) NOT NULL,
+      message text NOT NULL,
+      severity varchar(10) NOT NULL,
+      amount integer
+    )
+  `);
+  console.log("  schema check complete");
+}
+
 async function seed() {
+  await ensureSchema();
   console.log("Seeding database...");
 
   // Users
