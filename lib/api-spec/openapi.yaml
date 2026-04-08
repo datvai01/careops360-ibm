@@ -3,20 +3,39 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Horizon Payer Command Center API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: executive
+    description: Executive overview KPIs
+  - name: members
+    description: Member enrollment data
+  - name: claims
+    description: Claims operations data
+  - name: priorauth
+    description: Prior authorization data
+  - name: providers
+    description: Provider operations data
+  - name: contactcenter
+    description: Contact center / member service data
+  - name: finance
+    description: Finance, billing, and premium data
+  - name: applications
+    description: Application health and incidents
+  - name: ibmams
+    description: IBM AMS value and metrics
+  - name: auth
+    description: Authentication
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +43,698 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current authenticated user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+
+  /executive/kpis:
+    get:
+      operationId: getExecutiveKpis
+      tags: [executive]
+      summary: Get executive-level KPIs
+      responses:
+        "200":
+          description: Executive KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutiveKpis"
+
+  /executive/alerts:
+    get:
+      operationId: getAlerts
+      tags: [executive]
+      summary: Get active operational alerts
+      responses:
+        "200":
+          description: Active alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /executive/snapshot:
+    get:
+      operationId: getOperationsSnapshot
+      tags: [executive]
+      summary: Get today's operations snapshot
+      responses:
+        "200":
+          description: Operations snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationsSnapshot"
+
+  /executive/trends:
+    get:
+      operationId: getExecutiveTrends
+      tags: [executive]
+      summary: Get 30-day trend data for key metrics
+      responses:
+        "200":
+          description: Trend data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendData"
+
+  /members/kpis:
+    get:
+      operationId: getMemberKpis
+      tags: [members]
+      summary: Get member enrollment KPIs
+      parameters:
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+        - name: productLine
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Member KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberKpis"
+
+  /members/enrollments:
+    get:
+      operationId: getEnrollmentTrends
+      tags: [members]
+      summary: Get enrollment trends by day/week/month
+      responses:
+        "200":
+          description: Enrollment trends
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnrollmentTrends"
+
+  /members/by-product:
+    get:
+      operationId: getMembersByProduct
+      tags: [members]
+      summary: Get member counts by product line
+      responses:
+        "200":
+          description: Members by product
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MembersByProduct"
+
+  /members/by-region:
+    get:
+      operationId: getMembersByRegion
+      tags: [members]
+      summary: Get member counts by region
+      responses:
+        "200":
+          description: Members by region
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MembersByRegion"
+
+  /members/exceptions:
+    get:
+      operationId: getEnrollmentExceptions
+      tags: [members]
+      summary: Get enrollment exception queue
+      responses:
+        "200":
+          description: Enrollment exceptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentException"
+
+  /claims/kpis:
+    get:
+      operationId: getClaimsKpis
+      tags: [claims]
+      summary: Get claims operations KPIs
+      parameters:
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+        - name: lineOfBusiness
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Claims KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimsKpis"
+
+  /claims/queue:
+    get:
+      operationId: getClaimsQueue
+      tags: [claims]
+      summary: Get claims queue with aging
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Claims queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimsQueueResponse"
+
+  /claims/denial-reasons:
+    get:
+      operationId: getDenialReasons
+      tags: [claims]
+      summary: Get top claim denial reasons
+      responses:
+        "200":
+          description: Denial reasons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DenialReason"
+
+  /claims/by-line-of-business:
+    get:
+      operationId: getClaimsByLineOfBusiness
+      tags: [claims]
+      summary: Get claims by line of business
+      responses:
+        "200":
+          description: Claims by LOB
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClaimsByLob"
+
+  /claims/aging:
+    get:
+      operationId: getClaimsAging
+      tags: [claims]
+      summary: Get claims backlog aging buckets
+      responses:
+        "200":
+          description: Claims aging
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgingBucket"
+
+  /priorauth/kpis:
+    get:
+      operationId: getPriorAuthKpis
+      tags: [priorauth]
+      summary: Get prior authorization KPIs
+      parameters:
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+        - name: requestType
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Prior auth KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriorAuthKpis"
+
+  /priorauth/aging:
+    get:
+      operationId: getPriorAuthAging
+      tags: [priorauth]
+      summary: Get prior auth backlog aging by bucket
+      responses:
+        "200":
+          description: Prior auth aging
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgingBucket"
+
+  /priorauth/top-procedures:
+    get:
+      operationId: getTopProcedures
+      tags: [priorauth]
+      summary: Get top procedure categories for prior auth
+      responses:
+        "200":
+          description: Top procedures
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProcedureCategory"
+
+  /priorauth/workload:
+    get:
+      operationId: getReviewerWorkload
+      tags: [priorauth]
+      summary: Get nurse/reviewer workload data
+      responses:
+        "200":
+          description: Reviewer workload
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReviewerWorkload"
+
+  /providers/kpis:
+    get:
+      operationId: getProviderKpis
+      tags: [providers]
+      summary: Get provider operations KPIs
+      responses:
+        "200":
+          description: Provider KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderKpis"
+
+  /providers/list:
+    get:
+      operationId: getProviderList
+      tags: [providers]
+      summary: Get provider list with status
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Provider list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderListResponse"
+
+  /providers/issues:
+    get:
+      operationId: getProviderIssues
+      tags: [providers]
+      summary: Get top provider service issues
+      responses:
+        "200":
+          description: Provider issues
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProviderIssue"
+
+  /contactcenter/kpis:
+    get:
+      operationId: getContactCenterKpis
+      tags: [contactcenter]
+      summary: Get contact center KPIs
+      parameters:
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contact center KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactCenterKpis"
+
+  /contactcenter/call-reasons:
+    get:
+      operationId: getTopCallReasons
+      tags: [contactcenter]
+      summary: Get top call reasons
+      responses:
+        "200":
+          description: Top call reasons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CallReason"
+
+  /contactcenter/hourly-volume:
+    get:
+      operationId: getHourlyCallVolume
+      tags: [contactcenter]
+      summary: Get hourly call volume for today
+      responses:
+        "200":
+          description: Hourly call volume
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HourlyVolume"
+
+  /finance/kpis:
+    get:
+      operationId: getFinanceKpis
+      tags: [finance]
+      summary: Get finance and billing KPIs
+      parameters:
+        - name: dateRange
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Finance KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceKpis"
+
+  /finance/billing-exceptions:
+    get:
+      operationId: getBillingExceptions
+      tags: [finance]
+      summary: Get billing exceptions
+      responses:
+        "200":
+          description: Billing exceptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BillingException"
+
+  /finance/premium-trend:
+    get:
+      operationId: getPremiumTrend
+      tags: [finance]
+      summary: Get premium billed vs received trend
+      responses:
+        "200":
+          description: Premium trend
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PremiumTrend"
+
+  /applications/health:
+    get:
+      operationId: getApplicationHealth
+      tags: [applications]
+      summary: Get application health overview
+      responses:
+        "200":
+          description: Application health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationHealthOverview"
+
+  /applications/list:
+    get:
+      operationId: getApplicationList
+      tags: [applications]
+      summary: Get full list of applications with health
+      responses:
+        "200":
+          description: Application list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+
+  /applications/incidents:
+    get:
+      operationId: getIncidents
+      tags: [applications]
+      summary: Get incidents by severity
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Incidents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+
+  /applications/batch-jobs:
+    get:
+      operationId: getBatchJobs
+      tags: [applications]
+      summary: Get batch job status
+      responses:
+        "200":
+          description: Batch jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BatchJob"
+
+  /applications/interfaces:
+    get:
+      operationId: getInterfaceHealth
+      tags: [applications]
+      summary: Get data interface health
+      responses:
+        "200":
+          description: Interface health
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DataInterface"
+
+  /applications/sla:
+    get:
+      operationId: getSlaCompliance
+      tags: [applications]
+      summary: Get SLA compliance by tower
+      responses:
+        "200":
+          description: SLA compliance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SlaCompliance"
+
+  /applications/kpis:
+    get:
+      operationId: getApplicationKpis
+      tags: [applications]
+      summary: Get application health KPIs
+      responses:
+        "200":
+          description: Application KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationKpis"
+
+  /ibmams/kpis:
+    get:
+      operationId: getIbmAmsKpis
+      tags: [ibmams]
+      summary: Get IBM AMS value KPIs
+      responses:
+        "200":
+          description: IBM AMS KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IbmAmsKpis"
+
+  /ibmams/ticket-trends:
+    get:
+      operationId: getTicketTrends
+      tags: [ibmams]
+      summary: Get ticket volume trend over time
+      responses:
+        "200":
+          description: Ticket trends
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TicketTrend"
+
+  /ibmams/automation-runbooks:
+    get:
+      operationId: getAutomationRunbooks
+      tags: [ibmams]
+      summary: Get automation runbook executions
+      responses:
+        "200":
+          description: Automation runbooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AutomationRunbook"
+
+  /ibmams/savings:
+    get:
+      operationId: getCostSavings
+      tags: [ibmams]
+      summary: Get cost savings and avoidance metrics
+      responses:
+        "200":
+          description: Cost savings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostSavings"
+
+  /ibmams/ai-insights:
+    get:
+      operationId: getAiInsights
+      tags: [ibmams]
+      summary: Get AI-generated insights and anomalies
+      responses:
+        "200":
+          description: AI insights
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiInsight"
+
+  /ibmams/ask:
+    post:
+      operationId: askDashboard
+      tags: [ibmams]
+      summary: Ask the dashboard a question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskRequest"
+      responses:
+        "200":
+          description: Answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AskResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +745,1184 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+        - message
+
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required:
+        - user
+        - token
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [executive, operations, it, support, ibm_delivery]
+        email:
+          type: string
+        avatar:
+          type: string
+      required:
+        - id
+        - username
+        - name
+        - role
+        - email
+
+    KpiMetric:
+      type: object
+      properties:
+        value:
+          type: number
+        formatted:
+          type: string
+        change:
+          type: number
+        changeLabel:
+          type: string
+        status:
+          type: string
+          enum: [green, yellow, red]
+        trend:
+          type: string
+          enum: [up, down, flat]
+      required:
+        - value
+        - formatted
+        - status
+        - trend
+
+    ExecutiveKpis:
+      type: object
+      properties:
+        activeMembers:
+          $ref: "#/components/schemas/KpiMetric"
+        newEnrollmentsToday:
+          $ref: "#/components/schemas/KpiMetric"
+        claimsReceivedToday:
+          $ref: "#/components/schemas/KpiMetric"
+        claimsSettledAmount:
+          $ref: "#/components/schemas/KpiMetric"
+        priorAuthRequests:
+          $ref: "#/components/schemas/KpiMetric"
+        openProviderTickets:
+          $ref: "#/components/schemas/KpiMetric"
+        callCenterASA:
+          $ref: "#/components/schemas/KpiMetric"
+        applicationAvailability:
+          $ref: "#/components/schemas/KpiMetric"
+        criticalIncidents:
+          $ref: "#/components/schemas/KpiMetric"
+        slaAttainment:
+          $ref: "#/components/schemas/KpiMetric"
+        batchSuccessRate:
+          $ref: "#/components/schemas/KpiMetric"
+        automationSavings:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - activeMembers
+        - newEnrollmentsToday
+        - claimsReceivedToday
+        - claimsSettledAmount
+        - priorAuthRequests
+        - openProviderTickets
+        - callCenterASA
+        - applicationAvailability
+        - criticalIncidents
+        - slaAttainment
+        - batchSuccessRate
+        - automationSavings
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+        severity:
+          type: string
+          enum: [critical, high, medium, low]
+        category:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        timestamp:
+          type: string
+        status:
+          type: string
+          enum: [active, acknowledged, resolved]
+        impactedSystem:
+          type: string
+        drillDownPath:
+          type: string
+      required:
+        - id
+        - severity
+        - category
+        - title
+        - description
+        - timestamp
+        - status
+
+    OperationsSnapshot:
+      type: object
+      properties:
+        businessHealth:
+          type: string
+          enum: [healthy, degraded, critical]
+        itHealth:
+          type: string
+          enum: [healthy, degraded, critical]
+        businessSummary:
+          type: string
+        itSummary:
+          type: string
+        highlights:
+          type: array
+          items:
+            type: string
+        watchItems:
+          type: array
+          items:
+            type: string
+        lastUpdated:
+          type: string
+      required:
+        - businessHealth
+        - itHealth
+        - businessSummary
+        - itSummary
+        - highlights
+        - watchItems
+        - lastUpdated
+
+    TrendDataPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        claims:
+          type: number
+        enrollments:
+          type: number
+        priorAuths:
+          type: number
+        availability:
+          type: number
+        incidents:
+          type: number
+      required:
+        - date
+        - claims
+        - enrollments
+        - priorAuths
+        - availability
+        - incidents
+
+    TrendData:
+      type: object
+      properties:
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendDataPoint"
+        period:
+          type: string
+      required:
+        - points
+        - period
+
+    MemberKpis:
+      type: object
+      properties:
+        totalActiveMembers:
+          $ref: "#/components/schemas/KpiMetric"
+        newEnrollmentsToday:
+          $ref: "#/components/schemas/KpiMetric"
+        newEnrollmentsWeek:
+          $ref: "#/components/schemas/KpiMetric"
+        newEnrollmentsMonth:
+          $ref: "#/components/schemas/KpiMetric"
+        terminations:
+          $ref: "#/components/schemas/KpiMetric"
+        exceptionQueueSize:
+          $ref: "#/components/schemas/KpiMetric"
+        idCardsPending:
+          $ref: "#/components/schemas/KpiMetric"
+        eligibilityLatency:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - totalActiveMembers
+        - newEnrollmentsToday
+        - newEnrollmentsWeek
+        - newEnrollmentsMonth
+        - terminations
+        - exceptionQueueSize
+        - idCardsPending
+        - eligibilityLatency
+
+    EnrollmentDataPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        enrollments:
+          type: number
+        terminations:
+          type: number
+      required:
+        - date
+        - enrollments
+        - terminations
+
+    EnrollmentTrends:
+      type: object
+      properties:
+        daily:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnrollmentDataPoint"
+        weekly:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnrollmentDataPoint"
+        monthly:
+          type: array
+          items:
+            $ref: "#/components/schemas/EnrollmentDataPoint"
+      required:
+        - daily
+        - weekly
+        - monthly
+
+    MembersByProduct:
+      type: object
+      properties:
+        product:
+          type: string
+        count:
+          type: number
+        percentage:
+          type: number
+        change:
+          type: number
+      required:
+        - product
+        - count
+        - percentage
+        - change
+
+    MembersByRegion:
+      type: object
+      properties:
+        region:
+          type: string
+        count:
+          type: number
+        percentage:
+          type: number
+      required:
+        - region
+        - count
+        - percentage
+
+    EnrollmentException:
+      type: object
+      properties:
+        id:
+          type: string
+        memberId:
+          type: string
+        memberName:
+          type: string
+        exceptionType:
+          type: string
+        product:
+          type: string
+        ageDays:
+          type: number
+        status:
+          type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+      required:
+        - id
+        - memberId
+        - memberName
+        - exceptionType
+        - product
+        - ageDays
+        - status
+        - priority
+
+    ClaimsKpis:
+      type: object
+      properties:
+        claimsReceivedToday:
+          $ref: "#/components/schemas/KpiMetric"
+        claimsInAdjudication:
+          $ref: "#/components/schemas/KpiMetric"
+        claimsPending:
+          $ref: "#/components/schemas/KpiMetric"
+        claimsDenied:
+          $ref: "#/components/schemas/KpiMetric"
+        claimsSettled:
+          $ref: "#/components/schemas/KpiMetric"
+        totalDollarProcessed:
+          $ref: "#/components/schemas/KpiMetric"
+        autoAdjudicationRate:
+          $ref: "#/components/schemas/KpiMetric"
+        avgTurnaroundDays:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - claimsReceivedToday
+        - claimsInAdjudication
+        - claimsPending
+        - claimsDenied
+        - claimsSettled
+        - totalDollarProcessed
+        - autoAdjudicationRate
+        - avgTurnaroundDays
+
+    ClaimRecord:
+      type: object
+      properties:
+        claimId:
+          type: string
+        memberId:
+          type: string
+        memberName:
+          type: string
+        provider:
+          type: string
+        serviceDate:
+          type: string
+        receivedDate:
+          type: string
+        status:
+          type: string
+        amount:
+          type: number
+        lineOfBusiness:
+          type: string
+        ageDays:
+          type: number
+        denialReason:
+          type: string
+      required:
+        - claimId
+        - memberId
+        - memberName
+        - provider
+        - serviceDate
+        - receivedDate
+        - status
+        - amount
+        - lineOfBusiness
+        - ageDays
+
+    ClaimsQueueResponse:
+      type: object
+      properties:
+        claims:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClaimRecord"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+      required:
+        - claims
+        - total
+        - page
+        - limit
+
+    DenialReason:
+      type: object
+      properties:
+        reason:
+          type: string
+        count:
+          type: number
+        percentage:
+          type: number
+        trend:
+          type: string
+          enum: [up, down, flat]
+      required:
+        - reason
+        - count
+        - percentage
+        - trend
+
+    ClaimsByLob:
+      type: object
+      properties:
+        lob:
+          type: string
+        received:
+          type: number
+        processed:
+          type: number
+        pending:
+          type: number
+        amount:
+          type: number
+      required:
+        - lob
+        - received
+        - processed
+        - pending
+        - amount
+
+    AgingBucket:
+      type: object
+      properties:
+        bucket:
+          type: string
+        count:
+          type: number
+        percentage:
+          type: number
+        severity:
+          type: string
+          enum: [green, yellow, red]
+      required:
+        - bucket
+        - count
+        - percentage
+        - severity
+
+    PriorAuthKpis:
+      type: object
+      properties:
+        requestsReceived:
+          $ref: "#/components/schemas/KpiMetric"
+        approved:
+          $ref: "#/components/schemas/KpiMetric"
+        denied:
+          $ref: "#/components/schemas/KpiMetric"
+        pended:
+          $ref: "#/components/schemas/KpiMetric"
+        avgReviewHours:
+          $ref: "#/components/schemas/KpiMetric"
+        urgentRequests:
+          $ref: "#/components/schemas/KpiMetric"
+        backlogSize:
+          $ref: "#/components/schemas/KpiMetric"
+        appealsVolume:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - requestsReceived
+        - approved
+        - denied
+        - pended
+        - avgReviewHours
+        - urgentRequests
+        - backlogSize
+        - appealsVolume
+
+    ProcedureCategory:
+      type: object
+      properties:
+        category:
+          type: string
+        requests:
+          type: number
+        approvalRate:
+          type: number
+        avgDays:
+          type: number
+      required:
+        - category
+        - requests
+        - approvalRate
+        - avgDays
+
+    ReviewerWorkload:
+      type: object
+      properties:
+        reviewerId:
+          type: string
+        reviewerName:
+          type: string
+        openCases:
+          type: number
+        completedToday:
+          type: number
+        avgDaysToDecision:
+          type: number
+        status:
+          type: string
+          enum: [normal, high, critical]
+      required:
+        - reviewerId
+        - reviewerName
+        - openCases
+        - completedToday
+        - avgDaysToDecision
+        - status
+
+    ProviderKpis:
+      type: object
+      properties:
+        onboardingRequests:
+          $ref: "#/components/schemas/KpiMetric"
+        directoryUpdates:
+          $ref: "#/components/schemas/KpiMetric"
+        credentialingPending:
+          $ref: "#/components/schemas/KpiMetric"
+        openTickets:
+          $ref: "#/components/schemas/KpiMetric"
+        disputeCases:
+          $ref: "#/components/schemas/KpiMetric"
+        contractLoads:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - onboardingRequests
+        - directoryUpdates
+        - credentialingPending
+        - openTickets
+        - disputeCases
+        - contractLoads
+
+    ProviderRecord:
+      type: object
+      properties:
+        providerId:
+          type: string
+        providerName:
+          type: string
+        npi:
+          type: string
+        specialty:
+          type: string
+        status:
+          type: string
+          enum: [active, pending, suspended, terminated]
+        credentialingStatus:
+          type: string
+        openClaims:
+          type: number
+        openTickets:
+          type: number
+        lastUpdated:
+          type: string
+      required:
+        - providerId
+        - providerName
+        - npi
+        - specialty
+        - status
+        - credentialingStatus
+        - openClaims
+        - openTickets
+        - lastUpdated
+
+    ProviderListResponse:
+      type: object
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProviderRecord"
+        total:
+          type: number
+        page:
+          type: number
+      required:
+        - providers
+        - total
+        - page
+
+    ProviderIssue:
+      type: object
+      properties:
+        issueType:
+          type: string
+        count:
+          type: number
+        trend:
+          type: string
+          enum: [up, down, flat]
+        priority:
+          type: string
+          enum: [high, medium, low]
+      required:
+        - issueType
+        - count
+        - trend
+        - priority
+
+    ContactCenterKpis:
+      type: object
+      properties:
+        callsReceived:
+          $ref: "#/components/schemas/KpiMetric"
+        avgWaitTime:
+          $ref: "#/components/schemas/KpiMetric"
+        abandonmentRate:
+          $ref: "#/components/schemas/KpiMetric"
+        firstCallResolution:
+          $ref: "#/components/schemas/KpiMetric"
+        casesOpened:
+          $ref: "#/components/schemas/KpiMetric"
+        casesResolved:
+          $ref: "#/components/schemas/KpiMetric"
+        memberComplaints:
+          $ref: "#/components/schemas/KpiMetric"
+        chatbotContainment:
+          $ref: "#/components/schemas/KpiMetric"
+        digitalAdoption:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - callsReceived
+        - avgWaitTime
+        - abandonmentRate
+        - firstCallResolution
+        - casesOpened
+        - casesResolved
+        - memberComplaints
+        - chatbotContainment
+        - digitalAdoption
+
+    CallReason:
+      type: object
+      properties:
+        reason:
+          type: string
+        count:
+          type: number
+        percentage:
+          type: number
+        trend:
+          type: string
+          enum: [up, down, flat]
+      required:
+        - reason
+        - count
+        - percentage
+        - trend
+
+    HourlyVolume:
+      type: object
+      properties:
+        hour:
+          type: string
+        calls:
+          type: number
+        chats:
+          type: number
+        emails:
+          type: number
+      required:
+        - hour
+        - calls
+        - chats
+        - emails
+
+    FinanceKpis:
+      type: object
+      properties:
+        premiumBilled:
+          $ref: "#/components/schemas/KpiMetric"
+        premiumReceived:
+          $ref: "#/components/schemas/KpiMetric"
+        delinquencyCount:
+          $ref: "#/components/schemas/KpiMetric"
+        refunds:
+          $ref: "#/components/schemas/KpiMetric"
+        billingExceptions:
+          $ref: "#/components/schemas/KpiMetric"
+        paymentPostingLatency:
+          $ref: "#/components/schemas/KpiMetric"
+        reconciliationStatus:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - premiumBilled
+        - premiumReceived
+        - delinquencyCount
+        - refunds
+        - billingExceptions
+        - paymentPostingLatency
+        - reconciliationStatus
+
+    BillingException:
+      type: object
+      properties:
+        id:
+          type: string
+        memberId:
+          type: string
+        memberName:
+          type: string
+        exceptionType:
+          type: string
+        amount:
+          type: number
+        ageDays:
+          type: number
+        status:
+          type: string
+        priority:
+          type: string
+          enum: [high, medium, low]
+      required:
+        - id
+        - memberId
+        - memberName
+        - exceptionType
+        - amount
+        - ageDays
+        - status
+        - priority
+
+    PremiumTrend:
+      type: object
+      properties:
+        month:
+          type: string
+        billed:
+          type: number
+        received:
+          type: number
+      required:
+        - month
+        - billed
+        - received
+
+    ApplicationHealthOverview:
+      type: object
+      properties:
+        overallAvailability:
+          type: number
+        totalApplications:
+          type: number
+        healthyCount:
+          type: number
+        degradedCount:
+          type: number
+        criticalCount:
+          type: number
+        openIncidents:
+          type: number
+        batchSuccessRate:
+          type: number
+        interfaceHealth:
+          type: number
+      required:
+        - overallAvailability
+        - totalApplications
+        - healthyCount
+        - degradedCount
+        - criticalCount
+        - openIncidents
+        - batchSuccessRate
+        - interfaceHealth
+
+    Application:
+      type: object
+      properties:
+        appId:
+          type: string
+        name:
+          type: string
+        owner:
+          type: string
+        status:
+          type: string
+          enum: [healthy, degraded, critical, maintenance]
+        availability:
+          type: number
+        openIncidents:
+          type: number
+        version:
+          type: string
+        lastDeployment:
+          type: string
+        slaTarget:
+          type: number
+        slaActual:
+          type: number
+        environment:
+          type: string
+        tier:
+          type: string
+      required:
+        - appId
+        - name
+        - owner
+        - status
+        - availability
+        - openIncidents
+        - version
+        - lastDeployment
+        - slaTarget
+        - slaActual
+        - environment
+        - tier
+
+    Incident:
+      type: object
+      properties:
+        incidentId:
+          type: string
+        severity:
+          type: string
+          enum: [sev1, sev2, sev3, sev4]
+        title:
+          type: string
+        affectedApplication:
+          type: string
+        status:
+          type: string
+          enum: [open, acknowledged, in_progress, resolved]
+        openedAt:
+          type: string
+        resolvedAt:
+          type: string
+        mttr:
+          type: number
+        rootCause:
+          type: string
+        assignee:
+          type: string
+      required:
+        - incidentId
+        - severity
+        - title
+        - affectedApplication
+        - status
+        - openedAt
+        - assignee
+
+    BatchJob:
+      type: object
+      properties:
+        jobId:
+          type: string
+        jobName:
+          type: string
+        application:
+          type: string
+        status:
+          type: string
+          enum: [success, failed, running, pending, skipped]
+        scheduledTime:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        duration:
+          type: number
+        recordsProcessed:
+          type: number
+      required:
+        - jobId
+        - jobName
+        - application
+        - status
+        - scheduledTime
+
+    DataInterface:
+      type: object
+      properties:
+        interfaceId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        sourceSystem:
+          type: string
+        targetSystem:
+          type: string
+        status:
+          type: string
+          enum: [healthy, degraded, failed]
+        lastTransmission:
+          type: string
+        recordsToday:
+          type: number
+        errorRate:
+          type: number
+      required:
+        - interfaceId
+        - name
+        - type
+        - sourceSystem
+        - targetSystem
+        - status
+        - lastTransmission
+        - recordsToday
+        - errorRate
+
+    SlaCompliance:
+      type: object
+      properties:
+        tower:
+          type: string
+        target:
+          type: number
+        actual:
+          type: number
+        status:
+          type: string
+          enum: [met, at_risk, breached]
+        trend:
+          type: string
+          enum: [improving, stable, declining]
+      required:
+        - tower
+        - target
+        - actual
+        - status
+        - trend
+
+    ApplicationKpis:
+      type: object
+      properties:
+        overallAvailability:
+          $ref: "#/components/schemas/KpiMetric"
+        openIncidents:
+          $ref: "#/components/schemas/KpiMetric"
+        mttr:
+          $ref: "#/components/schemas/KpiMetric"
+        mttd:
+          $ref: "#/components/schemas/KpiMetric"
+        batchSuccessRate:
+          $ref: "#/components/schemas/KpiMetric"
+        changeSuccessRate:
+          $ref: "#/components/schemas/KpiMetric"
+        slaCompliance:
+          $ref: "#/components/schemas/KpiMetric"
+        interfaceHealth:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - overallAvailability
+        - openIncidents
+        - mttr
+        - mttd
+        - batchSuccessRate
+        - changeSuccessRate
+        - slaCompliance
+        - interfaceHealth
+
+    IbmAmsKpis:
+      type: object
+      properties:
+        ticketsResolved:
+          $ref: "#/components/schemas/KpiMetric"
+        slaCompliance:
+          $ref: "#/components/schemas/KpiMetric"
+        shiftLeftRate:
+          $ref: "#/components/schemas/KpiMetric"
+        selfHealEvents:
+          $ref: "#/components/schemas/KpiMetric"
+        productivityGain:
+          $ref: "#/components/schemas/KpiMetric"
+        costReduction:
+          $ref: "#/components/schemas/KpiMetric"
+        defectLeakage:
+          $ref: "#/components/schemas/KpiMetric"
+        repeatIncidentReduction:
+          $ref: "#/components/schemas/KpiMetric"
+        automationRunbooks:
+          $ref: "#/components/schemas/KpiMetric"
+        costAvoidance:
+          $ref: "#/components/schemas/KpiMetric"
+        knowledgeArticles:
+          $ref: "#/components/schemas/KpiMetric"
+        changeVelocity:
+          $ref: "#/components/schemas/KpiMetric"
+      required:
+        - ticketsResolved
+        - slaCompliance
+        - shiftLeftRate
+        - selfHealEvents
+        - productivityGain
+        - costReduction
+        - defectLeakage
+        - repeatIncidentReduction
+        - automationRunbooks
+        - costAvoidance
+        - knowledgeArticles
+        - changeVelocity
+
+    TicketTrend:
+      type: object
+      properties:
+        week:
+          type: string
+        total:
+          type: number
+        resolvedWithinSla:
+          type: number
+        automated:
+          type: number
+      required:
+        - week
+        - total
+        - resolvedWithinSla
+        - automated
+
+    AutomationRunbook:
+      type: object
+      properties:
+        runbookId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        executionsToday:
+          type: number
+        successRate:
+          type: number
+        timeSavedHours:
+          type: number
+      required:
+        - runbookId
+        - name
+        - category
+        - executionsToday
+        - successRate
+        - timeSavedHours
+
+    CostSavings:
+      type: object
+      properties:
+        totalSavingsYtd:
+          type: number
+        costAvoidanceYtd:
+          type: number
+        automationSavings:
+          type: number
+        shiftLeftSavings:
+          type: number
+        selfHealSavings:
+          type: number
+        monthlyTrend:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+              savings:
+                type: number
+              avoidance:
+                type: number
+            required:
+              - month
+              - savings
+              - avoidance
+      required:
+        - totalSavingsYtd
+        - costAvoidanceYtd
+        - automationSavings
+        - shiftLeftSavings
+        - selfHealSavings
+        - monthlyTrend
+
+    AiInsight:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        headline:
+          type: string
+        detail:
+          type: string
+        recommendation:
+          type: string
+        timestamp:
+          type: string
+        affectedArea:
+          type: string
+      required:
+        - id
+        - category
+        - severity
+        - headline
+        - detail
+        - recommendation
+        - timestamp
+        - affectedArea
+
+    AskRequest:
+      type: object
+      properties:
+        question:
+          type: string
+      required:
+        - question
+
+    AskResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+        sources:
+          type: array
+          items:
+            type: string
+        relatedMetrics:
+          type: array
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+              value:
+                type: string
+            required:
+              - label
+              - value
+      required:
+        - answer
+        - sources
+        - relatedMetrics
