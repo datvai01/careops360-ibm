@@ -26,61 +26,45 @@ function HorizonMark({ size = 80 }: { size?: number }) {
 }
 
 function IbmMark({ size = 80 }: { size?: number }) {
-  const stripeH = size * 0.052;
-  const gap = size * 0.068;
-  const stripes = 8;
-  const totalH = stripes * stripeH + (stripes - 1) * gap;
-  const offsetY = (size - totalH) / 2;
-
+  /* Clean IBM wordmark — wide pill with bold white text and subtle stripe accents */
+  const w = size * 1.75;
+  const h = size;
+  const r = size * 0.22;
+  const stripeY = [0.16, 0.26, 0.74, 0.84];
   return (
-    <div
-      className="rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-      style={{
-        width: size,
-        height: size,
-        background: "#0f62fe",
-        boxShadow: "0 10px 40px rgba(15,98,254,0.50), inset 0 1px 0 rgba(255,255,255,0.18)",
-      }}
+    <svg
+      width={w}
+      height={h}
+      viewBox={`0 0 ${w} ${h}`}
+      className="flex-shrink-0 select-none"
+      style={{ filter: "drop-shadow(0 10px 32px rgba(15,98,254,0.45))" }}
     >
-      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-        {Array.from({ length: stripes }).map((_, i) => (
-          <rect
-            key={i}
-            x={size * 0.08}
-            y={offsetY + i * (stripeH + gap)}
-            width={size * 0.84}
-            height={stripeH}
-            fill="white"
-          />
-        ))}
-        <rect x={0} y={0} width={size * 0.08} height={size} fill="#0f62fe" />
-        <rect x={size * 0.92} y={0} width={size * 0.08} height={size} fill="#0f62fe" />
-        <text
-          x={size / 2}
-          y={size * 0.665}
-          textAnchor="middle"
-          fill="white"
-          fontSize={size * 0.35}
-          fontWeight="900"
-          fontFamily="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
-          letterSpacing={size * 0.018}
-        >
-          IBM
-        </text>
-        {Array.from({ length: stripes }).map((_, i) =>
-          i % 2 === 1 ? (
-            <rect
-              key={`mask-${i}`}
-              x={size * 0.08}
-              y={offsetY + i * (stripeH + gap)}
-              width={size * 0.84}
-              height={stripeH}
-              fill="#0f62fe"
-            />
-          ) : null
-        )}
-      </svg>
-    </div>
+      {/* IBM Blue pill background */}
+      <rect x="0" y="0" width={w} height={h} rx={r} ry={r} fill="#0f62fe" />
+      {/* Subtle top gloss */}
+      <rect x="0" y="0" width={w} height={h * 0.5} rx={r} ry={r} fill="url(#gloss)" />
+      <defs>
+        <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="white" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      {/* Thin horizontal stripe accents (brand identity hint) */}
+      {stripeY.map((yf, i) => (
+        <rect key={i} x={w * 0.06} y={h * yf} width={w * 0.88} height={h * 0.045} fill="white" opacity="0.22" />
+      ))}
+      {/* IBM wordmark */}
+      <text
+        x={w / 2}
+        y={h * 0.665}
+        textAnchor="middle"
+        fill="white"
+        fontSize={h * 0.44}
+        fontWeight="900"
+        fontFamily="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        letterSpacing={h * 0.045}
+      >IBM</text>
+    </svg>
   );
 }
 

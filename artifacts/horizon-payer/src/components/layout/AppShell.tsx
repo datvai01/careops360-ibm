@@ -60,33 +60,26 @@ function HMark({ size = 26 }: { size?: number }) {
 }
 
 function IbmMarkInline({ size = 26 }: { size?: number }) {
-  const stripeH = size * 0.052;
-  const gap = size * 0.068;
-  const stripes = 8;
-  const totalH = stripes * stripeH + (stripes - 1) * gap;
-  const offsetY = (size - totalH) / 2;
+  /* Official IBM Blue wordmark — clean pill badge */
+  const r = size * 0.22;
   return (
-    <div
-      className="rounded-md flex items-center justify-center flex-shrink-0 select-none overflow-hidden"
-      style={{
-        width: size,
-        height: size,
-        background: "#0f62fe",
-        boxShadow: "0 2px 6px rgba(15,98,254,0.45)",
-      }}
-    >
-      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
-        {Array.from({ length: stripes }).map((_, i) => (
-          <rect key={i} x={size * 0.08} y={offsetY + i * (stripeH + gap)} width={size * 0.84} height={stripeH} fill="white" />
-        ))}
-        <rect x={0} y={0} width={size * 0.08} height={size} fill="#0f62fe" />
-        <rect x={size * 0.92} y={0} width={size * 0.08} height={size} fill="#0f62fe" />
-        <text x={size / 2} y={size * 0.665} textAnchor="middle" fill="white" fontSize={size * 0.35} fontWeight="900" fontFamily="'Arial Black', Helvetica, sans-serif" letterSpacing={size * 0.018}>IBM</text>
-        {Array.from({ length: stripes }).map((_, i) => i % 2 === 1 ? (
-          <rect key={`m${i}`} x={size * 0.08} y={offsetY + i * (stripeH + gap)} width={size * 0.84} height={stripeH} fill="#0f62fe" />
-        ) : null)}
-      </svg>
-    </div>
+    <svg width={size * 1.8} height={size} viewBox={`0 0 ${size * 1.8} ${size}`} className="flex-shrink-0 select-none">
+      <rect x="0" y="0" width={size * 1.8} height={size} rx={r} ry={r} fill="#0f62fe" />
+      {/* 8 horizontal white accent stripes full-width */}
+      {[0.18, 0.28, 0.42, 0.52, 0.66, 0.76].map((yFrac, i) => (
+        <rect key={i} x={size * 0.18} y={size * yFrac} width={size * 1.44} height={size * 0.065} fill="white" opacity={i % 2 === 0 ? 0.18 : 0.1} />
+      ))}
+      <text
+        x={size * 0.9}
+        y={size * 0.68}
+        textAnchor="middle"
+        fill="white"
+        fontSize={size * 0.46}
+        fontWeight="900"
+        fontFamily="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        letterSpacing={size * 0.04}
+      >IBM</text>
+    </svg>
   );
 }
 
@@ -124,24 +117,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div className="h-16 flex items-center px-3 border-b gap-2 overflow-hidden">
           {sidebarOpen ? (
-            /* Expanded: show both marks + "Horizon + IBM" text */
-            <div className="flex items-center gap-2 min-w-0">
-              <HMark size={28} />
-              <IbmMarkInline size={28} />
-              <div className="flex flex-col min-w-0 ml-0.5">
-                <div className="flex items-baseline gap-1 leading-none">
-                  <span className="font-black text-sm tracking-tight" style={{ color: "#1565c0" }}>Horizon</span>
-                  <span className="text-muted-foreground/50 text-xs font-light">+</span>
-                  <span className="font-black text-sm tracking-wider" style={{ color: "#0f62fe" }}>IBM</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground/50 font-medium tracking-wide truncate">CareOps360</span>
+            /* Expanded: Horizon H-mark + IBM wordmark badge + text label */
+            <div className="flex items-center gap-2.5 min-w-0">
+              <HMark size={30} />
+              <IbmMarkInline size={22} />
+              <div className="flex flex-col min-w-0 leading-none">
+                <span className="font-black text-[13px] tracking-tight" style={{ color: "#1565c0" }}>Horizon</span>
+                <span className="text-[10px] text-muted-foreground/50 font-medium tracking-wide">CareOps360</span>
               </div>
             </div>
           ) : (
-            /* Collapsed: stack the two marks */
-            <div className="flex flex-col items-center gap-1 w-full">
+            /* Collapsed: stack H-mark + IBM badge */
+            <div className="flex flex-col items-center gap-1.5 w-full py-1">
               <HMark size={22} />
-              <IbmMarkInline size={22} />
+              <IbmMarkInline size={16} />
             </div>
           )}
         </div>
@@ -190,20 +179,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
               <MenuIcon className="w-5 h-5" />
             </Button>
-
-            {/* Horizon + IBM co-brand in header */}
-            <div className="hidden md:flex items-center gap-2 pl-1 pr-3 border-r border-border/60 mr-1">
-              <HMark size={30} />
-              <IbmMarkInline size={30} />
-              <div className="flex flex-col leading-none ml-0.5">
-                <div className="flex items-baseline gap-1">
-                  <span className="font-black text-sm" style={{ color: "#1565c0" }}>Horizon</span>
-                  <span className="text-muted-foreground/40 text-xs">+</span>
-                  <span className="font-black text-sm" style={{ color: "#0f62fe" }}>IBM</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground/50 font-medium tracking-wide">Executive Command Center</span>
-              </div>
-            </div>
 
             <div className="hidden md:flex items-center space-x-2">
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">PROD</Badge>
@@ -279,6 +254,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-auto bg-muted/20 p-6">
           {children}
         </main>
+
+        {/* IBM Disclaimer Bar */}
+        <div
+          className="flex-shrink-0 border-t px-6 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[10px] leading-relaxed"
+          style={{
+            background: "linear-gradient(90deg, rgba(15,98,254,0.04) 0%, transparent 100%)",
+            borderTopColor: "rgba(15,98,254,0.12)",
+          }}
+        >
+          <span className="text-muted-foreground/60">
+            <span className="font-semibold text-muted-foreground/80">© 2026 IBM Corporation. All rights reserved.</span>
+            {" "}This portal and all content contained herein are proprietary and confidential to IBM Corporation and Horizon Blue Cross Blue Shield. Unauthorized access, use, disclosure, reproduction, or distribution of any information from this portal — in whole or in part — without the prior written consent of IBM Corporation is strictly prohibited and may be subject to civil and criminal penalties.
+          </span>
+          <span className="text-muted-foreground/40 whitespace-nowrap font-medium tracking-wide uppercase text-[9px]">IBM Confidential · Not for Distribution</span>
+        </div>
       </div>
     </div>
   );
