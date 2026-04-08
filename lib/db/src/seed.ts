@@ -1,7 +1,4 @@
-import { execSync } from "child_process";
-import { fileURLToPath } from "url";
-import path from "path";
-import { db } from "./index.js";
+import { db, pool } from "./index.js";
 import {
   usersTable,
   executiveAlertsTable,
@@ -32,29 +29,265 @@ import {
   ibmamsTicketTrendsTable,
 } from "./schema/index.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-/** Root of the @workspace/db package (one level up from src/) */
-const DB_ROOT = path.resolve(__dirname, "..");
-
-function ensureSchema() {
-  console.log("Pushing schema to ensure all tables exist...");
-  try {
-    execSync(
-      "npx drizzle-kit push --force --config ./drizzle.config.ts",
-      { stdio: "inherit", cwd: DB_ROOT }
-    );
-    console.log("  schema push complete");
-  } catch (err) {
-    console.warn(
-      "Schema push warning (non-fatal — tables may already be current):",
-      err instanceof Error ? err.message : err
-    );
+async function ensureSchema() {
+  console.log("Ensuring all tables exist...");
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id text PRIMARY KEY,
+      username varchar(255) NOT NULL UNIQUE,
+      password_hash text NOT NULL,
+      name varchar(255) NOT NULL,
+      role varchar(50) NOT NULL,
+      email varchar(255) NOT NULL UNIQUE,
+      avatar varchar(10) NOT NULL,
+      title varchar(255) NOT NULL,
+      created_at timestamp DEFAULT now() NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS executive_alerts (
+      id varchar(20) PRIMARY KEY,
+      severity varchar(20) NOT NULL,
+      category varchar(100) NOT NULL,
+      title text NOT NULL,
+      description text NOT NULL,
+      status varchar(30) NOT NULL,
+      alert_timestamp timestamp NOT NULL,
+      impacted_system varchar(255) NOT NULL,
+      drill_down_path varchar(255) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS daily_trends (
+      id text PRIMARY KEY,
+      trend_date varchar(10) NOT NULL UNIQUE,
+      claims integer NOT NULL,
+      enrollments integer NOT NULL,
+      prior_auths integer NOT NULL,
+      availability real NOT NULL,
+      incidents integer NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS ai_insights (
+      id varchar(20) PRIMARY KEY,
+      category varchar(100) NOT NULL,
+      severity varchar(20) NOT NULL,
+      headline text NOT NULL,
+      detail text NOT NULL,
+      recommendation text NOT NULL,
+      insight_timestamp timestamp NOT NULL,
+      affected_area varchar(255) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS member_enrollments (
+      id serial PRIMARY KEY,
+      period_type varchar(10) NOT NULL,
+      period_label varchar(50) NOT NULL,
+      enrollments integer NOT NULL,
+      terminations integer NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS member_exceptions (
+      id varchar(20) PRIMARY KEY,
+      member_id varchar(20) NOT NULL,
+      member_name varchar(100) NOT NULL,
+      exception_type varchar(100) NOT NULL,
+      product varchar(50) NOT NULL,
+      age_days integer NOT NULL,
+      status varchar(50) NOT NULL,
+      priority varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS claims (
+      claim_id varchar(20) PRIMARY KEY,
+      member_id varchar(20) NOT NULL,
+      member_name varchar(100) NOT NULL,
+      provider varchar(255) NOT NULL,
+      service_date varchar(10) NOT NULL,
+      received_date varchar(10) NOT NULL,
+      status varchar(30) NOT NULL,
+      amount integer NOT NULL,
+      line_of_business varchar(50) NOT NULL,
+      age_days integer NOT NULL,
+      denial_reason varchar(100)
+    )`,
+    `CREATE TABLE IF NOT EXISTS claims_denial_reasons (
+      id serial PRIMARY KEY,
+      reason text NOT NULL,
+      count integer NOT NULL,
+      percentage real NOT NULL,
+      trend varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS claims_lob_stats (
+      id serial PRIMARY KEY,
+      lob varchar(50) NOT NULL,
+      received integer NOT NULL,
+      processed integer NOT NULL,
+      pending integer NOT NULL,
+      amount integer NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS claims_aging (
+      id serial PRIMARY KEY,
+      bucket varchar(30) NOT NULL,
+      count integer NOT NULL,
+      percentage real NOT NULL,
+      severity varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS priorauth_aging (
+      id serial PRIMARY KEY,
+      bucket varchar(50) NOT NULL,
+      count integer NOT NULL,
+      percentage real NOT NULL,
+      severity varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS priorauth_procedures (
+      id serial PRIMARY KEY,
+      category varchar(100) NOT NULL,
+      requests integer NOT NULL,
+      approval_rate real NOT NULL,
+      avg_days real NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS priorauth_reviewers (
+      reviewer_id varchar(10) PRIMARY KEY,
+      reviewer_name varchar(100) NOT NULL,
+      open_cases integer NOT NULL,
+      completed_today integer NOT NULL,
+      avg_days_to_decision real NOT NULL,
+      status varchar(20) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS providers (
+      provider_id varchar(15) PRIMARY KEY,
+      provider_name varchar(255) NOT NULL,
+      npi varchar(15) NOT NULL,
+      specialty varchar(100) NOT NULL,
+      status varchar(20) NOT NULL,
+      credentialing_status varchar(50) NOT NULL,
+      open_claims integer NOT NULL,
+      open_tickets integer NOT NULL,
+      last_updated varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS provider_issues (
+      id serial PRIMARY KEY,
+      issue_type text NOT NULL,
+      count integer NOT NULL,
+      trend varchar(10) NOT NULL,
+      priority varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS contactcenter_call_reasons (
+      id serial PRIMARY KEY,
+      reason text NOT NULL,
+      count integer NOT NULL,
+      percentage real NOT NULL,
+      trend varchar(10) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS contactcenter_hourly (
+      id serial PRIMARY KEY,
+      hour_label varchar(20) NOT NULL,
+      calls integer NOT NULL,
+      chats integer NOT NULL,
+      emails integer NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS vendor_invoices (
+      id varchar(20) PRIMARY KEY,
+      vendor varchar(100) NOT NULL,
+      work_number varchar(20) NOT NULL,
+      service_category varchar(50) NOT NULL,
+      invoice_date varchar(15) NOT NULL,
+      amount integer NOT NULL,
+      status varchar(20) NOT NULL,
+      payment_status varchar(20) NOT NULL,
+      age_days integer NOT NULL,
+      cycle_time_days real,
+      has_exception integer NOT NULL DEFAULT 0,
+      exception_note text
+    )`,
+    `CREATE TABLE IF NOT EXISTS vendor_invoice_alerts (
+      id serial PRIMARY KEY,
+      alert_type varchar(50) NOT NULL,
+      invoice_id varchar(20),
+      vendor varchar(100) NOT NULL,
+      message text NOT NULL,
+      severity varchar(10) NOT NULL,
+      amount integer
+    )`,
+    `CREATE TABLE IF NOT EXISTS applications (
+      app_id varchar(15) PRIMARY KEY,
+      name varchar(255) NOT NULL,
+      owner varchar(100) NOT NULL,
+      status varchar(20) NOT NULL,
+      availability real NOT NULL,
+      open_incidents integer NOT NULL,
+      version varchar(20) NOT NULL,
+      last_deployment varchar(10) NOT NULL,
+      sla_target real NOT NULL,
+      sla_actual real NOT NULL,
+      environment varchar(10) NOT NULL,
+      tier varchar(30) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS incidents (
+      incident_id varchar(20) PRIMARY KEY,
+      severity varchar(10) NOT NULL,
+      title text NOT NULL,
+      affected_application varchar(255) NOT NULL,
+      status varchar(20) NOT NULL,
+      opened_at timestamp NOT NULL,
+      resolved_at timestamp,
+      mttr integer,
+      root_cause text NOT NULL,
+      assignee varchar(100) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS batch_jobs (
+      job_id varchar(10) PRIMARY KEY,
+      job_name text NOT NULL,
+      application varchar(255) NOT NULL,
+      status varchar(15) NOT NULL,
+      scheduled_time varchar(10) NOT NULL,
+      start_time varchar(10) NOT NULL,
+      end_time varchar(10),
+      duration integer,
+      records_processed integer NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS interfaces (
+      interface_id varchar(10) PRIMARY KEY,
+      name text NOT NULL,
+      type varchar(20) NOT NULL,
+      source_system varchar(100) NOT NULL,
+      target_system varchar(100) NOT NULL,
+      status varchar(20) NOT NULL,
+      last_transmission timestamp NOT NULL,
+      records_today integer NOT NULL,
+      error_rate real NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS sla_compliance (
+      id varchar(30) PRIMARY KEY,
+      tower varchar(100) NOT NULL,
+      target real NOT NULL,
+      actual real NOT NULL,
+      status varchar(20) NOT NULL,
+      trend varchar(15) NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS ibmams_runbooks (
+      runbook_id varchar(10) PRIMARY KEY,
+      name text NOT NULL,
+      category varchar(50) NOT NULL,
+      executions_today integer NOT NULL,
+      success_rate real NOT NULL,
+      time_saved_hours real NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS ibmams_savings_trend (
+      id serial PRIMARY KEY,
+      month_label varchar(15) NOT NULL,
+      savings integer NOT NULL,
+      avoidance integer NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS ibmams_ticket_trends (
+      id serial PRIMARY KEY,
+      week_label varchar(20) NOT NULL,
+      total integer NOT NULL,
+      resolved_within_sla integer NOT NULL,
+      automated integer NOT NULL
+    )`,
+  ];
+  for (const sql of statements) {
+    await pool.query(sql);
   }
+  console.log("  all tables verified");
 }
 
 async function seed() {
-  ensureSchema();
+  await ensureSchema();
   console.log("Seeding database...");
 
   // Users
