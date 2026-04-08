@@ -27,7 +27,6 @@ import type {
   AskResponse,
   AutomationRunbook,
   BatchJob,
-  BillingException,
   CallReason,
   ClaimsByLob,
   ClaimsKpis,
@@ -40,15 +39,14 @@ import type {
   EnrollmentTrends,
   ErrorResponse,
   ExecutiveKpis,
-  FinanceKpis,
   GetClaimsKpisParams,
   GetClaimsQueueParams,
   GetContactCenterKpisParams,
-  GetFinanceKpisParams,
   GetIncidentsParams,
   GetMemberKpisParams,
   GetPriorAuthKpisParams,
   GetProviderListParams,
+  GetVendorInvoiceListParams,
   HealthStatus,
   HourlyVolume,
   IbmAmsKpis,
@@ -59,7 +57,6 @@ import type {
   MembersByProduct,
   MembersByRegion,
   OperationsSnapshot,
-  PremiumTrend,
   PriorAuthKpis,
   ProcedureCategory,
   ProviderIssue,
@@ -70,6 +67,10 @@ import type {
   TicketTrend,
   TrendData,
   User,
+  VendorAgingRow,
+  VendorInvoice,
+  VendorInvoiceAlert,
+  VendorInvoiceKpis,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -2310,9 +2311,86 @@ export function useGetHourlyCallVolume<
 }
 
 /**
- * @summary Get finance and billing KPIs
+ * @summary Get vendor invoice KPIs
  */
-export const getGetFinanceKpisUrl = (params?: GetFinanceKpisParams) => {
+export const getGetVendorInvoiceKpisUrl = () => {
+  return `/api/vendor-invoices/kpis`;
+};
+
+export const getVendorInvoiceKpis = async (
+  options?: RequestInit,
+): Promise<VendorInvoiceKpis> => {
+  return customFetch<VendorInvoiceKpis>(getGetVendorInvoiceKpisUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetVendorInvoiceKpisQueryKey = () => {
+  return [`/api/vendor-invoices/kpis`] as const;
+};
+
+export const getGetVendorInvoiceKpisQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVendorInvoiceKpis>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getVendorInvoiceKpis>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetVendorInvoiceKpisQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVendorInvoiceKpis>>
+  > = ({ signal }) => getVendorInvoiceKpis({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getVendorInvoiceKpis>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetVendorInvoiceKpisQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVendorInvoiceKpis>>
+>;
+export type GetVendorInvoiceKpisQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get vendor invoice KPIs
+ */
+
+export function useGetVendorInvoiceKpis<
+  TData = Awaited<ReturnType<typeof getVendorInvoiceKpis>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getVendorInvoiceKpis>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetVendorInvoiceKpisQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get vendor invoice list
+ */
+export const getGetVendorInvoiceListUrl = (
+  params?: GetVendorInvoiceListParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
@@ -2324,32 +2402,34 @@ export const getGetFinanceKpisUrl = (params?: GetFinanceKpisParams) => {
   const stringifiedParams = normalizedParams.toString();
 
   return stringifiedParams.length > 0
-    ? `/api/finance/kpis?${stringifiedParams}`
-    : `/api/finance/kpis`;
+    ? `/api/vendor-invoices/list?${stringifiedParams}`
+    : `/api/vendor-invoices/list`;
 };
 
-export const getFinanceKpis = async (
-  params?: GetFinanceKpisParams,
+export const getVendorInvoiceList = async (
+  params?: GetVendorInvoiceListParams,
   options?: RequestInit,
-): Promise<FinanceKpis> => {
-  return customFetch<FinanceKpis>(getGetFinanceKpisUrl(params), {
+): Promise<VendorInvoice[]> => {
+  return customFetch<VendorInvoice[]>(getGetVendorInvoiceListUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetFinanceKpisQueryKey = (params?: GetFinanceKpisParams) => {
-  return [`/api/finance/kpis`, ...(params ? [params] : [])] as const;
+export const getGetVendorInvoiceListQueryKey = (
+  params?: GetVendorInvoiceListParams,
+) => {
+  return [`/api/vendor-invoices/list`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetFinanceKpisQueryOptions = <
-  TData = Awaited<ReturnType<typeof getFinanceKpis>>,
+export const getGetVendorInvoiceListQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVendorInvoiceList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetFinanceKpisParams,
+  params?: GetVendorInvoiceListParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getFinanceKpis>>,
+      Awaited<ReturnType<typeof getVendorInvoiceList>>,
       TError,
       TData
     >;
@@ -2358,43 +2438,45 @@ export const getGetFinanceKpisQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetFinanceKpisQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVendorInvoiceListQueryKey(params);
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getFinanceKpis>>> = ({
-    signal,
-  }) => getFinanceKpis(params, { signal, ...requestOptions });
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVendorInvoiceList>>
+  > = ({ signal }) =>
+    getVendorInvoiceList(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getFinanceKpis>>,
+    Awaited<ReturnType<typeof getVendorInvoiceList>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetFinanceKpisQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getFinanceKpis>>
+export type GetVendorInvoiceListQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVendorInvoiceList>>
 >;
-export type GetFinanceKpisQueryError = ErrorType<unknown>;
+export type GetVendorInvoiceListQueryError = ErrorType<unknown>;
 
 /**
- * @summary Get finance and billing KPIs
+ * @summary Get vendor invoice list
  */
 
-export function useGetFinanceKpis<
-  TData = Awaited<ReturnType<typeof getFinanceKpis>>,
+export function useGetVendorInvoiceList<
+  TData = Awaited<ReturnType<typeof getVendorInvoiceList>>,
   TError = ErrorType<unknown>,
 >(
-  params?: GetFinanceKpisParams,
+  params?: GetVendorInvoiceListParams,
   options?: {
     query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getFinanceKpis>>,
+      Awaited<ReturnType<typeof getVendorInvoiceList>>,
       TError,
       TData
     >;
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetFinanceKpisQueryOptions(params, options);
+  const queryOptions = getGetVendorInvoiceListQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2404,31 +2486,31 @@ export function useGetFinanceKpis<
 }
 
 /**
- * @summary Get billing exceptions
+ * @summary Get invoice aging by vendor
  */
-export const getGetBillingExceptionsUrl = () => {
-  return `/api/finance/billing-exceptions`;
+export const getGetVendorInvoiceAgingUrl = () => {
+  return `/api/vendor-invoices/aging`;
 };
 
-export const getBillingExceptions = async (
+export const getVendorInvoiceAging = async (
   options?: RequestInit,
-): Promise<BillingException[]> => {
-  return customFetch<BillingException[]>(getGetBillingExceptionsUrl(), {
+): Promise<VendorAgingRow[]> => {
+  return customFetch<VendorAgingRow[]>(getGetVendorInvoiceAgingUrl(), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetBillingExceptionsQueryKey = () => {
-  return [`/api/finance/billing-exceptions`] as const;
+export const getGetVendorInvoiceAgingQueryKey = () => {
+  return [`/api/vendor-invoices/aging`] as const;
 };
 
-export const getGetBillingExceptionsQueryOptions = <
-  TData = Awaited<ReturnType<typeof getBillingExceptions>>,
+export const getGetVendorInvoiceAgingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVendorInvoiceAging>>,
   TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getBillingExceptions>>,
+    Awaited<ReturnType<typeof getVendorInvoiceAging>>,
     TError,
     TData
   >;
@@ -2436,40 +2518,40 @@ export const getGetBillingExceptionsQueryOptions = <
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetBillingExceptionsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetVendorInvoiceAgingQueryKey();
 
   const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getBillingExceptions>>
-  > = ({ signal }) => getBillingExceptions({ signal, ...requestOptions });
+    Awaited<ReturnType<typeof getVendorInvoiceAging>>
+  > = ({ signal }) => getVendorInvoiceAging({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getBillingExceptions>>,
+    Awaited<ReturnType<typeof getVendorInvoiceAging>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetBillingExceptionsQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getBillingExceptions>>
+export type GetVendorInvoiceAgingQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVendorInvoiceAging>>
 >;
-export type GetBillingExceptionsQueryError = ErrorType<unknown>;
+export type GetVendorInvoiceAgingQueryError = ErrorType<unknown>;
 
 /**
- * @summary Get billing exceptions
+ * @summary Get invoice aging by vendor
  */
 
-export function useGetBillingExceptions<
-  TData = Awaited<ReturnType<typeof getBillingExceptions>>,
+export function useGetVendorInvoiceAging<
+  TData = Awaited<ReturnType<typeof getVendorInvoiceAging>>,
   TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getBillingExceptions>>,
+    Awaited<ReturnType<typeof getVendorInvoiceAging>>,
     TError,
     TData
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetBillingExceptionsQueryOptions(options);
+  const queryOptions = getGetVendorInvoiceAgingQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -2479,31 +2561,31 @@ export function useGetBillingExceptions<
 }
 
 /**
- * @summary Get premium billed vs received trend
+ * @summary Get vendor invoice alerts
  */
-export const getGetPremiumTrendUrl = () => {
-  return `/api/finance/premium-trend`;
+export const getGetVendorInvoiceAlertsUrl = () => {
+  return `/api/vendor-invoices/alerts`;
 };
 
-export const getPremiumTrend = async (
+export const getVendorInvoiceAlerts = async (
   options?: RequestInit,
-): Promise<PremiumTrend[]> => {
-  return customFetch<PremiumTrend[]>(getGetPremiumTrendUrl(), {
+): Promise<VendorInvoiceAlert[]> => {
+  return customFetch<VendorInvoiceAlert[]>(getGetVendorInvoiceAlertsUrl(), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetPremiumTrendQueryKey = () => {
-  return [`/api/finance/premium-trend`] as const;
+export const getGetVendorInvoiceAlertsQueryKey = () => {
+  return [`/api/vendor-invoices/alerts`] as const;
 };
 
-export const getGetPremiumTrendQueryOptions = <
-  TData = Awaited<ReturnType<typeof getPremiumTrend>>,
+export const getGetVendorInvoiceAlertsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getVendorInvoiceAlerts>>,
   TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getPremiumTrend>>,
+    Awaited<ReturnType<typeof getVendorInvoiceAlerts>>,
     TError,
     TData
   >;
@@ -2511,40 +2593,41 @@ export const getGetPremiumTrendQueryOptions = <
 }) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetPremiumTrendQueryKey();
+  const queryKey =
+    queryOptions?.queryKey ?? getGetVendorInvoiceAlertsQueryKey();
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPremiumTrend>>> = ({
-    signal,
-  }) => getPremiumTrend({ signal, ...requestOptions });
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getVendorInvoiceAlerts>>
+  > = ({ signal }) => getVendorInvoiceAlerts({ signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getPremiumTrend>>,
+    Awaited<ReturnType<typeof getVendorInvoiceAlerts>>,
     TError,
     TData
   > & { queryKey: QueryKey };
 };
 
-export type GetPremiumTrendQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getPremiumTrend>>
+export type GetVendorInvoiceAlertsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getVendorInvoiceAlerts>>
 >;
-export type GetPremiumTrendQueryError = ErrorType<unknown>;
+export type GetVendorInvoiceAlertsQueryError = ErrorType<unknown>;
 
 /**
- * @summary Get premium billed vs received trend
+ * @summary Get vendor invoice alerts
  */
 
-export function useGetPremiumTrend<
-  TData = Awaited<ReturnType<typeof getPremiumTrend>>,
+export function useGetVendorInvoiceAlerts<
+  TData = Awaited<ReturnType<typeof getVendorInvoiceAlerts>>,
   TError = ErrorType<unknown>,
 >(options?: {
   query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getPremiumTrend>>,
+    Awaited<ReturnType<typeof getVendorInvoiceAlerts>>,
     TError,
     TData
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetPremiumTrendQueryOptions(options);
+  const queryOptions = getGetVendorInvoiceAlertsQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -6,11 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type BillingExceptionPriority =
-  (typeof BillingExceptionPriority)[keyof typeof BillingExceptionPriority];
+export type VendorInvoiceAlertSeverity =
+  (typeof VendorInvoiceAlertSeverity)[keyof typeof VendorInvoiceAlertSeverity];
 
-export const BillingExceptionPriority = {
+export const VendorInvoiceAlertSeverity = {
   high: "high",
   medium: "medium",
-  low: "low",
 } as const;

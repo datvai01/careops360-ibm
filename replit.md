@@ -35,7 +35,7 @@ IBM-managed executive operations portal for Horizon BCBS (Blue Cross Blue Shield
 4. **Prior Authorization** (`/dashboard/prior-auth`) — PA KPIs, backlog aging, reviewer workload
 5. **Provider Operations** (`/dashboard/providers`) — Provider directory, credentialing, issues
 6. **Contact Center** (`/dashboard/contact-center`) — ASA, FCR, call volume, abandonment rate
-7. **Finance & Billing** (`/dashboard/finance`) — Premium trends, billing exceptions, reconciliation
+7. **Vendor Invoice & Billing** (`/dashboard/vendor-invoices`) — Invoice tracking by vendor (XYZ Systems, IBM, ABC Corp), work order, and service category; aging analysis, payment status, exceptions/mismatches
 8. **Application Health** (`/dashboard/app-health`) — App inventory, incidents, batch jobs, interfaces, SLA
 9. **IBM AMS Value** (`/dashboard/ibm-ams`) — Ticket trends, automation runbooks, cost savings
 10. **Ask the Dashboard** (`/dashboard/ask`) — AI assistant for operational questions
@@ -43,7 +43,7 @@ IBM-managed executive operations portal for Horizon BCBS (Blue Cross Blue Shield
 ## Key Files
 
 - `lib/api-spec/openapi.yaml` — OpenAPI contract (source of truth)
-- `artifacts/api-server/src/routes/` — All API route handlers (auth, executive, members, claims, priorauth, providers, contactcenter, finance, applications, ibmams)
+- `artifacts/api-server/src/routes/` — All API route handlers (auth, executive, members, claims, priorauth, providers, contactcenter, finance [vendor invoices], applications, ibmams)
 - `artifacts/horizon-payer/src/pages/` — All frontend pages
 - `artifacts/horizon-payer/src/components/layout/` — AppShell, sidebar, header
 

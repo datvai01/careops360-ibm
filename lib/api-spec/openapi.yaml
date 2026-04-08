@@ -22,8 +22,8 @@ tags:
     description: Provider operations data
   - name: contactcenter
     description: Contact center / member service data
-  - name: finance
-    description: Finance, billing, and premium data
+  - name: vendor-invoices
+    description: Vendor invoice and billing management
   - name: applications
     description: Application health and incidents
   - name: ibmams
@@ -487,53 +487,80 @@ paths:
                 items:
                   $ref: "#/components/schemas/HourlyVolume"
 
-  /finance/kpis:
+  /vendor-invoices/kpis:
     get:
-      operationId: getFinanceKpis
-      tags: [finance]
-      summary: Get finance and billing KPIs
+      operationId: getVendorInvoiceKpis
+      tags: [vendor-invoices]
+      summary: Get vendor invoice KPIs
+      responses:
+        "200":
+          description: Vendor invoice KPIs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VendorInvoiceKpis"
+
+  /vendor-invoices/list:
+    get:
+      operationId: getVendorInvoiceList
+      tags: [vendor-invoices]
+      summary: Get vendor invoice list
       parameters:
-        - name: dateRange
+        - name: vendor
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: workNumber
+          in: query
+          schema:
+            type: string
+        - name: serviceCategory
           in: query
           schema:
             type: string
       responses:
         "200":
-          description: Finance KPIs
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/FinanceKpis"
-
-  /finance/billing-exceptions:
-    get:
-      operationId: getBillingExceptions
-      tags: [finance]
-      summary: Get billing exceptions
-      responses:
-        "200":
-          description: Billing exceptions
+          description: Vendor invoices
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/BillingException"
+                  $ref: "#/components/schemas/VendorInvoice"
 
-  /finance/premium-trend:
+  /vendor-invoices/aging:
     get:
-      operationId: getPremiumTrend
-      tags: [finance]
-      summary: Get premium billed vs received trend
+      operationId: getVendorInvoiceAging
+      tags: [vendor-invoices]
+      summary: Get invoice aging by vendor
       responses:
         "200":
-          description: Premium trend
+          description: Aging summary
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/PremiumTrend"
+                  $ref: "#/components/schemas/VendorAgingRow"
+
+  /vendor-invoices/alerts:
+    get:
+      operationId: getVendorInvoiceAlerts
+      tags: [vendor-invoices]
+      summary: Get vendor invoice alerts
+      responses:
+        "200":
+          description: Vendor invoice alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VendorInvoiceAlert"
 
   /applications/health:
     get:
@@ -1458,75 +1485,121 @@ components:
         - chats
         - emails
 
-    FinanceKpis:
+    VendorInvoiceKpis:
       type: object
       properties:
-        premiumBilled:
+        totalReceived:
           $ref: "#/components/schemas/KpiMetric"
-        premiumReceived:
+        totalProcessed:
           $ref: "#/components/schemas/KpiMetric"
-        delinquencyCount:
+        pendingOnHold:
           $ref: "#/components/schemas/KpiMetric"
-        refunds:
+        totalValue:
           $ref: "#/components/schemas/KpiMetric"
-        billingExceptions:
+        paidCount:
           $ref: "#/components/schemas/KpiMetric"
-        paymentPostingLatency:
+        avgCycleTime:
           $ref: "#/components/schemas/KpiMetric"
-        reconciliationStatus:
+        exceptionCount:
           $ref: "#/components/schemas/KpiMetric"
       required:
-        - premiumBilled
-        - premiumReceived
-        - delinquencyCount
-        - refunds
-        - billingExceptions
-        - paymentPostingLatency
-        - reconciliationStatus
+        - totalReceived
+        - totalProcessed
+        - pendingOnHold
+        - totalValue
+        - paidCount
+        - avgCycleTime
+        - exceptionCount
 
-    BillingException:
+    VendorInvoice:
       type: object
       properties:
         id:
           type: string
-        memberId:
+        vendor:
           type: string
-        memberName:
+        workNumber:
           type: string
-        exceptionType:
+        serviceCategory:
+          type: string
+        invoiceDate:
           type: string
         amount:
           type: number
-        ageDays:
-          type: number
         status:
           type: string
-        priority:
+          enum: [Processed, Pending, "On Hold"]
+        paymentStatus:
           type: string
-          enum: [high, medium, low]
+          enum: [Paid, Pending]
+        ageDays:
+          type: number
+        cycleTimeDays:
+          type: number
+          nullable: true
+        hasException:
+          type: number
+        exceptionNote:
+          type: string
+          nullable: true
       required:
         - id
-        - memberId
-        - memberName
-        - exceptionType
+        - vendor
+        - workNumber
+        - serviceCategory
+        - invoiceDate
         - amount
-        - ageDays
         - status
-        - priority
+        - paymentStatus
+        - ageDays
+        - hasException
 
-    PremiumTrend:
+    VendorAgingRow:
       type: object
       properties:
-        month:
+        vendor:
           type: string
-        billed:
+        bucket0to30:
           type: number
-        received:
+        bucket30to60:
+          type: number
+        bucket60plus:
+          type: number
+        total:
           type: number
       required:
-        - month
-        - billed
-        - received
+        - vendor
+        - bucket0to30
+        - bucket30to60
+        - bucket60plus
+        - total
+
+    VendorInvoiceAlert:
+      type: object
+      properties:
+        id:
+          type: number
+        alertType:
+          type: string
+        invoiceId:
+          type: string
+          nullable: true
+        vendor:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [high, medium]
+        amount:
+          type: number
+          nullable: true
+      required:
+        - id
+        - alertType
+        - vendor
+        - message
+        - severity
 
     ApplicationHealthOverview:
       type: object

@@ -17,8 +17,8 @@ import {
   providerIssuesTable,
   contactcenterCallReasonsTable,
   contactcenterHourlyTable,
-  financeBillingExceptionsTable,
-  financePremiumTrendTable,
+  vendorInvoicesTable,
+  vendorInvoiceAlertsTable,
   applicationsTable,
   incidentsTable,
   batchJobsTable,
@@ -300,36 +300,63 @@ async function seed() {
   );
   console.log("  contactcenter_hourly seeded");
 
-  // Finance Billing Exceptions
-  const billingExcTypes = ["Premium Overpayment", "NSF / Returned Payment", "Duplicate Payment", "Address Mismatch", "Account Number Error", "Retroactive Premium Adjustment", "Group Billing Discrepancy"];
-  const billingStatuses = ["Pending Review", "In Progress", "Escalated", "Pending Member Response"];
-  const billingPriorities = ["high", "medium", "low"] as const;
-  await db.delete(financeBillingExceptionsTable);
-  await db.insert(financeBillingExceptionsTable).values(
-    Array.from({ length: 15 }, (_, i) => ({
-      id: `BEX-${String(i + 5001).padStart(5, "0")}`,
-      memberId: `HBC${String(1000000 + i * 57213)}`,
-      memberName: `Member ${i + 1}`,
-      exceptionType: billingExcTypes[i % billingExcTypes.length],
-      amount: 100 + (i * 317 % 4900),
-      ageDays: (i * 3 % 45) + 1,
-      status: billingStatuses[i % billingStatuses.length],
-      priority: billingPriorities[i % billingPriorities.length],
+  // Vendor Invoices
+  await db.delete(vendorInvoiceAlertsTable);
+  await db.delete(vendorInvoicesTable);
+  const vendors = ["XYZ Systems", "IBM", "ABC Corp"] as const;
+  const workNumbers = ["WO-1001", "WO-1002", "WO-2001", "WO-2002", "WO-3001", "WO-3002"] as const;
+  const serviceCategories = ["Application Support", "Infrastructure", "Data Services", "BPO"] as const;
+  const invoiceStatuses = ["Processed", "Processed", "Processed", "Pending", "Pending", "On Hold"] as const;
+  const paymentStatuses = ["Paid", "Paid", "Pending"] as const;
+  const exceptionNotes = [
+    "Amount mismatch vs. PO",
+    "Duplicate invoice number",
+    "Missing work order reference",
+    "Tax code discrepancy",
+  ];
+  const invoiceAmounts = [
+    148500, 237000, 89750, 310000, 175200, 425000, 62300, 198400, 540000, 87600,
+    213000, 365000, 128900, 480000, 94200, 276000, 155000, 318500, 441000, 73400,
+    197600, 289000, 116800, 392000, 58900, 234000, 167500, 503000, 81200, 344000,
+    215700, 428000,
+  ];
+  const ageDaysArr = [
+    5, 12, 22, 8, 35, 48, 67, 3, 19, 72, 14, 29, 41, 55, 7, 82, 24, 16, 61, 38,
+    11, 26, 44, 9, 77, 33, 18, 52, 4, 63, 28, 45,
+  ];
+  const cycleTimes = [
+    14.2, 18.5, 22.0, null, 16.8, null, 19.4, 24.1, 13.7, null, 17.3, 20.8,
+    15.0, null, 23.5, null, 18.0, 12.9, null, 21.4, 16.1, 19.7, null, 14.5,
+    null, 22.8, 17.6, null, 15.9, null, 20.2, 18.1,
+  ];
+  const hasExceptions = [0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];
+  await db.insert(vendorInvoicesTable).values(
+    Array.from({ length: 32 }, (_, i) => ({
+      id: `INV-${String(2025001 + i)}`,
+      vendor: vendors[i % vendors.length],
+      workNumber: workNumbers[i % workNumbers.length],
+      serviceCategory: serviceCategories[i % serviceCategories.length],
+      invoiceDate: `2025-${String(Math.floor(i / 5) + 1).padStart(2, "0")}-${String((i * 7 % 20) + 1).padStart(2, "0")}`,
+      amount: invoiceAmounts[i],
+      status: invoiceStatuses[i % invoiceStatuses.length],
+      paymentStatus: paymentStatuses[i % paymentStatuses.length],
+      ageDays: ageDaysArr[i],
+      cycleTimeDays: cycleTimes[i],
+      hasException: hasExceptions[i],
+      exceptionNote: hasExceptions[i] ? exceptionNotes[i % exceptionNotes.length] : null,
     }))
   );
-  console.log("  finance_billing_exceptions seeded");
+  console.log("  vendor_invoices seeded");
 
-  // Finance Premium Trend
-  await db.delete(financePremiumTrendTable);
-  const fMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  await db.insert(financePremiumTrendTable).values(
-    fMonths.map((month, i) => ({
-      monthLabel: `${month} '25`,
-      billed: 462000000 + i * 3000000 + (i * 1234567 % 5000000),
-      received: 440000000 + i * 2800000 + (i * 987654 % 4000000),
-    }))
-  );
-  console.log("  finance_premium_trend seeded");
+  await db.insert(vendorInvoiceAlertsTable).values([
+    { alertType: "delayed_payment", invoiceId: "INV-2025006", vendor: "XYZ Systems", message: "Invoice INV-2025006 ($425,000) payment overdue by 18 days — escalation threshold exceeded.", severity: "high", amount: 425000 },
+    { alertType: "high_value_pending", invoiceId: "INV-2025009", vendor: "IBM", message: "High-value invoice INV-2025009 ($540,000) has been pending approval for 72 days.", severity: "high", amount: 540000 },
+    { alertType: "invoice_mismatch", invoiceId: "INV-2025005", vendor: "ABC Corp", message: "Invoice INV-2025005 amount does not match approved PO-8874 ($175,200 vs $168,000). Reconciliation required.", severity: "high", amount: 175200 },
+    { alertType: "delayed_payment", invoiceId: "INV-2025016", vendor: "ABC Corp", message: "Invoice INV-2025016 ($276,000) approaching 30-day overdue threshold — payment action needed.", severity: "medium", amount: 276000 },
+    { alertType: "invoice_mismatch", invoiceId: "INV-2025010", vendor: "IBM", message: "Duplicate invoice reference detected: INV-2025010 shares PO number with INV-2025004. Review required.", severity: "medium", amount: 87600 },
+    { alertType: "high_value_pending", invoiceId: "INV-2025028", vendor: "XYZ Systems", message: "Invoice INV-2025028 ($503,000) pending final approval — 52 days in queue.", severity: "medium", amount: 503000 },
+  ]);
+  console.log("  vendor_invoice_alerts seeded");
 
   // Applications
   await db.delete(applicationsTable);

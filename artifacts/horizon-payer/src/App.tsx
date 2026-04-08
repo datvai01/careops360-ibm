@@ -13,7 +13,7 @@ import Claims from "@/pages/dashboard/Claims";
 import PriorAuth from "@/pages/dashboard/PriorAuth";
 import Providers from "@/pages/dashboard/Providers";
 import ContactCenter from "@/pages/dashboard/ContactCenter";
-import Finance from "@/pages/dashboard/Finance";
+import VendorInvoices from "@/pages/dashboard/VendorInvoices";
 import AppHealth from "@/pages/dashboard/AppHealth";
 import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
@@ -38,7 +38,7 @@ function DashboardRouter() {
         <Route path="/dashboard/prior-auth" component={PriorAuth} />
         <Route path="/dashboard/providers" component={Providers} />
         <Route path="/dashboard/contact-center" component={ContactCenter} />
-        <Route path="/dashboard/finance" component={Finance} />
+        <Route path="/dashboard/vendor-invoices" component={VendorInvoices} />
         <Route path="/dashboard/app-health" component={AppHealth} />
         <Route path="/dashboard/ibm-ams" component={IbmAms} />
         <Route path="/dashboard/ask" component={Ask} />

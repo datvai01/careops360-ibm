@@ -6,8 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface PremiumTrend {
-  month: string;
-  billed: number;
-  received: number;
-}
+export type GetVendorInvoiceListParams = {
+  vendor?: string;
+  status?: string;
+  workNumber?: string;
+  serviceCategory?: string;
+};

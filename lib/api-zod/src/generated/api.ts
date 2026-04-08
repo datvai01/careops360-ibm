@@ -802,14 +802,10 @@ export const GetHourlyCallVolumeResponse = zod.array(
 );
 
 /**
- * @summary Get finance and billing KPIs
+ * @summary Get vendor invoice KPIs
  */
-export const GetFinanceKpisQueryParams = zod.object({
-  dateRange: zod.coerce.string().optional(),
-});
-
-export const GetFinanceKpisResponse = zod.object({
-  premiumBilled: zod.object({
+export const GetVendorInvoiceKpisResponse = zod.object({
+  totalReceived: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -817,7 +813,7 @@ export const GetFinanceKpisResponse = zod.object({
     status: zod.enum(["green", "yellow", "red"]),
     trend: zod.enum(["up", "down", "flat"]),
   }),
-  premiumReceived: zod.object({
+  totalProcessed: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -825,7 +821,7 @@ export const GetFinanceKpisResponse = zod.object({
     status: zod.enum(["green", "yellow", "red"]),
     trend: zod.enum(["up", "down", "flat"]),
   }),
-  delinquencyCount: zod.object({
+  pendingOnHold: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -833,7 +829,7 @@ export const GetFinanceKpisResponse = zod.object({
     status: zod.enum(["green", "yellow", "red"]),
     trend: zod.enum(["up", "down", "flat"]),
   }),
-  refunds: zod.object({
+  totalValue: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -841,7 +837,7 @@ export const GetFinanceKpisResponse = zod.object({
     status: zod.enum(["green", "yellow", "red"]),
     trend: zod.enum(["up", "down", "flat"]),
   }),
-  billingExceptions: zod.object({
+  paidCount: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -849,7 +845,7 @@ export const GetFinanceKpisResponse = zod.object({
     status: zod.enum(["green", "yellow", "red"]),
     trend: zod.enum(["up", "down", "flat"]),
   }),
-  paymentPostingLatency: zod.object({
+  avgCycleTime: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -857,7 +853,7 @@ export const GetFinanceKpisResponse = zod.object({
     status: zod.enum(["green", "yellow", "red"]),
     trend: zod.enum(["up", "down", "flat"]),
   }),
-  reconciliationStatus: zod.object({
+  exceptionCount: zod.object({
     value: zod.number(),
     formatted: zod.string(),
     change: zod.number().optional(),
@@ -868,31 +864,62 @@ export const GetFinanceKpisResponse = zod.object({
 });
 
 /**
- * @summary Get billing exceptions
+ * @summary Get vendor invoice list
  */
-export const GetBillingExceptionsResponseItem = zod.object({
-  id: zod.string(),
-  memberId: zod.string(),
-  memberName: zod.string(),
-  exceptionType: zod.string(),
-  amount: zod.number(),
-  ageDays: zod.number(),
-  status: zod.string(),
-  priority: zod.enum(["high", "medium", "low"]),
+export const GetVendorInvoiceListQueryParams = zod.object({
+  vendor: zod.coerce.string().optional(),
+  status: zod.coerce.string().optional(),
+  workNumber: zod.coerce.string().optional(),
+  serviceCategory: zod.coerce.string().optional(),
 });
-export const GetBillingExceptionsResponse = zod.array(
-  GetBillingExceptionsResponseItem,
+
+export const GetVendorInvoiceListResponseItem = zod.object({
+  id: zod.string(),
+  vendor: zod.string(),
+  workNumber: zod.string(),
+  serviceCategory: zod.string(),
+  invoiceDate: zod.string(),
+  amount: zod.number(),
+  status: zod.enum(["Processed", "Pending", "On Hold"]),
+  paymentStatus: zod.enum(["Paid", "Pending"]),
+  ageDays: zod.number(),
+  cycleTimeDays: zod.number().nullish(),
+  hasException: zod.number(),
+  exceptionNote: zod.string().nullish(),
+});
+export const GetVendorInvoiceListResponse = zod.array(
+  GetVendorInvoiceListResponseItem,
 );
 
 /**
- * @summary Get premium billed vs received trend
+ * @summary Get invoice aging by vendor
  */
-export const GetPremiumTrendResponseItem = zod.object({
-  month: zod.string(),
-  billed: zod.number(),
-  received: zod.number(),
+export const GetVendorInvoiceAgingResponseItem = zod.object({
+  vendor: zod.string(),
+  bucket0to30: zod.number(),
+  bucket30to60: zod.number(),
+  bucket60plus: zod.number(),
+  total: zod.number(),
 });
-export const GetPremiumTrendResponse = zod.array(GetPremiumTrendResponseItem);
+export const GetVendorInvoiceAgingResponse = zod.array(
+  GetVendorInvoiceAgingResponseItem,
+);
+
+/**
+ * @summary Get vendor invoice alerts
+ */
+export const GetVendorInvoiceAlertsResponseItem = zod.object({
+  id: zod.number(),
+  alertType: zod.string(),
+  invoiceId: zod.string().nullish(),
+  vendor: zod.string(),
+  message: zod.string(),
+  severity: zod.enum(["high", "medium"]),
+  amount: zod.number().nullish(),
+});
+export const GetVendorInvoiceAlertsResponse = zod.array(
+  GetVendorInvoiceAlertsResponseItem,
+);
 
 /**
  * @summary Get application health overview

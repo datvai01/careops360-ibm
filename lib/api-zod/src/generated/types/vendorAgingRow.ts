@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type GetFinanceKpisParams = {
-  dateRange?: string;
-};
+export interface VendorAgingRow {
+  vendor: string;
+  bucket0to30: number;
+  bucket30to60: number;
+  bucket60plus: number;
+  total: number;
+}

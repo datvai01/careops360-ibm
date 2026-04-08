@@ -417,40 +417,72 @@ export interface HourlyVolume {
   emails: number;
 }
 
-export interface FinanceKpis {
-  premiumBilled: KpiMetric;
-  premiumReceived: KpiMetric;
-  delinquencyCount: KpiMetric;
-  refunds: KpiMetric;
-  billingExceptions: KpiMetric;
-  paymentPostingLatency: KpiMetric;
-  reconciliationStatus: KpiMetric;
+export interface VendorInvoiceKpis {
+  totalReceived: KpiMetric;
+  totalProcessed: KpiMetric;
+  pendingOnHold: KpiMetric;
+  totalValue: KpiMetric;
+  paidCount: KpiMetric;
+  avgCycleTime: KpiMetric;
+  exceptionCount: KpiMetric;
 }
 
-export type BillingExceptionPriority =
-  (typeof BillingExceptionPriority)[keyof typeof BillingExceptionPriority];
+export type VendorInvoiceStatus =
+  (typeof VendorInvoiceStatus)[keyof typeof VendorInvoiceStatus];
 
-export const BillingExceptionPriority = {
-  high: "high",
-  medium: "medium",
-  low: "low",
+export const VendorInvoiceStatus = {
+  Processed: "Processed",
+  Pending: "Pending",
+  On_Hold: "On Hold",
 } as const;
 
-export interface BillingException {
+export type VendorInvoicePaymentStatus =
+  (typeof VendorInvoicePaymentStatus)[keyof typeof VendorInvoicePaymentStatus];
+
+export const VendorInvoicePaymentStatus = {
+  Paid: "Paid",
+  Pending: "Pending",
+} as const;
+
+export interface VendorInvoice {
   id: string;
-  memberId: string;
-  memberName: string;
-  exceptionType: string;
+  vendor: string;
+  workNumber: string;
+  serviceCategory: string;
+  invoiceDate: string;
   amount: number;
+  status: VendorInvoiceStatus;
+  paymentStatus: VendorInvoicePaymentStatus;
   ageDays: number;
-  status: string;
-  priority: BillingExceptionPriority;
+  cycleTimeDays?: number | null;
+  hasException: number;
+  exceptionNote?: string | null;
 }
 
-export interface PremiumTrend {
-  month: string;
-  billed: number;
-  received: number;
+export interface VendorAgingRow {
+  vendor: string;
+  bucket0to30: number;
+  bucket30to60: number;
+  bucket60plus: number;
+  total: number;
+}
+
+export type VendorInvoiceAlertSeverity =
+  (typeof VendorInvoiceAlertSeverity)[keyof typeof VendorInvoiceAlertSeverity];
+
+export const VendorInvoiceAlertSeverity = {
+  high: "high",
+  medium: "medium",
+} as const;
+
+export interface VendorInvoiceAlert {
+  id: number;
+  alertType: string;
+  invoiceId?: string | null;
+  vendor: string;
+  message: string;
+  severity: VendorInvoiceAlertSeverity;
+  amount?: number | null;
 }
 
 export interface ApplicationHealthOverview {
@@ -716,8 +748,11 @@ export type GetContactCenterKpisParams = {
   dateRange?: string;
 };
 
-export type GetFinanceKpisParams = {
-  dateRange?: string;
+export type GetVendorInvoiceListParams = {
+  vendor?: string;
+  status?: string;
+  workNumber?: string;
+  serviceCategory?: string;
 };
 
 export type GetIncidentsParams = {

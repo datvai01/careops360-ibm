@@ -35,7 +35,7 @@ const NAV_ITEMS = [
   { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
   { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
   { name: "Contact Center", path: "/dashboard/contact-center", icon: HeadphonesIcon },
-  { name: "Finance", path: "/dashboard/finance", icon: DollarSignIcon },
+  { name: "Vendor Invoices", path: "/dashboard/vendor-invoices", icon: DollarSignIcon },
   { name: "App Health", path: "/dashboard/app-health", icon: ActivityIcon },
   { name: "IBM AMS Value", path: "/dashboard/ibm-ams", icon: CpuIcon },
   { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
