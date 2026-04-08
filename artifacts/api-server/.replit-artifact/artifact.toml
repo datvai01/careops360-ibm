@@ -15,17 +15,15 @@ run = "pnpm --filter @workspace/api-server run dev"
 [services.production]
 
 [services.production.build]
-args = ["sh", "-c", "pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run push-force && pnpm --filter @workspace/db run seed"]
+args = ["sh", "-c", "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/horizon-payer run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run seed"]
 
 [services.production.build.env]
 NODE_ENV = "production"
 
 [services.production.run]
-# we don't run through pnpm to make startup faster in production
 args = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
 
 [services.production.run.env]
-PORT = "8080"
 NODE_ENV = "production"
 
 [services.production.health.startup]

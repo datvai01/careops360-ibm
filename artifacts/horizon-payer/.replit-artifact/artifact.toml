@@ -17,15 +17,6 @@ localPort = 24856
 [services.development]
 run = "pnpm --filter @workspace/horizon-payer run dev"
 
-[services.production]
-build = [ "pnpm", "--filter", "@workspace/horizon-payer", "run", "build" ]
-publicDir = "artifacts/horizon-payer/dist/public"
-serve = "static"
-
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
-
 [services.env]
 PORT = "24856"
 BASE_PATH = "/"
