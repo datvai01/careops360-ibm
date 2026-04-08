@@ -1,10 +1,6 @@
 import { useState, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  useGetVendorInvoiceKpis,
-  useGetVendorInvoiceList,
-} from "@workspace/api-client-react";
-import { KpiCard } from "@/components/ui/kpi-card";
+import { useGetVendorInvoiceList } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +16,9 @@ import {
   PauseCircleIcon,
   PlayCircleIcon,
   SearchIcon,
+  FileTextIcon,
+  FilterIcon,
+  ChevronDownIcon,
 } from "lucide-react";
 
 const IBM_BLUE = "#0f62fe";
@@ -46,12 +45,9 @@ const WORK_NUMBERS_BY_CATEGORY: Record<string, string[]> = {
   "Quality Engineering":     ["WO-QE-001", "WO-QE-002"],
 };
 
-const ALL_WORK_NUMBERS = Object.values(WORK_NUMBERS_BY_CATEGORY).flat().sort();
-
 const VIEWS = [
   { id: "overview",        label: "IBM Overview" },
   { id: "by-work-number", label: "By Work Number" },
-  { id: "by-category",    label: "By Service Category" },
 ];
 
 function datePresetRange(days: number) {
@@ -66,12 +62,12 @@ function datePresetRange(days: number) {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    Processed: "bg-status-green/10 text-status-green border-status-green/20",
-    Pending:   "bg-status-yellow/10 text-status-yellow border-status-yellow/20",
-    "On Hold": "bg-status-red/10 text-status-red border-status-red/20",
+    Processed: "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800",
+    Pending:   "bg-amber-500/10 text-amber-600 border-amber-200 dark:text-amber-400 dark:border-amber-800",
+    "On Hold": "bg-red-500/10 text-red-600 border-red-200 dark:text-red-400 dark:border-red-800",
   };
   return (
-    <Badge variant="outline" className={`text-[10px] whitespace-nowrap ${map[status] ?? ""}`}>
+    <Badge variant="outline" className={`text-[10px] whitespace-nowrap font-medium ${map[status] ?? ""}`}>
       {status}
     </Badge>
   );
@@ -106,7 +102,6 @@ function useUpdateStatus() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/vendor-invoices/list"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/vendor-invoices/kpis"] });
     },
   });
 }
@@ -128,15 +123,34 @@ function useUploadInvoice() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/vendor-invoices/list"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/vendor-invoices/kpis"] });
     },
   });
 }
 
+/* ── PDF preview button ─────────────────────────────────────── */
+function PdfButton({ invoice }: { invoice: Invoice }) {
+  const { toast } = useToast();
+  return (
+    <button
+      title="View attached invoice document"
+      onClick={(e) => {
+        e.stopPropagation();
+        toast({
+          title: "No document attached",
+          description: `Invoice ${invoice.id} — upload a PDF or image using the Upload Invoice action to attach a document.`,
+        });
+      }}
+      className="p-1 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+    >
+      <FileTextIcon className="w-4 h-4" />
+    </button>
+  );
+}
+
+/* ── Admin action buttons ───────────────────────────────────── */
 function ActionButtons({ invoice }: { invoice: Invoice }) {
   const { toast } = useToast();
   const mutation = useUpdateStatus();
-  const isPending = mutation.isPending;
 
   function act(action: "release" | "hold" | "processed", label: string) {
     mutation.mutate(
@@ -151,58 +165,85 @@ function ActionButtons({ invoice }: { invoice: Invoice }) {
   return (
     <div className="flex items-center gap-1">
       {invoice.status !== "Processed" && invoice.paymentStatus !== "Paid" && (
-        <Button size="sm" variant="outline"
-          className="h-6 text-[10px] px-2 text-status-green border-status-green/30 hover:bg-status-green/10"
-          disabled={isPending}
+        <Button size="sm" variant="ghost"
+          className="h-6 text-[10px] px-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+          disabled={mutation.isPending}
           onClick={(e) => { e.stopPropagation(); act("release", "Released for Payment"); }}>
           <PlayCircleIcon className="w-3 h-3 mr-1" /> Release
         </Button>
       )}
       {invoice.status !== "On Hold" && (
-        <Button size="sm" variant="outline"
-          className="h-6 text-[10px] px-2 text-status-red border-status-red/30 hover:bg-status-red/10"
-          disabled={isPending}
+        <Button size="sm" variant="ghost"
+          className="h-6 text-[10px] px-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+          disabled={mutation.isPending}
           onClick={(e) => { e.stopPropagation(); act("hold", "Put On Hold"); }}>
           <PauseCircleIcon className="w-3 h-3 mr-1" /> Hold
         </Button>
       )}
       {invoice.status !== "Processed" && (
-        <Button size="sm" variant="outline"
-          className="h-6 text-[10px] px-2 text-primary border-primary/30 hover:bg-primary/10"
-          disabled={isPending}
+        <Button size="sm" variant="ghost"
+          className="h-6 text-[10px] px-2 text-primary hover:bg-primary/10"
+          disabled={mutation.isPending}
           onClick={(e) => { e.stopPropagation(); act("processed", "Marked as Processed"); }}>
-          <CheckCircle2Icon className="w-3 h-3 mr-1" /> Processed
+          <CheckCircle2Icon className="w-3 h-3 mr-1" /> Mark Processed
         </Button>
       )}
     </div>
   );
 }
 
-function InvoiceDetailTable({ invoices, onDrillDown }: { invoices: Invoice[]; onDrillDown: (inv: Invoice) => void }) {
+/* ── Invoice table ──────────────────────────────────────────── */
+function InvoiceTable({
+  invoices,
+  onDrillDown,
+}: {
+  invoices: Invoice[];
+  onDrillDown: (inv: Invoice) => void;
+}) {
   if (invoices.length === 0) {
-    return <div className="py-8 text-center text-sm text-muted-foreground">No invoices match the selected filters.</div>;
+    return (
+      <div className="py-12 text-center">
+        <FileTextIcon className="w-10 h-10 mx-auto mb-3 text-muted-foreground/40" />
+        <p className="text-sm text-muted-foreground">No invoices match the selected filters.</p>
+      </div>
+    );
   }
   return (
-    <div className="rounded-md border overflow-auto max-h-[460px]">
+    <div className="rounded-lg border overflow-auto max-h-[520px]">
       <Table>
-        <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_hsl(var(--border))]">
-          <TableRow>
+        <TableHeader className="sticky top-0 z-10 bg-muted/60 backdrop-blur supports-[backdrop-filter]:bg-muted/40">
+          <TableRow className="border-b">
+            <TableHead className="w-8" />
             <TableHead>Invoice ID</TableHead>
-            <TableHead>Work #</TableHead>
+            <TableHead>Work Order</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Payment</TableHead>
             <TableHead>Age</TableHead>
-            <TableHead>Admin Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {invoices.map((inv) => (
-            <TableRow key={inv.id} className="cursor-pointer hover:bg-muted/40" onClick={() => onDrillDown(inv)}>
-              <TableCell className="font-mono text-xs font-medium">{inv.id}</TableCell>
-              <TableCell className="text-xs font-medium">{inv.workNumber}</TableCell>
+            <TableRow
+              key={inv.id}
+              className={`cursor-pointer transition-colors hover:bg-muted/40 ${
+                inv.hasException ? "border-l-2 border-l-amber-400" : ""
+              }`}
+              onClick={() => onDrillDown(inv)}
+            >
+              <TableCell className="pr-0" onClick={(e) => e.stopPropagation()}>
+                <PdfButton invoice={inv} />
+              </TableCell>
+              <TableCell>
+                <span className="font-mono text-xs font-semibold tracking-tight">{inv.id}</span>
+                {inv.hasException === 1 && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block ml-1.5 mb-0.5" title="Has exception" />
+                )}
+              </TableCell>
+              <TableCell className="font-mono text-xs text-muted-foreground">{inv.workNumber}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full flex-shrink-0"
@@ -210,18 +251,27 @@ function InvoiceDetailTable({ invoices, onDrillDown }: { invoices: Invoice[]; on
                   <span className="text-xs">{inv.serviceCategory}</span>
                 </div>
               </TableCell>
-              <TableCell className="text-xs">{inv.invoiceDate}</TableCell>
-              <TableCell className="text-right text-xs font-semibold">${inv.amount.toLocaleString()}</TableCell>
+              <TableCell className="text-xs tabular-nums text-muted-foreground">{inv.invoiceDate}</TableCell>
+              <TableCell className="text-right font-semibold tabular-nums text-sm">
+                ${inv.amount.toLocaleString()}
+              </TableCell>
               <TableCell>{statusBadge(inv.status)}</TableCell>
               <TableCell>
-                <Badge variant="outline" className={`text-[10px] ${inv.paymentStatus === "Paid" ? "bg-status-green/10 text-status-green border-status-green/20" : "bg-muted text-muted-foreground"}`}>
+                <Badge variant="outline"
+                  className={`text-[10px] ${inv.paymentStatus === "Paid"
+                    ? "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:text-emerald-400 dark:border-emerald-800"
+                    : "bg-muted/60 text-muted-foreground"}`}>
                   {inv.paymentStatus}
                 </Badge>
               </TableCell>
-              <TableCell className={`text-xs ${inv.ageDays > 60 ? "text-status-red font-semibold" : inv.ageDays > 30 ? "text-status-yellow" : ""}`}>
-                {inv.ageDays}d
+              <TableCell>
+                <span className={`text-xs tabular-nums font-medium ${
+                  inv.ageDays > 60 ? "text-red-600 dark:text-red-400" : inv.ageDays > 30 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                }`}>
+                  {inv.ageDays}d
+                </span>
               </TableCell>
-              <TableCell onClick={(e) => e.stopPropagation()}>
+              <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                 <ActionButtons invoice={inv} />
               </TableCell>
             </TableRow>
@@ -232,6 +282,7 @@ function InvoiceDetailTable({ invoices, onDrillDown }: { invoices: Invoice[]; on
   );
 }
 
+/* ── Upload modal ───────────────────────────────────────────── */
 function UploadModal({ onClose }: { onClose: () => void }) {
   const { toast } = useToast();
   const mutation = useUploadInvoice();
@@ -256,14 +307,12 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const amount = parseFloat(form.amount);
-    if (isNaN(amount) || amount <= 0) {
-      toast({ title: "Invalid amount", variant: "destructive" }); return;
-    }
+    if (isNaN(amount) || amount <= 0) { toast({ title: "Invalid amount", variant: "destructive" }); return; }
     mutation.mutate(
       { vendor: "IBM", workNumber: form.workNumber, serviceCategory: selectedCat, invoiceDate: form.invoiceDate, amount, exceptionNote: form.exceptionNote || undefined },
       {
         onSuccess: (data: { id?: string }) => {
-          toast({ title: "Invoice uploaded", description: `Invoice ${data?.id ?? ""} created with Pending status.` });
+          toast({ title: "Invoice uploaded", description: `${data?.id ?? "Invoice"} created — status: Pending.` });
           onClose();
         },
         onError: (e) => toast({ title: "Upload failed", description: e.message, variant: "destructive" }),
@@ -272,76 +321,74 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-card rounded-xl border shadow-2xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
           <div>
-            <h2 className="text-lg font-bold">Upload Invoice</h2>
-            <p className="text-sm text-muted-foreground">IBM invoice — add to the billing register</p>
+            <h2 className="text-base font-semibold">Upload IBM Invoice</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Attach a new invoice to the IBM billing register</p>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}><XIcon className="w-5 h-5" /></Button>
+          <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
+            <XIcon className="w-4 h-4" />
+          </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* File drop */}
-          <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer relative">
-            <input type="file" accept=".pdf,.xlsx,.csv,.png,.jpg" onChange={handleFile} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-            <UploadCloudIcon className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+          <div className="border-2 border-dashed rounded-lg p-5 text-center bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer relative">
+            <input type="file" accept=".pdf,.xlsx,.csv,.png,.jpg" onChange={handleFile}
+              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+            <UploadCloudIcon className="w-7 h-7 mx-auto mb-2 text-muted-foreground" />
             {form.fileName
               ? <p className="text-sm font-medium">{form.fileName}</p>
-              : <><p className="text-sm font-medium">Drop invoice file here or click to browse</p><p className="text-xs text-muted-foreground mt-1">PDF, Excel, CSV, or image (max 20 MB)</p></>
+              : <><p className="text-sm font-medium">Drop invoice file or click to browse</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">PDF, Excel, CSV, or image · max 20 MB</p></>
             }
           </div>
 
-          {/* Vendor (locked) */}
           <div className="space-y-1.5">
-            <Label>Vendor</Label>
+            <Label className="text-xs">Vendor</Label>
             <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-muted/40 text-sm">
-              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: IBM_BLUE }} />
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: IBM_BLUE }} />
               <span className="font-semibold">IBM</span>
-              <Badge variant="outline" className="ml-auto text-[10px] border-[#0f62fe]/30 text-[#0f62fe]">Only vendor</Badge>
+              <span className="ml-auto text-xs text-muted-foreground">Fixed</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Service Category</Label>
-              <select
-                className="w-full rounded-md border bg-background text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                value={selectedCat}
-                onChange={(e) => handleCatChange(e.target.value)}
-              >
+              <Label className="text-xs">Service Category</Label>
+              <select className="w-full rounded-md border bg-background text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={selectedCat} onChange={(e) => handleCatChange(e.target.value)}>
                 {CATEGORIES.map((cat) => <option key={cat}>{cat}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label>Work Number</Label>
-              <select
-                className="w-full rounded-md border bg-background text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                value={form.workNumber}
-                onChange={(e) => setForm((f) => ({ ...f, workNumber: e.target.value }))}
-              >
+              <Label className="text-xs">Work Order</Label>
+              <select className="w-full rounded-md border bg-background text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                value={form.workNumber} onChange={(e) => setForm((f) => ({ ...f, workNumber: e.target.value }))}>
                 {(WORK_NUMBERS_BY_CATEGORY[selectedCat] ?? []).map((wn) => <option key={wn}>{wn}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label>Invoice Date</Label>
-              <Input type="date" value={form.invoiceDate} onChange={(e) => setForm((f) => ({ ...f, invoiceDate: e.target.value }))} required />
+              <Label className="text-xs">Invoice Date</Label>
+              <Input type="date" value={form.invoiceDate} onChange={(e) => setForm((f) => ({ ...f, invoiceDate: e.target.value }))} required className="h-9 text-sm" />
             </div>
             <div className="space-y-1.5">
-              <Label>Amount ($)</Label>
-              <Input type="number" min="0" step="0.01" placeholder="e.g. 250000" value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} required />
+              <Label className="text-xs">Amount ($)</Label>
+              <Input type="number" min="0" step="0.01" placeholder="e.g. 250000"
+                value={form.amount} onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))} required className="h-9 text-sm" />
             </div>
             <div className="space-y-1.5 col-span-2">
-              <Label>Exception Note <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <Input placeholder="Describe any discrepancy or exception..." value={form.exceptionNote} onChange={(e) => setForm((f) => ({ ...f, exceptionNote: e.target.value }))} />
+              <Label className="text-xs">Exception Note <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Input placeholder="Describe any discrepancy or exception..."
+                value={form.exceptionNote} onChange={(e) => setForm((f) => ({ ...f, exceptionNote: e.target.value }))} className="h-9 text-sm" />
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-1">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
             <Button type="submit" className="flex-1" disabled={mutation.isPending}>
-              {mutation.isPending ? "Uploading..." : "Upload Invoice"}
+              {mutation.isPending ? "Uploading…" : "Upload Invoice"}
             </Button>
           </div>
         </form>
@@ -350,6 +397,89 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/* ── Invoice drill-down modal ───────────────────────────────── */
+function DrillDownModal({ invoice, onClose }: { invoice: Invoice; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card rounded-xl border shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm font-bold">{invoice.id}</span>
+            {statusBadge(invoice.status)}
+          </div>
+          <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
+            <XIcon className="w-4 h-4" />
+          </Button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Work Order</p>
+              <p className="font-mono font-semibold">{invoice.workNumber}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Service Category</p>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[invoice.serviceCategory] ?? "#888" }} />
+                <span className="font-semibold">{invoice.serviceCategory}</span>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Invoice Date</p>
+              <p className="font-semibold">{invoice.invoiceDate}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Amount</p>
+              <p className="text-lg font-black">${invoice.amount.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Payment Status</p>
+              <p className="font-semibold">{invoice.paymentStatus}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">Age</p>
+              <p className={`font-semibold ${invoice.ageDays > 60 ? "text-red-600 dark:text-red-400" : ""}`}>{invoice.ageDays} days</p>
+            </div>
+            {invoice.cycleTimeDays != null && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Cycle Time</p>
+                <p className="font-semibold">{invoice.cycleTimeDays} days</p>
+              </div>
+            )}
+          </div>
+
+          {invoice.hasException === 1 && invoice.exceptionNote && (
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">Exception Note</p>
+              <p className="text-xs text-amber-800 dark:text-amber-300">{invoice.exceptionNote}</p>
+            </div>
+          )}
+
+          <div className="border rounded-lg px-4 py-3 bg-muted/30">
+            <p className="text-xs text-muted-foreground font-medium mb-2.5">Attached Document</p>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg border border-dashed flex items-center justify-center bg-background">
+                <FileTextIcon className="w-4 h-4 text-muted-foreground/50" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">No document attached</p>
+                <p className="text-[10px] text-muted-foreground/60">Upload an invoice document to attach it to this record</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t pt-4">
+            <p className="text-xs text-muted-foreground font-medium mb-2.5 uppercase tracking-wide">Admin Actions</p>
+            <ActionButtons invoice={invoice} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main page ──────────────────────────────────────────────── */
 export default function VendorInvoices() {
   const [activeView, setActiveView] = useState("overview");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -358,12 +488,12 @@ export default function VendorInvoices() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [datePreset, setDatePreset] = useState<number | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [workSearch, setWorkSearch] = useState("");
   const [drillDown, setDrillDown] = useState<Invoice | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
 
   const q = { refetchInterval: 30000 };
-  const { data: kpis, isLoading: kpisLoading } = useGetVendorInvoiceKpis({ query: q });
   const { data: invoices } = useGetVendorInvoiceList(
     {
       status: selectedStatus ?? undefined,
@@ -377,7 +507,7 @@ export default function VendorInvoices() {
   const allInvoices = useGetVendorInvoiceList({}, { query: q }).data ?? [];
 
   const displayInvoices = (invoices ?? allInvoices) as Invoice[];
-  const hasFilters = selectedStatus || selectedWorkNumber || selectedCategory || dateFrom || dateTo;
+  const hasFilters = !!(selectedStatus || selectedWorkNumber || selectedCategory || dateFrom || dateTo);
 
   const workNumbers = useMemo(() => [...new Set(allInvoices.map((i) => i.workNumber))].sort(), [allInvoices]);
   const categories = useMemo(() => [...new Set(allInvoices.map((i) => i.serviceCategory))].sort(), [allInvoices]);
@@ -401,7 +531,9 @@ export default function VendorInvoices() {
 
   const filteredBySearch = useMemo(() =>
     workSearch.trim()
-      ? byWorkNumber.filter((r) => r.workNumber.toLowerCase().includes(workSearch.toLowerCase()) || r.category.toLowerCase().includes(workSearch.toLowerCase()))
+      ? byWorkNumber.filter((r) =>
+          r.workNumber.toLowerCase().includes(workSearch.toLowerCase()) ||
+          r.category.toLowerCase().includes(workSearch.toLowerCase()))
       : byWorkNumber,
   [byWorkNumber, workSearch]);
 
@@ -412,376 +544,245 @@ export default function VendorInvoices() {
     setDateFrom("");
     setDateTo("");
     setDatePreset(null);
+    setShowDatePicker(false);
   }
 
+  const dateLabel = datePreset
+    ? `Last ${datePreset}d`
+    : dateFrom || dateTo
+    ? `${dateFrom || "…"} → ${dateTo || "…"}`
+    : null;
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-5 max-w-7xl mx-auto">
+      {/* ── Page Header ─────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">Vendor Invoice &amp; Billing</h1>
-            <Badge variant="outline" className="text-xs font-semibold border-[#0f62fe]/40 text-[#0f62fe] bg-[#0f62fe]/5 px-2 py-0.5">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight">Vendor Invoice &amp; Billing</h1>
+            <Badge variant="outline" className="text-xs font-semibold border-[#0f62fe]/40 text-[#0f62fe] bg-[#0f62fe]/5">
               IBM
             </Badge>
           </div>
-          <p className="text-muted-foreground mt-1">
-            IBM invoicing to Horizon — Application Support, Application Development, Infrastructure, Data Services, Technology, Software &amp; Quality Engineering
+          <p className="text-sm text-muted-foreground mt-1">
+            IBM invoicing to Horizon — 7 service categories &nbsp;·&nbsp;{" "}
+            <span className="text-muted-foreground/60 text-xs">Additional vendors can be onboarded as needed</span>
           </p>
-          <p className="text-xs text-muted-foreground/60 mt-0.5">Additional vendors can be onboarded as needed</p>
         </div>
-        <Button className="flex-shrink-0 gap-2" onClick={() => setUploadOpen(true)}>
+        <Button className="gap-2 flex-shrink-0" onClick={() => setUploadOpen(true)}>
           <UploadCloudIcon className="w-4 h-4" /> Upload Invoice
         </Button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-        <KpiCard title="Total Invoices" metric={kpis?.totalReceived} isLoading={kpisLoading} />
-        <KpiCard title="Processed" metric={kpis?.totalProcessed} isLoading={kpisLoading} />
-        <KpiCard title="Pending / On Hold" metric={kpis?.pendingOnHold} isLoading={kpisLoading} />
-        <KpiCard title="Total Invoice Value" metric={kpis?.totalValue} isLoading={kpisLoading} />
-        <KpiCard title="Invoices Paid" metric={kpis?.paidCount} isLoading={kpisLoading} />
-        <KpiCard title="Avg Cycle Time" metric={kpis?.avgCycleTime} isLoading={kpisLoading} />
-        <KpiCard title="Exceptions" metric={kpis?.exceptionCount} isLoading={kpisLoading} />
-      </div>
-
-      {/* Date Range Filter */}
-      <Card className="border-dashed">
-        <CardContent className="py-4">
-          <div className="flex flex-wrap items-end gap-3">
-            <CalendarIcon className="w-4 h-4 text-muted-foreground mb-2 flex-shrink-0" />
-            {[7, 30, 90].map((days) => (
-              <Button key={days} size="sm" variant={datePreset === days ? "default" : "outline"} className="h-8 text-xs"
-                onClick={() => { const r = datePresetRange(days); setDateFrom(r.from); setDateTo(r.to); setDatePreset(days); }}>
-                Last {days}d
-              </Button>
-            ))}
-            <div className="w-px h-6 bg-border self-end mb-1" />
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">From Date</Label>
-              <Input type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setDatePreset(null); }} className="h-8 text-sm w-40" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">To Date</Label>
-              <Input type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setDatePreset(null); }} className="h-8 text-sm w-40" />
-            </div>
-            {(dateFrom || dateTo) && (
-              <Button size="sm" variant="ghost" className="h-8 text-xs text-muted-foreground"
-                onClick={() => { setDateFrom(""); setDateTo(""); setDatePreset(null); }}>
-                <XIcon className="w-3 h-3 mr-1" /> Clear
-              </Button>
-            )}
-            <div className="text-xs text-muted-foreground self-end mb-2 ml-auto">
-              Showing <strong>{displayInvoices.length}</strong> of <strong>{allInvoices.length}</strong> invoices
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* View Tabs */}
-      <div className="flex gap-2 flex-wrap border-b pb-0">
+      {/* ── Tabs + Toolbar in one line ───────────────────────── */}
+      <div className="flex items-center gap-0 border-b">
         {VIEWS.map((v) => (
           <button key={v.id} onClick={() => setActiveView(v.id)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeView === v.id ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeView === v.id
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
             }`}>
             {v.label}
           </button>
         ))}
       </div>
 
-      {/* === IBM OVERVIEW === */}
+      {/* ── Unified filter toolbar ───────────────────────────── */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground mr-1">
+          <FilterIcon className="w-3.5 h-3.5" /> Filters
+        </div>
+
+        {/* Date preset buttons */}
+        {[7, 30, 90].map((days) => (
+          <button key={days}
+            onClick={() => { const r = datePresetRange(days); setDateFrom(r.from); setDateTo(r.to); setDatePreset(days); setShowDatePicker(false); }}
+            className={`h-7 px-2.5 rounded-md border text-xs font-medium transition-colors ${
+              datePreset === days
+                ? "bg-primary text-primary-foreground border-primary"
+                : "border-border hover:border-primary/40 bg-background"
+            }`}>
+            Last {days}d
+          </button>
+        ))}
+
+        {/* Custom date range toggle */}
+        <button
+          onClick={() => setShowDatePicker((v) => !v)}
+          className={`h-7 px-2.5 rounded-md border text-xs font-medium flex items-center gap-1 transition-colors ${
+            showDatePicker || (!datePreset && (dateFrom || dateTo))
+              ? "bg-primary text-primary-foreground border-primary"
+              : "border-border hover:border-primary/40 bg-background"
+          }`}>
+          <CalendarIcon className="w-3 h-3" />
+          {dateLabel && !datePreset ? dateLabel : "Custom"}
+          <ChevronDownIcon className="w-3 h-3" />
+        </button>
+
+        {showDatePicker && (
+          <div className="flex items-end gap-2">
+            <div className="space-y-1">
+              <Label className="text-[10px] text-muted-foreground">From</Label>
+              <Input type="date" value={dateFrom}
+                onChange={(e) => { setDateFrom(e.target.value); setDatePreset(null); }}
+                className="h-7 text-xs w-36" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] text-muted-foreground">To</Label>
+              <Input type="date" value={dateTo}
+                onChange={(e) => { setDateTo(e.target.value); setDatePreset(null); }}
+                className="h-7 text-xs w-36" />
+            </div>
+          </div>
+        )}
+
+        <div className="w-px h-5 bg-border mx-1" />
+
+        {/* Status chips */}
+        {(["Processed", "Pending", "On Hold"] as const).map((s) => (
+          <button key={s}
+            onClick={() => setSelectedStatus(selectedStatus === s ? null : s)}
+            className={`h-7 px-2.5 rounded-md border text-xs font-medium transition-colors ${
+              selectedStatus === s
+                ? s === "Processed" ? "bg-emerald-500 text-white border-emerald-500"
+                  : s === "Pending" ? "bg-amber-500 text-white border-amber-500"
+                  : "bg-red-500 text-white border-red-500"
+                : "border-border hover:border-primary/40 bg-background"
+            }`}>
+            {s}
+          </button>
+        ))}
+
+        {/* Clear + count */}
+        {hasFilters && (
+          <button onClick={clearAll}
+            className="h-7 px-2 rounded-md border border-dashed text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <XIcon className="w-3 h-3" /> Clear
+          </button>
+        )}
+        <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+          {displayInvoices.length} / {allInvoices.length} invoices
+        </span>
+      </div>
+
+      {/* ══ IBM OVERVIEW ════════════════════════════════════════ */}
       {activeView === "overview" && (
         <div className="space-y-4">
-          {/* Compact category strip */}
+          {/* Category filter pill strip */}
+          <div className="flex flex-wrap gap-1.5">
+            {byCategory.map((cat) => {
+              const active = selectedCategory === cat.name;
+              return (
+                <button key={cat.name}
+                  onClick={() => setSelectedCategory(active ? null : cat.name)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                    active
+                      ? "text-white border-transparent shadow-sm"
+                      : "bg-background border-border hover:border-primary/40 hover:shadow-sm"
+                  }`}
+                  style={active ? { backgroundColor: CATEGORY_COLORS[cat.name] ?? IBM_BLUE, borderColor: CATEGORY_COLORS[cat.name] ?? IBM_BLUE } : {}}>
+                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                       style={{ backgroundColor: active ? "rgba(255,255,255,0.8)" : (CATEGORY_COLORS[cat.name] ?? "#888") }} />
+                  {cat.name}
+                  <span className={`${active ? "text-white/70" : "text-muted-foreground"}`}>
+                    {cat.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Invoice table */}
+          <InvoiceTable invoices={displayInvoices} onDrillDown={setDrillDown} />
+        </div>
+      )}
+
+      {/* ══ BY WORK NUMBER ══════════════════════════════════════ */}
+      {activeView === "by-work-number" && (
+        <div className="space-y-4">
           <Card>
-            <CardContent className="py-3 px-4">
-              <div className="flex flex-wrap gap-2">
-                {byCategory.map((cat) => {
-                  const active = selectedCategory === cat.name;
-                  return (
-                    <button
-                      key={cat.name}
-                      onClick={() => setSelectedCategory(active ? null : cat.name)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition-all hover:shadow-sm ${
-                        active
-                          ? "bg-primary text-primary-foreground border-primary font-semibold"
-                          : "bg-background border-border hover:border-primary/40"
-                      }`}
-                    >
-                      <div
-                        className="w-2 h-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: active ? "currentColor" : (CATEGORY_COLORS[cat.name] ?? "#888") }}
-                      />
-                      <span className="font-medium">{cat.name}</span>
-                      <span className={`ml-1 ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                        {cat.count} · ${(cat.value / 1_000_000).toFixed(1)}M
-                      </span>
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base">By Work Order</CardTitle>
+                  <CardDescription className="text-xs">Click a row to filter invoices by that work order</CardDescription>
+                </div>
+                <div className="relative w-full sm:w-60">
+                  <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                  <Input placeholder="Search work order or category…"
+                    value={workSearch} onChange={(e) => setWorkSearch(e.target.value)}
+                    className="pl-8 h-8 text-xs" />
+                  {workSearch && (
+                    <button className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setWorkSearch("")}>
+                      <XIcon className="w-3.5 h-3.5" />
                     </button>
-                  );
-                })}
-                {selectedCategory && (
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className="flex items-center gap-1 px-2 py-1.5 rounded-md border border-dashed text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
-                  >
-                    <XIcon className="w-3 h-3" /> Clear
-                  </button>
-                )}
+                  )}
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="rounded-lg border overflow-auto max-h-[320px]">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-muted/60">
+                    <TableRow>
+                      <TableHead>Work Order</TableHead>
+                      <TableHead>Service Category</TableHead>
+                      <TableHead className="text-right">Invoices</TableHead>
+                      <TableHead className="text-right">Total Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredBySearch.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-6 text-sm text-muted-foreground">
+                          No work orders match "{workSearch}"
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredBySearch.map((row) => (
+                      <TableRow key={row.workNumber}
+                        className={`cursor-pointer hover:bg-muted/40 transition-colors ${
+                          selectedWorkNumber === row.workNumber ? "bg-primary/5 border-l-2 border-l-primary" : ""
+                        }`}
+                        onClick={() => setSelectedWorkNumber(selectedWorkNumber === row.workNumber ? null : row.workNumber)}>
+                        <TableCell>
+                          <span className="font-mono text-sm font-semibold">{row.workNumber}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full flex-shrink-0"
+                                 style={{ backgroundColor: CATEGORY_COLORS[row.category] ?? "#888" }} />
+                            <span className="text-sm">{row.category}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">{row.count}</TableCell>
+                        <TableCell className="text-right font-semibold tabular-nums">${row.value.toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
 
-          {/* Invoice detail */}
-          <InvoiceDetailCard
-            invoices={displayInvoices}
-            selectedCategory={selectedCategory}
-            selectedStatus={selectedStatus}
-            hasFilters={!!hasFilters}
-            onCategory={setSelectedCategory}
-            onStatus={setSelectedStatus}
-            onClear={clearAll}
-            onDrillDown={setDrillDown}
-          />
+          {selectedWorkNumber && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold">Invoices for <span className="font-mono">{selectedWorkNumber}</span></p>
+                <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setSelectedWorkNumber(null)}>
+                  <XIcon className="w-3.5 h-3.5 mr-1" /> Clear selection
+                </Button>
+              </div>
+              <InvoiceTable invoices={displayInvoices} onDrillDown={setDrillDown} />
+            </div>
+          )}
         </div>
       )}
 
-      {/* === BY WORK NUMBER with typeahead === */}
-      {activeView === "by-work-number" && (
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <CardTitle>By Work Number</CardTitle>
-                <CardDescription>Search and drill into work orders · click a row to view invoices</CardDescription>
-              </div>
-              <div className="relative w-full sm:w-64">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                <Input
-                  placeholder="Search work number or category..."
-                  value={workSearch}
-                  onChange={(e) => setWorkSearch(e.target.value)}
-                  className="pl-9 h-9 text-sm"
-                />
-                {workSearch && (
-                  <button className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => setWorkSearch("")}>
-                    <XIcon className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border overflow-auto max-h-[400px]">
-              <Table>
-                <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_hsl(var(--border))]">
-                  <TableRow>
-                    <TableHead>Work Number</TableHead>
-                    <TableHead>Service Category</TableHead>
-                    <TableHead className="text-right">Invoice Count</TableHead>
-                    <TableHead className="text-right">Total Value</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBySearch.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center py-6 text-sm text-muted-foreground">No work numbers match "{workSearch}"</TableCell></TableRow>
-                  ) : filteredBySearch.map((row) => (
-                    <TableRow key={row.workNumber} className="cursor-pointer hover:bg-muted/40"
-                      onClick={() => setSelectedWorkNumber(selectedWorkNumber === row.workNumber ? null : row.workNumber)}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium text-sm">{row.workNumber}</span>
-                          {selectedWorkNumber === row.workNumber && <Badge variant="default" className="text-[10px]">Filtered</Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full flex-shrink-0"
-                               style={{ backgroundColor: CATEGORY_COLORS[row.category] ?? "#888" }} />
-                          <span className="text-sm">{row.category}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">{row.count}</TableCell>
-                      <TableCell className="text-right font-semibold">${row.value.toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {selectedWorkNumber && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold">Invoices for {selectedWorkNumber}</span>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedWorkNumber(null)}>
-                    <XIcon className="w-4 h-4 mr-1" /> Clear
-                  </Button>
-                </div>
-                <InvoiceDetailTable invoices={displayInvoices} onDrillDown={setDrillDown} />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* === BY SERVICE CATEGORY === */}
-      {activeView === "by-category" && (
-        <Card>
-          <CardHeader>
-            <CardTitle>By Service Category</CardTitle>
-            <CardDescription>Invoice volume and total value per IBM service category · click to filter</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Service Category</TableHead>
-                    <TableHead className="text-right">Invoices</TableHead>
-                    <TableHead className="text-right text-status-green">Processed</TableHead>
-                    <TableHead className="text-right text-status-yellow">Pending</TableHead>
-                    <TableHead className="text-right text-status-red">On Hold</TableHead>
-                    <TableHead className="text-right">Total Value</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {byCategory.map((row) => (
-                    <TableRow key={row.name} className="cursor-pointer hover:bg-muted/40"
-                      onClick={() => setSelectedCategory(selectedCategory === row.name ? null : row.name)}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                               style={{ backgroundColor: CATEGORY_COLORS[row.name] ?? "#888" }} />
-                          <span className="font-medium">{row.name}</span>
-                          {selectedCategory === row.name && <Badge variant="default" className="text-[10px]">Filtered</Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-semibold">{row.count}</TableCell>
-                      <TableCell className="text-right text-status-green font-semibold">{row.processed}</TableCell>
-                      <TableCell className="text-right text-status-yellow font-semibold">{row.pending}</TableCell>
-                      <TableCell className="text-right text-status-red font-semibold">{row.onHold}</TableCell>
-                      <TableCell className="text-right font-semibold">${row.value.toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {selectedCategory && (
-              <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold">Invoices — {selectedCategory}</span>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedCategory(null)}>
-                    <XIcon className="w-4 h-4 mr-1" /> Clear
-                  </Button>
-                </div>
-                <InvoiceDetailTable invoices={displayInvoices} onDrillDown={setDrillDown} />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Drill-Down Modal */}
-      {drillDown && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setDrillDown(null)}>
-          <div className="bg-card rounded-xl border shadow-xl w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Invoice — {drillDown.id}</h2>
-              <Button variant="ghost" size="icon" onClick={() => setDrillDown(null)}><XIcon className="w-5 h-5" /></Button>
-            </div>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm mb-5">
-              <div><span className="text-muted-foreground">Vendor</span><div className="font-semibold">IBM</div></div>
-              <div><span className="text-muted-foreground">Work Number</span><div className="font-semibold font-mono">{drillDown.workNumber}</div></div>
-              <div><span className="text-muted-foreground">Service Category</span>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[drillDown.serviceCategory] ?? "#888" }} />
-                  <span className="font-semibold">{drillDown.serviceCategory}</span>
-                </div>
-              </div>
-              <div><span className="text-muted-foreground">Invoice Date</span><div className="font-semibold">{drillDown.invoiceDate}</div></div>
-              <div><span className="text-muted-foreground">Amount</span><div className="font-bold text-lg">${drillDown.amount.toLocaleString()}</div></div>
-              <div><span className="text-muted-foreground">Age</span><div className={`font-semibold ${drillDown.ageDays > 60 ? "text-status-red" : ""}`}>{drillDown.ageDays} days</div></div>
-              <div><span className="text-muted-foreground">Status</span><div className="mt-0.5">{statusBadge(drillDown.status)}</div></div>
-              <div><span className="text-muted-foreground">Payment</span><div className="font-semibold">{drillDown.paymentStatus}</div></div>
-              {drillDown.cycleTimeDays != null && (
-                <div><span className="text-muted-foreground">Cycle Time</span><div className="font-semibold">{drillDown.cycleTimeDays} days</div></div>
-              )}
-              {drillDown.hasException === 1 && drillDown.exceptionNote && (
-                <div className="col-span-2">
-                  <span className="text-muted-foreground">Exception Note</span>
-                  <div className="font-medium text-status-red mt-0.5 text-xs">{drillDown.exceptionNote}</div>
-                </div>
-              )}
-            </div>
-            <div className="border-t pt-4">
-              <p className="text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wide">Admin Actions</p>
-              <ActionButtons invoice={drillDown} />
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* ── Modals ──────────────────────────────────────────── */}
+      {drillDown && <DrillDownModal invoice={drillDown} onClose={() => setDrillDown(null)} />}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
     </div>
-  );
-}
-
-function InvoiceDetailCard({
-  invoices,
-  selectedCategory,
-  selectedStatus,
-  hasFilters,
-  onCategory,
-  onStatus,
-  onClear,
-  onDrillDown,
-}: {
-  invoices: Invoice[];
-  selectedCategory: string | null;
-  selectedStatus: string | null;
-  hasFilters: boolean;
-  onCategory: (c: string | null) => void;
-  onStatus: (s: string | null) => void;
-  onClear: () => void;
-  onDrillDown: (inv: Invoice) => void;
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-          <div>
-            <CardTitle>Invoice Detail</CardTitle>
-            <CardDescription>Click a row to view details · Use admin actions to manage status</CardDescription>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => (
-              <Button key={cat} size="sm" variant={selectedCategory === cat ? "default" : "outline"}
-                className="text-xs h-7 gap-1.5"
-                onClick={() => onCategory(selectedCategory === cat ? null : cat)}>
-                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: CATEGORY_COLORS[cat] }} />
-                {cat}
-              </Button>
-            ))}
-            <div className="w-px h-5 bg-border self-center" />
-            {(["Processed", "Pending", "On Hold"] as const).map((s) => (
-              <Button key={s} size="sm" variant={selectedStatus === s ? "default" : "outline"}
-                className="text-xs h-7"
-                onClick={() => onStatus(selectedStatus === s ? null : s)}>
-                {s}
-              </Button>
-            ))}
-            {hasFilters && (
-              <Button size="sm" variant="ghost" className="text-xs h-7 text-muted-foreground" onClick={onClear}>
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <InvoiceDetailTable invoices={invoices} onDrillDown={onDrillDown} />
-      </CardContent>
-    </Card>
   );
 }
