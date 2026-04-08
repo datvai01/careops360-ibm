@@ -82,7 +82,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               boxShadow: "0 2px 8px rgba(15,98,254,0.4)",
             }}
           >
-            <span style={{ color: "white", fontSize: 15, fontWeight: 900, fontFamily: "'Arial Black', Helvetica, sans-serif", lineHeight: 1 }}>C</span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
+              <span style={{ color: "white", fontSize: 13, fontWeight: 900, fontFamily: "'Arial Black', Helvetica, sans-serif", lineHeight: 1 }}>C</span>
+              <span style={{ color: "rgba(255,255,255,0.65)", fontSize: 8, fontWeight: 700, lineHeight: 1, fontFamily: "Arial, sans-serif" }}>°</span>
+            </div>
           </div>
           {sidebarOpen && (
             <div className="flex items-baseline gap-0 truncate min-w-0">
@@ -120,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {sidebarOpen ? (
             <>
               <div className="text-muted-foreground/80 font-medium">Powered by IBM AIOps</div>
-              <div className="text-muted-foreground/50">© 2026 CareOps360</div>
+              <div className="text-muted-foreground/40">Managed by IBM</div>
             </>
           ) : (
             <div className="font-black text-center text-[10px]" style={{ color: "#0f62fe" }}>360</div>
