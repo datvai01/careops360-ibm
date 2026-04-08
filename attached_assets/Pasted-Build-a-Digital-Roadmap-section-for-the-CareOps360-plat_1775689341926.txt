@@ -1,0 +1,243 @@
+Build a **“Digital Roadmap”** section for the **CareOps360** platform using a simple, intuitive, executive-friendly UI.
+
+## Objective
+
+Provide a clean view of **upgrades, ticket reduction initiatives, and transformation activities** across portfolios, with the ability to track timeline, status, priority, and expected outcomes.
+
+## Professional Disclaimer
+
+Include this note clearly on the page, in small professional text below the page title or in the footer:
+
+**Disclaimer:** This dashboard contains representative initiative data derived from planning materials for demonstration and prototype purposes only. It should not be interpreted as a final approved delivery plan, production commitment, or live operational record.
+
+---
+
+## UI Layout
+
+Create a simple 3-part layout:
+
+### 1. Top Section: Summary Cards
+
+Show:
+
+* Total Initiatives
+* Active Initiatives
+* Planned Initiatives
+* Completed Initiatives
+* High Priority Initiatives
+
+### 2. Middle Section: Roadmap Timeline
+
+* Show initiatives by quarter across CY1
+* Each initiative appears as a horizontal bar
+* Color-code by initiative type:
+
+  * Upgrade
+  * Ticket Reduction
+  * Transformation
+* Hover shows quick details
+* Click opens the initiative detail panel
+
+### 3. Bottom Section: Initiatives Table
+
+Display all initiatives in a clean table
+
+---
+
+## Required Table Columns
+
+Include:
+
+* Portfolio
+* Product
+* Application
+* Initiative Type
+* Description
+* Expected Outcome
+* Technology / Software
+* Current Version
+* Upgrade Version
+* Work Number
+* Service Category
+* Start Date
+* End Date
+* Status
+* Priority
+
+---
+
+## Detail Panel
+
+When a user clicks an initiative, open a right-side detail panel showing:
+
+* Portfolio
+* Product
+* Application
+* Initiative Type
+* Description
+* Expected Outcome
+* Technology / Software
+* Current Version
+* Upgrade Version
+* Work Number
+* Service Category
+* Timeline
+* Status
+* Priority
+* Notes
+
+---
+
+## Filters
+
+Add simple filters at the top:
+
+* Portfolio
+* Initiative Type
+* Status
+* Priority
+* Service Category
+* Quarter
+
+---
+
+## Seed Data
+
+Use the initiative structure and wording style inspired by the uploaded planning images. Seed realistic demo data based on the following types of initiatives:
+
+### Upgrade Initiatives
+
+Use examples similar to:
+
+* Process Automation using IBM ODM upgrade
+* WAM SSO Cloud Application Angular upgrade
+* Internal Cloud Applications Angular upgrade
+* Fee Schedule Repository .NET upgrade
+* GroupFee .NET upgrade
+* NAR Windows platform upgrade
+* CareRadius Angular upgrade
+* CareRadius Visual Basic upgrade
+* CareRadius SAP BO upgrade
+* Communication Services Angular upgrade
+* Doc Portal Angular upgrade
+* Horizon ECM Angular upgrade
+* Cognos Business Intelligence Platform upgrade
+* Tableau platform upgrade
+* New Membership System technology modernization
+* MPD Mainframe Extracts upgrade
+* Route Code Eligibility upgrade
+* EDI Eligibility Data Store upgrade
+* Consumer Data Management Angular upgrade
+* Horizon Personal Representative Mgmt System upgrade
+* NASCO Legacy Enrollment and Claim Processing upgrade
+* Legacy Finance platform upgrade
+* Universal Payment System upgrade
+* Image Plus upgrade
+* Chargeback / EDW / SPS / MHP / Worker Comp upgrades across .Net, Jquery, and SQL Server
+* SHBS-UPS MS Access modernization
+
+### Ticket Reduction Initiatives
+
+Use examples similar to:
+
+* Automation of IDR update for SSN randomization cases
+* Enhance existing HMU design for snapshot timestamp accuracy
+* Self-service solution for billing analyst adjustments
+* Reduction in data load anomalies
+* Automate comparison of claims, EOB, and EOP data
+* API coverage cleanup process improvements
+* Automate multi-file checking and merge process
+* Sales portal support enhancement for subgroup scenarios
+* Enrollment support enhancement for address validation
+* ChatOps for BOE, SSIS, and XACT issue reporting
+* Collaboration with integrating systems to prevent authorization errors
+* Collaboration with integrating systems to reduce member discrepancy incidents
+* Automate reprocessing of failed MPV records
+* Enhance logging to proactively analyze survey issues
+* Improve database update request handling in membership workflows
+* Automate loading of CPL data in IVR configuration
+* Coordinate with vendor to reduce mismatch issues in rating platform
+* Educate support team to reduce claims processing tickets
+* Enhance portal screens to reduce manual broker updates
+
+---
+
+## Data Handling Rules
+
+* Use realistic demo entries based on the source planning materials
+* Preserve a professional enterprise tone
+* Dates, statuses, priorities, and work numbers may be generated as demo values
+* Use work numbers like:
+
+  * WO-1001
+  * WO-1002
+  * WO-2001
+  * WO-2002
+* Use service categories such as:
+
+  * Application Modernization
+  * Automation
+  * Quality Improvement
+  * Platform Upgrade
+  * Operational Efficiency
+  * Infrastructure
+  * Data & Analytics
+
+---
+
+## Timeline Behavior
+
+* Show initiatives across Q1, Q2, Q3, and Q4
+* Mix statuses:
+
+  * Planned
+  * Active
+  * Completed
+  * At Risk
+* Mix priorities:
+
+  * High
+  * Medium
+  * Low
+
+---
+
+## Design Requirements
+
+Keep the UI:
+
+* Simple
+* Clean
+* Executive-friendly
+* Easy to scan
+* Light enterprise healthcare styling
+
+Use:
+
+* Rounded cards
+* Simple timeline bars
+* Clean table
+* Right-side detail drawer
+* Minimal clutter
+
+---
+
+## Technical Requirements
+
+* React + TypeScript
+* Mock API or local seeded JSON data
+* Responsive layout
+* Simple reusable components
+* No heavy workflow complexity
+
+---
+
+## Experience Goal
+
+The user should be able to:
+
+* See all initiatives in one place
+* Understand what is active this quarter
+* Track upgrades and ticket reduction efforts
+* Filter and review priorities quickly
+* Open details without leaving the page
