@@ -65,11 +65,12 @@ export default function Ask() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const conversationGenRef = useRef(0);
+  const sendGenRef = useRef(0); // generation captured at send time, not response time
 
   const askMutation = useAskDashboard({
     mutation: {
       onSuccess: (data) => {
-        const gen = conversationGenRef.current;
+        const gen = sendGenRef.current; // stale if user reset after send
         const delay = 350 + Math.random() * 250;
         delayTimerRef.current = setTimeout(() => {
           delayTimerRef.current = null;
@@ -122,6 +123,7 @@ export default function Ask() {
     setMessages((prev) => [...prev, newMsg]);
     setQuery("");
     setIsDelaying(true);
+    sendGenRef.current = conversationGenRef.current;
     askMutation.mutate({ data: { question: text } });
   };
 
