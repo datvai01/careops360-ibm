@@ -36,6 +36,16 @@ const VIEWS = [
   { id: "by-category", label: "By Service Category" },
 ];
 
+function datePresetRange(days: number) {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - days);
+  return {
+    from: from.toISOString().split("T")[0],
+    to: to.toISOString().split("T")[0],
+  };
+}
+
 function statusBadge(status: string) {
   const map: Record<string, string> = {
     Processed: "bg-status-green/10 text-status-green border-status-green/20",
@@ -170,9 +180,9 @@ function InvoiceDetailTable({
     return <div className="py-8 text-center text-sm text-muted-foreground">No invoices match the selected filters.</div>;
   }
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-md border overflow-auto max-h-[460px]">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_hsl(var(--border))]">
           <TableRow>
             <TableHead>Invoice ID</TableHead>
             <TableHead>Vendor</TableHead>
@@ -400,6 +410,7 @@ export default function VendorInvoices() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [datePreset, setDatePreset] = useState<number | null>(null);
   const [drillDown, setDrillDown] = useState<Invoice | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
 
@@ -492,14 +503,36 @@ export default function VendorInvoices() {
       {/* Date Range Filter */}
       <Card className="border-dashed">
         <CardContent className="py-4">
-          <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-wrap items-end gap-3">
             <CalendarIcon className="w-4 h-4 text-muted-foreground mb-2 flex-shrink-0" />
+
+            {/* Quick presets */}
+            {[7, 30, 90].map((days) => (
+              <Button
+                key={days}
+                size="sm"
+                variant={datePreset === days ? "default" : "outline"}
+                className="h-8 text-xs"
+                onClick={() => {
+                  const r = datePresetRange(days);
+                  setDateFrom(r.from);
+                  setDateTo(r.to);
+                  setDatePreset(days);
+                }}
+              >
+                Last {days}d
+              </Button>
+            ))}
+
+            <div className="w-px h-6 bg-border self-end mb-1" />
+
+            {/* Manual date pickers */}
             <div className="space-y-1">
               <Label className="text-xs text-muted-foreground">From Date</Label>
               <Input
                 type="date"
                 value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
+                onChange={(e) => { setDateFrom(e.target.value); setDatePreset(null); }}
                 className="h-8 text-sm w-40"
               />
             </div>
@@ -508,20 +541,22 @@ export default function VendorInvoices() {
               <Input
                 type="date"
                 value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
+                onChange={(e) => { setDateTo(e.target.value); setDatePreset(null); }}
                 className="h-8 text-sm w-40"
               />
             </div>
+
             {(dateFrom || dateTo) && (
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 text-xs text-muted-foreground mb-0"
-                onClick={() => { setDateFrom(""); setDateTo(""); }}
+                className="h-8 text-xs text-muted-foreground"
+                onClick={() => { setDateFrom(""); setDateTo(""); setDatePreset(null); }}
               >
-                <XIcon className="w-3 h-3 mr-1" /> Clear dates
+                <XIcon className="w-3 h-3 mr-1" /> Clear
               </Button>
             )}
+
             <div className="text-xs text-muted-foreground self-end mb-2 ml-auto">
               Showing <strong>{displayInvoices.length}</strong> of <strong>{allInvoices.length}</strong> invoices
             </div>
