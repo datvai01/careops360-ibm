@@ -10,6 +10,7 @@ import contactcenterRouter from "./contactcenter";
 import financeRouter from "./finance";
 import applicationsRouter from "./applications";
 import ibmamsRouter from "./ibmams";
+import roadmapRouter from "./roadmap";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(contactcenterRouter);
 router.use(financeRouter);
 router.use(applicationsRouter);
 router.use(ibmamsRouter);
+router.use(roadmapRouter);
 
 export default router;

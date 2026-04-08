@@ -717,6 +717,145 @@ export interface AskResponse {
   followUpQuestions: string[];
 }
 
+export type RoadmapInitiativeInitiativeType =
+  (typeof RoadmapInitiativeInitiativeType)[keyof typeof RoadmapInitiativeInitiativeType];
+
+export const RoadmapInitiativeInitiativeType = {
+  Upgrade: "Upgrade",
+  Ticket_Reduction: "Ticket Reduction",
+  Transformation: "Transformation",
+} as const;
+
+export type RoadmapInitiativeStatus =
+  (typeof RoadmapInitiativeStatus)[keyof typeof RoadmapInitiativeStatus];
+
+export const RoadmapInitiativeStatus = {
+  Active: "Active",
+  Planned: "Planned",
+  Completed: "Completed",
+  At_Risk: "At Risk",
+} as const;
+
+export type RoadmapInitiativePriority =
+  (typeof RoadmapInitiativePriority)[keyof typeof RoadmapInitiativePriority];
+
+export const RoadmapInitiativePriority = {
+  High: "High",
+  Medium: "Medium",
+  Low: "Low",
+} as const;
+
+export interface RoadmapInitiative {
+  id: number;
+  portfolio: string;
+  product: string;
+  application: string;
+  initiativeType: RoadmapInitiativeInitiativeType;
+  description: string;
+  expectedOutcome: string;
+  technology: string;
+  currentVersion: string;
+  upgradeVersion: string;
+  workNumber: string;
+  serviceCategory: string;
+  startDate: string;
+  endDate: string;
+  status: RoadmapInitiativeStatus;
+  priority: RoadmapInitiativePriority;
+  notes: string;
+  daysOverdue?: number | null;
+  daysUntilEnd?: number | null;
+}
+
+export type CreateRoadmapInitiativeRequestInitiativeType =
+  (typeof CreateRoadmapInitiativeRequestInitiativeType)[keyof typeof CreateRoadmapInitiativeRequestInitiativeType];
+
+export const CreateRoadmapInitiativeRequestInitiativeType = {
+  Upgrade: "Upgrade",
+  Ticket_Reduction: "Ticket Reduction",
+  Transformation: "Transformation",
+} as const;
+
+export type CreateRoadmapInitiativeRequestStatus =
+  (typeof CreateRoadmapInitiativeRequestStatus)[keyof typeof CreateRoadmapInitiativeRequestStatus];
+
+export const CreateRoadmapInitiativeRequestStatus = {
+  Active: "Active",
+  Planned: "Planned",
+  Completed: "Completed",
+  At_Risk: "At Risk",
+} as const;
+
+export type CreateRoadmapInitiativeRequestPriority =
+  (typeof CreateRoadmapInitiativeRequestPriority)[keyof typeof CreateRoadmapInitiativeRequestPriority];
+
+export const CreateRoadmapInitiativeRequestPriority = {
+  High: "High",
+  Medium: "Medium",
+  Low: "Low",
+} as const;
+
+export interface CreateRoadmapInitiativeRequest {
+  portfolio: string;
+  product: string;
+  application: string;
+  initiativeType: CreateRoadmapInitiativeRequestInitiativeType;
+  description: string;
+  expectedOutcome: string;
+  technology: string;
+  currentVersion?: string;
+  upgradeVersion?: string;
+  workNumber: string;
+  serviceCategory: string;
+  startDate: string;
+  endDate: string;
+  status: CreateRoadmapInitiativeRequestStatus;
+  priority: CreateRoadmapInitiativeRequestPriority;
+  notes?: string;
+}
+
+export interface RoadmapSummary {
+  total: number;
+  active: number;
+  planned: number;
+  completed: number;
+  atRisk: number;
+  highPriority: number;
+  overdueCount: number;
+  endingSoonCount: number;
+  startOverdueCount: number;
+}
+
+export type RoadmapAlertSeverity =
+  (typeof RoadmapAlertSeverity)[keyof typeof RoadmapAlertSeverity];
+
+export const RoadmapAlertSeverity = {
+  critical: "critical",
+  high: "high",
+  medium: "medium",
+} as const;
+
+export type RoadmapAlertAlertType =
+  (typeof RoadmapAlertAlertType)[keyof typeof RoadmapAlertAlertType];
+
+export const RoadmapAlertAlertType = {
+  overdue: "overdue",
+  atRisk: "atRisk",
+  endingSoon: "endingSoon",
+  startOverdue: "startOverdue",
+} as const;
+
+export interface RoadmapAlert {
+  id: number;
+  severity: RoadmapAlertSeverity;
+  alertType: RoadmapAlertAlertType;
+  title: string;
+  message: string;
+  workNumber: string;
+  portfolio: string;
+  daysOverdue?: number | null;
+}
+
 export type GetMemberKpisParams = {
   dateRange?: string;
   productLine?: string;
@@ -760,4 +899,26 @@ export type GetVendorInvoiceListParams = {
 export type GetIncidentsParams = {
   severity?: string;
   status?: string;
+};
+
+export type GetRoadmapInitiativesParams = {
+  portfolio?: string;
+  initiativeType?: string;
+  status?: string;
+  priority?: string;
+  serviceCategory?: string;
+};
+
+export type UpdateRoadmapInitiativeStatusBodyStatus =
+  (typeof UpdateRoadmapInitiativeStatusBodyStatus)[keyof typeof UpdateRoadmapInitiativeStatusBodyStatus];
+
+export const UpdateRoadmapInitiativeStatusBodyStatus = {
+  Active: "Active",
+  Planned: "Planned",
+  Completed: "Completed",
+  At_Risk: "At Risk",
+} as const;
+
+export type UpdateRoadmapInitiativeStatusBody = {
+  status: UpdateRoadmapInitiativeStatusBodyStatus;
 };

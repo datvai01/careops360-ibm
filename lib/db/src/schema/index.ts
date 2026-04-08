@@ -8,3 +8,4 @@ export * from "./contactcenter";
 export * from "./finance";
 export * from "./applications";
 export * from "./ibmams";
+export * from "./roadmap";

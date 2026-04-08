@@ -28,6 +28,8 @@ tags:
     description: Application health and incidents
   - name: ibmams
     description: IBM AMS value and metrics
+  - name: roadmap
+    description: Digital roadmap initiatives and planning
   - name: auth
     description: Authentication
 paths:
@@ -771,6 +773,118 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AskResponse"
+
+  /roadmap/initiatives:
+    get:
+      operationId: getRoadmapInitiatives
+      tags: [roadmap]
+      summary: List all roadmap initiatives
+      parameters:
+        - in: query
+          name: portfolio
+          schema:
+            type: string
+        - in: query
+          name: initiativeType
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: priority
+          schema:
+            type: string
+        - in: query
+          name: serviceCategory
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of roadmap initiatives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoadmapInitiative"
+    post:
+      operationId: createRoadmapInitiative
+      tags: [roadmap]
+      summary: Create a new roadmap initiative
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoadmapInitiativeRequest"
+      responses:
+        "201":
+          description: Created initiative
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoadmapInitiative"
+
+  /roadmap/summary:
+    get:
+      operationId: getRoadmapSummary
+      tags: [roadmap]
+      summary: Get roadmap summary counts
+      responses:
+        "200":
+          description: Summary counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoadmapSummary"
+
+  /roadmap/alerts:
+    get:
+      operationId: getRoadmapAlerts
+      tags: [roadmap]
+      summary: Get roadmap delay and risk alerts
+      responses:
+        "200":
+          description: List of roadmap alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoadmapAlert"
+
+  /roadmap/initiatives/{id}/status:
+    patch:
+      operationId: updateRoadmapInitiativeStatus
+      tags: [roadmap]
+      summary: Update the status of a roadmap initiative
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [Active, Planned, Completed, "At Risk"]
+              required:
+                - status
+      responses:
+        "200":
+          description: Updated initiative
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoadmapInitiative"
 
 components:
   schemas:
@@ -2014,3 +2128,184 @@ components:
         - sources
         - relatedMetrics
         - followUpQuestions
+
+    RoadmapInitiative:
+      type: object
+      properties:
+        id:
+          type: integer
+        portfolio:
+          type: string
+        product:
+          type: string
+        application:
+          type: string
+        initiativeType:
+          type: string
+          enum: [Upgrade, "Ticket Reduction", Transformation]
+        description:
+          type: string
+        expectedOutcome:
+          type: string
+        technology:
+          type: string
+        currentVersion:
+          type: string
+        upgradeVersion:
+          type: string
+        workNumber:
+          type: string
+        serviceCategory:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        status:
+          type: string
+          enum: [Active, Planned, Completed, "At Risk"]
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        notes:
+          type: string
+        daysOverdue:
+          type: integer
+          nullable: true
+        daysUntilEnd:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - portfolio
+        - product
+        - application
+        - initiativeType
+        - description
+        - expectedOutcome
+        - technology
+        - currentVersion
+        - upgradeVersion
+        - workNumber
+        - serviceCategory
+        - startDate
+        - endDate
+        - status
+        - priority
+        - notes
+
+    CreateRoadmapInitiativeRequest:
+      type: object
+      properties:
+        portfolio:
+          type: string
+        product:
+          type: string
+        application:
+          type: string
+        initiativeType:
+          type: string
+          enum: [Upgrade, "Ticket Reduction", Transformation]
+        description:
+          type: string
+        expectedOutcome:
+          type: string
+        technology:
+          type: string
+        currentVersion:
+          type: string
+        upgradeVersion:
+          type: string
+        workNumber:
+          type: string
+        serviceCategory:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        status:
+          type: string
+          enum: [Active, Planned, Completed, "At Risk"]
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        notes:
+          type: string
+      required:
+        - portfolio
+        - product
+        - application
+        - initiativeType
+        - description
+        - expectedOutcome
+        - technology
+        - workNumber
+        - serviceCategory
+        - startDate
+        - endDate
+        - status
+        - priority
+
+    RoadmapSummary:
+      type: object
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        planned:
+          type: integer
+        completed:
+          type: integer
+        atRisk:
+          type: integer
+        highPriority:
+          type: integer
+        overdueCount:
+          type: integer
+        endingSoonCount:
+          type: integer
+        startOverdueCount:
+          type: integer
+      required:
+        - total
+        - active
+        - planned
+        - completed
+        - atRisk
+        - highPriority
+        - overdueCount
+        - endingSoonCount
+        - startOverdueCount
+
+    RoadmapAlert:
+      type: object
+      properties:
+        id:
+          type: integer
+        severity:
+          type: string
+          enum: [critical, high, medium]
+        alertType:
+          type: string
+          enum: [overdue, atRisk, endingSoon, startOverdue]
+        title:
+          type: string
+        message:
+          type: string
+        workNumber:
+          type: string
+        portfolio:
+          type: string
+        daysOverdue:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - severity
+        - alertType
+        - title
+        - message
+        - workNumber
+        - portfolio

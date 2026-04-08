@@ -1275,3 +1275,124 @@ export const AskDashboardResponse = zod.object({
   ),
   followUpQuestions: zod.array(zod.string()),
 });
+
+/**
+ * @summary List all roadmap initiatives
+ */
+export const GetRoadmapInitiativesQueryParams = zod.object({
+  portfolio: zod.coerce.string().optional(),
+  initiativeType: zod.coerce.string().optional(),
+  status: zod.coerce.string().optional(),
+  priority: zod.coerce.string().optional(),
+  serviceCategory: zod.coerce.string().optional(),
+});
+
+export const GetRoadmapInitiativesResponseItem = zod.object({
+  id: zod.number(),
+  portfolio: zod.string(),
+  product: zod.string(),
+  application: zod.string(),
+  initiativeType: zod.enum(["Upgrade", "Ticket Reduction", "Transformation"]),
+  description: zod.string(),
+  expectedOutcome: zod.string(),
+  technology: zod.string(),
+  currentVersion: zod.string(),
+  upgradeVersion: zod.string(),
+  workNumber: zod.string(),
+  serviceCategory: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
+  priority: zod.enum(["High", "Medium", "Low"]),
+  notes: zod.string(),
+  daysOverdue: zod.number().nullish(),
+  daysUntilEnd: zod.number().nullish(),
+});
+export const GetRoadmapInitiativesResponse = zod.array(
+  GetRoadmapInitiativesResponseItem,
+);
+
+/**
+ * @summary Create a new roadmap initiative
+ */
+export const CreateRoadmapInitiativeBody = zod.object({
+  portfolio: zod.string(),
+  product: zod.string(),
+  application: zod.string(),
+  initiativeType: zod.enum(["Upgrade", "Ticket Reduction", "Transformation"]),
+  description: zod.string(),
+  expectedOutcome: zod.string(),
+  technology: zod.string(),
+  currentVersion: zod.string().optional(),
+  upgradeVersion: zod.string().optional(),
+  workNumber: zod.string(),
+  serviceCategory: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
+  priority: zod.enum(["High", "Medium", "Low"]),
+  notes: zod.string().optional(),
+});
+
+/**
+ * @summary Get roadmap summary counts
+ */
+export const GetRoadmapSummaryResponse = zod.object({
+  total: zod.number(),
+  active: zod.number(),
+  planned: zod.number(),
+  completed: zod.number(),
+  atRisk: zod.number(),
+  highPriority: zod.number(),
+  overdueCount: zod.number(),
+  endingSoonCount: zod.number(),
+  startOverdueCount: zod.number(),
+});
+
+/**
+ * @summary Get roadmap delay and risk alerts
+ */
+export const GetRoadmapAlertsResponseItem = zod.object({
+  id: zod.number(),
+  severity: zod.enum(["critical", "high", "medium"]),
+  alertType: zod.enum(["overdue", "atRisk", "endingSoon", "startOverdue"]),
+  title: zod.string(),
+  message: zod.string(),
+  workNumber: zod.string(),
+  portfolio: zod.string(),
+  daysOverdue: zod.number().nullish(),
+});
+export const GetRoadmapAlertsResponse = zod.array(GetRoadmapAlertsResponseItem);
+
+/**
+ * @summary Update the status of a roadmap initiative
+ */
+export const UpdateRoadmapInitiativeStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateRoadmapInitiativeStatusBody = zod.object({
+  status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
+});
+
+export const UpdateRoadmapInitiativeStatusResponse = zod.object({
+  id: zod.number(),
+  portfolio: zod.string(),
+  product: zod.string(),
+  application: zod.string(),
+  initiativeType: zod.enum(["Upgrade", "Ticket Reduction", "Transformation"]),
+  description: zod.string(),
+  expectedOutcome: zod.string(),
+  technology: zod.string(),
+  currentVersion: zod.string(),
+  upgradeVersion: zod.string(),
+  workNumber: zod.string(),
+  serviceCategory: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
+  priority: zod.enum(["High", "Medium", "Low"]),
+  notes: zod.string(),
+  daysOverdue: zod.number().nullish(),
+  daysUntilEnd: zod.number().nullish(),
+});
