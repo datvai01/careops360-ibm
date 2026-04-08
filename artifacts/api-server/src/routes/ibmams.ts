@@ -148,8 +148,8 @@ const TOPICS: Topic[] = [
     ],
   },
   {
-    // Claims backlog / volume / region / LOB
-    keys: ["claim backlog", "claims backlog", "backlog", "pending claim", "claims pending", "claims volume", "claims today", "claim.*region", "line of business", "lob", "commercial claim", "medicare claim", "medicaid claim", "exchange claim", "claim.*aging", "aging.*claim", "30 day", "prompt pay"],
+    // Claims backlog / volume / region / LOB — broad \bclaim catch-all at end for "what's going on with claims?" type queries
+    keys: ["claim backlog", "claims backlog", "backlog", "pending claim", "claims pending", "claims volume", "claims today", "claim.*region", "line of business", "lob", "commercial claim", "medicare claim", "medicaid claim", "exchange claim", "claim.*aging", "aging.*claim", "30 day", "prompt pay", "\\bclaim"],
     answer: "Today's claims backlog by line of business: Commercial 10,900 pending ($118.4M); Medicare Advantage 5,400 pending ($87.2M); Medicaid 4,900 pending ($22.1M); Exchange/ACA 5,743 pending ($14.1M). Total: 26,943 claims pending, $241.8M in dollar value. Age analysis shows 6.6% (1,782 claims) are over 30 days old — these are at prompt-pay risk and concentrated in high-dollar inpatient surgical and complex COB cases. Auto-adjudication is running at 72.4% today (down from 87% baseline) due to the active Adjudication Platform incident. 87,432 new claims were received today.",
     sources: ["Claims Operations Dashboard", "Claims Aging Report", "Line of Business Analytics"],
     relatedMetrics: [

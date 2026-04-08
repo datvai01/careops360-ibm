@@ -64,13 +64,16 @@ export default function Ask() {
   const [isDelaying, setIsDelaying] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const delayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const conversationGenRef = useRef(0);
 
   const askMutation = useAskDashboard({
     mutation: {
       onSuccess: (data) => {
+        const gen = conversationGenRef.current;
         const delay = 350 + Math.random() * 250;
         delayTimerRef.current = setTimeout(() => {
           delayTimerRef.current = null;
+          if (conversationGenRef.current !== gen) return;
           setIsDelaying(false);
           setMessages((prev) => [
             ...prev,
@@ -123,6 +126,7 @@ export default function Ask() {
   };
 
   const handleReset = () => {
+    conversationGenRef.current += 1;
     if (delayTimerRef.current) {
       clearTimeout(delayTimerRef.current);
       delayTimerRef.current = null;
