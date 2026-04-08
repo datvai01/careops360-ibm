@@ -7,34 +7,79 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
-function CareOps360Mark({ size = 68 }: { size?: number }) {
+function HorizonMark({ size = 80 }: { size?: number }) {
   return (
     <div
-      className="rounded-2xl flex items-center justify-center flex-shrink-0 select-none"
+      className="rounded-2xl flex items-center justify-center flex-shrink-0"
       style={{
         width: size,
         height: size,
-        background: "linear-gradient(135deg, #1565c0 0%, #0f62fe 55%, #002d9c 100%)",
-        boxShadow: "0 8px 32px rgba(15,98,254,0.45), inset 0 1px 0 rgba(255,255,255,0.15)",
+        background: "linear-gradient(135deg, #1a237e 0%, #1565c0 50%, #0d47a1 100%)",
+        boxShadow: "0 10px 40px rgba(21,101,192,0.50), inset 0 1px 0 rgba(255,255,255,0.18)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", gap: 1 }}>
-        <span style={{
-          color: "white",
-          fontSize: size * 0.38,
-          fontWeight: 900,
-          lineHeight: 1,
-          fontFamily: "'Arial Black', Helvetica, sans-serif",
-          letterSpacing: "-0.02em",
-        }}>C</span>
-        <span style={{
-          color: "rgba(255,255,255,0.65)",
-          fontSize: size * 0.21,
-          fontWeight: 700,
-          lineHeight: 1,
-          fontFamily: "Arial, sans-serif",
-        }}>360</span>
-      </div>
+      <svg width={size * 0.54} height={size * 0.54} viewBox="0 0 32 32" fill="none">
+        <path d="M4 4h5v10h14V4h5v24h-5V19H9v9H4V4z" fill="white" />
+      </svg>
+    </div>
+  );
+}
+
+function IbmMark({ size = 80 }: { size?: number }) {
+  const stripeH = size * 0.052;
+  const gap = size * 0.068;
+  const stripes = 8;
+  const totalH = stripes * stripeH + (stripes - 1) * gap;
+  const offsetY = (size - totalH) / 2;
+
+  return (
+    <div
+      className="rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+      style={{
+        width: size,
+        height: size,
+        background: "#0f62fe",
+        boxShadow: "0 10px 40px rgba(15,98,254,0.50), inset 0 1px 0 rgba(255,255,255,0.18)",
+      }}
+    >
+      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+        {Array.from({ length: stripes }).map((_, i) => (
+          <rect
+            key={i}
+            x={size * 0.08}
+            y={offsetY + i * (stripeH + gap)}
+            width={size * 0.84}
+            height={stripeH}
+            fill="white"
+          />
+        ))}
+        <rect x={0} y={0} width={size * 0.08} height={size} fill="#0f62fe" />
+        <rect x={size * 0.92} y={0} width={size * 0.08} height={size} fill="#0f62fe" />
+        <text
+          x={size / 2}
+          y={size * 0.665}
+          textAnchor="middle"
+          fill="white"
+          fontSize={size * 0.35}
+          fontWeight="900"
+          fontFamily="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+          letterSpacing={size * 0.018}
+        >
+          IBM
+        </text>
+        {Array.from({ length: stripes }).map((_, i) =>
+          i % 2 === 1 ? (
+            <rect
+              key={`mask-${i}`}
+              x={size * 0.08}
+              y={offsetY + i * (stripeH + gap)}
+              width={size * 0.84}
+              height={stripeH}
+              fill="#0f62fe"
+            />
+          ) : null
+        )}
+      </svg>
     </div>
   );
 }
@@ -67,25 +112,83 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-muted/30 p-4"
-         style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(15,98,254,0.08) 0%, transparent 70%)" }}>
-      <div className="w-full max-w-md space-y-8">
+    <div
+      className="min-h-screen w-full flex items-center justify-center p-4"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% -10%, rgba(15,98,254,0.14) 0%, rgba(21,101,192,0.06) 40%, transparent 70%), linear-gradient(180deg, #f0f4ff 0%, #f8faff 100%)",
+      }}
+    >
+      <div className="w-full max-w-md space-y-7">
 
-        {/* Brand lockup */}
-        <div className="text-center">
-          <div className="flex items-center justify-center mb-5">
-            <CareOps360Mark size={68} />
+        {/* ── Brand Lockup ── */}
+        <div className="text-center space-y-5">
+
+          {/* Dual logo marks */}
+          <div className="flex items-center justify-center gap-5">
+            <HorizonMark size={84} />
+            <div className="flex flex-col items-center gap-1 select-none">
+              <div className="w-px h-6 bg-border/50" />
+              <span
+                className="text-2xl font-black leading-none"
+                style={{ color: "#0f62fe", textShadow: "0 0 20px rgba(15,98,254,0.25)" }}
+              >
+                +
+              </span>
+              <div className="w-px h-6 bg-border/50" />
+            </div>
+            <IbmMark size={84} />
           </div>
 
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            <span>CareOps</span><span style={{ color: "#0f62fe" }}>360</span>
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm font-medium">
-            From Operations to Outcomes — All in One Place
-          </p>
+          {/* Primary headline — this must be LOUD */}
+          <div>
+            <h1
+              className="text-5xl font-black tracking-tight leading-none select-none"
+              style={{ letterSpacing: "-0.025em" }}
+            >
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #1a237e 0%, #1565c0 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                Horizon
+              </span>
+              <span className="mx-3 text-muted-foreground/40 font-light text-4xl">+</span>
+              <span style={{ color: "#0f62fe" }}>IBM</span>
+            </h1>
 
-          {/* Divider rule */}
-          <div className="flex items-center gap-3 mt-5">
+            {/* Platform name */}
+            <p
+              className="mt-2 text-base font-semibold tracking-widest uppercase"
+              style={{ color: "#1565c0", letterSpacing: "0.2em" }}
+            >
+              Executive Command Center
+            </p>
+          </div>
+
+          {/* CareOps360 platform badge + tagline */}
+          <div className="flex flex-col items-center gap-1.5">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{
+                background: "rgba(15,98,254,0.08)",
+                border: "1px solid rgba(15,98,254,0.2)",
+                color: "#0f62fe",
+              }}
+            >
+              <span>CareOps</span>
+              <span className="font-black">360</span>
+            </div>
+            <p className="text-xs text-muted-foreground/70 font-medium">
+              From Operations to Outcomes — All in One Place
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
@@ -96,8 +199,11 @@ export default function Login() {
           </div>
         </div>
 
-        <Card className="shadow-xl border-border/60"
-              style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.12), 0 1px 0 rgba(255,255,255,0.05) inset" }}>
+        {/* ── Sign-in Card ── */}
+        <Card
+          className="shadow-2xl border-border/50"
+          style={{ boxShadow: "0 24px 64px rgba(15,98,254,0.10), 0 1px 0 rgba(255,255,255,0.8) inset" }}
+        >
           <CardHeader>
             <CardTitle>Sign In</CardTitle>
             <CardDescription>Enter your credentials to access the command center</CardDescription>
@@ -148,6 +254,8 @@ export default function Login() {
           <span>© 2026 CareOps360</span>
           <span className="text-border">·</span>
           <span>Powered by IBM AIOps</span>
+          <span className="text-border">·</span>
+          <span>Managed by IBM</span>
         </div>
       </div>
     </div>
