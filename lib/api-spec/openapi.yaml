@@ -1922,7 +1922,12 @@ components:
             required:
               - label
               - value
+        followUpQuestions:
+          type: array
+          items:
+            type: string
       required:
         - answer
         - sources
         - relatedMetrics
+        - followUpQuestions

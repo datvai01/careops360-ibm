@@ -1244,4 +1244,5 @@ export const AskDashboardResponse = zod.object({
       value: zod.string(),
     }),
   ),
+  followUpQuestions: zod.array(zod.string()),
 });

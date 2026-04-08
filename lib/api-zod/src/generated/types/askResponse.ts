@@ -11,4 +11,5 @@ export interface AskResponse {
   answer: string;
   sources: string[];
   relatedMetrics: AskResponseRelatedMetricsItem[];
+  followUpQuestions: string[];
 }
