@@ -73,11 +73,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           sidebarOpen ? "w-64" : "w-16"
         )}
       >
-        <div className="h-16 flex items-center px-4 border-b">
-          <ActivityIcon className="w-6 h-6 text-primary flex-shrink-0" />
+        <div className="h-16 flex items-center px-4 border-b gap-3">
+          {/* Horizon H mark */}
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #1565c0 0%, #0f62fe 55%, #002d9c 100%)",
+              boxShadow: "0 2px 8px rgba(15,98,254,0.4)",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 32 32" fill="none">
+              <path d="M4 4h5v10h14V4h5v24h-5V19H9v9H4V4z" fill="white" />
+            </svg>
+          </div>
           {sidebarOpen && (
-            <div className="ml-3 font-bold tracking-tight truncate">
-              Horizon <span className="text-primary">Payer</span>
+            <div className="flex items-center gap-1.5 truncate min-w-0">
+              <span className="font-bold tracking-tight text-sm">Horizon</span>
+              <span className="text-muted-foreground/60 font-light text-sm">+</span>
+              <span
+                className="font-black text-sm tracking-wider"
+                style={{ color: "#0f62fe" }}
+              >
+                IBM
+              </span>
             </div>
           )}
         </div>
