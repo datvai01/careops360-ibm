@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, vendorInvoicesTable, vendorInvoiceAlertsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -31,11 +31,13 @@ router.get("/vendor-invoices/kpis", async (_req, res): Promise<void> => {
 
 router.get("/vendor-invoices/list", async (req, res): Promise<void> => {
   let rows = await db.select().from(vendorInvoicesTable);
-  const { vendor, status, workNumber, serviceCategory } = req.query as Record<string, string | undefined>;
+  const { vendor, status, workNumber, serviceCategory, dateFrom, dateTo } = req.query as Record<string, string | undefined>;
   if (vendor) rows = rows.filter((r) => r.vendor === vendor);
   if (status) rows = rows.filter((r) => r.status === status);
   if (workNumber) rows = rows.filter((r) => r.workNumber === workNumber);
   if (serviceCategory) rows = rows.filter((r) => r.serviceCategory === serviceCategory);
+  if (dateFrom) rows = rows.filter((r) => r.invoiceDate >= dateFrom);
+  if (dateTo) rows = rows.filter((r) => r.invoiceDate <= dateTo);
   res.json(rows);
 });
 
@@ -58,6 +60,79 @@ router.get("/vendor-invoices/aging", async (_req, res): Promise<void> => {
 router.get("/vendor-invoices/alerts", async (_req, res): Promise<void> => {
   const rows = await db.select().from(vendorInvoiceAlertsTable);
   res.json(rows);
+});
+
+router.patch("/vendor-invoices/:id/status", async (req, res): Promise<void> => {
+  const { id } = req.params;
+  const { action } = req.body as { action?: string };
+
+  const statusMap: Record<string, { status: string; paymentStatus?: string }> = {
+    release: { status: "Processed", paymentStatus: "Paid" },
+    hold: { status: "On Hold", paymentStatus: "Unpaid" },
+    processed: { status: "Processed", paymentStatus: "Unpaid" },
+  };
+
+  if (!action || !statusMap[action]) {
+    res.status(400).json({ error: "Invalid action. Use: release, hold, or processed" });
+    return;
+  }
+
+  const update = statusMap[action];
+  const updated = await db
+    .update(vendorInvoicesTable)
+    .set({
+      status: update.status as "Processed" | "Pending" | "On Hold",
+      ...(update.paymentStatus ? { paymentStatus: update.paymentStatus as "Paid" | "Unpaid" } : {}),
+    })
+    .where(eq(vendorInvoicesTable.id, id))
+    .returning();
+
+  if (updated.length === 0) {
+    res.status(404).json({ error: "Invoice not found" });
+    return;
+  }
+  res.json(updated[0]);
+});
+
+router.post("/vendor-invoices", async (req, res): Promise<void> => {
+  const { vendor, workNumber, serviceCategory, invoiceDate, amount, exceptionNote } = req.body as {
+    vendor?: string;
+    workNumber?: string;
+    serviceCategory?: string;
+    invoiceDate?: string;
+    amount?: number;
+    exceptionNote?: string;
+  };
+
+  if (!vendor || !workNumber || !serviceCategory || !invoiceDate || amount == null) {
+    res.status(400).json({ error: "Missing required fields: vendor, workNumber, serviceCategory, invoiceDate, amount" });
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const diffDays = Math.floor((new Date(today).getTime() - new Date(invoiceDate).getTime()) / 86400000);
+
+  const newId = `INV-${Date.now().toString().slice(-6)}`;
+
+  const inserted = await db
+    .insert(vendorInvoicesTable)
+    .values({
+      id: newId,
+      vendor,
+      workNumber,
+      serviceCategory,
+      invoiceDate,
+      amount,
+      status: "Pending",
+      paymentStatus: "Unpaid",
+      ageDays: Math.max(0, diffDays),
+      cycleTimeDays: null,
+      hasException: exceptionNote ? 1 : 0,
+      exceptionNote: exceptionNote ?? null,
+    })
+    .returning();
+
+  res.status(201).json(inserted[0]);
 });
 
 export default router;

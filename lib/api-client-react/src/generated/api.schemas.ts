@@ -753,6 +753,8 @@ export type GetVendorInvoiceListParams = {
   status?: string;
   workNumber?: string;
   serviceCategory?: string;
+  dateFrom?: string;
+  dateTo?: string;
 };
 
 export type GetIncidentsParams = {
