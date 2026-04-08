@@ -493,66 +493,45 @@ export default function VendorInvoices() {
 
       {/* === IBM OVERVIEW === */}
       {activeView === "overview" && (
-        <div className="space-y-6">
-          {/* IBM summary banner */}
+        <div className="space-y-4">
+          {/* Compact category strip */}
           <Card>
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-4 h-4 rounded-full flex-shrink-0" style={{ backgroundColor: IBM_BLUE }} />
-                <span className="font-bold text-lg">IBM</span>
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-sm text-muted-foreground font-medium">{allInvoices.length} total invoices</span>
-                <span className="text-sm font-bold">${(allInvoices.reduce((s, r) => s + r.amount, 0) / 1000000).toFixed(2)}M total</span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { label: "Processed", count: allInvoices.filter((r) => r.status === "Processed").length, color: "text-status-green" },
-                  { label: "Pending",   count: allInvoices.filter((r) => r.status === "Pending").length,   color: "text-status-yellow" },
-                  { label: "On Hold",   count: allInvoices.filter((r) => r.status === "On Hold").length,   color: "text-status-red" },
-                ].map((s) => (
-                  <div key={s.label} className="text-center">
-                    <div className={`text-3xl font-black ${s.color}`}>{s.count}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-                  </div>
-                ))}
+            <CardContent className="py-3 px-4">
+              <div className="flex flex-wrap gap-2">
+                {byCategory.map((cat) => {
+                  const active = selectedCategory === cat.name;
+                  return (
+                    <button
+                      key={cat.name}
+                      onClick={() => setSelectedCategory(active ? null : cat.name)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition-all hover:shadow-sm ${
+                        active
+                          ? "bg-primary text-primary-foreground border-primary font-semibold"
+                          : "bg-background border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: active ? "currentColor" : (CATEGORY_COLORS[cat.name] ?? "#888") }}
+                      />
+                      <span className="font-medium">{cat.name}</span>
+                      <span className={`ml-1 ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                        {cat.count} · ${(cat.value / 1_000_000).toFixed(1)}M
+                      </span>
+                    </button>
+                  );
+                })}
+                {selectedCategory && (
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-md border border-dashed text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+                  >
+                    <XIcon className="w-3 h-3" /> Clear
+                  </button>
+                )}
               </div>
             </CardContent>
           </Card>
-
-          {/* Category breakdown grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {byCategory.map((cat) => (
-              <Card key={cat.name}
-                className={`cursor-pointer transition-all hover:shadow-md ${selectedCategory === cat.name ? "ring-2 ring-primary" : ""}`}
-                onClick={() => setSelectedCategory(selectedCategory === cat.name ? null : cat.name)}>
-                <CardContent className="pt-4 pb-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                         style={{ backgroundColor: CATEGORY_COLORS[cat.name] ?? "#888" }} />
-                    <span className="font-semibold text-xs leading-tight">{cat.name}</span>
-                    {selectedCategory === cat.name && (
-                      <Badge variant="default" className="ml-auto text-[10px] py-0">Active</Badge>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <div className="text-xl font-bold">{cat.count}</div>
-                      <div className="text-[10px] text-muted-foreground">invoices</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-base font-bold">${(cat.value / 1000000).toFixed(2)}M</div>
-                      <div className="text-[10px] text-muted-foreground">total value</div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-2 text-[10px] text-muted-foreground">
-                    <span className="text-status-green">{cat.processed}✓</span>
-                    <span className="text-status-yellow">{cat.pending} pend</span>
-                    {cat.onHold > 0 && <span className="text-status-red">{cat.onHold} hold</span>}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
 
           {/* Invoice detail */}
           <InvoiceDetailCard
