@@ -300,61 +300,59 @@ async function seed() {
   );
   console.log("  contactcenter_hourly seeded");
 
-  // Vendor Invoices
+  // Vendor Invoices — IBM only; categories: Managed Services & Flex Services
   await db.delete(vendorInvoiceAlertsTable);
   await db.delete(vendorInvoicesTable);
-  const vendors = ["XYZ Systems", "IBM", "ABC Corp"] as const;
-  const workNumbers = ["WO-1001", "WO-1002", "WO-2001", "WO-2002", "WO-3001", "WO-3002"] as const;
-  const serviceCategories = ["Application Support", "Infrastructure", "Data Services", "BPO"] as const;
-  const invoiceStatuses = ["Processed", "Processed", "Processed", "Pending", "Pending", "On Hold"] as const;
-  const paymentStatuses = ["Paid", "Paid", "Pending"] as const;
-  const exceptionNotes = [
-    "Amount mismatch vs. PO",
-    "Duplicate invoice number",
-    "Missing work order reference",
-    "Tax code discrepancy",
+
+  const ibmInvoices = [
+    // Managed Services — recurring monthly contract billing
+    { id: "INV-IBM-001", workNumber: "WO-MS-101", serviceCategory: "Managed Services", invoiceDate: "2024-07-01", amount: 512000, status: "Processed", paymentStatus: "Paid",    ageDays: 281, cycleTimeDays: 14.2, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-002", workNumber: "WO-MS-101", serviceCategory: "Managed Services", invoiceDate: "2024-08-01", amount: 512000, status: "Processed", paymentStatus: "Paid",    ageDays: 250, cycleTimeDays: 13.8, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-003", workNumber: "WO-MS-101", serviceCategory: "Managed Services", invoiceDate: "2024-09-01", amount: 512000, status: "Processed", paymentStatus: "Paid",    ageDays: 219, cycleTimeDays: 15.1, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-004", workNumber: "WO-MS-101", serviceCategory: "Managed Services", invoiceDate: "2024-10-01", amount: 512000, status: "Processed", paymentStatus: "Paid",    ageDays: 189, cycleTimeDays: 14.5, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-005", workNumber: "WO-MS-102", serviceCategory: "Managed Services", invoiceDate: "2024-11-01", amount: 198750, status: "Processed", paymentStatus: "Paid",    ageDays: 158, cycleTimeDays: 18.3, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-006", workNumber: "WO-MS-102", serviceCategory: "Managed Services", invoiceDate: "2024-12-01", amount: 198750, status: "Processed", paymentStatus: "Paid",    ageDays: 128, cycleTimeDays: 17.6, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-007", workNumber: "WO-MS-102", serviceCategory: "Managed Services", invoiceDate: "2025-01-01", amount: 204000, status: "Processed", paymentStatus: "Paid",    ageDays: 97,  cycleTimeDays: 16.9, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-008", workNumber: "WO-MS-102", serviceCategory: "Managed Services", invoiceDate: "2025-02-01", amount: 204000, status: "Processed", paymentStatus: "Paid",    ageDays: 66,  cycleTimeDays: 19.4, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-009", workNumber: "WO-MS-103", serviceCategory: "Managed Services", invoiceDate: "2025-03-01", amount: 321000, status: "Processed", paymentStatus: "Unpaid",  ageDays: 38,  cycleTimeDays: 22.0, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-010", workNumber: "WO-MS-103", serviceCategory: "Managed Services", invoiceDate: "2025-03-15", amount: 321000, status: "Pending",   paymentStatus: "Unpaid",  ageDays: 24,  cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-011", workNumber: "WO-MS-104", serviceCategory: "Managed Services", invoiceDate: "2025-04-01", amount: 489000, status: "Pending",   paymentStatus: "Unpaid",  ageDays: 7,   cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-012", workNumber: "WO-MS-104", serviceCategory: "Managed Services", invoiceDate: "2025-04-05", amount: 489000, status: "On Hold",   paymentStatus: "Unpaid",  ageDays: 3,   cycleTimeDays: null, hasException: 1, exceptionNote: "Amount mismatch vs. approved PO-MS-0082 ($489,000 vs $481,500). Reconciliation in progress." },
+    // Flex Services — project-based variable billing
+    { id: "INV-IBM-013", workNumber: "WO-FS-201", serviceCategory: "Flex Services",    invoiceDate: "2024-07-15", amount: 127500, status: "Processed", paymentStatus: "Paid",    ageDays: 267, cycleTimeDays: 20.1, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-014", workNumber: "WO-FS-201", serviceCategory: "Flex Services",    invoiceDate: "2024-08-20", amount: 89200,  status: "Processed", paymentStatus: "Paid",    ageDays: 231, cycleTimeDays: 18.7, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-015", workNumber: "WO-FS-202", serviceCategory: "Flex Services",    invoiceDate: "2024-09-10", amount: 214000, status: "Processed", paymentStatus: "Paid",    ageDays: 210, cycleTimeDays: 22.5, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-016", workNumber: "WO-FS-202", serviceCategory: "Flex Services",    invoiceDate: "2024-10-05", amount: 156800, status: "Processed", paymentStatus: "Paid",    ageDays: 185, cycleTimeDays: 17.2, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-017", workNumber: "WO-FS-203", serviceCategory: "Flex Services",    invoiceDate: "2024-10-28", amount: 43500,  status: "Processed", paymentStatus: "Paid",    ageDays: 162, cycleTimeDays: 12.4, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-018", workNumber: "WO-FS-203", serviceCategory: "Flex Services",    invoiceDate: "2024-11-15", amount: 298000, status: "Processed", paymentStatus: "Paid",    ageDays: 144, cycleTimeDays: 24.8, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-019", workNumber: "WO-FS-204", serviceCategory: "Flex Services",    invoiceDate: "2024-12-05", amount: 175000, status: "Processed", paymentStatus: "Paid",    ageDays: 124, cycleTimeDays: 19.0, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-020", workNumber: "WO-FS-204", serviceCategory: "Flex Services",    invoiceDate: "2024-12-20", amount: 62400,  status: "Processed", paymentStatus: "Paid",    ageDays: 109, cycleTimeDays: 16.3, hasException: 1, exceptionNote: "Duplicate invoice number referenced — consolidated with INV-IBM-018." },
+    { id: "INV-IBM-021", workNumber: "WO-FS-201", serviceCategory: "Flex Services",    invoiceDate: "2025-01-08", amount: 185000, status: "Processed", paymentStatus: "Paid",    ageDays: 90,  cycleTimeDays: 21.2, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-022", workNumber: "WO-FS-202", serviceCategory: "Flex Services",    invoiceDate: "2025-01-22", amount: 231000, status: "Processed", paymentStatus: "Paid",    ageDays: 76,  cycleTimeDays: 18.9, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-023", workNumber: "WO-FS-203", serviceCategory: "Flex Services",    invoiceDate: "2025-02-05", amount: 94500,  status: "Processed", paymentStatus: "Unpaid",  ageDays: 62,  cycleTimeDays: 23.1, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-024", workNumber: "WO-FS-204", serviceCategory: "Flex Services",    invoiceDate: "2025-02-18", amount: 412000, status: "Processed", paymentStatus: "Unpaid",  ageDays: 49,  cycleTimeDays: 20.6, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-025", workNumber: "WO-FS-201", serviceCategory: "Flex Services",    invoiceDate: "2025-03-03", amount: 67800,  status: "Pending",   paymentStatus: "Unpaid",  ageDays: 36,  cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-026", workNumber: "WO-FS-202", serviceCategory: "Flex Services",    invoiceDate: "2025-03-10", amount: 143000, status: "Pending",   paymentStatus: "Unpaid",  ageDays: 29,  cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-027", workNumber: "WO-FS-203", serviceCategory: "Flex Services",    invoiceDate: "2025-03-18", amount: 388000, status: "Pending",   paymentStatus: "Unpaid",  ageDays: 21,  cycleTimeDays: null, hasException: 1, exceptionNote: "Missing work order reference — FS project authorization pending sign-off." },
+    { id: "INV-IBM-028", workNumber: "WO-FS-204", serviceCategory: "Flex Services",    invoiceDate: "2025-03-25", amount: 52200,  status: "Pending",   paymentStatus: "Unpaid",  ageDays: 14,  cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-029", workNumber: "WO-MS-103", serviceCategory: "Managed Services", invoiceDate: "2025-03-28", amount: 321000, status: "On Hold",   paymentStatus: "Unpaid",  ageDays: 11,  cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-030", workNumber: "WO-FS-201", serviceCategory: "Flex Services",    invoiceDate: "2025-04-01", amount: 97600,  status: "Pending",   paymentStatus: "Unpaid",  ageDays: 7,   cycleTimeDays: null, hasException: 0, exceptionNote: null },
+    { id: "INV-IBM-031", workNumber: "WO-MS-104", serviceCategory: "Managed Services", invoiceDate: "2025-04-03", amount: 204000, status: "On Hold",   paymentStatus: "Unpaid",  ageDays: 5,   cycleTimeDays: null, hasException: 1, exceptionNote: "Tax code discrepancy on MSA Schedule B amendment — finance review required." },
+    { id: "INV-IBM-032", workNumber: "WO-FS-202", serviceCategory: "Flex Services",    invoiceDate: "2025-04-06", amount: 118500, status: "Pending",   paymentStatus: "Unpaid",  ageDays: 2,   cycleTimeDays: null, hasException: 0, exceptionNote: null },
   ];
-  const invoiceAmounts = [
-    148500, 237000, 89750, 310000, 175200, 425000, 62300, 198400, 540000, 87600,
-    213000, 365000, 128900, 480000, 94200, 276000, 155000, 318500, 441000, 73400,
-    197600, 289000, 116800, 392000, 58900, 234000, 167500, 503000, 81200, 344000,
-    215700, 428000,
-  ];
-  const ageDaysArr = [
-    5, 12, 22, 8, 35, 48, 67, 3, 19, 72, 14, 29, 41, 55, 7, 82, 24, 16, 61, 38,
-    11, 26, 44, 9, 77, 33, 18, 52, 4, 63, 28, 45,
-  ];
-  const cycleTimes = [
-    14.2, 18.5, 22.0, null, 16.8, null, 19.4, 24.1, 13.7, null, 17.3, 20.8,
-    15.0, null, 23.5, null, 18.0, 12.9, null, 21.4, 16.1, 19.7, null, 14.5,
-    null, 22.8, 17.6, null, 15.9, null, 20.2, 18.1,
-  ];
-  const hasExceptions = [0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0];
+
   await db.insert(vendorInvoicesTable).values(
-    Array.from({ length: 32 }, (_, i) => ({
-      id: `INV-${String(2025001 + i)}`,
-      vendor: vendors[i % vendors.length],
-      workNumber: workNumbers[i % workNumbers.length],
-      serviceCategory: serviceCategories[i % serviceCategories.length],
-      invoiceDate: `2025-${String(Math.floor(i / 5) + 1).padStart(2, "0")}-${String((i * 7 % 20) + 1).padStart(2, "0")}`,
-      amount: invoiceAmounts[i],
-      status: invoiceStatuses[i % invoiceStatuses.length],
-      paymentStatus: paymentStatuses[i % paymentStatuses.length],
-      ageDays: ageDaysArr[i],
-      cycleTimeDays: cycleTimes[i],
-      hasException: hasExceptions[i],
-      exceptionNote: hasExceptions[i] ? exceptionNotes[i % exceptionNotes.length] : null,
-    }))
+    ibmInvoices.map((inv) => ({ ...inv, vendor: "IBM" }))
   );
-  console.log("  vendor_invoices seeded");
+  console.log("  vendor_invoices seeded (IBM only — Managed Services & Flex Services)");
 
   await db.insert(vendorInvoiceAlertsTable).values([
-    { alertType: "delayed_payment", invoiceId: "INV-2025006", vendor: "XYZ Systems", message: "Invoice INV-2025006 ($425,000) payment overdue by 18 days — escalation threshold exceeded.", severity: "high", amount: 425000 },
-    { alertType: "high_value_pending", invoiceId: "INV-2025009", vendor: "IBM", message: "High-value invoice INV-2025009 ($540,000) has been pending approval for 72 days.", severity: "high", amount: 540000 },
-    { alertType: "invoice_mismatch", invoiceId: "INV-2025005", vendor: "ABC Corp", message: "Invoice INV-2025005 amount does not match approved PO-8874 ($175,200 vs $168,000). Reconciliation required.", severity: "high", amount: 175200 },
-    { alertType: "delayed_payment", invoiceId: "INV-2025016", vendor: "ABC Corp", message: "Invoice INV-2025016 ($276,000) approaching 30-day overdue threshold — payment action needed.", severity: "medium", amount: 276000 },
-    { alertType: "invoice_mismatch", invoiceId: "INV-2025010", vendor: "IBM", message: "Duplicate invoice reference detected: INV-2025010 shares PO number with INV-2025004. Review required.", severity: "medium", amount: 87600 },
-    { alertType: "high_value_pending", invoiceId: "INV-2025028", vendor: "XYZ Systems", message: "Invoice INV-2025028 ($503,000) pending final approval — 52 days in queue.", severity: "medium", amount: 503000 },
+    { alertType: "invoice_mismatch",    invoiceId: "INV-IBM-012", vendor: "IBM", message: "INV-IBM-012 ($489,000) amount does not match approved PO-MS-0082 ($481,500). Reconciliation required before payment.", severity: "high",   amount: 489000 },
+    { alertType: "high_value_pending",  invoiceId: "INV-IBM-024", vendor: "IBM", message: "High-value Flex Services invoice INV-IBM-024 ($412,000) processed but unpaid — exceeds 45-day payment SLA.", severity: "high",   amount: 412000 },
+    { alertType: "delayed_payment",     invoiceId: "INV-IBM-009", vendor: "IBM", message: "Managed Services invoice INV-IBM-009 ($321,000) processed 38 days ago — payment not yet initiated.", severity: "high",   amount: 321000 },
+    { alertType: "invoice_mismatch",    invoiceId: "INV-IBM-027", vendor: "IBM", message: "INV-IBM-027 ($388,000) missing work order reference — Flex Services project authorization pending.", severity: "medium", amount: 388000 },
+    { alertType: "high_value_pending",  invoiceId: "INV-IBM-011", vendor: "IBM", message: "Managed Services invoice INV-IBM-011 ($489,000) pending approval — no reviewer assigned.", severity: "medium", amount: 489000 },
+    { alertType: "delayed_payment",     invoiceId: "INV-IBM-023", vendor: "IBM", message: "INV-IBM-023 ($94,500) processed 62 days ago with no payment record — review accounts payable queue.", severity: "medium", amount: 94500 },
   ]);
   console.log("  vendor_invoice_alerts seeded");
 

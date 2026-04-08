@@ -35,7 +35,7 @@ IBM-managed executive operations portal for Horizon BCBS (Blue Cross Blue Shield
 4. **Prior Authorization** (`/dashboard/prior-auth`) — PA KPIs, backlog aging, reviewer workload
 5. **Provider Operations** (`/dashboard/providers`) — Provider directory, credentialing, issues
 6. **Contact Center** (`/dashboard/contact-center`) — ASA, FCR, call volume, abandonment rate
-7. **Vendor Invoice & Billing** (`/dashboard/vendor-invoices`) — Invoice tracking by vendor (XYZ Systems, IBM, ABC Corp), work order, and service category; aging analysis, payment status, exceptions/mismatches
+7. **Vendor Invoice & Billing** (`/dashboard/vendor-invoices`) — IBM-scoped invoice tracking (Managed Services & Flex Services); work orders WO-MS-101–104 / WO-FS-201–204; aging analysis, payment status, admin actions (release/hold/processed), upload modal; extensible to other vendors
 8. **Application Health** (`/dashboard/app-health`) — App inventory, incidents, batch jobs, interfaces, SLA
 9. **IBM AMS Value** (`/dashboard/ibm-ams`) — Ticket trends, automation runbooks, cost savings
 10. **Ask the Dashboard** (`/dashboard/ask`) — AI assistant for operational questions

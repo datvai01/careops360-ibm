@@ -22,11 +22,18 @@ import {
   PlayCircleIcon,
 } from "lucide-react";
 
-const VENDOR_COLORS: Record<string, string> = {
-  "XYZ Systems": "#0f62fe",
-  IBM: "#24a148",
-  "ABC Corp": "#8a3ffc",
+const IBM_BLUE = "#0f62fe";
+const IBM_GREEN = "#24a148";
+
+const CATEGORY_COLORS: Record<string, string> = {
+  "Managed Services": IBM_BLUE,
+  "Flex Services": IBM_GREEN,
 };
+
+const IBM_WORK_NUMBERS = [
+  "WO-MS-101", "WO-MS-102", "WO-MS-103", "WO-MS-104",
+  "WO-FS-201", "WO-FS-202", "WO-FS-203", "WO-FS-204",
+];
 
 const VIEWS = [
   { id: "summary-vendor", label: "Summary by Vendor" },
@@ -206,10 +213,7 @@ function InvoiceDetailTable({
               <TableCell className="font-mono text-xs font-medium">{inv.id}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5">
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: VENDOR_COLORS[inv.vendor] ?? "#888" }}
-                  />
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: IBM_BLUE }} />
                   <span className="text-xs">{inv.vendor}</span>
                 </div>
               </TableCell>
@@ -244,9 +248,9 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   const { toast } = useToast();
   const mutation = useUploadInvoice();
   const [form, setForm] = useState({
-    vendor: "XYZ Systems",
-    workNumber: "WO-1001",
-    serviceCategory: "Application Support",
+    vendor: "IBM",
+    workNumber: "WO-MS-101",
+    serviceCategory: "Managed Services",
     invoiceDate: new Date().toISOString().split("T")[0],
     amount: "",
     exceptionNote: "",
@@ -322,15 +326,11 @@ function UploadModal({ onClose }: { onClose: () => void }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Vendor</Label>
-              <select
-                className="w-full rounded-md border bg-background text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                value={form.vendor}
-                onChange={(e) => setForm((f) => ({ ...f, vendor: e.target.value }))}
-              >
-                <option>XYZ Systems</option>
-                <option>IBM</option>
-                <option>ABC Corp</option>
-              </select>
+              <div className="flex items-center gap-2 h-9 px-3 rounded-md border bg-muted/40 text-sm">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: IBM_BLUE }} />
+                <span className="font-semibold">IBM</span>
+                <Badge variant="outline" className="ml-auto text-[10px] border-[#0f62fe]/30 text-[#0f62fe]">AMS</Badge>
+              </div>
             </div>
             <div className="space-y-1.5">
               <Label>Work Number</Label>
@@ -339,9 +339,16 @@ function UploadModal({ onClose }: { onClose: () => void }) {
                 value={form.workNumber}
                 onChange={(e) => setForm((f) => ({ ...f, workNumber: e.target.value }))}
               >
-                {["WO-1001","WO-1002","WO-1003","WO-2001","WO-2002","WO-3001","WO-3002"].map((wn) => (
-                  <option key={wn}>{wn}</option>
-                ))}
+                <optgroup label="Managed Services">
+                  {["WO-MS-101","WO-MS-102","WO-MS-103","WO-MS-104"].map((wn) => (
+                    <option key={wn}>{wn}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Flex Services">
+                  {["WO-FS-201","WO-FS-202","WO-FS-203","WO-FS-204"].map((wn) => (
+                    <option key={wn}>{wn}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
             <div className="space-y-1.5">
@@ -351,10 +358,8 @@ function UploadModal({ onClose }: { onClose: () => void }) {
                 value={form.serviceCategory}
                 onChange={(e) => setForm((f) => ({ ...f, serviceCategory: e.target.value }))}
               >
-                <option>Application Support</option>
-                <option>Infrastructure</option>
-                <option>Data Services</option>
-                <option>BPO</option>
+                <option>Managed Services</option>
+                <option>Flex Services</option>
               </select>
             </div>
             <div className="space-y-1.5">
@@ -475,9 +480,20 @@ export default function VendorInvoices() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Vendor Invoice &amp; Billing</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight">Vendor Invoice &amp; Billing</h1>
+            <Badge
+              variant="outline"
+              className="text-xs font-semibold border-[#0f62fe]/40 text-[#0f62fe] bg-[#0f62fe]/5 px-2 py-0.5"
+            >
+              IBM AMS
+            </Badge>
+          </div>
           <p className="text-muted-foreground mt-1">
-            Invoice tracking across XYZ Systems, IBM, and ABC Corp — by vendor, work order, and service category
+            IBM Managed Services &amp; Flex Services invoice tracking — by work order and service category
+          </p>
+          <p className="text-xs text-muted-foreground/60 mt-0.5">
+            Additional vendors can be onboarded as needed
           </p>
         </div>
         <Button
@@ -590,7 +606,7 @@ export default function VendorInvoices() {
                     onClick={() => setSelectedVendor(selectedVendor === sv.vendor ? null : sv.vendor)}>
                 <CardContent className="pt-5 pb-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: VENDOR_COLORS[sv.vendor] ?? "#888" }} />
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: IBM_BLUE }} />
                     <span className="font-semibold text-sm">{sv.vendor}</span>
                     {selectedVendor === sv.vendor && (
                       <Badge variant="default" className="ml-auto text-[10px]">Filtered</Badge>
@@ -624,13 +640,12 @@ export default function VendorInvoices() {
           </div>
           <InvoiceDetailCard
             invoices={displayInvoices}
-            vendors={vendors}
-            selectedVendor={selectedVendor}
+            selectedCategory={selectedCategory}
             selectedStatus={selectedStatus}
             hasFilters={!!hasFilters}
-            onVendor={setSelectedVendor}
+            onCategory={setSelectedCategory}
             onStatus={setSelectedStatus}
-            onClear={() => { setSelectedVendor(null); setSelectedStatus(null); setDateFrom(""); setDateTo(""); }}
+            onClear={() => { setSelectedCategory(null); setSelectedStatus(null); setDateFrom(""); setDateTo(""); setDatePreset(null); }}
             onDrillDown={setDrillDown}
           />
         </div>
@@ -662,7 +677,7 @@ export default function VendorInvoices() {
                                 onClick={() => setSelectedVendor(selectedVendor === row.vendor ? null : row.vendor)}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: VENDOR_COLORS[row.vendor] ?? "#888" }} />
+                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: IBM_BLUE }} />
                             <span className="font-medium text-sm">{row.vendor}</span>
                           </div>
                         </TableCell>
@@ -679,13 +694,12 @@ export default function VendorInvoices() {
           </Card>
           <InvoiceDetailCard
             invoices={displayInvoices}
-            vendors={vendors}
-            selectedVendor={selectedVendor}
+            selectedCategory={selectedCategory}
             selectedStatus={selectedStatus}
             hasFilters={!!hasFilters}
-            onVendor={setSelectedVendor}
+            onCategory={setSelectedCategory}
             onStatus={setSelectedStatus}
-            onClear={() => { setSelectedVendor(null); setSelectedStatus(null); setDateFrom(""); setDateTo(""); }}
+            onClear={() => { setSelectedCategory(null); setSelectedStatus(null); setDateFrom(""); setDateTo(""); setDatePreset(null); }}
             onDrillDown={setDrillDown}
           />
         </div>
@@ -715,7 +729,7 @@ export default function VendorInvoices() {
                     <TableRow key={row.vendor}>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: VENDOR_COLORS[row.vendor] ?? "#888" }} />
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: IBM_BLUE }} />
                           <span className="font-medium text-sm">{row.vendor}</span>
                         </div>
                       </TableCell>
@@ -881,21 +895,19 @@ export default function VendorInvoices() {
 
 function InvoiceDetailCard({
   invoices,
-  vendors,
-  selectedVendor,
+  selectedCategory,
   selectedStatus,
   hasFilters,
-  onVendor,
+  onCategory,
   onStatus,
   onClear,
   onDrillDown,
 }: {
   invoices: Invoice[];
-  vendors: string[];
-  selectedVendor: string | null;
+  selectedCategory: string | null;
   selectedStatus: string | null;
   hasFilters: boolean;
-  onVendor: (v: string | null) => void;
+  onCategory: (c: string | null) => void;
   onStatus: (s: string | null) => void;
   onClear: () => void;
   onDrillDown: (inv: Invoice) => void;
@@ -909,17 +921,22 @@ function InvoiceDetailCard({
             <CardDescription>Click a row to view details · Use admin actions to manage status</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            {vendors.map((v) => (
+            {(["Managed Services", "Flex Services"] as const).map((cat) => (
               <Button
-                key={v}
+                key={cat}
                 size="sm"
-                variant={selectedVendor === v ? "default" : "outline"}
-                className="text-xs h-7"
-                onClick={() => onVendor(selectedVendor === v ? null : v)}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                className="text-xs h-7 gap-1.5"
+                onClick={() => onCategory(selectedCategory === cat ? null : cat)}
               >
-                {v}
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: CATEGORY_COLORS[cat] }}
+                />
+                {cat}
               </Button>
             ))}
+            <div className="w-px h-5 bg-border self-center" />
             {(["Processed", "Pending", "On Hold"] as const).map((s) => (
               <Button
                 key={s}
@@ -933,7 +950,7 @@ function InvoiceDetailCard({
             ))}
             {hasFilters && (
               <Button size="sm" variant="ghost" className="text-xs h-7 text-muted-foreground" onClick={onClear}>
-                Clear all filters
+                Clear
               </Button>
             )}
           </div>
