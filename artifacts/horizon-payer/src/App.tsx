@@ -19,6 +19,7 @@ import AppHealth from "@/pages/dashboard/AppHealth";
 import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
 import DigitalRoadmap from "@/pages/dashboard/DigitalRoadmap";
+import Help from "@/pages/dashboard/Help";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -47,6 +48,7 @@ function DashboardRouter() {
         <Route path="/dashboard/ibm-ams" component={IbmAms} />
         <Route path="/dashboard/ask" component={Ask} />
         <Route path="/dashboard/digital-roadmap" component={DigitalRoadmap} />
+        <Route path="/dashboard/help" component={Help} />
         <Route component={NotFound} />
       </Switch>
     </AppShell>

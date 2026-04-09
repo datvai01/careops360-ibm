@@ -18,7 +18,8 @@ import {
   MapIcon,
   LogOutIcon,
   SunIcon,
-  MoonIcon
+  MoonIcon,
+  HelpCircleIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Assistant",
     items: [
       { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
+    ],
+  },
+  {
+    label: "Resources",
+    items: [
+      { name: "Help & Walkthrough", path: "/dashboard/help", icon: HelpCircleIcon },
     ],
   },
 ];
