@@ -23,13 +23,13 @@ interface TimeRangeContextValue {
 }
 
 const TimeRangeContext = createContext<TimeRangeContextValue>({
-  period: "24h",
+  period: "7d",
   setPeriod: () => {},
-  periodOption: PERIOD_OPTIONS[0],
+  periodOption: PERIOD_OPTIONS[1],
 });
 
 export function TimeRangeProvider({ children }: { children: ReactNode }) {
-  const [period, setPeriod] = useState<Period>("24h");
+  const [period, setPeriod] = useState<Period>("7d");
   const periodOption = PERIOD_OPTIONS.find(o => o.value === period) ?? PERIOD_OPTIONS[0];
   return (
     <TimeRangeContext.Provider value={{ period, setPeriod, periodOption }}>
