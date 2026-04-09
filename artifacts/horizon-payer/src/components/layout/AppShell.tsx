@@ -29,18 +29,46 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const NAV_ITEMS = [
-  { name: "Executive Overview", path: "/dashboard", icon: LayoutDashboardIcon },
-  { name: "Members", path: "/dashboard/members", icon: UsersIcon },
-  { name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
-  { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
-  { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
-  { name: "Contact Center", path: "/dashboard/contact-center", icon: HeadphonesIcon },
-  { name: "Vendor Invoices", path: "/dashboard/vendor-invoices", icon: DollarSignIcon },
-  { name: "App Health", path: "/dashboard/app-health", icon: ActivityIcon },
-  { name: "IBM AMS Value", path: "/dashboard/ibm-ams", icon: CpuIcon },
-  { name: "Transition Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
-  { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
+type NavItem = { name: string; path: string; icon: React.ElementType };
+type NavGroup = { label: string; items: NavItem[] };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Overview",
+    items: [
+      { name: "Executive Overview", path: "/dashboard", icon: LayoutDashboardIcon },
+      { name: "App Health", path: "/dashboard/app-health", icon: ActivityIcon },
+    ],
+  },
+  {
+    label: "Member & Care Operations",
+    items: [
+      { name: "Members", path: "/dashboard/members", icon: UsersIcon },
+      { name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
+      { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
+      { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
+    ],
+  },
+  {
+    label: "Operations & Support",
+    items: [
+      { name: "Contact Center", path: "/dashboard/contact-center", icon: HeadphonesIcon },
+      { name: "Vendor Invoices", path: "/dashboard/vendor-invoices", icon: DollarSignIcon },
+    ],
+  },
+  {
+    label: "Value & Insights",
+    items: [
+      { name: "IBM AMS Value", path: "/dashboard/ibm-ams", icon: CpuIcon },
+      { name: "Transition Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
+    ],
+  },
+  {
+    label: "Assistant",
+    items: [
+      { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
+    ],
+  },
 ];
 
 function HMark({ size = 26 }: { size?: number }) {
@@ -137,27 +165,47 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         
-        <ScrollArea className="flex-1 py-4">
-          <nav className="space-y-1 px-2">
-            {NAV_ITEMS.map((item) => {
-              const isActive = location === item.path;
-              const Icon = item.icon;
-              return (
-                <Link key={item.path} href={item.path}>
-                  <div 
-                    className={cn(
-                      "flex items-center px-3 py-2 rounded-md cursor-pointer transition-colors",
-                      isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-                      !sidebarOpen && "justify-center"
-                    )}
-                    title={!sidebarOpen ? item.name : undefined}
-                  >
-                    <Icon className={cn("w-5 h-5 flex-shrink-0", isActive ? "text-primary" : "")} />
-                    {sidebarOpen && <span className="ml-3 truncate">{item.name}</span>}
+        <ScrollArea className="flex-1 py-3">
+          <nav className="px-2 space-y-4">
+            {NAV_GROUPS.map((group, gi) => (
+              <div key={group.label}>
+                {/* Section header — hidden when sidebar is collapsed */}
+                {sidebarOpen && (
+                  <div className={cn("px-3 mb-1", gi > 0 && "pt-1")}>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
+                      {group.label}
+                    </span>
                   </div>
-                </Link>
-              );
-            })}
+                )}
+                {/* Divider when collapsed */}
+                {!sidebarOpen && gi > 0 && (
+                  <div className="mx-3 mb-1 border-t border-sidebar-border/40" />
+                )}
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const isActive = location === item.path;
+                    const Icon = item.icon;
+                    return (
+                      <Link key={item.path} href={item.path}>
+                        <div
+                          className={cn(
+                            "flex items-center px-3 py-2 rounded-md cursor-pointer transition-colors",
+                            isActive
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
+                            !sidebarOpen && "justify-center"
+                          )}
+                          title={!sidebarOpen ? item.name : undefined}
+                        >
+                          <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-primary" : "")} />
+                          {sidebarOpen && <span className="ml-3 text-sm truncate">{item.name}</span>}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
         </ScrollArea>
         
