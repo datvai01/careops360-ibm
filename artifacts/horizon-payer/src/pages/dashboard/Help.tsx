@@ -1,4 +1,6 @@
+import { useRef, useState } from "react";
 import { WalkthroughVideo } from "@/components/walkthrough/WalkthroughVideo";
+import { useVideoRecorder } from "@/lib/video/recording";
 import {
   LayoutDashboardIcon,
   ActivityIcon,
@@ -14,6 +16,9 @@ import {
   ClockIcon,
   ShieldCheckIcon,
   KeyIcon,
+  DownloadIcon,
+  CircleStopIcon,
+  LoaderIcon,
 } from "lucide-react";
 
 const CHAPTERS = [
@@ -46,7 +51,27 @@ const TIPS = [
   { icon: KeyIcon, title: "Demo Credentials", desc: "Password for all demo accounts is: demo123. Switch accounts to explore role-based views." },
 ];
 
+function formatProgress(pct: number) {
+  const totalSecs = Math.round((pct / 100) * 167);
+  const m = Math.floor(totalSecs / 60);
+  const s = totalSecs % 60;
+  return `${m}:${String(s).padStart(2, "0")} / 2:47`;
+}
+
 export default function Help() {
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const [videoKey, setVideoKey] = useState(0);
+  const { recordingState, progress, startRecording, cancelRecording } = useVideoRecorder();
+
+  const handleDownload = () => {
+    startRecording(videoContainerRef, () => setVideoKey((k) => k + 1));
+  };
+
+  const isRecording = recordingState === "recording";
+  const isRequesting = recordingState === "requesting";
+  const isEncoding = recordingState === "encoding";
+  const isBusy = isRecording || isRequesting || isEncoding;
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-8">
       {/* Page Header */}
@@ -59,19 +84,91 @@ export default function Help() {
 
       {/* Video Player */}
       <div className="rounded-xl overflow-hidden border bg-card shadow-sm">
-        <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
+        <div ref={videoContainerRef} className="relative w-full" style={{ paddingTop: "56.25%" }}>
           <div className="absolute inset-0">
-            <WalkthroughVideo />
+            <WalkthroughVideo key={videoKey} />
           </div>
+
+          {/* Recording progress overlay */}
+          {isRecording && (
+            <div className="absolute inset-x-0 bottom-0 h-1 bg-black/30 z-50">
+              <div
+                className="h-full transition-all duration-500"
+                style={{ width: `${progress}%`, background: "#da1e28" }}
+              />
+            </div>
+          )}
+
+          {/* Recording badge */}
+          {isRecording && (
+            <div className="absolute top-3 left-3 z-50 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+              style={{ background: "rgba(218,30,40,0.9)", color: "#fff", backdropFilter: "blur(8px)" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />
+              REC · {formatProgress(progress)}
+            </div>
+          )}
+
+          {/* Encoding/requesting overlay */}
+          {(isRequesting || isEncoding) && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center"
+              style={{ background: "rgba(5,14,45,0.85)", backdropFilter: "blur(8px)" }}>
+              <LoaderIcon className="w-8 h-8 text-white animate-spin mb-3" />
+              <p className="text-white text-sm font-medium">
+                {isRequesting ? "Waiting for screen share permission…" : "Encoding video file…"}
+              </p>
+              <p className="text-white/50 text-xs mt-1">
+                {isRequesting ? "Select this tab in the browser dialog" : "Your download will start momentarily"}
+              </p>
+            </div>
+          )}
         </div>
-        <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground font-medium">
+
+        {/* Caption bar */}
+        <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between gap-4">
+          <span className="text-xs text-muted-foreground font-medium flex-1 min-w-0 truncate">
             CareOps360 Platform Walkthrough · ~2:47 min · Auto-plays and loops · Click the speaker button to enable narration
           </span>
-          <span className="text-xs text-muted-foreground">
-            Horizon BCBS × IBM
-          </span>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {isRecording ? (
+              <button
+                onClick={cancelRecording}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                style={{ background: "rgba(218,30,40,0.12)", color: "#da1e28", border: "1px solid rgba(218,30,40,0.3)" }}
+              >
+                <CircleStopIcon size={12} />
+                Stop recording
+              </button>
+            ) : (
+              <button
+                onClick={handleDownload}
+                disabled={isBusy}
+                title="Record the animation and download as .webm"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  background: "rgba(15,98,254,0.1)",
+                  color: "#0f62fe",
+                  border: "1px solid rgba(15,98,254,0.25)",
+                }}
+              >
+                {isEncoding ? (
+                  <LoaderIcon size={12} className="animate-spin" />
+                ) : (
+                  <DownloadIcon size={12} />
+                )}
+                {isEncoding ? "Encoding…" : "Download video"}
+              </button>
+            )}
+            <span className="text-xs text-muted-foreground">Horizon BCBS × IBM</span>
+          </div>
         </div>
+
+        {/* Recording instruction banner */}
+        {isRequesting && (
+          <div className="px-4 py-2.5 border-t text-xs text-center"
+            style={{ background: "rgba(15,98,254,0.06)", color: "#0f62fe", borderColor: "rgba(15,98,254,0.15)" }}>
+            Your browser will ask which screen to share — select <strong>this tab</strong> to record just the video. Recording runs for ~2:47 min, then downloads automatically.
+          </div>
+        )}
       </div>
 
       {/* Two-column layout */}
