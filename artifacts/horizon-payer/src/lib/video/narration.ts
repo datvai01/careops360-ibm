@@ -2,19 +2,19 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useAmbientMusic } from "./ambientMusic";
 
 export const NARRATION_SCRIPTS: Record<number, string> = {
-  0: "Welcome to CareOps360 — a platform thoughtfully designed to bring clarity and confidence to Horizon Blue Cross Blue Shield leadership, in partnership with IBM. We're glad you're here.",
-  1: "Your Executive Overview brings together the metrics that matter most — from claims and membership trends to financial performance. Everything your leadership team needs, in one easy-to-read view.",
-  2: "The App Health section keeps your teams informed about system status, service reliability, and SLA health — so you always have a clear, reassuring picture of how the platform is running.",
-  3: "In the Members section, you'll find a warm and detailed picture of your enrolled population — including demographic trends and coverage breakdowns — helping you stay closely connected to the people you serve.",
-  4: "The Claims view gives you a thoughtful look at processing volumes, adjudication rates, and line-of-business activity — so your team can stay on top of things and resolve any delays early.",
-  5: "Prior Authorization is here to support your clinical teams with a clear view of approval rates, open queues, and reviewer capacity — helping them focus their energy where it's needed most.",
-  6: "The Providers section helps you nurture your network relationships by keeping an eye on credentialing timelines, contract renewals, and overall network health — all in one friendly view.",
-  7: "Contact Center insights give you a caring look at how your members are being served — from call volumes and resolution rates to handle times and self-service trends.",
-  8: "The Vendor Invoices section offers IBM account teams a clear, organized space to review invoice status, track approvals, and stay aligned on contract spending — without the usual back-and-forth.",
-  9: "The IBM AIOps Value page helps you appreciate the impact of intelligent automation over time. You can explore cost savings and efficiency gains across flexible 7, 14, and 21-day windows.",
-  10: "Your Transformation Roadmap gives you a beautiful, high-level view of your digital journey — celebrating milestones reached and looking ahead to the next chapter with confidence.",
-  11: "With Ask Assistant, you can simply type a question in your own words and receive a clear, helpful answer — whether it's about claims, members, or any area of the platform. No reports needed.",
-  12: "Thank you so much for taking this tour of CareOps360. This platform was built with care for the Horizon Blue Cross Blue Shield leadership team, in partnership with IBM. We hope it serves you well.",
+  0:  "CareOps360. The command center built for Horizon Blue Cross Blue Shield leadership — powered by IBM. Let's go.",
+  1:  "Executive Overview. Live KPIs across claims, membership, and financials. Everything leadership needs — right now, in one view.",
+  2:  "App Health. System status, SLA compliance, incident severity — your entire platform, always in sight.",
+  3:  "Members. Enrollment trends, demographics, population mix. Know your membership. Know your mission.",
+  4:  "Claims. High-volume processing, auto-adjudication rates, backlog by line — zero guesswork, full clarity.",
+  5:  "Prior Authorization. Approval rates, open queues, reviewer capacity — clinical priorities, crystal clear.",
+  6:  "Providers. Network health, credentialing pipelines, contract renewals — every relationship, fully on track.",
+  7:  "Contact Center. Call volumes, resolution rates, handle time — member experience, measured and mastered.",
+  8:  "Vendor Invoices. Invoice status, payment approvals, contract spend — IBM account teams, fully aligned.",
+  9:  "IBM AIOps Value. Real cost savings. Real incident reduction. Proven ROI across 7, 14, and 21-day windows.",
+  10: "Transformation Roadmap. From initiative to delivery — your digital journey, charted and moving fast.",
+  11: "Ask Assistant. Plain language. Instant answers. Claims, members, operations — no reports, no waiting.",
+  12: "CareOps360. Horizon Blue Cross Blue Shield. IBM. Executive clarity — delivered.",
 };
 
 function pickFemaleUSVoice(): SpeechSynthesisVoice | null {
@@ -64,8 +64,8 @@ export function useNarration(currentScene: number) {
     const voice = pickFemaleUSVoice();
     if (voice) utterance.voice = voice;
     utterance.lang = "en-US";
-    utterance.rate = 0.84;
-    utterance.pitch = 0.90;
+    utterance.rate = 1.12;
+    utterance.pitch = 1.18;
     utterance.volume = 1;
     window.speechSynthesis.speak(utterance);
   }, []);
