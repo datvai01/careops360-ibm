@@ -190,6 +190,143 @@ function AlertsTable({ alerts, onDismiss }: { alerts: RoadmapAlert[]; onDismiss:
   );
 }
 
+type IbmAsset = {
+  name: string;
+  tag: string;
+  tagColor: string;
+  value: string;
+  isBob?: boolean;
+};
+
+const IBM_BOB: IbmAsset = {
+  name: "IBM BOB — Business Operations Blueprint",
+  tag: "Core Asset",
+  tagColor: "bg-[#0f62fe] text-white",
+  value:
+    "Pre-configured payer operations template suite covering member enrollment, claims adjudication, prior authorization, provider network management, and contact center routing. Delivers reference architectures, integration patterns, and governance playbooks tuned to Blue Cross Blue Shield operating models — accelerating delivery by 30–40% by eliminating design-phase rework.",
+  isBob: true,
+};
+
+const ASSETS_BY_TYPE: Record<string, IbmAsset[]> = {
+  Upgrade: [
+    IBM_BOB,
+    {
+      name: "IBM Application Modernization Accelerator",
+      tag: "Modernization",
+      tagColor: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      value:
+        "Automated application discovery, dependency mapping, and migration-wave planning. Reduces assessment effort by up to 60% through AI-assisted portfolio analysis and risk scoring across Java, .NET, and COBOL estates.",
+    },
+    {
+      name: "IBM DevSecOps Accelerator",
+      tag: "Delivery",
+      tagColor: "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200",
+      value:
+        "Pre-built CI/CD pipeline templates with integrated SAST/DAST security scanning, compliance gates, and automated release orchestration. Cuts pipeline build time from weeks to days and enforces HIPAA/SOC 2 controls at every gate.",
+    },
+    {
+      name: "IBM ADDI — Application Discovery & Delivery Intelligence",
+      tag: "Analysis",
+      tagColor: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200",
+      value:
+        "AI-powered static code analysis platform providing complexity scoring, hidden dependency detection, and upgrade impact assessment across enterprise codebases. Generates refactoring roadmaps with effort and risk estimates per module.",
+    },
+  ],
+  "Ticket Reduction": [
+    IBM_BOB,
+    {
+      name: "IBM Intelligent IT Operations (AIOps)",
+      tag: "AIOps",
+      tagColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+      value:
+        "Event correlation and anomaly detection across hybrid infrastructure using topology-aware AI. Reduces alert noise by up to 70%, auto-routes incidents to the correct resolver group, and generates predicted resolution timelines based on historical patterns.",
+    },
+    {
+      name: "IBM Knowledge Accelerator",
+      tag: "Self-Service",
+      tagColor: "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200",
+      value:
+        "Automated capture and semantic indexing of ticket resolution patterns, turning institutional knowledge into a searchable runbook library. Powers first-call-resolution improvements and enables self-service deflection across member, provider, and internal IT channels.",
+    },
+    {
+      name: "IBM Observability Accelerator",
+      tag: "Monitoring",
+      tagColor: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200",
+      value:
+        "Unified telemetry collection, correlation, and pre-built dashboard templates spanning application, infrastructure, and business KPIs. Establishes full-stack observability in days rather than months, enabling proactive detection before members are impacted.",
+    },
+  ],
+  Transformation: [
+    IBM_BOB,
+    {
+      name: "IBM Garage Method",
+      tag: "Methodology",
+      tagColor: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      value:
+        "Co-creation framework combining enterprise design thinking, agile delivery, and DevOps culture change. Used to rapidly prototype, validate, and scale transformation initiatives — minimizing risk through iterative MVPs and continuous stakeholder alignment.",
+    },
+    {
+      name: "IBM Business Automation Workflow",
+      tag: "Automation",
+      tagColor: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+      value:
+        "Low-code process orchestration platform for automating complex, human-in-the-loop payer workflows including claims exceptions, prior auth escalations, and provider credentialing. Reduces manual handling time by up to 80% on targeted workflows.",
+    },
+    {
+      name: "IBM Process Mining",
+      tag: "Optimization",
+      tagColor: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+      value:
+        "Data-driven process discovery using actual event logs from core systems (FACETS, HealthEdge, etc.) to surface bottlenecks, rework loops, and automation opportunities. Provides an evidence base for transformation prioritization and projected ROI.",
+    },
+    {
+      name: "IBM Consulting Advantage AI Accelerators",
+      tag: "AI / Analytics",
+      tagColor: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200",
+      value:
+        "Curated library of domain-specific AI use cases, implementation patterns, and reusable model assets for healthcare payer operations — covering prior auth prediction, claim denial prevention, member churn risk scoring, and contact center intent classification.",
+    },
+  ],
+};
+
+function IbmConsultingAdvantageSection({ initiativeType }: { initiativeType: string }) {
+  const assets = ASSETS_BY_TYPE[initiativeType] ?? ASSETS_BY_TYPE["Upgrade"];
+  return (
+    <div className="rounded-lg border border-[#0f62fe]/20 bg-[#0f62fe]/[0.03] dark:bg-[#0f62fe]/[0.06] overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[#0f62fe]/15 bg-[#0f62fe]/[0.06] dark:bg-[#0f62fe]/[0.10]">
+        <div className="flex items-center gap-1.5">
+          <svg width="14" height="14" viewBox="0 0 32 32" fill="none" className="flex-shrink-0">
+            <rect width="32" height="32" rx="4" fill="#0f62fe" />
+            <text x="50%" y="71%" textAnchor="middle" fill="white" fontSize="17" fontWeight="900" fontFamily="Helvetica,Arial,sans-serif">IBM</text>
+          </svg>
+          <span className="text-xs font-semibold text-[#0f62fe] dark:text-blue-400 uppercase tracking-wide">IBM Consulting Advantage</span>
+        </div>
+        <span className="text-[10px] text-muted-foreground/60 ml-auto">Assets &amp; Accelerators</span>
+      </div>
+      <div className="divide-y divide-[#0f62fe]/10">
+        {assets.map((asset) => (
+          <div key={asset.name} className={cn("px-4 py-3", asset.isBob && "bg-[#0f62fe]/[0.04] dark:bg-[#0f62fe]/[0.08]")}>
+            <div className="flex items-start gap-2 mb-1.5">
+              <p className={cn("text-xs font-semibold leading-snug", asset.isBob ? "text-[#0f62fe] dark:text-blue-400" : "text-foreground")}>
+                {asset.name}
+              </p>
+              <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium flex-shrink-0 ml-auto", asset.tagColor)}>
+                {asset.tag}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">{asset.value}</p>
+          </div>
+        ))}
+      </div>
+      <div className="px-4 py-2 border-t border-[#0f62fe]/15 bg-[#0f62fe]/[0.03]">
+        <p className="text-[10px] text-muted-foreground/50 italic">
+          For informational purposes only. Asset applicability subject to engagement scope and client environment assessment.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function DetailPanel({ initiative, onClose }: { initiative: RoadmapInitiative; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
@@ -246,6 +383,7 @@ function DetailPanel({ initiative, onClose }: { initiative: RoadmapInitiative; o
               <p className="text-sm text-amber-900 dark:text-amber-200">{initiative.notes}</p>
             </div>
           )}
+          <IbmConsultingAdvantageSection initiativeType={initiative.initiativeType} />
         </div>
       </div>
     </div>
