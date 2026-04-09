@@ -135,7 +135,7 @@ const METHODOLOGY: Record<MethodologyTopic, {
       },
       {
         label: "Total Defects Closed",
-        detail: "All defects closed (resolved + verified) across all environments (Dev, QA, UAT, Staging, Production) during the period.",
+        detail: "All defects closed (resolved + verified) across all environments (Dev, Staging, Production) during the period.",
       },
       {
         label: "Shift-Left Quality Gates",

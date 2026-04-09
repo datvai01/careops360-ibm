@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AppHealth() {
   const { data: kpis, isLoading: isKpisLoading } = useGetApplicationKpis();
@@ -20,13 +19,9 @@ export default function AppHealth() {
           <h1 className="text-3xl font-bold tracking-tight">Application Health</h1>
           <p className="text-muted-foreground mt-1">IT operations, infrastructure, and application reliability</p>
         </div>
-        <Tabs defaultValue="prod" className="w-[400px]">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="prod">PROD</TabsTrigger>
-            <TabsTrigger value="uat">UAT</TabsTrigger>
-            <TabsTrigger value="qa">QA</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <Badge variant="outline" className="text-sm px-3 py-1.5 border-green-500 text-green-600 dark:text-green-400 font-medium">
+          ● Production
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
