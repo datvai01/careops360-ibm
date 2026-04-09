@@ -48,12 +48,6 @@ const CAPABILITIES = [
   },
 ];
 
-const STATS = [
-  { value: "$3.2M", label: "YTD Cost Reduction" },
-  { value: "96%", label: "SLA Compliance" },
-  { value: "4.2M", label: "Members Managed" },
-];
-
 const DEMO_ACCOUNTS = [
   { email: "exec@horizon.com", role: "Executive" },
   { email: "ops@horizon.com", role: "Operations" },
@@ -170,24 +164,6 @@ export default function Login() {
             <p className="mt-6 text-blue-200/60 text-base leading-relaxed max-w-md">
               Real-time visibility across claims, members, prior auth, and IBM AIOps — purpose-built for Horizon BCBS leadership.
             </p>
-          </div>
-
-          {/* Stats bar */}
-          <div
-            className="mt-10 flex gap-6 p-5 rounded-2xl"
-            style={{
-              background: "rgba(15,98,254,0.12)",
-              border: "1px solid rgba(15,98,254,0.22)",
-            }}
-          >
-            {STATS.map((s) => (
-              <div key={s.label} className="flex-1 text-center">
-                <div className="text-white font-black text-2xl xl:text-3xl" style={{ color: "#4d8fff" }}>
-                  {s.value}
-                </div>
-                <div className="text-blue-300/60 text-xs font-medium mt-1">{s.label}</div>
-              </div>
-            ))}
           </div>
 
           {/* Capabilities */}
