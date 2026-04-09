@@ -43,7 +43,7 @@ export default function ExecutiveOverview() {
     { query: { refetchInterval: 30000 } }
   );
 
-  const periodLabel = period === "24h" ? "Today" : periodOption.label;
+  const periodLabel = periodOption.label;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -64,13 +64,13 @@ export default function ExecutiveOverview() {
           icon={<UsersIcon />}
         />
         <KpiCard
-          title={period === "24h" ? "Claims Settled Today" : `Claims Settled (${periodOption.shortLabel})`}
+          title={`Claims Settled (${periodOption.shortLabel})`}
           metric={kpis?.claimsSettledAmount}
           isLoading={isKpisLoading}
           icon={<FileTextIcon />}
         />
         <KpiCard
-          title={period === "24h" ? "Prior Auth Requests" : `Prior Auth (${periodOption.shortLabel})`}
+          title={`Prior Auth (${periodOption.shortLabel})`}
           metric={kpis?.priorAuthRequests}
           isLoading={isKpisLoading}
           icon={<StethoscopeIcon />}

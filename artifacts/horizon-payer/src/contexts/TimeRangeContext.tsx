@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type Period = "24h" | "7d" | "14d";
+export type Period = "7d" | "14d" | "21d";
 
 export interface PeriodOption {
   value: Period;
@@ -11,9 +11,9 @@ export interface PeriodOption {
 }
 
 export const PERIOD_OPTIONS: PeriodOption[] = [
-  { value: "24h", label: "Last 24 Hours", shortLabel: "24H",  days: 1,  compareLabel: "vs yesterday" },
   { value: "7d",  label: "Last 7 Days",   shortLabel: "7D",   days: 7,  compareLabel: "vs 7 days ago" },
   { value: "14d", label: "Last 14 Days",  shortLabel: "14D",  days: 14, compareLabel: "vs 14 days ago" },
+  { value: "21d", label: "Last 21 Days",  shortLabel: "21D",  days: 21, compareLabel: "vs 21 days ago" },
 ];
 
 interface TimeRangeContextValue {
