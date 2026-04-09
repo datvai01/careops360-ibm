@@ -29,14 +29,11 @@ export function Scene5() {
         <h2 className="text-blue-400 font-semibold tracking-widest text-sm uppercase mb-4">
           Member Enrollment
         </h2>
-        <div className="flex items-baseline gap-4 mb-4">
-          <span className="text-white text-6xl lg:text-7xl font-light tracking-tighter">
-            4.2M
-          </span>
-          <span className="text-blue-300/80 text-2xl">members</span>
-        </div>
-        <p className="text-blue-100/90 text-2xl lg:text-3xl font-medium leading-tight">
+        <p className="text-white text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight tracking-tight mb-4">
           Seamless enrollment and lifecycle management.
+        </p>
+        <p className="text-blue-300/60 text-base lg:text-lg font-medium leading-relaxed">
+          End-to-end visibility from onboarding through care delivery.
         </p>
       </motion.div>
 

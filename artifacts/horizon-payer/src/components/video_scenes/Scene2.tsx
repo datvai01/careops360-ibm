@@ -37,13 +37,13 @@ export function Scene2() {
         </p>
       </motion.div>
 
-      {/* KPI Cards */}
+      {/* Feature Cards */}
       <div className="mt-16 flex gap-6 lg:gap-8 relative w-full h-[30vh]">
         {[
-          { label: "SLA Compliance", value: "94.2%", delay: 0 },
-          { label: "Open Tickets", value: "1,247", delay: 0.2 },
-          { label: "Auto-Resolution", value: "68%", delay: 0.4 },
-        ].map((kpi, i) => (
+          { label: "Claims Intelligence", desc: "End-to-end adjudication visibility", delay: 0 },
+          { label: "Real-Time Alerts", desc: "Proactive issue detection before impact", delay: 0.2 },
+          { label: "Automated Ops", desc: "IBM AIOps-driven incident response", delay: 0.4 },
+        ].map((card, i) => (
           <motion.div
             key={i}
             className="flex-1 rounded-2xl bg-[#0a1a4a]/40 border border-blue-500/20 backdrop-blur-sm p-6 lg:p-8 flex flex-col justify-end relative overflow-hidden"
@@ -56,7 +56,7 @@ export function Scene2() {
             transition={{
               duration: 1,
               ease: [0.16, 1, 0.3, 1],
-              delay: kpi.delay,
+              delay: card.delay,
             }}
           >
             {/* Decorative line */}
@@ -64,25 +64,24 @@ export function Scene2() {
               className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-transparent"
               initial={{ scaleX: 0 }}
               animate={phase >= 3 ? { scaleX: 1 } : { scaleX: 0 }}
-              transition={{ duration: 1.5, delay: kpi.delay + 0.5, ease: "easeOut" }}
+              transition={{ duration: 1.5, delay: card.delay + 0.5, ease: "easeOut" }}
               style={{ transformOrigin: "left" }}
             />
-            
-            <p className="text-blue-300/70 text-sm lg:text-base font-medium mb-2">
-              {kpi.label}
-            </p>
             <motion.p
-              className="text-white text-4xl lg:text-5xl xl:text-6xl font-light tracking-tighter"
+              className="text-white text-base lg:text-lg font-semibold mb-2 leading-tight"
               initial={{ opacity: 0, filter: "blur(10px)" }}
               animate={
                 phase >= 3
                   ? { opacity: 1, filter: "blur(0px)" }
                   : { opacity: 0, filter: "blur(10px)" }
               }
-              transition={{ duration: 1, delay: kpi.delay + 0.5 }}
+              transition={{ duration: 1, delay: card.delay + 0.5 }}
             >
-              {kpi.value}
+              {card.label}
             </motion.p>
+            <p className="text-blue-300/60 text-xs lg:text-sm font-medium leading-relaxed">
+              {card.desc}
+            </p>
           </motion.div>
         ))}
       </div>
