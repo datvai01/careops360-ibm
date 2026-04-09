@@ -11,9 +11,16 @@ interface VideoPlayerResult {
 }
 
 export function useVideoPlayer({ durations }: VideoPlayerOptions): VideoPlayerResult {
-  const keys = Object.keys(durations);
   const [currentScene, setCurrentScene] = useState(0);
   const completedRef = useRef(false);
+
+  const durationsRef = useRef(durations);
+  const keysRef = useRef(Object.keys(durations));
+
+  useEffect(() => {
+    durationsRef.current = durations;
+    keysRef.current = Object.keys(durations);
+  }, [durations]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -22,26 +29,29 @@ export function useVideoPlayer({ durations }: VideoPlayerOptions): VideoPlayerRe
   }, []);
 
   useEffect(() => {
+    const keys = keysRef.current;
+    const dur = durationsRef.current;
     const key = keys[currentScene];
-    const duration = durations[key];
+    const duration = dur[key];
 
     const timer = setTimeout(() => {
-      const next = currentScene + 1;
-      if (next >= keys.length) {
-        if (!completedRef.current) {
-          completedRef.current = true;
-          if (typeof window !== "undefined") {
-            window.stopRecording?.();
+      setCurrentScene((prev) => {
+        const next = prev + 1;
+        if (next >= keys.length) {
+          if (!completedRef.current) {
+            completedRef.current = true;
+            if (typeof window !== "undefined") {
+              window.stopRecording?.();
+            }
           }
+          return 0;
         }
-        setCurrentScene(0);
-      } else {
-        setCurrentScene(next);
-      }
+        return next;
+      });
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [currentScene, durations, keys]);
+  }, [currentScene]);
 
   return { currentScene };
 }

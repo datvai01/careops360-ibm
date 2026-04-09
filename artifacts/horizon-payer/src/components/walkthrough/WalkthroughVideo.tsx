@@ -15,19 +15,19 @@ import { Scene12 } from "./scenes/Scene12";
 import { Scene13 } from "./scenes/Scene13";
 
 const SCENE_DURATIONS = {
-  intro: 8000,
-  execOverview: 10000,
-  appHealth: 10000,
-  members: 10000,
-  claims: 10000,
-  priorAuth: 10000,
-  providers: 10000,
-  contactCenter: 10000,
-  vendorInvoices: 10000,
-  ibmAiops: 10000,
-  roadmap: 10000,
-  askAssistant: 12000,
-  outro: 8000,
+  intro: 10000,
+  execOverview: 13000,
+  appHealth: 13000,
+  members: 13000,
+  claims: 13000,
+  priorAuth: 13000,
+  providers: 13000,
+  contactCenter: 13000,
+  vendorInvoices: 13000,
+  ibmAiops: 14000,
+  roadmap: 13000,
+  askAssistant: 16000,
+  outro: 10000,
 };
 
 export function WalkthroughVideo() {

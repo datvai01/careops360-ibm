@@ -18,17 +18,18 @@ import {
 
 const CHAPTERS = [
   { time: "0:00", label: "Platform Introduction", icon: LayoutDashboardIcon, desc: "CareOps360 overview — Horizon + IBM partnership" },
-  { time: "0:15", label: "Executive Overview", icon: LayoutDashboardIcon, desc: "KPIs, claims trends, and global time range filter" },
-  { time: "0:30", label: "App Health", icon: ActivityIcon, desc: "System status, incident severity, and SLA tracking" },
-  { time: "0:45", label: "Members", icon: UsersIcon, desc: "Enrollment KPIs, demographics, and population mix" },
-  { time: "1:00", label: "Claims", icon: FileTextIcon, desc: "Processing volume, auto-adjudication rate, LOB backlog" },
-  { time: "1:15", label: "Prior Auth", icon: StethoscopeIcon, desc: "Approval rates, backlog queue, reviewer workload" },
-  { time: "1:30", label: "Providers", icon: BuildingIcon, desc: "Network status, credentialing, contract pipeline" },
-  { time: "1:45", label: "Contact Center", icon: HeadphonesIcon, desc: "Call volume, FCR, IVR deflection, handle time" },
-  { time: "2:00", label: "Vendor Invoices", icon: DollarSignIcon, desc: "IBM-scoped invoice management and payment status" },
-  { time: "2:15", label: "IBM AIOps Value", icon: CpuIcon, desc: "Automation metrics, 7D/14D/21D selector, cost savings" },
-  { time: "2:30", label: "Transformation Roadmap", icon: MapIcon, desc: "Digital journey milestones and initiative tracking" },
-  { time: "2:45", label: "Ask Assistant", icon: MessageSquareIcon, desc: "Natural-language Q&A for instant platform insights" },
+  { time: "0:10", label: "Executive Overview", icon: LayoutDashboardIcon, desc: "KPIs, claims trends, and global time range filter" },
+  { time: "0:23", label: "App Health", icon: ActivityIcon, desc: "System status, incident severity, and SLA tracking" },
+  { time: "0:36", label: "Members", icon: UsersIcon, desc: "Enrollment KPIs, demographics, and population mix" },
+  { time: "0:49", label: "Claims", icon: FileTextIcon, desc: "Processing volume, auto-adjudication rate, LOB backlog" },
+  { time: "1:02", label: "Prior Auth", icon: StethoscopeIcon, desc: "Approval rates, backlog queue, reviewer workload" },
+  { time: "1:15", label: "Providers", icon: BuildingIcon, desc: "Network status, credentialing, contract pipeline" },
+  { time: "1:28", label: "Contact Center", icon: HeadphonesIcon, desc: "Call volume, FCR, IVR deflection, handle time" },
+  { time: "1:41", label: "Vendor Invoices", icon: DollarSignIcon, desc: "IBM-scoped invoice management and payment status" },
+  { time: "1:54", label: "IBM AIOps Value", icon: CpuIcon, desc: "Automation metrics, 7D/14D/21D selector, cost savings" },
+  { time: "2:08", label: "Transformation Roadmap", icon: MapIcon, desc: "Digital journey milestones and initiative tracking" },
+  { time: "2:21", label: "Ask Assistant", icon: MessageSquareIcon, desc: "Natural-language Q&A for instant platform insights" },
+  { time: "2:37", label: "Outro", icon: LayoutDashboardIcon, desc: "CareOps360 × IBM Horizon partnership lock-up" },
 ];
 
 const DEMO_ACCOUNTS = [
@@ -52,7 +53,7 @@ export default function Help() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Help & Platform Walkthrough</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          A guided tour of CareOps360 — all 11 dashboard sections in under 3 minutes.
+          A guided tour of CareOps360 — all 11 dashboard sections in ~2:47 min. Auto-plays and loops.
         </p>
       </div>
 
@@ -65,7 +66,7 @@ export default function Help() {
         </div>
         <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">
-            CareOps360 Platform Walkthrough · ~3 min · Auto-plays and loops
+            CareOps360 Platform Walkthrough · ~2:47 min · Auto-plays and loops
           </span>
           <span className="text-xs text-muted-foreground">
             Horizon BCBS × IBM
