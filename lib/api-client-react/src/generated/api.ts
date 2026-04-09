@@ -43,11 +43,14 @@ import type {
   GetClaimsKpisParams,
   GetClaimsQueueParams,
   GetContactCenterKpisParams,
+  GetExecutiveKpisParams,
+  GetExecutiveTrendsParams,
   GetIncidentsParams,
   GetMemberKpisParams,
   GetPriorAuthKpisParams,
   GetProviderListParams,
   GetRoadmapInitiativesParams,
+  GetTicketTrendsParams,
   GetVendorInvoiceListParams,
   HealthStatus,
   HourlyVolume,
@@ -404,41 +407,60 @@ export const useLogout = <
 /**
  * @summary Get executive-level KPIs
  */
-export const getGetExecutiveKpisUrl = () => {
-  return `/api/executive/kpis`;
+export const getGetExecutiveKpisUrl = (params?: GetExecutiveKpisParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/executive/kpis?${stringifiedParams}`
+    : `/api/executive/kpis`;
 };
 
 export const getExecutiveKpis = async (
+  params?: GetExecutiveKpisParams,
   options?: RequestInit,
 ): Promise<ExecutiveKpis> => {
-  return customFetch<ExecutiveKpis>(getGetExecutiveKpisUrl(), {
+  return customFetch<ExecutiveKpis>(getGetExecutiveKpisUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetExecutiveKpisQueryKey = () => {
-  return [`/api/executive/kpis`] as const;
+export const getGetExecutiveKpisQueryKey = (
+  params?: GetExecutiveKpisParams,
+) => {
+  return [`/api/executive/kpis`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetExecutiveKpisQueryOptions = <
   TData = Awaited<ReturnType<typeof getExecutiveKpis>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getExecutiveKpis>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetExecutiveKpisParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getExecutiveKpis>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetExecutiveKpisQueryKey();
+  const queryKey =
+    queryOptions?.queryKey ?? getGetExecutiveKpisQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getExecutiveKpis>>
-  > = ({ signal }) => getExecutiveKpis({ signal, ...requestOptions });
+  > = ({ signal }) => getExecutiveKpis(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getExecutiveKpis>>,
@@ -459,15 +481,18 @@ export type GetExecutiveKpisQueryError = ErrorType<unknown>;
 export function useGetExecutiveKpis<
   TData = Awaited<ReturnType<typeof getExecutiveKpis>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getExecutiveKpis>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetExecutiveKpisQueryOptions(options);
+>(
+  params?: GetExecutiveKpisParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getExecutiveKpis>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetExecutiveKpisQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -617,43 +642,62 @@ export function useGetOperationsSnapshot<
 }
 
 /**
- * @summary Get 30-day trend data for key metrics
+ * @summary Get trend data for key metrics, filtered by period
  */
-export const getGetExecutiveTrendsUrl = () => {
-  return `/api/executive/trends`;
+export const getGetExecutiveTrendsUrl = (params?: GetExecutiveTrendsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/executive/trends?${stringifiedParams}`
+    : `/api/executive/trends`;
 };
 
 export const getExecutiveTrends = async (
+  params?: GetExecutiveTrendsParams,
   options?: RequestInit,
 ): Promise<TrendData> => {
-  return customFetch<TrendData>(getGetExecutiveTrendsUrl(), {
+  return customFetch<TrendData>(getGetExecutiveTrendsUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetExecutiveTrendsQueryKey = () => {
-  return [`/api/executive/trends`] as const;
+export const getGetExecutiveTrendsQueryKey = (
+  params?: GetExecutiveTrendsParams,
+) => {
+  return [`/api/executive/trends`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetExecutiveTrendsQueryOptions = <
   TData = Awaited<ReturnType<typeof getExecutiveTrends>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getExecutiveTrends>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetExecutiveTrendsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getExecutiveTrends>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetExecutiveTrendsQueryKey();
+  const queryKey =
+    queryOptions?.queryKey ?? getGetExecutiveTrendsQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getExecutiveTrends>>
-  > = ({ signal }) => getExecutiveTrends({ signal, ...requestOptions });
+  > = ({ signal }) => getExecutiveTrends(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getExecutiveTrends>>,
@@ -668,21 +712,24 @@ export type GetExecutiveTrendsQueryResult = NonNullable<
 export type GetExecutiveTrendsQueryError = ErrorType<unknown>;
 
 /**
- * @summary Get 30-day trend data for key metrics
+ * @summary Get trend data for key metrics, filtered by period
  */
 
 export function useGetExecutiveTrends<
   TData = Awaited<ReturnType<typeof getExecutiveTrends>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getExecutiveTrends>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetExecutiveTrendsQueryOptions(options);
+>(
+  params?: GetExecutiveTrendsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getExecutiveTrends>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetExecutiveTrendsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -3264,41 +3311,57 @@ export function useGetIbmAmsKpis<
 /**
  * @summary Get ticket volume trend over time
  */
-export const getGetTicketTrendsUrl = () => {
-  return `/api/ibmams/ticket-trends`;
+export const getGetTicketTrendsUrl = (params?: GetTicketTrendsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/ibmams/ticket-trends?${stringifiedParams}`
+    : `/api/ibmams/ticket-trends`;
 };
 
 export const getTicketTrends = async (
+  params?: GetTicketTrendsParams,
   options?: RequestInit,
 ): Promise<TicketTrend[]> => {
-  return customFetch<TicketTrend[]>(getGetTicketTrendsUrl(), {
+  return customFetch<TicketTrend[]>(getGetTicketTrendsUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetTicketTrendsQueryKey = () => {
-  return [`/api/ibmams/ticket-trends`] as const;
+export const getGetTicketTrendsQueryKey = (params?: GetTicketTrendsParams) => {
+  return [`/api/ibmams/ticket-trends`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetTicketTrendsQueryOptions = <
   TData = Awaited<ReturnType<typeof getTicketTrends>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getTicketTrends>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetTicketTrendsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTicketTrends>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetTicketTrendsQueryKey();
+  const queryKey = queryOptions?.queryKey ?? getGetTicketTrendsQueryKey(params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getTicketTrends>>> = ({
     signal,
-  }) => getTicketTrends({ signal, ...requestOptions });
+  }) => getTicketTrends(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getTicketTrends>>,
@@ -3319,15 +3382,18 @@ export type GetTicketTrendsQueryError = ErrorType<unknown>;
 export function useGetTicketTrends<
   TData = Awaited<ReturnType<typeof getTicketTrends>>,
   TError = ErrorType<unknown>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getTicketTrends>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetTicketTrendsQueryOptions(options);
+>(
+  params?: GetTicketTrendsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTicketTrends>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTicketTrendsQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

@@ -1,4 +1,5 @@
 import { useGetClaimsKpis, useGetClaimsQueue, useGetDenialReasons, useGetClaimsByLineOfBusiness, useGetClaimsAging } from "@workspace/api-client-react";
+import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 const COLORS = ['#0f62fe', '#24a148', '#8a3ffc', '#002d9c', '#da1e28'];
 
 export default function Claims() {
+  const { periodOption } = useTimeRange();
   const { data: kpis, isLoading: isKpisLoading } = useGetClaimsKpis({});
   const { data: lobData, isLoading: isLobLoading } = useGetClaimsByLineOfBusiness();
   const { data: denialReasons, isLoading: isDenialLoading } = useGetDenialReasons();
@@ -37,7 +39,13 @@ export default function Claims() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Claims by Line of Business</CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle>Claims by Line of Business</CardTitle>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {periodOption.shortLabel}
+              </span>
+            </div>
+            <CardDescription>{periodOption.label}</CardDescription>
           </CardHeader>
           <CardContent className="h-80">
             {isLobLoading ? (

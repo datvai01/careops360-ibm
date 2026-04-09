@@ -2,13 +2,16 @@ import { useGetMemberKpis, useGetEnrollmentTrends, useGetMembersByProduct } from
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
+import { useTimeRange } from "@/contexts/TimeRangeContext";
 
 const COLORS = ['#0f62fe', '#24a148', '#8a3ffc', '#002d9c', '#da1e28'];
 
 export default function Members() {
+  const { periodOption } = useTimeRange();
   const { data: kpis, isLoading: isKpisLoading } = useGetMemberKpis({});
   const { data: trends, isLoading: isTrendsLoading } = useGetEnrollmentTrends();
   const { data: products, isLoading: isProductsLoading } = useGetMembersByProduct();
+  const slicedDaily = trends?.daily?.slice(-periodOption.days);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -29,14 +32,20 @@ export default function Members() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Enrollment Trends (30 Days)</CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle>Enrollment Trends</CardTitle>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {periodOption.shortLabel}
+              </span>
+            </div>
+            <CardDescription>{periodOption.label}</CardDescription>
           </CardHeader>
           <CardContent className="h-80">
             {isTrendsLoading ? (
                <div className="w-full h-full flex items-center justify-center text-muted-foreground">Loading chart...</div>
-            ) : trends && trends.daily ? (
+            ) : trends && slicedDaily ? (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trends.daily} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={slicedDaily} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />

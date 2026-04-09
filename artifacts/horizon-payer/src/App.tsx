@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import { TimeRangeProvider } from "@/contexts/TimeRangeContext";
 import NotFound from "@/pages/not-found";
 
 import Login from "@/pages/Login";
@@ -67,12 +68,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="horizon-ui-theme">
+        <TimeRangeProvider>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <Router />
           </WouterRouter>
           <Toaster />
         </TooltipProvider>
+        </TimeRangeProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

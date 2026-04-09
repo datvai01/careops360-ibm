@@ -4,24 +4,46 @@ import { asc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
-  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs yesterday`, status, trend };
+type Period = "24h" | "7d" | "14d";
+
+function parsePeriod(raw: unknown): Period {
+  if (raw === "7d" || raw === "14d") return raw;
+  return "24h";
 }
 
-router.get("/executive/kpis", async (_req, res): Promise<void> => {
+function periodDays(p: Period) {
+  if (p === "7d") return 7;
+  if (p === "14d") return 14;
+  return 1;
+}
+
+function compareLabel(p: Period) {
+  if (p === "7d")  return "vs 7 days ago";
+  if (p === "14d") return "vs 14 days ago";
+  return "vs yesterday";
+}
+
+function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat", period: Period) {
+  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% ${compareLabel(period)}`, status, trend };
+}
+
+router.get("/executive/kpis", async (req, res): Promise<void> => {
+  const period = parsePeriod(req.query.period);
+  const mult = periodDays(period);
+
   res.json({
-    activeMembers: mkKpi(4287341, "4.29M", 0.3, "green", "up"),
-    newEnrollmentsToday: mkKpi(1842, "1,842", 12.4, "green", "up"),
-    claimsReceivedToday: mkKpi(87432, "87,432", -2.1, "yellow", "down"),
-    claimsSettledAmount: mkKpi(241800000, "$241.8M", 5.2, "green", "up"),
-    priorAuthRequests: mkKpi(3241, "3,241", 18.7, "red", "up"),
-    openProviderTickets: mkKpi(412, "412", -8.3, "green", "down"),
-    callCenterASA: mkKpi(47, "47 sec", 15.2, "yellow", "up"),
-    applicationAvailability: mkKpi(99.4, "99.4%", -0.1, "green", "flat"),
-    criticalIncidents: mkKpi(2, "2", 0, "yellow", "flat"),
-    slaAttainment: mkKpi(96.8, "96.8%", 1.2, "green", "up"),
-    batchSuccessRate: mkKpi(98.2, "98.2%", -0.4, "green", "flat"),
-    automationSavings: mkKpi(3200000, "$3.2M YTD", 22.1, "green", "up"),
+    activeMembers:          mkKpi(4287341,    "4.29M",           0.3,   "green",  "up",   period),
+    newEnrollmentsToday:    mkKpi(1842 * mult, (1842 * mult).toLocaleString(), 12.4,  "green",  "up",   period),
+    claimsReceivedToday:    mkKpi(87432 * mult, `${(87432 * mult / 1000).toFixed(0)}K`, -2.1,  "yellow", "down", period),
+    claimsSettledAmount:    mkKpi(241800000 * mult, `$${(241.8 * mult).toFixed(0)}M`, 5.2,   "green",  "up",   period),
+    priorAuthRequests:      mkKpi(3241 * mult, (3241 * mult).toLocaleString(), 18.7,  "red",    "up",   period),
+    openProviderTickets:    mkKpi(412,         "412",             -8.3,  "green",  "down", period),
+    callCenterASA:          mkKpi(47,          "47 sec",          15.2,  "yellow", "up",   period),
+    applicationAvailability:mkKpi(99.4,        "99.4%",           -0.1,  "green",  "flat", period),
+    criticalIncidents:      mkKpi(2,           "2",               0,     "yellow", "flat", period),
+    slaAttainment:          mkKpi(96.8,        "96.8%",           1.2,   "green",  "up",   period),
+    batchSuccessRate:       mkKpi(98.2,        "98.2%",           -0.4,  "green",  "flat", period),
+    automationSavings:      mkKpi(3200000,     "$3.2M YTD",       22.1,  "green",  "up",   period),
   });
 });
 
@@ -69,14 +91,19 @@ router.get("/executive/snapshot", async (_req, res): Promise<void> => {
   });
 });
 
-router.get("/executive/trends", async (_req, res): Promise<void> => {
+router.get("/executive/trends", async (req, res): Promise<void> => {
+  const period = parsePeriod(req.query.period);
+  const limit = periodDays(period);
+
   const rows = await db
     .select()
     .from(dailyTrendsTable)
     .orderBy(asc(dailyTrendsTable.trendDate));
 
+  const slice = rows.slice(-limit);
+
   res.json({
-    points: rows.map((r) => ({
+    points: slice.map((r) => ({
       date: r.trendDate,
       claims: r.claims,
       enrollments: r.enrollments,
@@ -84,7 +111,8 @@ router.get("/executive/trends", async (_req, res): Promise<void> => {
       availability: r.availability,
       incidents: r.incidents,
     })),
-    period: "30d",
+    period,
+    totalDays: limit,
   });
 });
 

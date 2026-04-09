@@ -1,9 +1,11 @@
 import { useGetContactCenterKpis, useGetTopCallReasons, useGetHourlyCallVolume } from "@workspace/api-client-react";
+import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, Cell } from "recharts";
 
 export default function ContactCenter() {
+  const { periodOption } = useTimeRange();
   const { data: kpis, isLoading: isKpisLoading } = useGetContactCenterKpis({});
   const { data: reasons, isLoading: isReasonsLoading } = useGetTopCallReasons();
   const { data: hourly, isLoading: isHourlyLoading } = useGetHourlyCallVolume();
@@ -31,7 +33,12 @@ export default function ContactCenter() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Hourly Contact Volume</CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle>Hourly Contact Volume</CardTitle>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {periodOption.shortLabel}
+              </span>
+            </div>
             <CardDescription>Calls, chats, and emails throughout the day</CardDescription>
           </CardHeader>
           <CardContent className="h-80">

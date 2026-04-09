@@ -98,6 +98,13 @@ paths:
       operationId: getExecutiveKpis
       tags: [executive]
       summary: Get executive-level KPIs
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [24h, 7d, 14d]
+            default: 24h
       responses:
         "200":
           description: Executive KPIs
@@ -138,7 +145,14 @@ paths:
     get:
       operationId: getExecutiveTrends
       tags: [executive]
-      summary: Get 30-day trend data for key metrics
+      summary: Get trend data for key metrics, filtered by period
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [24h, 7d, 14d]
+            default: 24h
       responses:
         "200":
           description: Trend data
@@ -702,6 +716,13 @@ paths:
       operationId: getTicketTrends
       tags: [ibmams]
       summary: Get ticket volume trend over time
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [24h, 7d, 14d]
+            default: 24h
       responses:
         "200":
           description: Ticket trends

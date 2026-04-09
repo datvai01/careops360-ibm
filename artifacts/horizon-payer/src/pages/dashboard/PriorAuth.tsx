@@ -1,4 +1,5 @@
 import { useGetPriorAuthKpis, useGetPriorAuthAging, useGetTopProcedures, useGetReviewerWorkload } from "@workspace/api-client-react";
+import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 const COLORS = ['#24a148', '#da1e28', '#f1c21b', '#0f62fe'];
 
 export default function PriorAuth() {
+  const { periodOption } = useTimeRange();
   const { data: kpis, isLoading: isKpisLoading } = useGetPriorAuthKpis({});
   const { data: aging, isLoading: isAgingLoading } = useGetPriorAuthAging();
   const { data: procedures, isLoading: isProceduresLoading } = useGetTopProcedures();
@@ -39,7 +41,13 @@ export default function PriorAuth() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Authorization Status</CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle>Authorization Status</CardTitle>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {periodOption.shortLabel}
+              </span>
+            </div>
+            <CardDescription>{periodOption.label}</CardDescription>
           </CardHeader>
           <CardContent className="h-80">
             {isKpisLoading ? (

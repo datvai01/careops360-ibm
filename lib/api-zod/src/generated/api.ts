@@ -55,6 +55,14 @@ export const GetCurrentUserResponse = zod.object({
 /**
  * @summary Get executive-level KPIs
  */
+export const getExecutiveKpisQueryPeriodDefault = `24h`;
+
+export const GetExecutiveKpisQueryParams = zod.object({
+  period: zod
+    .enum(["24h", "7d", "14d"])
+    .default(getExecutiveKpisQueryPeriodDefault),
+});
+
 export const GetExecutiveKpisResponse = zod.object({
   activeMembers: zod.object({
     value: zod.number(),
@@ -184,8 +192,16 @@ export const GetOperationsSnapshotResponse = zod.object({
 });
 
 /**
- * @summary Get 30-day trend data for key metrics
+ * @summary Get trend data for key metrics, filtered by period
  */
+export const getExecutiveTrendsQueryPeriodDefault = `24h`;
+
+export const GetExecutiveTrendsQueryParams = zod.object({
+  period: zod
+    .enum(["24h", "7d", "14d"])
+    .default(getExecutiveTrendsQueryPeriodDefault),
+});
+
 export const GetExecutiveTrendsResponse = zod.object({
   points: zod.array(
     zod.object({
@@ -1201,6 +1217,14 @@ export const GetIbmAmsKpisResponse = zod.object({
 /**
  * @summary Get ticket volume trend over time
  */
+export const getTicketTrendsQueryPeriodDefault = `24h`;
+
+export const GetTicketTrendsQueryParams = zod.object({
+  period: zod
+    .enum(["24h", "7d", "14d"])
+    .default(getTicketTrendsQueryPeriodDefault),
+});
+
 export const GetTicketTrendsResponseItem = zod.object({
   week: zod.string(),
   total: zod.number(),

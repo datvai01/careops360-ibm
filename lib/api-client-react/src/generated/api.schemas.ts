@@ -856,6 +856,32 @@ export interface RoadmapAlert {
   daysOverdue?: number | null;
 }
 
+export type GetExecutiveKpisParams = {
+  period?: GetExecutiveKpisPeriod;
+};
+
+export type GetExecutiveKpisPeriod =
+  (typeof GetExecutiveKpisPeriod)[keyof typeof GetExecutiveKpisPeriod];
+
+export const GetExecutiveKpisPeriod = {
+  "24h": "24h",
+  "7d": "7d",
+  "14d": "14d",
+} as const;
+
+export type GetExecutiveTrendsParams = {
+  period?: GetExecutiveTrendsPeriod;
+};
+
+export type GetExecutiveTrendsPeriod =
+  (typeof GetExecutiveTrendsPeriod)[keyof typeof GetExecutiveTrendsPeriod];
+
+export const GetExecutiveTrendsPeriod = {
+  "24h": "24h",
+  "7d": "7d",
+  "14d": "14d",
+} as const;
+
 export type GetMemberKpisParams = {
   dateRange?: string;
   productLine?: string;
@@ -900,6 +926,19 @@ export type GetIncidentsParams = {
   severity?: string;
   status?: string;
 };
+
+export type GetTicketTrendsParams = {
+  period?: GetTicketTrendsPeriod;
+};
+
+export type GetTicketTrendsPeriod =
+  (typeof GetTicketTrendsPeriod)[keyof typeof GetTicketTrendsPeriod];
+
+export const GetTicketTrendsPeriod = {
+  "24h": "24h",
+  "7d": "7d",
+  "14d": "14d",
+} as const;
 
 export type GetRoadmapInitiativesParams = {
   portfolio?: string;

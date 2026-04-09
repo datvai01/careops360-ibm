@@ -25,9 +25,12 @@ router.get("/ibmams/kpis", async (_req, res): Promise<void> => {
   });
 });
 
-router.get("/ibmams/ticket-trends", async (_req, res): Promise<void> => {
+router.get("/ibmams/ticket-trends", async (req, res): Promise<void> => {
+  const period = req.query.period;
   const rows = await db.select().from(ibmamsTicketTrendsTable).orderBy(asc(ibmamsTicketTrendsTable.id));
-  res.json(rows.map((r) => ({
+  const limit = period === "14d" ? 2 : period === "7d" ? 1 : rows.length;
+  const slice = rows.slice(-limit);
+  res.json(slice.map((r) => ({
     week: r.weekLabel,
     total: r.total,
     resolvedWithinSla: r.resolvedWithinSla,

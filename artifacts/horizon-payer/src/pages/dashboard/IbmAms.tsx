@@ -3,13 +3,14 @@ import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   ResponsiveContainer, ComposedChart, BarChart, Bar, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CpuIcon, ArrowRightIcon, ZapIcon, LightbulbIcon, ShieldCheckIcon, InfoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useTimeRange } from "@/contexts/TimeRangeContext";
 
 const IBM_BLUE = "#0f62fe";
 const TEAL     = "#009d9a";
@@ -104,8 +105,12 @@ function FormulaModal({ onClose }: { onClose: () => void }) {
 }
 
 export default function IbmAms() {
+  const { period, periodOption } = useTimeRange();
   const { data: kpis, isLoading: isKpisLoading } = useGetIbmAmsKpis();
-  const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends();
+  const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends(
+    { period },
+    { query: { refetchInterval: 30000 } }
+  );
   const { data: runbooks, isLoading: isRunbooksLoading } = useGetAutomationRunbooks();
   const { data: savings, isLoading: isSavingsLoading } = useGetCostSavings();
   const { data: insights, isLoading: isInsightsLoading } = useGetAiInsights();
@@ -168,11 +173,18 @@ export default function IbmAms() {
       {/* Charts row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Chart 1 — Ticket & Automation Trend (unchanged) */}
+        {/* Chart 1 — Ticket & Automation Trend */}
         <Card className="shadow-md">
           <CardHeader>
-            <CardTitle>Ticket Resolution &amp; Automation Trend</CardTitle>
-            <CardDescription>Rising automation rate correlates with faster resolution and higher SLA</CardDescription>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle>Ticket Resolution &amp; Automation Trend</CardTitle>
+                <CardDescription>Rising automation rate correlates with faster resolution and higher SLA · {periodOption.label}</CardDescription>
+              </div>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {periodOption.shortLabel}
+              </span>
+            </div>
           </CardHeader>
           <CardContent className="h-80">
             {isTrendsLoading ? (
