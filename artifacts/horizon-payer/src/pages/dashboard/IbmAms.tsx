@@ -1,21 +1,31 @@
 import { useGetIbmAmsKpis, useGetTicketTrends, useGetAutomationRunbooks, useGetCostSavings, useGetAiInsights } from "@workspace/api-client-react";
-import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ResponsiveContainer, ComposedChart, BarChart, Bar, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CpuIcon, ArrowRightIcon, ZapIcon, LightbulbIcon, ShieldCheckIcon, InfoIcon } from "lucide-react";
+import {
+  CpuIcon, ArrowRightIcon, ZapIcon, LightbulbIcon, ShieldCheckIcon, InfoIcon,
+  ArrowUpIcon, ArrowDownIcon, MinusIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { useTimeRange } from "@/contexts/TimeRangeContext";
+import type { KpiMetric } from "@workspace/api-client-react";
 
 const IBM_BLUE = "#0f62fe";
 const TEAL     = "#009d9a";
 const GREEN    = "#24a148";
-const SLATE    = "#8d8d8d";
+
+type IbmPeriod = "7d" | "14d" | "21d";
+
+const IBM_PERIOD_OPTIONS = [
+  { value: "7d"  as IbmPeriod, label: "Last 7 Days",  shortLabel: "7D"  },
+  { value: "14d" as IbmPeriod, label: "Last 14 Days", shortLabel: "14D" },
+  { value: "21d" as IbmPeriod, label: "Last 21 Days", shortLabel: "21D" },
+];
 
 const AUTOMATION_PCT  = 2100000 / 3200000;
 const SHIFTLEFT_PCT   = 800000  / 3200000;
@@ -27,12 +37,144 @@ function fmt$(val: number) {
   return `$${val.toFixed(0)}`;
 }
 
-function FormulaModal({ onClose }: { onClose: () => void }) {
+type MethodologyTopic = "shiftLeft" | "selfHeal" | "runbooks" | "defectLeakage" | "costReduction";
+
+const METHODOLOGY: Record<MethodologyTopic, {
+  title: string;
+  color: string;
+  formula: string;
+  components: { label: string; detail: string }[];
+  target?: string;
+  source: string;
+  note: string;
+}> = {
+  shiftLeft: {
+    title: "Shift-Left Rate — Calculation Methodology",
+    color: TEAL,
+    formula: "(Tier-0 Resolutions + IVR Deflections + Self-Service Closures) ÷ Total Incidents × 100",
+    components: [
+      {
+        label: "Tier-0 Resolutions",
+        detail: "Incidents closed automatically via knowledge-base match or runbook deflection at intake — before any human agent contact.",
+      },
+      {
+        label: "IVR Deflections",
+        detail: "Member / end-user contacts resolved within the IVR / self-service portal without transfer to a live agent.",
+      },
+      {
+        label: "Self-Service Closures",
+        detail: "Tickets raised by users that were resolved through guided self-service workflows without engineer involvement.",
+      },
+    ],
+    target: "≥ 40% (contractual SLA threshold)",
+    source: "IBM AMS Ticket Routing Engine · Pre-AMS manual-baseline comparison",
+    note: "Deflection volume is measured against a frozen pre-AMS ticket-routing baseline established in Q4 2024. Any ticket routed to a human agent after a self-service attempt does NOT count as shift-left.",
+  },
+  selfHeal: {
+    title: "Self-Heal Events — Calculation Methodology",
+    color: GREEN,
+    formula: "Count of events where: Alert Fired → Runbook Auto-Triggered → Condition Resolved → No Incident Created",
+    components: [
+      {
+        label: "Detection (Alert Fired)",
+        detail: "IBM AIOps Event Management detects an anomaly via metric threshold, log pattern, or topology correlation — within 4.2 minutes on average.",
+      },
+      {
+        label: "Automated Remediation",
+        detail: "A pre-approved runbook is triggered automatically (zero human approval required) and executes the remediation sequence.",
+      },
+      {
+        label: "Outcome Validation",
+        detail: "The system confirms the condition is cleared: metric returns to baseline, health-check passes, no further alerts within 15 minutes.",
+      },
+      {
+        label: "Incident Prevention",
+        detail: "No P1, P2, or P3 incident is created. If an incident is created before the runbook closes the event, the event does NOT qualify as self-heal.",
+      },
+    ],
+    target: "No floor target — each event represents a prevented P2 incident (avg. cost: $12,500)",
+    source: "IBM AIOps Event Management Audit Log · Runbook Execution Records",
+    note: "Events must resolve within 15 minutes of first signal. Events where a human engineer is paged — even if they do not act — are excluded.",
+  },
+  runbooks: {
+    title: "Automation Runbooks — Calculation Methodology",
+    color: IBM_BLUE,
+    formula: "Σ(Runbooks where exit_status = SUCCESS and outcome_validation = PASS) for the selected period",
+    components: [
+      {
+        label: "Infrastructure Recovery (42%)",
+        detail: "Automated restarts, failover triggers, pod reschedules, and connection pool resets across cloud and on-prem infrastructure.",
+      },
+      {
+        label: "DB Maintenance (22%)",
+        detail: "Index rebuilds, statistics refreshes, log rotation, archival jobs, and query-plan cache purges executed on schedule or on alert.",
+      },
+      {
+        label: "Certificate & Access Rotation (18%)",
+        detail: "SSL certificate renewals, API key rotations, and service-account credential cycling performed without manual intervention.",
+      },
+      {
+        label: "Compliance Scanning (18%)",
+        detail: "HIPAA / SOC 2 configuration scans, patch-status audits, and vulnerability assessments triggered by policy schedule.",
+      },
+    ],
+    target: "Each successful execution replaces an average of 2.4 engineer-hours of manual work",
+    source: "IBM AMS Runbook Orchestration Platform · Execution Audit Trail",
+    note: "A runbook is counted only once per execution event regardless of how many sub-tasks it performs. Partial completions (exit_status = PARTIAL) are tracked separately and not included in this KPI.",
+  },
+  defectLeakage: {
+    title: "Defect Leakage — Calculation Methodology",
+    color: "#ee5396",
+    formula: "(Production-Origin Defects ÷ Total Defects Closed in Period) × 100",
+    components: [
+      {
+        label: "Production-Origin Defects",
+        detail: "Defects tagged 'Environment: Production' in the IBM DevOps toolchain — meaning they were first discovered by end-users or monitoring in the live environment.",
+      },
+      {
+        label: "Total Defects Closed",
+        detail: "All defects closed (resolved + verified) across all environments (Dev, QA, UAT, Staging, Production) during the period.",
+      },
+      {
+        label: "Shift-Left Quality Gates",
+        detail: "Automated unit, integration, and contract tests enforced via CI pipeline. A failing gate blocks promotion to the next environment, preventing defects from propagating.",
+      },
+    ],
+    target: "< 5% (industry SLA) — current 2.4% exceeds target",
+    source: "IBM DevOps Toolchain · Defect Tracking System · CI/CD Pipeline Reports",
+    note: "Lower is better. A declining trend indicates improved upstream test coverage. Security-classified defects are counted but detail is withheld from this dashboard per HIPAA data-handling policy.",
+  },
+  costReduction: {
+    title: "YTD Cost Reduction — Calculation Methodology",
+    color: IBM_BLUE,
+    formula: "Automation Offset + Shift-Left Deflection Savings + Self-Heal Event Prevention",
+    components: [
+      {
+        label: "Automation Offset — $2,100,000",
+        detail: "Δ Automated Tickets × Avg. Fully-Loaded Cost per Ticket ($142) × Months Elapsed. Tickets resolved via runbook automation compared to manual baseline. Loaded labor rate includes engineer time, tooling overhead, and management allocation.",
+      },
+      {
+        label: "Shift-Left Deflection Savings — $800,000",
+        detail: "Deflected Tickets (self-service / Tier 0) × Avg. Tier-1 Ticket Cost ($68). Cases resolved at self-service tier before reaching a human agent. Deflection volume measured against pre-AMS routing baseline.",
+      },
+      {
+        label: "Self-Heal Event Prevention — $300,000",
+        detail: "Self-Heal Events × Avg. P2 Incident Cost ($12,500) × Prevention Rate (96%). Automated remediation events that resolved conditions before escalation to a reportable P2/P3 incident.",
+      },
+    ],
+    target: "$2.8M full-year target — currently 14% ahead of schedule",
+    source: "IBM AMS Value Dashboard · Finance & Billing Analytics",
+    note: "Cost avoidance ($8.4M YTD) is tracked separately and represents incidents prevented before business impact. It is not included in the realized cost reduction figure above.",
+  },
+};
+
+function MethodologyModal({ topic, onClose }: { topic: MethodologyTopic; onClose: () => void }) {
+  const m = METHODOLOGY[topic];
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30 dark:bg-black/50" />
       <div
-        className="relative bg-background border border-border rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4"
+        className="relative bg-background border border-border rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -40,7 +182,7 @@ function FormulaModal({ onClose }: { onClose: () => void }) {
             <div className="w-6 h-6 rounded flex items-center justify-center" style={{ background: IBM_BLUE }}>
               <span className="text-white text-[9px] font-black">IBM</span>
             </div>
-            <h2 className="text-sm font-semibold">YTD Cost Reduction — Calculation Methodology</h2>
+            <h2 className="text-sm font-semibold">{m.title}</h2>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-lg leading-none">×</button>
         </div>
@@ -48,73 +190,118 @@ function FormulaModal({ onClose }: { onClose: () => void }) {
         <div className="space-y-3 text-sm">
           <div className="rounded-lg bg-muted/50 border border-border px-4 py-3 font-mono text-xs leading-relaxed">
             <p className="text-muted-foreground mb-1 font-sans font-semibold text-[11px] uppercase tracking-wide">Formula</p>
-            <p><span className="text-[#0f62fe] font-semibold">YTD Cost Reduction</span> =</p>
-            <p className="ml-4 mt-1">Automation Offset</p>
-            <p className="ml-4">+ Shift-Left Deflection Savings</p>
-            <p className="ml-4">+ Self-Heal Event Prevention</p>
+            <p style={{ color: m.color }} className="font-semibold">{m.formula}</p>
           </div>
 
           <div className="space-y-2.5">
-            {[
-              {
-                label: "Automation Offset",
-                value: "$2,100,000",
-                color: IBM_BLUE,
-                formula: "Δ Automated Tickets × Avg. Fully-Loaded Cost per Ticket ($142) × Months Elapsed",
-                note: "Tickets resolved via runbook automation compared to manual baseline. Loaded labor rate includes engineer time, tooling overhead, and management allocation.",
-              },
-              {
-                label: "Shift-Left Deflection Savings",
-                value: "$800,000",
-                color: TEAL,
-                formula: "Deflected Tickets (self-service / Tier 0) × Avg. Tier-1 Ticket Cost ($68)",
-                note: "Cases resolved at self-service or knowledge-base tier before reaching a human agent. Deflection volume measured against pre-AMS ticket routing baseline.",
-              },
-              {
-                label: "Self-Heal Event Prevention",
-                value: "$300,000",
-                color: GREEN,
-                formula: "Self-Heal Events × Avg. P2 Incident Cost ($12,500) × Prevention Rate (96%)",
-                note: "Automated remediation events that resolved conditions before they escalated to a reportable P2/P3 incident. Prevention rate sourced from post-event correlation analysis.",
-              },
-            ].map(item => (
-              <div key={item.label} className="rounded-lg border border-border p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold" style={{ color: item.color }}>{item.label}</span>
-                  <span className="text-xs font-bold">{item.value}</span>
-                </div>
-                <p className="text-xs font-mono text-muted-foreground mb-1 bg-muted/40 px-2 py-1 rounded">{item.formula}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.note}</p>
+            {m.components.map(c => (
+              <div key={c.label} className="rounded-lg border border-border p-3">
+                <p className="text-xs font-semibold mb-1" style={{ color: m.color }}>{c.label}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{c.detail}</p>
               </div>
             ))}
           </div>
 
-          <div className="rounded-lg bg-[#0f62fe]/5 border border-[#0f62fe]/20 px-4 py-2.5 flex justify-between items-center">
-            <span className="text-xs font-semibold text-[#0f62fe]">YTD Total Realized Cost Reduction</span>
-            <span className="text-sm font-black text-[#0f62fe]">$3,200,000</span>
+          {m.target && (
+            <div className="rounded-lg px-4 py-2.5 flex items-center gap-2 border" style={{ background: `${m.color}10`, borderColor: `${m.color}30` }}>
+              <span className="text-xs font-semibold" style={{ color: m.color }}>Target:</span>
+              <span className="text-xs">{m.target}</span>
+            </div>
+          )}
+
+          <div className="rounded-lg bg-muted/30 border border-border px-4 py-2.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Data Source</p>
+            <p className="text-xs text-muted-foreground">{m.source}</p>
           </div>
 
-          <p className="text-[10px] text-muted-foreground/60 italic">
-            Cost avoidance ($8.4M YTD) is tracked separately and represents incidents prevented before business impact.
-            It is not included in the realized cost reduction figure above.
-          </p>
+          <p className="text-[10px] text-muted-foreground/60 italic leading-relaxed">{m.note}</p>
         </div>
       </div>
     </div>
   );
 }
 
+function KpiCardIbm({
+  title,
+  metric,
+  isLoading,
+  icon,
+  onInfo,
+}: {
+  title: string;
+  metric?: KpiMetric;
+  isLoading?: boolean;
+  icon?: React.ReactNode;
+  onInfo?: () => void;
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <div className="flex items-center gap-1.5">
+          {onInfo && (
+            <button
+              onClick={onInfo}
+              className="text-muted-foreground/40 hover:text-primary transition-colors"
+              title="View methodology"
+            >
+              <InfoIcon className="h-3.5 w-3.5" />
+            </button>
+          )}
+          {icon && <div className="h-4 w-4 text-muted-foreground">{icon}</div>}
+        </div>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-1/3" />
+          </div>
+        ) : metric ? (
+          <>
+            <div className="text-2xl font-bold">{metric.formatted}</div>
+            {metric.change !== undefined && (
+              <div className="flex items-center mt-1 text-xs">
+                {metric.trend === "up" && (
+                  <ArrowUpIcon className={cn("mr-1 h-3 w-3", metric.status === "green" ? "text-status-green" : metric.status === "red" ? "text-status-red" : "text-status-yellow")} />
+                )}
+                {metric.trend === "down" && (
+                  <ArrowDownIcon className={cn("mr-1 h-3 w-3", metric.status === "green" ? "text-status-green" : metric.status === "red" ? "text-status-red" : "text-status-yellow")} />
+                )}
+                {metric.trend === "flat" && (
+                  <MinusIcon className="mr-1 h-3 w-3 text-muted-foreground" />
+                )}
+                <span className={cn(
+                  "font-medium",
+                  metric.status === "green" ? "text-status-green" : metric.status === "red" ? "text-status-red" : metric.status === "yellow" ? "text-status-yellow" : "text-muted-foreground",
+                )}>
+                  {Math.abs(metric.change)}% {metric.changeLabel}
+                </span>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-2xl font-bold">-</div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function IbmAms() {
-  const { period, periodOption } = useTimeRange();
+  const [ibmPeriod, setIbmPeriod] = useState<IbmPeriod>("7d");
+  const periodOption = IBM_PERIOD_OPTIONS.find(o => o.value === ibmPeriod) ?? IBM_PERIOD_OPTIONS[0];
+
   const { data: kpis, isLoading: isKpisLoading } = useGetIbmAmsKpis();
   const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends(
-    { period },
+    { period: ibmPeriod },
     { query: { refetchInterval: 30000 } }
   );
   const { data: runbooks, isLoading: isRunbooksLoading } = useGetAutomationRunbooks();
   const { data: savings, isLoading: isSavingsLoading } = useGetCostSavings();
   const { data: insights, isLoading: isInsightsLoading } = useGetAiInsights();
-  const [showFormula, setShowFormula] = useState(false);
+
+  const [showMethodology, setShowMethodology] = useState<MethodologyTopic | null>(null);
 
   const breakdownData = savings?.monthlyTrend?.map(m => ({
     month: m.month,
@@ -124,7 +311,7 @@ export default function IbmAms() {
     avoidance:  m.avoidance,
   })) ?? [];
 
-  const ytdTotal = savings?.totalSavingsYtd ?? 0;
+  const ytdTotal    = savings?.totalSavingsYtd ?? 0;
   const ytdAvoidance = savings?.costAvoidanceYtd ?? 0;
 
   return (
@@ -139,35 +326,82 @@ export default function IbmAms() {
           </div>
           <p className="text-sm text-muted-foreground">AIOps-Driven Operations Performance &amp; Value Summary · CY2026 · Horizon BCBS</p>
         </div>
-        <div className="flex gap-6 items-start flex-shrink-0">
-          <div className="text-right">
-            <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground mb-0.5">
-              YTD Cost Reduction
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-shrink-0">
+          {/* Period selector */}
+          <div className="flex items-center gap-1 bg-muted/60 border border-border rounded-lg p-0.5">
+            {IBM_PERIOD_OPTIONS.map(opt => (
               <button
-                onClick={() => setShowFormula(true)}
-                className="ml-0.5 text-muted-foreground/50 hover:text-primary transition-colors"
-                title="View calculation methodology"
+                key={opt.value}
+                onClick={() => setIbmPeriod(opt.value)}
+                className={cn(
+                  "px-3 py-1 rounded-md text-xs font-semibold transition-all",
+                  ibmPeriod === opt.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                )}
+                title={opt.label}
               >
-                <InfoIcon className="h-3 w-3" />
+                {opt.shortLabel}
               </button>
-            </div>
-            <div className="text-3xl font-black text-status-green">{fmt$(ytdTotal)}</div>
-            <div className="text-xs text-muted-foreground/60 mt-0.5">realized savings</div>
+            ))}
           </div>
-          <div className="text-right border-l border-border pl-6">
-            <div className="text-xs text-muted-foreground mb-0.5">YTD Cost Avoidance</div>
-            <div className="text-3xl font-black" style={{ color: IBM_BLUE }}>{fmt$(ytdAvoidance)}</div>
-            <div className="text-xs text-muted-foreground/60 mt-0.5">incidents prevented</div>
+
+          {/* YTD totals */}
+          <div className="flex gap-6 items-start">
+            <div className="text-right">
+              <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground mb-0.5">
+                YTD Cost Reduction
+                <button
+                  onClick={() => setShowMethodology("costReduction")}
+                  className="ml-0.5 text-muted-foreground/50 hover:text-primary transition-colors"
+                  title="View calculation methodology"
+                >
+                  <InfoIcon className="h-3 w-3" />
+                </button>
+              </div>
+              <div className="text-3xl font-black text-status-green">{fmt$(ytdTotal)}</div>
+              <div className="text-xs text-muted-foreground/60 mt-0.5">realized savings</div>
+            </div>
+            <div className="text-right border-l border-border pl-6">
+              <div className="text-xs text-muted-foreground mb-0.5">YTD Cost Avoidance</div>
+              <div className="text-3xl font-black" style={{ color: IBM_BLUE }}>{fmt$(ytdAvoidance)}</div>
+              <div className="text-xs text-muted-foreground/60 mt-0.5">incidents prevented</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* KPI row */}
+      {/* KPI row — all 4 with methodology info buttons */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard title="Shift-Left Rate"        metric={kpis?.shiftLeftRate}    isLoading={isKpisLoading} icon={<ArrowRightIcon />} />
-        <KpiCard title="Self-Heal Events"        metric={kpis?.selfHealEvents}   isLoading={isKpisLoading} icon={<ShieldCheckIcon />} />
-        <KpiCard title="Automation Runbooks"     metric={kpis?.automationRunbooks} isLoading={isKpisLoading} icon={<ZapIcon />} />
-        <KpiCard title="Defect Leakage"          metric={kpis?.defectLeakage}    isLoading={isKpisLoading} icon={<ShieldCheckIcon />} />
+        <KpiCardIbm
+          title="Shift-Left Rate"
+          metric={kpis?.shiftLeftRate}
+          isLoading={isKpisLoading}
+          icon={<ArrowRightIcon />}
+          onInfo={() => setShowMethodology("shiftLeft")}
+        />
+        <KpiCardIbm
+          title="Self-Heal Events"
+          metric={kpis?.selfHealEvents}
+          isLoading={isKpisLoading}
+          icon={<ShieldCheckIcon />}
+          onInfo={() => setShowMethodology("selfHeal")}
+        />
+        <KpiCardIbm
+          title="Automation Runbooks"
+          metric={kpis?.automationRunbooks}
+          isLoading={isKpisLoading}
+          icon={<ZapIcon />}
+          onInfo={() => setShowMethodology("runbooks")}
+        />
+        <KpiCardIbm
+          title="Defect Leakage"
+          metric={kpis?.defectLeakage}
+          isLoading={isKpisLoading}
+          icon={<ShieldCheckIcon />}
+          onInfo={() => setShowMethodology("defectLeakage")}
+        />
       </div>
 
       {/* Charts row */}
@@ -207,7 +441,7 @@ export default function IbmAms() {
           </CardContent>
         </Card>
 
-        {/* Chart 2 — Monthly Cost Reduction Breakdown (replaces Cumulative Value Realization) */}
+        {/* Chart 2 — Monthly Cost Reduction Breakdown */}
         <Card className="shadow-md">
           <CardHeader>
             <CardTitle>Monthly Cost Reduction Breakdown</CardTitle>
@@ -229,9 +463,9 @@ export default function IbmAms() {
                     formatter={(value: number, name: string) => [fmt$(value), name]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="automation" name="Automation Offset"       stackId="a" fill={IBM_BLUE} radius={[0,0,0,0]} />
-                  <Bar dataKey="shiftLeft"  name="Shift-Left Deflection"   stackId="a" fill={TEAL}     radius={[0,0,0,0]} />
-                  <Bar dataKey="selfHeal"   name="Self-Heal Prevention"    stackId="a" fill={GREEN}    radius={[3,3,0,0]} />
+                  <Bar dataKey="automation" name="Automation Offset"     stackId="a" fill={IBM_BLUE} radius={[0,0,0,0]} />
+                  <Bar dataKey="shiftLeft"  name="Shift-Left Deflection" stackId="a" fill={TEAL}     radius={[0,0,0,0]} />
+                  <Bar dataKey="selfHeal"   name="Self-Heal Prevention"  stackId="a" fill={GREEN}    radius={[3,3,0,0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : null}
@@ -239,9 +473,9 @@ export default function IbmAms() {
           <div className="px-6 pb-4">
             <div className="rounded-lg bg-muted/40 border border-border px-4 py-2.5 flex flex-wrap gap-x-6 gap-y-1 text-xs">
               {[
-                { label: "Automation Offset", value: fmt$(savings?.automationSavings ?? 0), color: IBM_BLUE },
-                { label: "Shift-Left Deflection", value: fmt$(savings?.shiftLeftSavings ?? 0), color: TEAL },
-                { label: "Self-Heal Prevention", value: fmt$(savings?.selfHealSavings ?? 0), color: GREEN },
+                { label: "Automation Offset",    value: fmt$(savings?.automationSavings ?? 0), color: IBM_BLUE, topic: "runbooks"      as MethodologyTopic },
+                { label: "Shift-Left Deflection", value: fmt$(savings?.shiftLeftSavings  ?? 0), color: TEAL,    topic: "shiftLeft"     as MethodologyTopic },
+                { label: "Self-Heal Prevention",  value: fmt$(savings?.selfHealSavings   ?? 0), color: GREEN,   topic: "selfHeal"      as MethodologyTopic },
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: item.color }} />
@@ -249,7 +483,7 @@ export default function IbmAms() {
                   <span className="font-semibold">{item.value} YTD</span>
                 </div>
               ))}
-              <button onClick={() => setShowFormula(true)} className="ml-auto text-[#0f62fe] hover:underline flex items-center gap-0.5">
+              <button onClick={() => setShowMethodology("costReduction")} className="ml-auto text-[#0f62fe] hover:underline flex items-center gap-0.5">
                 <InfoIcon className="h-3 w-3" /> Methodology
               </button>
             </div>
@@ -261,8 +495,19 @@ export default function IbmAms() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-md">
           <CardHeader>
-            <CardTitle>Active Automation Runbooks</CardTitle>
-            <CardDescription>High-impact automations driving zero-touch operations</CardDescription>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <CardTitle>Active Automation Runbooks</CardTitle>
+                <CardDescription>High-impact automations driving zero-touch operations</CardDescription>
+              </div>
+              <button
+                onClick={() => setShowMethodology("runbooks")}
+                className="text-muted-foreground/40 hover:text-primary transition-colors mt-0.5"
+                title="View runbook counting methodology"
+              >
+                <InfoIcon className="h-4 w-4" />
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
@@ -332,7 +577,9 @@ export default function IbmAms() {
         </Card>
       </div>
 
-      {showFormula && <FormulaModal onClose={() => setShowFormula(false)} />}
+      {showMethodology && (
+        <MethodologyModal topic={showMethodology} onClose={() => setShowMethodology(null)} />
+      )}
     </div>
   );
 }
