@@ -4,25 +4,74 @@ import { asc, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
-  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs yesterday`, status, trend };
+function mkKpi(
+  value: number,
+  formatted: string,
+  change: number,
+  status: "green" | "yellow" | "red",
+  trend: "up" | "down" | "flat",
+  compareLabel: string,
+) {
+  const sign = change > 0 ? "+" : "";
+  return { value, formatted, change, changeLabel: `${sign}${change}% ${compareLabel}`, status, trend };
 }
 
-router.get("/ibmams/kpis", async (_req, res): Promise<void> => {
-  res.json({
-    ticketsResolved: mkKpi(147, "147 today", 8.1, "green", "up"),
-    slaCompliance: mkKpi(96.8, "96.8%", 1.4, "green", "up"),
-    shiftLeftRate: mkKpi(42.3, "42.3%", 12.7, "green", "up"),
-    selfHealEvents: mkKpi(24, "24 today", 33.3, "green", "up"),
-    productivityGain: mkKpi(31.4, "31.4%", 5.2, "green", "up"),
-    costReduction: mkKpi(18.7, "18.7%", 3.8, "green", "up"),
-    defectLeakage: mkKpi(2.4, "2.4%", -18.6, "green", "down"),
-    repeatIncidentReduction: mkKpi(67.3, "67.3%", 8.4, "green", "up"),
-    automationRunbooks: mkKpi(89, "89 executed", 24.1, "green", "up"),
-    costAvoidance: mkKpi(8400000, "$8.4M YTD", 31.2, "green", "up"),
-    knowledgeArticles: mkKpi(1247, "1,247 used", 12.3, "green", "up"),
-    changeVelocity: mkKpi(24, "24 per week", 14.3, "green", "up"),
-  });
+const KPI_BY_PERIOD: Record<string, (cl: string) => object> = {
+  "7d": (cl) => ({
+    ticketsResolved:       mkKpi(147,    "147 today",      8.1,  "green", "up",   cl),
+    slaCompliance:         mkKpi(96.8,   "96.8%",          1.4,  "green", "up",   cl),
+    shiftLeftRate:         mkKpi(42.3,   "42.3%",         12.7,  "green", "up",   cl),
+    selfHealEvents:        mkKpi(24,     "24 today",      33.3,  "green", "up",   cl),
+    productivityGain:      mkKpi(31.4,   "31.4%",          5.2,  "green", "up",   cl),
+    costReduction:         mkKpi(18.7,   "18.7%",          3.8,  "green", "up",   cl),
+    defectLeakage:         mkKpi(2.4,    "2.4%",         -18.6,  "green", "down", cl),
+    repeatIncidentReduction: mkKpi(67.3, "67.3%",          8.4,  "green", "up",   cl),
+    automationRunbooks:    mkKpi(89,     "89 executed",   24.1,  "green", "up",   cl),
+    costAvoidance:         mkKpi(8400000,"$8.4M YTD",     31.2,  "green", "up",   cl),
+    knowledgeArticles:     mkKpi(1247,   "1,247 used",    12.3,  "green", "up",   cl),
+    changeVelocity:        mkKpi(24,     "24 per week",   14.3,  "green", "up",   cl),
+  }),
+  "14d": (cl) => ({
+    ticketsResolved:       mkKpi(1893,   "1,893 / 14d",    6.3,  "green", "up",   cl),
+    slaCompliance:         mkKpi(95.9,   "95.9%",          0.8,  "green", "up",   cl),
+    shiftLeftRate:         mkKpi(40.1,   "40.1%",          8.4,  "green", "up",   cl),
+    selfHealEvents:        mkKpi(301,    "301 / 14d",     27.6,  "green", "up",   cl),
+    productivityGain:      mkKpi(29.8,   "29.8%",          4.1,  "green", "up",   cl),
+    costReduction:         mkKpi(17.2,   "17.2%",          2.9,  "green", "up",   cl),
+    defectLeakage:         mkKpi(2.8,    "2.8%",         -12.5,  "green", "down", cl),
+    repeatIncidentReduction: mkKpi(64.7, "64.7%",          6.1,  "green", "up",   cl),
+    automationRunbooks:    mkKpi(1142,   "1,142 / 14d",   19.4,  "green", "up",   cl),
+    costAvoidance:         mkKpi(8400000,"$8.4M YTD",     31.2,  "green", "up",   cl),
+    knowledgeArticles:     mkKpi(16890,  "16,890 used",    9.7,  "green", "up",   cl),
+    changeVelocity:        mkKpi(48,     "48 / 14d",      11.6,  "green", "up",   cl),
+  }),
+  "21d": (cl) => ({
+    ticketsResolved:       mkKpi(2740,   "2,740 / 21d",    4.8,  "green", "up",   cl),
+    slaCompliance:         mkKpi(95.4,   "95.4%",          0.6,  "green", "up",   cl),
+    shiftLeftRate:         mkKpi(38.7,   "38.7%",          6.2,  "green", "up",   cl),
+    selfHealEvents:        mkKpi(439,    "439 / 21d",     21.3,  "green", "up",   cl),
+    productivityGain:      mkKpi(28.3,   "28.3%",          3.4,  "green", "up",   cl),
+    costReduction:         mkKpi(16.1,   "16.1%",          2.2,  "green", "up",   cl),
+    defectLeakage:         mkKpi(3.1,    "3.1%",          -9.1,  "green", "down", cl),
+    repeatIncidentReduction: mkKpi(62.4, "62.4%",          4.7,  "green", "up",   cl),
+    automationRunbooks:    mkKpi(1687,   "1,687 / 21d",   15.8,  "green", "up",   cl),
+    costAvoidance:         mkKpi(8400000,"$8.4M YTD",     31.2,  "green", "up",   cl),
+    knowledgeArticles:     mkKpi(24630,  "24,630 used",    7.9,  "green", "up",   cl),
+    changeVelocity:        mkKpi(72,     "72 / 21d",       9.2,  "green", "up",   cl),
+  }),
+};
+
+const COMPARE_LABEL: Record<string, string> = {
+  "7d":  "vs 7 days ago",
+  "14d": "vs 14 days ago",
+  "21d": "vs 21 days ago",
+};
+
+router.get("/ibmams/kpis", async (req, res): Promise<void> => {
+  const period = (req.query.period as string) ?? "7d";
+  const cl = COMPARE_LABEL[period] ?? COMPARE_LABEL["7d"];
+  const builder = KPI_BY_PERIOD[period] ?? KPI_BY_PERIOD["7d"];
+  res.json(builder(cl));
 });
 
 router.get("/ibmams/ticket-trends", async (req, res): Promise<void> => {

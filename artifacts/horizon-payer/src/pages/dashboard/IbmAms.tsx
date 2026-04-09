@@ -1,4 +1,6 @@
-import { useGetIbmAmsKpis, useGetTicketTrends, useGetAutomationRunbooks, useGetCostSavings, useGetAiInsights } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
+import { useGetTicketTrends, useGetAutomationRunbooks, useGetCostSavings, useGetAiInsights } from "@workspace/api-client-react";
+import type { IbmAmsKpis } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -292,7 +294,14 @@ export default function IbmAms() {
   const [ibmPeriod, setIbmPeriod] = useState<IbmPeriod>("7d");
   const periodOption = IBM_PERIOD_OPTIONS.find(o => o.value === ibmPeriod) ?? IBM_PERIOD_OPTIONS[0];
 
-  const { data: kpis, isLoading: isKpisLoading } = useGetIbmAmsKpis();
+  const { data: kpis, isLoading: isKpisLoading } = useQuery<IbmAmsKpis>({
+    queryKey: ["/api/ibmams/kpis", ibmPeriod],
+    queryFn: async ({ signal }) => {
+      const res = await fetch(`/api/ibmams/kpis?period=${ibmPeriod}`, { signal });
+      return res.json();
+    },
+    refetchInterval: 30000,
+  });
   const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends(
     { period: ibmPeriod },
     { query: { refetchInterval: 30000 } }
