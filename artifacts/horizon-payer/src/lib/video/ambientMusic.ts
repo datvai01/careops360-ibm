@@ -236,7 +236,7 @@ export function useAmbientMusic(enabled: boolean) {
 
     const masterGain = ctx.createGain();
     masterGain.gain.setValueAtTime(0, ctx.currentTime);
-    masterGain.gain.linearRampToValueAtTime(0.16, ctx.currentTime + 1.2);
+    masterGain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.2);
     masterGain.connect(ctx.destination);
 
     const comp = ctx.createDynamicsCompressor();
