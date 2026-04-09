@@ -39,7 +39,7 @@ const NAV_ITEMS = [
   { name: "Vendor Invoices", path: "/dashboard/vendor-invoices", icon: DollarSignIcon },
   { name: "App Health", path: "/dashboard/app-health", icon: ActivityIcon },
   { name: "IBM AMS Value", path: "/dashboard/ibm-ams", icon: CpuIcon },
-  { name: "Digital Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
+  { name: "Transition Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
   { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
 ];
 
