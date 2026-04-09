@@ -130,9 +130,9 @@ export default function IbmAms() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <CpuIcon className="text-primary w-6 h-6" />
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">IBM Application Management Services</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">IBM AIOps Value</h1>
           </div>
-          <p className="text-sm text-muted-foreground">Performance &amp; Value Summary · CY2026 · Horizon BCBS Managed Engagement</p>
+          <p className="text-sm text-muted-foreground">AIOps-Driven Operations Performance &amp; Value Summary · CY2026 · Horizon BCBS</p>
         </div>
         <div className="flex gap-6 items-start flex-shrink-0">
           <div className="text-right">
