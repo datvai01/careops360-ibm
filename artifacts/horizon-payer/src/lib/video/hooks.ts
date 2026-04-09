@@ -12,7 +12,6 @@ interface VideoPlayerResult {
 
 export function useVideoPlayer({ durations }: VideoPlayerOptions): VideoPlayerResult {
   const [currentScene, setCurrentScene] = useState(0);
-  const completedRef = useRef(false);
 
   const durationsRef = useRef(durations);
   const keysRef = useRef(Object.keys(durations));
@@ -21,12 +20,6 @@ export function useVideoPlayer({ durations }: VideoPlayerOptions): VideoPlayerRe
     durationsRef.current = durations;
     keysRef.current = Object.keys(durations);
   }, [durations]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.startRecording?.();
-    }
-  }, []);
 
   useEffect(() => {
     const keys = keysRef.current;
@@ -38,12 +31,6 @@ export function useVideoPlayer({ durations }: VideoPlayerOptions): VideoPlayerRe
       setCurrentScene((prev) => {
         const next = prev + 1;
         if (next >= keys.length) {
-          if (!completedRef.current) {
-            completedRef.current = true;
-            if (typeof window !== "undefined") {
-              window.stopRecording?.();
-            }
-          }
           return 0;
         }
         return next;
@@ -54,11 +41,4 @@ export function useVideoPlayer({ durations }: VideoPlayerOptions): VideoPlayerRe
   }, [currentScene]);
 
   return { currentScene };
-}
-
-declare global {
-  interface Window {
-    startRecording?: () => void;
-    stopRecording?: () => void;
-  }
 }
