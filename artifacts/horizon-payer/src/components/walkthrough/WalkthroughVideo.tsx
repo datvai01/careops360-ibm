@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { Volume2Icon, VolumeXIcon } from "lucide-react";
 import { useVideoPlayer } from "@/lib/video/hooks";
+import { useNarration } from "@/lib/video/narration";
 import { Scene1 } from "./scenes/Scene1";
 import { Scene2 } from "./scenes/Scene2";
 import { Scene3 } from "./scenes/Scene3";
@@ -30,8 +32,15 @@ const SCENE_DURATIONS = {
   outro: 10000,
 };
 
+const SCENE_LABELS = [
+  "Intro", "Executive Overview", "App Health", "Members", "Claims",
+  "Prior Auth", "Providers", "Contact Center", "Vendor Invoices",
+  "IBM AIOps", "Roadmap", "Ask Assistant", "Outro",
+];
+
 export function WalkthroughVideo() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
+  const { narrationOn, toggleNarration } = useNarration(currentScene);
 
   return (
     <div
@@ -55,9 +64,9 @@ export function WalkthroughVideo() {
           animate={{ x: ["10%", "-20%", "10%"], y: ["10%", "-10%", "10%"] }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
         />
-        <div 
-          className="absolute inset-0 opacity-[0.03]" 
-          style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" }} 
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" }}
         />
       </div>
 
@@ -98,6 +107,43 @@ export function WalkthroughVideo() {
         {currentScene === 11 && <Scene12 key="s12" />}
         {currentScene === 12 && <Scene13 key="s13" />}
       </AnimatePresence>
+
+      {/* Narration toggle button */}
+      <button
+        onClick={toggleNarration}
+        title={narrationOn ? "Mute narration" : "Enable narration (American English)"}
+        className="absolute bottom-3 right-3 z-50 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200"
+        style={{
+          background: narrationOn ? "rgba(15,98,254,0.85)" : "rgba(255,255,255,0.12)",
+          backdropFilter: "blur(8px)",
+          border: narrationOn ? "1px solid rgba(15,98,254,0.6)" : "1px solid rgba(255,255,255,0.2)",
+          color: "#ffffff",
+          cursor: "pointer",
+        }}
+      >
+        {narrationOn ? (
+          <Volume2Icon size={13} />
+        ) : (
+          <VolumeXIcon size={13} />
+        )}
+        <span>{narrationOn ? "Narration on" : "Narration off"}</span>
+      </button>
+
+      {/* Scene label */}
+      <div className="absolute bottom-3 left-3 z-50">
+        <div
+          className="text-[10px] font-medium px-2.5 py-1 rounded-full"
+          style={{
+            background: "rgba(255,255,255,0.1)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            color: "rgba(255,255,255,0.7)",
+            letterSpacing: "0.05em",
+          }}
+        >
+          {currentScene + 1} / 13 — {SCENE_LABELS[currentScene]}
+        </div>
+      </div>
     </div>
   );
 }

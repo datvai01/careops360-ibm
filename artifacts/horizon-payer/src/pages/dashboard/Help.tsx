@@ -66,7 +66,7 @@ export default function Help() {
         </div>
         <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">
-            CareOps360 Platform Walkthrough · ~2:47 min · Auto-plays and loops
+            CareOps360 Platform Walkthrough · ~2:47 min · Auto-plays and loops · Click the speaker button to enable narration
           </span>
           <span className="text-xs text-muted-foreground">
             Horizon BCBS × IBM
