@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useAmbientMusic } from "./ambientMusic";
 
 export const NARRATION_SCRIPTS: Record<number, string> = {
   0: "Welcome to CareOps360 — the executive operations portal built for Horizon Blue Cross Blue Shield, in partnership with IBM.",
@@ -42,6 +43,8 @@ export function useNarration(currentScene: number) {
   const [narrationOn, setNarrationOn] = useState(false);
   const enabledRef = useRef(false);
   const voiceReadyRef = useRef(false);
+
+  useAmbientMusic(narrationOn);
 
   useEffect(() => {
     const load = () => { voiceReadyRef.current = true; };
