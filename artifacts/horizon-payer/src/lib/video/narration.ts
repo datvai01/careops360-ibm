@@ -2,19 +2,19 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useAmbientMusic } from "./ambientMusic";
 
 export const NARRATION_SCRIPTS: Record<number, string> = {
-  0:  "CareOps360. The command center built for Horizon Blue Cross Blue Shield leadership — powered by IBM. Let's go.",
-  1:  "Executive Overview. Live KPIs across claims, membership, and financials. Everything leadership needs — right now, in one view.",
-  2:  "App Health. System status, SLA compliance, incident severity — your entire platform, always in sight.",
-  3:  "Members. Enrollment trends, demographics, population mix. Know your membership. Know your mission.",
-  4:  "Claims. High-volume processing, auto-adjudication rates, backlog by line — zero guesswork, full clarity.",
-  5:  "Prior Authorization. Approval rates, open queues, reviewer capacity — clinical priorities, crystal clear.",
-  6:  "Providers. Network health, credentialing pipelines, contract renewals — every relationship, fully on track.",
-  7:  "Contact Center. Call volumes, resolution rates, handle time — member experience, measured and mastered.",
-  8:  "Vendor Invoices. Invoice status, payment approvals, contract spend — IBM account teams, fully aligned.",
-  9:  "IBM AIOps Value. Real cost savings. Real incident reduction. Proven ROI across 7, 14, and 21-day windows.",
-  10: "Transformation Roadmap. From initiative to delivery — your digital journey, charted and moving fast.",
-  11: "Ask Assistant. Plain language. Instant answers. Claims, members, operations — no reports, no waiting.",
-  12: "CareOps360. Horizon Blue Cross Blue Shield. IBM. Executive clarity — delivered.",
+  0:  "CareOps360 — the command center for Horizon Blue Cross Blue Shield leadership, powered by IBM — let's go",
+  1:  "Executive Overview — live KPIs across claims, membership, and financials, everything leadership needs, right now, in one powerful view",
+  2:  "App Health — system status, SLA compliance, incident severity, your entire platform, always in sight",
+  3:  "Members — enrollment trends, demographics, population mix, know your membership, know your mission",
+  4:  "Claims — high-volume processing, auto-adjudication rates, backlog by line, zero guesswork, full clarity",
+  5:  "Prior Authorization — approval rates, open queues, reviewer capacity, clinical priorities, crystal clear",
+  6:  "Providers — network health, credentialing pipelines, contract renewals, every relationship, fully on track",
+  7:  "Contact Center — call volumes, resolution rates, handle time, member experience, measured and mastered",
+  8:  "Vendor Invoices — invoice status, payment approvals, contract spend, IBM account teams, fully aligned",
+  9:  "IBM AIOps Value — real cost savings, real incident reduction, proven ROI across 7, 14, and 21-day windows",
+  10: "Transformation Roadmap — from initiative to delivery, your digital journey, charted and moving fast",
+  11: "Ask Assistant — plain language, instant answers, claims, members, operations, no reports, no waiting",
+  12: "CareOps360, Horizon Blue Cross Blue Shield, IBM — executive clarity, delivered",
 };
 
 function pickFemaleUSVoice(): SpeechSynthesisVoice | null {
