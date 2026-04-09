@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import { createProxyMiddleware } from "http-proxy-middleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -40,6 +41,17 @@ if (process.env.NODE_ENV === "production") {
   app.get(/.*/, (_req, res) => {
     res.sendFile(path.join(frontendDist, "index.html"));
   });
+} else {
+  const vitePort = process.env.VITE_PORT || "24856";
+  app.use(
+    "/",
+    createProxyMiddleware({
+      target: `http://localhost:${vitePort}`,
+      changeOrigin: true,
+      ws: true,
+      logger: console,
+    }),
+  );
 }
 
 export default app;
