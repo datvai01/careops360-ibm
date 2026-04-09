@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ShieldCheck, TrendingUp, Cpu, Users, ChevronRight, Eye, EyeOff } from "lucide-react";
+import { ChevronRight, Eye, EyeOff } from "lucide-react";
+import { ShowcaseVideo } from "@/components/ShowcaseVideo";
 
 function HorizonMark({ size = 44 }: { size?: number }) {
   return (
@@ -24,29 +25,6 @@ function HorizonMark({ size = 44 }: { size?: number }) {
     </div>
   );
 }
-
-const CAPABILITIES = [
-  {
-    icon: TrendingUp,
-    title: "Executive Intelligence",
-    desc: "Real-time KPIs across claims, members, and prior authorization.",
-  },
-  {
-    icon: Cpu,
-    title: "IBM AIOps Integration",
-    desc: "Automated incident response, shift-left deflection, and self-healing operations.",
-  },
-  {
-    icon: Users,
-    title: "Member & Provider Ops",
-    desc: "End-to-end visibility from enrollment through care delivery.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Compliance & Audit-Ready",
-    desc: "HIPAA-aligned audit trails and role-based access controls.",
-  },
-];
 
 const DEMO_ACCOUNTS = [
   { email: "exec@horizon.com", role: "Executive" },
@@ -87,112 +65,8 @@ export default function Login() {
     <div className="min-h-screen w-full flex">
 
       {/* ── LEFT PANEL — branded ── */}
-      <div
-        className="hidden lg:flex lg:w-[55%] flex-col relative overflow-hidden"
-        style={{
-          background: "linear-gradient(155deg, #050e2d 0%, #0a1a4a 35%, #0d2260 60%, #0f2d78 100%)",
-        }}
-      >
-        {/* Geometric grid overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(15,98,254,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(15,98,254,0.07) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-
-        {/* Radial glow */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            width: 700,
-            height: 700,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(15,98,254,0.20) 0%, transparent 70%)",
-            top: -200,
-            right: -200,
-          }}
-        />
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            width: 500,
-            height: 500,
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(21,101,192,0.15) 0%, transparent 70%)",
-            bottom: -100,
-            left: -100,
-          }}
-        />
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col h-full p-12 xl:p-16">
-
-          {/* Logo row */}
-          <div className="flex items-center gap-3">
-            <HorizonMark size={44} />
-            <div className="flex flex-col">
-              <span className="text-white font-bold text-lg leading-tight tracking-tight">Horizon BCBS</span>
-              <span className="text-blue-300/70 text-xs font-medium tracking-wide">+ IBM Partnership</span>
-            </div>
-            <div className="ml-auto">
-              <span
-                className="text-xs font-semibold px-3 py-1 rounded-full"
-                style={{
-                  background: "rgba(15,98,254,0.25)",
-                  border: "1px solid rgba(15,98,254,0.45)",
-                  color: "#93b8ff",
-                }}
-              >
-                CareOps 360
-              </span>
-            </div>
-          </div>
-
-          {/* Headline */}
-          <div className="mt-16 xl:mt-20">
-            <p className="text-blue-300/70 text-sm font-semibold tracking-widest uppercase mb-4">
-              Executive Command Center
-            </p>
-            <h1 className="text-white font-black leading-none" style={{ fontSize: "clamp(2.4rem, 4vw, 3.5rem)", letterSpacing: "-0.03em" }}>
-              Operations.<br />
-              <span style={{ color: "#4d8fff" }}>Outcomes.</span><br />
-              One Platform.
-            </h1>
-            <p className="mt-6 text-blue-200/60 text-base leading-relaxed max-w-md">
-              Real-time visibility across claims, members, prior auth, and IBM AIOps — purpose-built for Horizon BCBS leadership.
-            </p>
-          </div>
-
-          {/* Capabilities */}
-          <div className="mt-10 space-y-4 flex-1">
-            {CAPABILITIES.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-4">
-                <div
-                  className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center mt-0.5"
-                  style={{
-                    background: "rgba(15,98,254,0.18)",
-                    border: "1px solid rgba(15,98,254,0.30)",
-                  }}
-                >
-                  <Icon size={16} className="text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-white/90 text-sm font-semibold">{title}</p>
-                  <p className="text-blue-300/55 text-xs leading-relaxed mt-0.5">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Footer */}
-          <div className="pt-8 border-t border-white/10 flex items-center justify-between">
-            <span className="text-blue-300/40 text-xs">© 2026 CareOps360</span>
-            <span className="text-blue-300/40 text-xs">Managed by IBM · HIPAA Compliant</span>
-          </div>
-        </div>
+      <div className="hidden lg:flex lg:w-[55%] flex-col relative overflow-hidden">
+        <ShowcaseVideo />
       </div>
 
       {/* ── RIGHT PANEL — form ── */}
