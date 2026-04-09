@@ -413,7 +413,7 @@ function NewInitiativeModal({ onClose, onCreate }: { onClose: () => void; onCrea
         <div className="flex items-center justify-between p-5 border-b border-border sticky top-0 bg-background z-10">
           <div>
             <h2 className="text-base font-semibold">New Initiative</h2>
-            <p className="text-xs text-muted-foreground">Add a new item to the Transition Roadmap</p>
+            <p className="text-xs text-muted-foreground">Add a new item to the Transformation Roadmap</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted transition-colors"><X className="h-4 w-4" /></button>
         </div>
@@ -617,7 +617,7 @@ export default function DigitalRoadmap() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Transition Roadmap</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Transformation Roadmap</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Horizon + IBM · CY2026 · Upgrades, Ticket Reduction &amp; Transformation Initiatives</p>
           <p className="text-xs text-muted-foreground/60 mt-1 italic">
             Disclaimer: This dashboard contains representative initiative data for demonstration and prototype purposes only. It should not be interpreted as a final approved delivery plan, production commitment, or live operational record.
