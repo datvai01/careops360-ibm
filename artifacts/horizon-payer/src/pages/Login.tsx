@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, Eye, EyeOff, RefreshCw, Info, ShieldCheck, BookOpen } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, Info, BookOpen } from "lucide-react";
 import { ShowcaseVideo } from "@/components/ShowcaseVideo";
 
 function HorizonMark({ size = 44 }: { size?: number }) {
@@ -26,30 +26,12 @@ function HorizonMark({ size = 44 }: { size?: number }) {
   );
 }
 
-const CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-function generateCaptcha(length = 6): string {
-  return Array.from({ length }, () =>
-    CAPTCHA_CHARS[Math.floor(Math.random() * CAPTCHA_CHARS.length)]
-  ).join("");
-}
-
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const [captchaCode, setCaptchaCode] = useState(() => generateCaptcha());
-  const [captchaInput, setCaptchaInput] = useState("");
-  const [captchaError, setCaptchaError] = useState(false);
-
-  const refreshCaptcha = useCallback(() => {
-    setCaptchaCode(generateCaptcha());
-    setCaptchaInput("");
-    setCaptchaError(false);
-  }, []);
 
   const loginMutation = useLogin({
     mutation: {
@@ -63,24 +45,12 @@ export default function Login() {
           description: error.message || "Invalid credentials. Please verify your username and password.",
           variant: "destructive",
         });
-        refreshCaptcha();
       },
     },
   });
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (captchaInput.trim().toUpperCase() !== captchaCode) {
-      setCaptchaError(true);
-      setCaptchaInput("");
-      refreshCaptcha();
-      toast({
-        title: "Verification Failed",
-        description: "The verification code did not match. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
     loginMutation.mutate({ data: { username, password } });
   };
 
@@ -165,66 +135,6 @@ export default function Login() {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-              </div>
-
-              {/* CAPTCHA */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Verification
-                </Label>
-                <div className="flex items-center gap-2">
-                  <div
-                    className="flex-1 flex items-center justify-center rounded-lg border-2 py-3 select-none cursor-default"
-                    style={{
-                      borderColor: "rgba(15,98,254,0.3)",
-                      background: "linear-gradient(135deg, rgba(15,98,254,0.04) 0%, rgba(21,101,192,0.03) 100%)",
-                      letterSpacing: "0.35em",
-                      fontFamily: "'Courier New', monospace",
-                      fontWeight: 700,
-                      fontSize: "1.25rem",
-                      color: "#1a237e",
-                      textDecoration: "line-through",
-                      textDecorationColor: "rgba(15,98,254,0.25)",
-                      textDecorationThickness: "1.5px",
-                    }}
-                  >
-                    {captchaCode.split("").map((ch, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          display: "inline-block",
-                          transform: `rotate(${(i % 2 === 0 ? 1 : -1) * (Math.abs((i * 7) % 9) - 3)}deg)`,
-                          color: i % 3 === 0 ? "#1a237e" : i % 3 === 1 ? "#0d47a1" : "#1565c0",
-                        }}
-                      >
-                        {ch}
-                      </span>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={refreshCaptcha}
-                    className="p-2.5 rounded-lg border hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-                    title="Refresh code"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </button>
-                </div>
-                <Input
-                  type="text"
-                  value={captchaInput}
-                  onChange={(e) => { setCaptchaInput(e.target.value.toUpperCase()); setCaptchaError(false); }}
-                  placeholder="Enter the code above"
-                  className={`h-11 font-mono tracking-widest uppercase ${captchaError ? "border-destructive" : ""}`}
-                  maxLength={6}
-                  required
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                {captchaError && (
-                  <p className="text-xs text-destructive">Incorrect verification code. A new code has been generated.</p>
-                )}
               </div>
 
               <Button
