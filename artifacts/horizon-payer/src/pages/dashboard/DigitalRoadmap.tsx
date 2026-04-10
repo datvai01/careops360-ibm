@@ -1058,7 +1058,7 @@ function DomainGroup({
                   <td className="py-2 px-2 whitespace-nowrap">
                     <button
                       onClick={e => { e.stopPropagation(); onEdit(init); }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                      className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                       title="Edit initiative"
                     >
                       <Pencil className="h-3 w-3" />
