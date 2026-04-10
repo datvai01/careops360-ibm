@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useLogin } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronRight, Eye, EyeOff, RefreshCw, Info, ShieldCheck } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, RefreshCw, Info, ShieldCheck, BookOpen } from "lucide-react";
 import { ShowcaseVideo } from "@/components/ShowcaseVideo";
 
 function HorizonMark({ size = 44 }: { size?: number }) {
@@ -26,13 +26,6 @@ function HorizonMark({ size = 44 }: { size?: number }) {
   );
 }
 
-const DEMO_ACCOUNTS = [
-  { email: "exec@horizon.com", role: "Executive" },
-  { email: "ops@horizon.com", role: "Operations" },
-  { email: "it@horizon.com", role: "IT" },
-  { email: "ibm@horizon.com", role: "IBM Partner" },
-];
-
 const CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function generateCaptcha(length = 6): string {
@@ -44,8 +37,8 @@ function generateCaptcha(length = 6): string {
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [username, setUsername] = useState("exec@horizon.com");
-  const [password, setPassword] = useState("demo123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const [captchaCode, setCaptchaCode] = useState(() => generateCaptcha());
@@ -67,7 +60,7 @@ export default function Login() {
       onError: (error) => {
         toast({
           title: "Login Failed",
-          description: error.message || "Invalid credentials",
+          description: error.message || "Invalid credentials. Please verify your username and password.",
           variant: "destructive",
         });
         refreshCaptcha();
@@ -152,9 +145,7 @@ export default function Login() {
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                </div>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -256,27 +247,28 @@ export default function Login() {
               </Button>
             </form>
 
-            {/* Demo accounts */}
-            <div className="mt-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-muted-foreground font-medium px-1">Demo accounts</span>
-                <div className="flex-1 h-px bg-border" />
+            {/* Access credentials hint */}
+            <div
+              className="mt-8 rounded-lg border p-4 space-y-2"
+              style={{
+                borderColor: "rgba(15,98,254,0.2)",
+                background: "linear-gradient(135deg, rgba(15,98,254,0.04) 0%, rgba(21,101,192,0.02) 100%)",
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 flex-shrink-0" style={{ color: "#0f62fe" }} />
+                <p className="text-sm font-semibold" style={{ color: "#0f62fe" }}>Access Credentials</p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {DEMO_ACCOUNTS.map(({ email, role }) => (
-                  <button
-                    key={email}
-                    type="button"
-                    onClick={() => setUsername(email)}
-                    className="text-left px-3 py-2.5 rounded-lg border border-border hover:border-primary/40 hover:bg-primary/5 transition-all group"
-                  >
-                    <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">{role}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{email}</p>
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground/60 text-center mt-3">All accounts use password: <span className="font-mono font-semibold text-muted-foreground">demo123</span></p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Login credentials for this portal are provided as part of the{" "}
+                <span className="font-semibold text-foreground">IBM–Horizon BCBS RFP Response</span>.
+                Please refer to the access credentials section of that document for your username and password.
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                If you have not received credentials or require assistance, please contact your{" "}
+                <span className="font-semibold text-foreground">IBM Administrator</span> or the IBM delivery team at{" "}
+                <span className="font-mono text-xs font-medium text-foreground">ibm@horizon.com</span>.
+              </p>
             </div>
 
             {/* Bottom note */}
