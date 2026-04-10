@@ -1031,7 +1031,8 @@ function DomainGroup({
           <table className="w-full text-xs" style={{ minWidth: 820 }}>
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-28">Jira ID</th>
+                <th className="w-8 py-2 px-3" />
+                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-28">Jira #</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3">Initiative</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Year</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-12">Q</th>
@@ -1040,7 +1041,6 @@ function DomainGroup({
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Depends On</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-24">Status</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Priority</th>
-                <th className="w-8 py-2 px-3" />
               </tr>
             </thead>
             <tbody>
@@ -1055,11 +1055,16 @@ function DomainGroup({
                     init.status === "Completed" && "opacity-70"
                   )}
                 >
-                  <td className="py-2 px-3 font-mono text-muted-foreground whitespace-nowrap">
-                    <div className="flex items-center gap-1.5">
-                      <span>{init.jiraId}</span>
-                    </div>
+                  <td className="py-2 px-2 whitespace-nowrap">
+                    <button
+                      onClick={e => { e.stopPropagation(); onEdit(init); }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                      title="Edit initiative"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
                   </td>
+                  <td className="py-2 px-3 font-mono text-muted-foreground whitespace-nowrap">{init.jiraId}</td>
                   <td className="py-2 px-3">
                     <p className="font-medium leading-snug text-foreground max-w-xs truncate" title={init.application}>{init.application}</p>
                     <p className="text-muted-foreground text-[11px] truncate max-w-xs">{init.description.slice(0, 80)}{init.description.length > 80 ? "…" : ""}</p>
@@ -1080,15 +1085,6 @@ function DomainGroup({
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap">
                     <SmallBadge label={init.priority} className={PRIORITY_STYLE[init.priority] ?? ""} />
-                  </td>
-                  <td className="py-2 px-2 whitespace-nowrap">
-                    <button
-                      onClick={e => { e.stopPropagation(); onEdit(init); }}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
-                      title="Edit initiative"
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </button>
                   </td>
                 </tr>
               ))}
