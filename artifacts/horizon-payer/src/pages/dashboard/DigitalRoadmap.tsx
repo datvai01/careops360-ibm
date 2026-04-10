@@ -161,6 +161,226 @@ const YEAR_OUTCOMES: Record<SectionKey, Record<number, string[]>> = {
   },
 };
 
+// ─── Timeline constants ────────────────────────────────────────────────────────
+
+const DOMAIN_HEX: Record<string, string> = {
+  Payer: "#3b82f6",
+  Provider: "#8b5cf6",
+  Clinical: "#10b981",
+  Digital: "#06b6d4",
+  "Data & Analytics": "#f59e0b",
+  "Enterprise Platforms": "#64748b",
+};
+
+const TL_START = new Date("2026-01-01").getTime();
+const TL_END = new Date("2029-01-01").getTime();
+const TL_MS = TL_END - TL_START;
+const TL_TODAY_PCT = Math.min(100, Math.max(0, ((Date.now() - TL_START) / TL_MS) * 100));
+
+const TL_QUARTERS: { label: string; pct: number; yearStart?: boolean }[] = [0,1,2,3,4,5,6,7,8,9,10,11].map(i => {
+  const yr = 2026 + Math.floor(i / 4);
+  const mo = (i % 4) * 3;
+  const date = new Date(yr, mo, 1);
+  return { label: `Q${(i % 4) + 1}`, pct: ((date.getTime() - TL_START) / TL_MS) * 100, yearStart: i % 4 === 0 };
+});
+
+function tlBarStyle(startDate: string, endDate: string): { left: string; width: string } {
+  const s = Math.max(new Date(startDate).getTime(), TL_START);
+  const e = Math.min(new Date(endDate + "T23:59:59").getTime(), TL_END);
+  if (s >= TL_END || e <= TL_START) return { left: "0%", width: "0.5%" };
+  const left = ((s - TL_START) / TL_MS) * 100;
+  const width = Math.max(((e - s) / TL_MS) * 100, 0.8);
+  return { left: `${left.toFixed(2)}%`, width: `${width.toFixed(2)}%` };
+}
+
+// ─── Timeline View ────────────────────────────────────────────────────────────
+
+function TimelineView({ initiatives, onSelect }: { initiatives: RoadmapInitiative[]; onSelect: (i: RoadmapInitiative) => void }) {
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+
+  const grouped = useMemo(() => {
+    const groups = DOMAINS
+      .map(d => ({ domain: d, items: initiatives.filter(i => i.domain === d).sort((a, b) => a.startDate.localeCompare(b.startDate)) }))
+      .filter(g => g.items.length > 0);
+    const loose = initiatives.filter(i => !i.domain || !(DOMAINS as readonly string[]).includes(i.domain));
+    if (loose.length > 0) groups.push({ domain: "Enterprise Platforms", items: loose });
+    return groups;
+  }, [initiatives]);
+
+  if (grouped.length === 0) {
+    return <Card className="p-8 text-center"><p className="text-sm text-muted-foreground">No initiatives match the current filters.</p></Card>;
+  }
+
+  const YEAR_BANDS = [
+    { label: "Year 1 · 2026", sub: "Quick Wins & Foundation" },
+    { label: "Year 2 · 2027", sub: "Scale & Integration" },
+    { label: "Year 3 · 2028", sub: "Transform & Optimize" },
+  ];
+
+  return (
+    <Card className="overflow-hidden">
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: 900 }}>
+          {/* Year band headers */}
+          <div className="flex border-b border-border bg-background sticky top-0 z-10">
+            <div className="w-52 flex-shrink-0 border-r border-border bg-background" />
+            {YEAR_BANDS.map((yb, yi) => (
+              <div key={yb.label} className={cn("flex-1 text-center py-2 border-r border-border last:border-r-0", yi % 2 === 1 && "bg-muted/10")}>
+                <p className="text-xs font-semibold text-foreground leading-tight">{yb.label}</p>
+                <p className="text-[10px] text-muted-foreground">{yb.sub}</p>
+              </div>
+            ))}
+          </div>
+          {/* Quarter sub-headers */}
+          <div className="flex border-b border-border bg-muted/20">
+            <div className="w-52 flex-shrink-0 border-r border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Initiative</div>
+            <div className="flex-1 relative">
+              <div className="flex h-full">
+                {TL_QUARTERS.map((q, i) => (
+                  <div
+                    key={i}
+                    className={cn("flex-1 text-center text-[10px] font-medium text-muted-foreground py-1.5 border-r border-border/50 last:border-r-0",
+                      q.yearStart && "border-l-2 border-border")}
+                  >
+                    {q.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Domain groups + initiative rows */}
+          {grouped.map(({ domain, items }) => {
+            const domStyle = DOMAIN_STYLE[domain] ?? DOMAIN_STYLE["Enterprise Platforms"];
+            const hex = DOMAIN_HEX[domain] ?? "#64748b";
+            return (
+              <div key={domain}>
+                {/* Domain header */}
+                <div className={cn("flex items-center border-b border-border/50 sticky", domStyle.bg)}>
+                  <div className={cn("w-52 flex-shrink-0 border-r border-border px-3 py-1.5 flex items-center gap-1.5")}>
+                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0", domStyle.dot)} />
+                    <span className={cn("text-xs font-semibold", domStyle.header)}>{domain}</span>
+                    <span className="text-[10px] text-muted-foreground ml-1">({items.length})</span>
+                  </div>
+                  <div className="flex-1 relative h-6">
+                    {TL_QUARTERS.map((q, i) => (
+                      <div key={i} className={cn("absolute top-0 bottom-0 border-l border-border/30", q.yearStart && "border-l-2 border-border/50")} style={{ left: `${q.pct}%` }} />
+                    ))}
+                    {/* Year dividers as background bands */}
+                    {[0, 1, 2].map(yi => (
+                      <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/10")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+                    ))}
+                  </div>
+                </div>
+                {/* Initiative rows */}
+                {items.map((init, rowIdx) => {
+                  const bar = tlBarStyle(init.startDate, init.endDate);
+                  const isHovered = hoveredId === init.id;
+                  const isAtRisk = init.status === "At Risk";
+                  const isCompleted = init.status === "Completed";
+                  return (
+                    <div
+                      key={init.id}
+                      onClick={() => onSelect(init)}
+                      onMouseEnter={() => setHoveredId(init.id)}
+                      onMouseLeave={() => setHoveredId(null)}
+                      className={cn(
+                        "flex items-center border-b border-border/20 cursor-pointer group transition-colors",
+                        rowIdx % 2 === 0 ? "bg-background" : "bg-muted/5",
+                        isHovered && "bg-muted/30"
+                      )}
+                    >
+                      {/* Label column */}
+                      <div className="w-52 flex-shrink-0 border-r border-border px-3 py-1.5 group-hover:bg-muted/20 transition-colors">
+                        <p className="text-xs font-medium truncate leading-tight">{init.application}</p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-[10px] font-mono text-muted-foreground">{init.workNumber}</span>
+                          <SmallBadge label={init.status} className={cn(STATUS_STYLE[init.status] ?? "", "text-[9px] py-0 px-1")} />
+                        </div>
+                      </div>
+                      {/* Bar area */}
+                      <div className="flex-1 relative h-9">
+                        {/* Year alternating bands */}
+                        {[0, 1, 2].map(yi => (
+                          <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+                        ))}
+                        {/* Quarter gridlines */}
+                        {TL_QUARTERS.map((q, i) => (
+                          <div key={i} className={cn("absolute top-0 bottom-0 border-l pointer-events-none", q.yearStart ? "border-border/40" : "border-border/20")} style={{ left: `${q.pct}%` }} />
+                        ))}
+                        {/* Today marker */}
+                        <div className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-10" style={{ left: `${TL_TODAY_PCT}%` }}>
+                          <div className="absolute -top-0 left-0.5 text-[8px] text-red-500 font-medium whitespace-nowrap">Today</div>
+                        </div>
+                        {/* Gantt bar */}
+                        <div
+                          className={cn(
+                            "absolute top-1/2 -translate-y-1/2 h-5 rounded flex items-center px-1.5 overflow-hidden transition-opacity duration-150",
+                            isCompleted && "opacity-40",
+                            isAtRisk && "ring-1 ring-red-400 ring-offset-0"
+                          )}
+                          style={{
+                            left: bar.left,
+                            width: bar.width,
+                            backgroundColor: hex + (isHovered ? "ff" : "cc"),
+                          }}
+                        >
+                          <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.workNumber}</span>
+                        </div>
+                        {/* Hover tooltip */}
+                        {isHovered && (
+                          <div className="absolute z-40 pointer-events-none" style={{ left: bar.left, bottom: "calc(100% + 4px)" }}>
+                            <div className="bg-popover border border-border rounded-lg shadow-2xl p-3 w-72">
+                              <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                <span className="font-mono text-[10px] text-muted-foreground">{init.workNumber}</span>
+                                <SmallBadge label={init.status} className={STATUS_STYLE[init.status] ?? ""} />
+                                {init.complexity && <SmallBadge label={`${init.complexity} complexity`} className={COMPLEXITY_STYLE[init.complexity] ?? ""} />}
+                              </div>
+                              <p className="text-xs font-semibold mb-1 leading-snug">{init.application}</p>
+                              {init.businessImpact && (
+                                <p className="text-[11px] text-blue-700 dark:text-blue-400 mb-1.5 leading-snug">{init.businessImpact.slice(0, 100)}{(init.businessImpact?.length ?? 0) > 100 ? "…" : ""}</p>
+                              )}
+                              <p className="text-[11px] text-muted-foreground leading-snug">{init.description.slice(0, 90)}…</p>
+                              <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground border-t border-border/50 pt-1.5">
+                                <span>{init.startDate}</span>
+                                <span>→</span>
+                                <span>{init.endDate}</span>
+                                <span className="ml-auto font-medium">Y{init.planYear} · {init.planQuarter}</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+          {/* Footer legend */}
+          <div className="flex items-center gap-4 px-4 py-2.5 border-t border-border bg-muted/10 flex-wrap">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <div className="w-px h-3 bg-red-400/70" />
+              <span>Today</span>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              {DOMAINS.map(d => (
+                <span key={d} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span className="w-3.5 h-2 rounded" style={{ backgroundColor: DOMAIN_HEX[d] + "cc" }} />
+                  {d}
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 ml-auto text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded opacity-40" style={{ backgroundColor: "#64748bcc" }} />Completed</span>
+              <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded ring-1 ring-red-400" style={{ backgroundColor: "#64748bcc" }} />At Risk</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 // ─── IBM Consulting Advantage Assets ─────────────────────────────────────────
 
 type IbmAsset = { name: string; tag: string; tagColor: string; value: string; isBob?: boolean };
@@ -586,7 +806,7 @@ function SectionView({
 }) {
   const [yearFilter, setYearFilter] = useState<YearFilter>(0);
   const [domainFilter, setDomainFilter] = useState("All");
-  const [view, setView] = useState<"table" | "heatmap">("table");
+  const [view, setView] = useState<"table" | "heatmap" | "timeline">("table");
 
   const sectionItems = useMemo(
     () => initiatives.filter(i => i.initiativeType === initiativeType),
@@ -679,18 +899,16 @@ function SectionView({
           ))}
         </div>
         <div className="ml-auto flex items-center gap-1 border border-border rounded-md overflow-hidden">
-          <button
-            onClick={() => setView("table")}
-            className={cn("px-3 py-1.5 text-xs font-medium transition-colors", view === "table" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
-          >
-            Table
-          </button>
-          <button
-            onClick={() => setView("heatmap")}
-            className={cn("px-3 py-1.5 text-xs font-medium transition-colors", view === "heatmap" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
-          >
-            Impact Map
-          </button>
+          {(["table", "heatmap", "timeline"] as const).map(v => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
+                view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
+            >
+              {v === "table" ? "Table" : v === "heatmap" ? "Impact Map" : "Timeline"}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -699,6 +917,8 @@ function SectionView({
         <Card className="p-4">
           <ImpactMap initiatives={filtered} />
         </Card>
+      ) : view === "timeline" ? (
+        <TimelineView initiatives={filtered} onSelect={onSelect} />
       ) : filtered.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
