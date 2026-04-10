@@ -291,7 +291,7 @@ async function ensureSchema() {
       technology varchar(100) NOT NULL,
       current_version varchar(50) NOT NULL DEFAULT '',
       upgrade_version varchar(50) NOT NULL DEFAULT '',
-      work_number varchar(20) NOT NULL UNIQUE,
+      jira_id varchar(20) NOT NULL UNIQUE,
       service_category varchar(100) NOT NULL,
       start_date varchar(10) NOT NULL,
       end_date varchar(10) NOT NULL,
@@ -314,11 +314,12 @@ async function ensureSchema() {
   for (const sql of alterRoadmap) {
     await pool.query(sql);
   }
+  // Handle legacy environments where column was still named work_number
   try {
     await pool.query(`ALTER TABLE roadmap_initiatives RENAME COLUMN work_number TO jira_id`);
     console.log("  renamed work_number -> jira_id");
   } catch {
-    // already renamed or column doesn't exist under old name — safe to ignore
+    // already renamed — safe to ignore
   }
   console.log("  all tables verified");
 }
