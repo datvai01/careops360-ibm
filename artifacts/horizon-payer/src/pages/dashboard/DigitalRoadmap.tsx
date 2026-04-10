@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import * as XLSX from "xlsx";
 import {
   useGetRoadmapInitiatives,
   useGetRoadmapSummary,
@@ -12,6 +13,8 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import {
   X,
@@ -30,7 +33,98 @@ import {
   Circle,
   Pencil,
   Plus,
+  Download,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
+
+// ─── Export Utilities ─────────────────────────────────────────────────────────
+
+const EXPORT_COLUMNS: { key: keyof RoadmapInitiative; label: string }[] = [
+  { key: "jiraId", label: "Jira ID" },
+  { key: "initiativeType", label: "Type" },
+  { key: "domain", label: "Domain" },
+  { key: "portfolio", label: "Portfolio" },
+  { key: "product", label: "Product" },
+  { key: "application", label: "Application" },
+  { key: "serviceCategory", label: "Service Category" },
+  { key: "status", label: "Status" },
+  { key: "priority", label: "Priority" },
+  { key: "complexity", label: "Complexity" },
+  { key: "technology", label: "Technology" },
+  { key: "currentVersion", label: "Current Version" },
+  { key: "upgradeVersion", label: "Target Version" },
+  { key: "startDate", label: "Start Date" },
+  { key: "endDate", label: "End Date" },
+  { key: "planYear", label: "Plan Year" },
+  { key: "planQuarter", label: "Quarter" },
+  { key: "description", label: "Description" },
+  { key: "expectedOutcome", label: "Expected Outcome" },
+  { key: "businessImpact", label: "Business Impact" },
+  { key: "dependency", label: "Dependencies" },
+  { key: "notes", label: "Notes" },
+];
+
+function exportToCSV(data: RoadmapInitiative[], filename: string) {
+  const headers = EXPORT_COLUMNS.map(c => `"${c.label}"`).join(",");
+  const rows = data.map(row =>
+    EXPORT_COLUMNS.map(c => {
+      const val = row[c.key] ?? "";
+      return `"${String(val).replace(/"/g, '""')}"`;
+    }).join(",")
+  );
+  const csv = [headers, ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportToXLSX(data: RoadmapInitiative[], filename: string) {
+  const rows = data.map(row =>
+    Object.fromEntries(
+      EXPORT_COLUMNS.map(c => [c.label, row[c.key] ?? ""])
+    )
+  );
+  const ws = XLSX.utils.json_to_sheet(rows, { header: EXPORT_COLUMNS.map(c => c.label) });
+
+  // Auto-width columns
+  const colWidths = EXPORT_COLUMNS.map(c => ({
+    wch: Math.max(c.label.length, 18),
+  }));
+  ws["!cols"] = colWidths;
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Initiatives");
+
+  // Summary sheet
+  const byType: Record<string, number> = {};
+  const byStatus: Record<string, number> = {};
+  const byDomain: Record<string, number> = {};
+  data.forEach(d => {
+    byType[d.initiativeType] = (byType[d.initiativeType] || 0) + 1;
+    byStatus[d.status] = (byStatus[d.status] || 0) + 1;
+    byDomain[d.domain || "—"] = (byDomain[d.domain || "—"] || 0) + 1;
+  });
+  const summaryRows = [
+    { Category: "By Type", Value: "", Count: "" },
+    ...Object.entries(byType).map(([k, v]) => ({ Category: "", Value: k, Count: v })),
+    { Category: "", Value: "", Count: "" },
+    { Category: "By Status", Value: "", Count: "" },
+    ...Object.entries(byStatus).map(([k, v]) => ({ Category: "", Value: k, Count: v })),
+    { Category: "", Value: "", Count: "" },
+    { Category: "By Domain", Value: "", Count: "" },
+    ...Object.entries(byDomain).map(([k, v]) => ({ Category: "", Value: k, Count: v })),
+  ];
+  const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+  wsSummary["!cols"] = [{ wch: 20 }, { wch: 30 }, { wch: 10 }];
+  XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+
+  XLSX.writeFile(wb, filename);
+}
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
@@ -1337,6 +1431,23 @@ export default function DigitalRoadmap() {
 
   const currentSection = SECTIONS.find(s => s.key === activeSection)!;
 
+  const sectionInitiatives = useMemo(
+    () => initiatives.filter(i => i.initiativeType === currentSection.initiativeType),
+    [initiatives, currentSection.initiativeType]
+  );
+
+  const handleExportCSV = useCallback((scope: "all" | "section") => {
+    const data = scope === "all" ? initiatives : sectionInitiatives;
+    const label = scope === "all" ? "all" : currentSection.shortLabel.toLowerCase().replace(/\s+/g, "-");
+    exportToCSV(data, `horizon-roadmap-${label}-${new Date().toISOString().slice(0, 10)}.csv`);
+  }, [initiatives, sectionInitiatives, currentSection.shortLabel]);
+
+  const handleExportXLSX = useCallback((scope: "all" | "section") => {
+    const data = scope === "all" ? initiatives : sectionInitiatives;
+    const label = scope === "all" ? "all" : currentSection.shortLabel.toLowerCase().replace(/\s+/g, "-");
+    exportToXLSX(data, `horizon-roadmap-${label}-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  }, [initiatives, sectionInitiatives, currentSection.shortLabel]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -1351,33 +1462,69 @@ export default function DigitalRoadmap() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Transformation Roadmap</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             3-year IBM &amp; Horizon BCBS strategic initiative portfolio — organized by type, domain, and delivery phase
           </p>
         </div>
-        {summary && (
-          <div className="flex items-center gap-4 flex-shrink-0 text-sm">
-            <div className="text-center">
-              <p className="text-xl font-bold">{summary.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {summary && (
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-center">
+                <p className="text-xl font-bold">{summary.total}</p>
+                <p className="text-xs text-muted-foreground">Total</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{summary.active}</p>
+                <p className="text-xs text-muted-foreground">Active</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{summary.completed}</p>
+                <p className="text-xs text-muted-foreground">Done</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xl font-bold text-red-600 dark:text-red-400">{summary.atRisk}</p>
+                <p className="text-xs text-muted-foreground">At Risk</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{summary.active}</p>
-              <p className="text-xs text-muted-foreground">Active</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{summary.completed}</p>
-              <p className="text-xs text-muted-foreground">Done</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xl font-bold text-red-600 dark:text-red-400">{summary.atRisk}</p>
-              <p className="text-xs text-muted-foreground">At Risk</p>
-            </div>
-          </div>
-        )}
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 h-9">
+                <Download className="w-3.5 h-3.5" />
+                Export
+                <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Current Section — {currentSection.label}
+              </DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleExportCSV("section")} className="gap-2 cursor-pointer">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportXLSX("section")} className="gap-2 cursor-pointer">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                Export as Excel (.xlsx)
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Full Portfolio ({initiatives.length} initiatives)
+              </DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => handleExportCSV("all")} className="gap-2 cursor-pointer">
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                Export all as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportXLSX("all")} className="gap-2 cursor-pointer">
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                Export all as Excel (.xlsx)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Alerts */}

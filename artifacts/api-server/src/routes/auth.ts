@@ -1,11 +1,60 @@
 import { Router, type IRouter } from "express";
 import { logger } from "../lib/logger";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, pool } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-const sessions = new Map<string, Omit<typeof usersTable.$inferSelect, "passwordHash" | "createdAt">>();
+interface SessionData {
+  user: Omit<typeof usersTable.$inferSelect, "passwordHash" | "createdAt">;
+  loggedInAt: Date;
+}
+
+const sessions = new Map<string, SessionData>();
+
+async function ensureSessionLogsTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_session_logs (
+        id serial PRIMARY KEY,
+        user_id text NOT NULL,
+        username varchar(255) NOT NULL,
+        login_at timestamp DEFAULT now() NOT NULL,
+        logout_at timestamp,
+        session_duration_seconds integer,
+        token text NOT NULL
+      )
+    `);
+  } catch {
+    // non-critical
+  }
+}
+ensureSessionLogsTable();
+
+async function logLogin(userId: string, username: string, token: string): Promise<void> {
+  try {
+    await pool.query(
+      `INSERT INTO user_session_logs (user_id, username, token) VALUES ($1, $2, $3)`,
+      [userId, username, token]
+    );
+  } catch {
+    // non-critical
+  }
+}
+
+async function logLogout(token: string): Promise<void> {
+  try {
+    await pool.query(
+      `UPDATE user_session_logs
+       SET logout_at = now(),
+           session_duration_seconds = EXTRACT(EPOCH FROM (now() - login_at))::integer
+       WHERE token = $1 AND logout_at IS NULL`,
+      [token]
+    );
+  } catch {
+    // non-critical
+  }
+}
 
 router.post("/auth/login", async (req, res): Promise<void> => {
   const { username, password } = req.body;
@@ -23,7 +72,9 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 
   const { passwordHash: _pw, createdAt: _ca, ...safeUser } = user[0];
   const token = `demo_token_${safeUser.id}_${Date.now()}`;
-  sessions.set(token, safeUser);
+
+  sessions.set(token, { user: safeUser, loggedInAt: new Date() });
+  await logLogin(safeUser.id, safeUser.username, token);
 
   logger.info({ username }, "login success");
   res.json({ user: safeUser, token });
@@ -37,20 +88,22 @@ router.get("/auth/me", async (req, res): Promise<void> => {
   }
 
   const token = auth.split(" ")[1];
-  const user = sessions.get(token);
+  const session = sessions.get(token);
 
-  if (!user) {
+  if (!session) {
     res.status(401).json({ error: "Unauthorized", message: "Invalid token" });
     return;
   }
 
-  res.json(user);
+  res.json({ ...session.user, loginAt: session.loggedInAt.toISOString() });
 });
 
 router.post("/auth/logout", async (req, res): Promise<void> => {
   const auth = req.headers.authorization;
   if (auth?.startsWith("Bearer ")) {
-    sessions.delete(auth.split(" ")[1]);
+    const token = auth.split(" ")[1];
+    sessions.delete(token);
+    await logLogout(token);
   }
   res.json({ success: true });
 });

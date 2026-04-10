@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation } from "wouter";
-import { useGetCurrentUser, useGetAlerts } from "@workspace/api-client-react";
+import { useGetCurrentUser, useGetAlerts, useLogout } from "@workspace/api-client-react";
 import { 
   BellIcon, 
   SearchIcon, 
@@ -19,7 +19,8 @@ import {
   LogOutIcon,
   SunIcon,
   MoonIcon,
-  HelpCircleIcon
+  HelpCircleIcon,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,8 @@ import { useTheme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useInactivityTimeout } from "@/hooks/useInactivityTimeout";
+import { SessionTimeoutModal } from "./SessionTimeoutModal";
 
 type NavItem = { name: string; path: string; icon: React.ElementType };
 type NavGroup = { label: string; items: NavItem[] };
@@ -97,12 +100,10 @@ function HMark({ size = 26 }: { size?: number }) {
 }
 
 function IbmMarkInline({ size = 26 }: { size?: number }) {
-  /* Official IBM Blue wordmark — clean pill badge */
   const r = size * 0.22;
   return (
     <svg width={size * 1.8} height={size} viewBox={`0 0 ${size * 1.8} ${size}`} className="flex-shrink-0 select-none">
       <rect x="0" y="0" width={size * 1.8} height={size} rx={r} ry={r} fill="#0f62fe" />
-      {/* 8 horizontal white accent stripes full-width */}
       {[0.18, 0.28, 0.42, 0.52, 0.66, 0.76].map((yFrac, i) => (
         <rect key={i} x={size * 0.18} y={size * yFrac} width={size * 1.44} height={size * 0.065} fill="white" opacity={i % 2 === 0 ? 0.18 : 0.1} />
       ))}
@@ -120,14 +121,18 @@ function IbmMarkInline({ size = 26 }: { size?: number }) {
   );
 }
 
+const SESSION_COUNTDOWN_SECONDS = 60;
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const { data: user } = useGetCurrentUser();
   const { data: alerts } = useGetAlerts();
   const { theme, setTheme } = useTheme();
+  const logoutMutation = useLogout();
   
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState(0);
+  const [sessionWarning, setSessionWarning] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -136,15 +141,57 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  const activeAlerts = alerts?.filter(a => a.status === "active" && a.severity === "critical") || [];
-
-  const handleLogout = () => {
+  const doLogout = useCallback(async () => {
+    const token = localStorage.getItem("horizon_token");
+    if (token) {
+      try {
+        await logoutMutation.mutateAsync();
+      } catch {
+        // best effort
+      }
+    }
     localStorage.removeItem("horizon_token");
     setLocation("/");
-  };
+  }, [logoutMutation, setLocation]);
+
+  const handleLogout = useCallback(() => {
+    doLogout();
+  }, [doLogout]);
+
+  const handleSessionWarning = useCallback(() => {
+    setSessionWarning(true);
+  }, []);
+
+  const handleSessionTimeout = useCallback(() => {
+    setSessionWarning(false);
+    doLogout();
+  }, [doLogout]);
+
+  const { resetTimers } = useInactivityTimeout({
+    warningMinutes: 9,
+    timeoutMinutes: 10,
+    onWarning: handleSessionWarning,
+    onTimeout: handleSessionTimeout,
+    enabled: !!localStorage.getItem("horizon_token"),
+  });
+
+  const handleExtendSession = useCallback(() => {
+    setSessionWarning(false);
+    resetTimers();
+  }, [resetTimers]);
+
+  const activeAlerts = alerts?.filter(a => a.status === "active" && a.severity === "critical") || [];
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Session Timeout Modal */}
+      <SessionTimeoutModal
+        open={sessionWarning}
+        countdownSeconds={SESSION_COUNTDOWN_SECONDS}
+        onExtend={handleExtendSession}
+        onLogout={handleLogout}
+      />
+
       {/* Sidebar */}
       <div 
         className={cn(
@@ -154,7 +201,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div className="h-16 flex items-center px-3 border-b gap-2 overflow-hidden">
           {sidebarOpen ? (
-            /* Expanded: Horizon H-mark + IBM wordmark badge + text label */
             <div className="flex items-center gap-2.5 min-w-0">
               <HMark size={30} />
               <IbmMarkInline size={22} />
@@ -164,7 +210,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
           ) : (
-            /* Collapsed: stack H-mark + IBM badge */
             <div className="flex flex-col items-center gap-1.5 w-full py-1">
               <HMark size={22} />
               <IbmMarkInline size={16} />
@@ -176,7 +221,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <nav className="px-2 space-y-4">
             {NAV_GROUPS.map((group, gi) => (
               <div key={group.label}>
-                {/* Section header — hidden when sidebar is collapsed */}
                 {sidebarOpen && (
                   <div className={cn("px-3 mb-1", gi > 0 && "pt-1")}>
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
@@ -184,7 +228,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     </span>
                   </div>
                 )}
-                {/* Divider when collapsed */}
                 {!sidebarOpen && gi > 0 && (
                   <div className="mx-3 mb-1 border-t border-sidebar-border/40" />
                 )}
@@ -230,8 +273,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Demo Environment Banner */}
+        <div
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-1.5 text-[11px] border-b"
+          style={{
+            background: "linear-gradient(90deg, rgba(15,98,254,0.06) 0%, transparent 80%)",
+            borderBottomColor: "rgba(15,98,254,0.15)",
+          }}
+        >
+          <Info className="w-3 h-3 flex-shrink-0" style={{ color: "#0f62fe" }} />
+          <span className="font-semibold" style={{ color: "#0f62fe" }}>DEMONSTRATION ENVIRONMENT</span>
+          <span className="text-muted-foreground/70 hidden sm:inline">
+            — Synthetic data only. Architecture-ready for deployment on Horizon BCBS secure infrastructure with live production data.
+          </span>
+        </div>
+
         {/* Header */}
-        <header className="h-16 border-b bg-card flex items-center justify-between px-4 flex-shrink-0 z-10">
+        <header className="h-14 border-b bg-card flex items-center justify-between px-4 flex-shrink-0 z-10">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
               <MenuIcon className="w-5 h-5" />
