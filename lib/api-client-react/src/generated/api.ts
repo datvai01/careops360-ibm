@@ -74,6 +74,7 @@ import type {
   SlaCompliance,
   TicketTrend,
   TrendData,
+  UpdateRoadmapInitiativeBody,
   UpdateRoadmapInitiativeStatusBody,
   User,
   VendorAgingRow,
@@ -4139,4 +4140,81 @@ export const useUpdateRoadmapInitiativeStatus = <
   TContext
 > => {
   return useMutation(getUpdateRoadmapInitiativeStatusMutationOptions(options));
+};
+
+// ─── Full update (PUT) ────────────────────────────────────────────────────────
+
+export const getUpdateRoadmapInitiativeUrl = (id: number) =>
+  `/api/roadmap/initiatives/${id}`;
+
+export const updateRoadmapInitiative = async (
+  id: number,
+  updateRoadmapInitiativeBody: UpdateRoadmapInitiativeBody,
+  options?: SecondParameter<typeof customFetch>,
+): Promise<RoadmapInitiative> => {
+  return customFetch<RoadmapInitiative>(getUpdateRoadmapInitiativeUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateRoadmapInitiativeBody),
+  });
+};
+
+export const getUpdateRoadmapInitiativeMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRoadmapInitiative>>,
+    TError,
+    { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRoadmapInitiative>>,
+  TError,
+  { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
+  TContext
+> => {
+  const mutationKey = ["updateRoadmapInitiative"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRoadmapInitiative>>,
+    { id: number; data: BodyType<UpdateRoadmapInitiativeBody> }
+  > = ({ id, data }) => updateRoadmapInitiative(id, data, requestOptions);
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateRoadmapInitiativeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRoadmapInitiative>>
+>;
+export type UpdateRoadmapInitiativeMutationBody = BodyType<UpdateRoadmapInitiativeBody>;
+export type UpdateRoadmapInitiativeMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a roadmap initiative (full update)
+ */
+export const useUpdateRoadmapInitiative = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRoadmapInitiative>>,
+    TError,
+    { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRoadmapInitiative>>,
+  TError,
+  { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
+  TContext
+> => {
+  return useMutation(getUpdateRoadmapInitiativeMutationOptions(options));
 };

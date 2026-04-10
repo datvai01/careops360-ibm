@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, roadmapInitiativesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -20,6 +20,16 @@ function enrichRow(r: typeof roadmapInitiativesTable.$inferSelect) {
   const overdue = (r.status === "Active" || r.status === "At Risk") ? computeDaysOverdue(r.endDate) : null;
   const daysUntilEnd = r.status === "Active" || r.status === "Planned" ? computeDaysUntilEnd(r.endDate) : null;
   return { ...r, daysOverdue: overdue, daysUntilEnd };
+}
+
+async function generateJiraId(): Promise<string> {
+  const result = await db.execute(
+    sql`SELECT jira_id FROM roadmap_initiatives WHERE jira_id ~ '^HLGN-[0-9]+$' ORDER BY CAST(SUBSTRING(jira_id FROM 6) AS INTEGER) DESC LIMIT 1`
+  );
+  const rows = result.rows as { jira_id: string }[];
+  if (rows.length === 0) return "HLGN-1001";
+  const last = parseInt(rows[0].jira_id.replace("HLGN-", ""), 10);
+  return `HLGN-${last + 1}`;
 }
 
 router.get("/roadmap/initiatives", async (req, res): Promise<void> => {
@@ -80,9 +90,9 @@ router.get("/roadmap/alerts", async (_req, res): Promise<void> => {
         id: r.id,
         severity: daysOverdue > 14 ? "critical" : "high",
         alertType: "overdue",
-        title: `${r.workNumber} — Overdue by ${daysOverdue} day${daysOverdue !== 1 ? "s" : ""}`,
+        title: `${r.jiraId} — Overdue by ${daysOverdue} day${daysOverdue !== 1 ? "s" : ""}`,
         message: `${r.application} (${r.portfolio}) passed its target end date of ${r.endDate}.`,
-        workNumber: r.workNumber,
+        jiraId: r.jiraId,
         portfolio: r.portfolio,
         daysOverdue,
       });
@@ -91,9 +101,9 @@ router.get("/roadmap/alerts", async (_req, res): Promise<void> => {
         id: r.id,
         severity: "high",
         alertType: "atRisk",
-        title: `${r.workNumber} — At Risk`,
+        title: `${r.jiraId} — At Risk`,
         message: `${r.application} (${r.portfolio}) has been flagged at risk. Review notes for details.`,
-        workNumber: r.workNumber,
+        jiraId: r.jiraId,
         portfolio: r.portfolio,
         daysOverdue: null,
       });
@@ -104,9 +114,9 @@ router.get("/roadmap/alerts", async (_req, res): Promise<void> => {
         id: r.id * 1000,
         severity: "medium",
         alertType: "endingSoon",
-        title: `${r.workNumber} — Ending in ${daysUntilEnd} day${daysUntilEnd !== 1 ? "s" : ""}`,
+        title: `${r.jiraId} — Ending in ${daysUntilEnd} day${daysUntilEnd !== 1 ? "s" : ""}`,
         message: `${r.application} (${r.portfolio}) is scheduled to complete by ${r.endDate}.`,
-        workNumber: r.workNumber,
+        jiraId: r.jiraId,
         portfolio: r.portfolio,
         daysOverdue: null,
       });
@@ -118,9 +128,9 @@ router.get("/roadmap/alerts", async (_req, res): Promise<void> => {
         id: r.id * 10000,
         severity: "medium",
         alertType: "startOverdue",
-        title: `${r.workNumber} — Start Overdue by ${daysLate} day${daysLate !== 1 ? "s" : ""}`,
+        title: `${r.jiraId} — Start Overdue by ${daysLate} day${daysLate !== 1 ? "s" : ""}`,
         message: `${r.application} (${r.portfolio}) was planned to start on ${r.startDate} but remains in Planned status.`,
-        workNumber: r.workNumber,
+        jiraId: r.jiraId,
         portfolio: r.portfolio,
         daysOverdue: daysLate,
       });
@@ -141,17 +151,22 @@ router.post("/roadmap/initiatives", async (req, res): Promise<void> => {
     technology?: string;
     currentVersion?: string;
     upgradeVersion?: string;
-    workNumber?: string;
     serviceCategory?: string;
     startDate?: string;
     endDate?: string;
     status?: string;
     priority?: string;
     notes?: string;
+    domain?: string;
+    planYear?: number;
+    planQuarter?: string;
+    complexity?: string;
+    businessImpact?: string;
+    dependency?: string;
   };
 
   const required = ["portfolio", "product", "application", "initiativeType", "description",
-    "expectedOutcome", "technology", "workNumber", "serviceCategory", "startDate", "endDate", "status", "priority"] as const;
+    "expectedOutcome", "technology", "serviceCategory", "startDate", "endDate", "status", "priority"] as const;
 
   for (const field of required) {
     if (!body[field]) {
@@ -159,6 +174,8 @@ router.post("/roadmap/initiatives", async (req, res): Promise<void> => {
       return;
     }
   }
+
+  const jiraId = await generateJiraId();
 
   const inserted = await db
     .insert(roadmapInitiativesTable)
@@ -172,17 +189,93 @@ router.post("/roadmap/initiatives", async (req, res): Promise<void> => {
       technology: body.technology!,
       currentVersion: body.currentVersion ?? "",
       upgradeVersion: body.upgradeVersion ?? "",
-      workNumber: body.workNumber!,
+      jiraId,
       serviceCategory: body.serviceCategory!,
       startDate: body.startDate!,
       endDate: body.endDate!,
       status: body.status!,
       priority: body.priority!,
       notes: body.notes ?? "",
+      domain: body.domain ?? "",
+      planYear: body.planYear ?? 1,
+      planQuarter: body.planQuarter ?? "Q1",
+      complexity: body.complexity ?? "Med",
+      businessImpact: body.businessImpact ?? "",
+      dependency: body.dependency ?? "",
     })
     .returning();
 
   res.status(201).json(enrichRow(inserted[0]));
+});
+
+router.put("/roadmap/initiatives/:id", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const body = req.body as {
+    portfolio?: string;
+    product?: string;
+    application?: string;
+    initiativeType?: string;
+    description?: string;
+    expectedOutcome?: string;
+    technology?: string;
+    currentVersion?: string;
+    upgradeVersion?: string;
+    serviceCategory?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+    priority?: string;
+    notes?: string;
+    domain?: string;
+    planYear?: number;
+    planQuarter?: string;
+    complexity?: string;
+    businessImpact?: string;
+    dependency?: string;
+  };
+
+  const updateFields: Partial<typeof roadmapInitiativesTable.$inferInsert> = {};
+  if (body.portfolio !== undefined) updateFields.portfolio = body.portfolio;
+  if (body.product !== undefined) updateFields.product = body.product;
+  if (body.application !== undefined) updateFields.application = body.application;
+  if (body.initiativeType !== undefined) updateFields.initiativeType = body.initiativeType;
+  if (body.description !== undefined) updateFields.description = body.description;
+  if (body.expectedOutcome !== undefined) updateFields.expectedOutcome = body.expectedOutcome;
+  if (body.technology !== undefined) updateFields.technology = body.technology;
+  if (body.currentVersion !== undefined) updateFields.currentVersion = body.currentVersion;
+  if (body.upgradeVersion !== undefined) updateFields.upgradeVersion = body.upgradeVersion;
+  if (body.serviceCategory !== undefined) updateFields.serviceCategory = body.serviceCategory;
+  if (body.startDate !== undefined) updateFields.startDate = body.startDate;
+  if (body.endDate !== undefined) updateFields.endDate = body.endDate;
+  if (body.status !== undefined) updateFields.status = body.status;
+  if (body.priority !== undefined) updateFields.priority = body.priority;
+  if (body.notes !== undefined) updateFields.notes = body.notes;
+  if (body.domain !== undefined) updateFields.domain = body.domain;
+  if (body.planYear !== undefined) updateFields.planYear = body.planYear;
+  if (body.planQuarter !== undefined) updateFields.planQuarter = body.planQuarter;
+  if (body.complexity !== undefined) updateFields.complexity = body.complexity;
+  if (body.businessImpact !== undefined) updateFields.businessImpact = body.businessImpact;
+  if (body.dependency !== undefined) updateFields.dependency = body.dependency;
+
+  if (Object.keys(updateFields).length === 0) {
+    res.status(400).json({ error: "No fields provided to update" });
+    return;
+  }
+
+  const updated = await db
+    .update(roadmapInitiativesTable)
+    .set(updateFields)
+    .where(eq(roadmapInitiativesTable.id, id))
+    .returning();
+
+  if (updated.length === 0) {
+    res.status(404).json({ error: "Initiative not found" });
+    return;
+  }
+
+  res.json(enrichRow(updated[0]));
 });
 
 router.patch("/roadmap/initiatives/:id/status", async (req, res): Promise<void> => {

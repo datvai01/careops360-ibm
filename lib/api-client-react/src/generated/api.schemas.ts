@@ -756,7 +756,7 @@ export interface RoadmapInitiative {
   technology: string;
   currentVersion: string;
   upgradeVersion: string;
-  workNumber: string;
+  jiraId: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
@@ -811,13 +811,42 @@ export interface CreateRoadmapInitiativeRequest {
   technology: string;
   currentVersion?: string;
   upgradeVersion?: string;
-  workNumber: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
   status: CreateRoadmapInitiativeRequestStatus;
   priority: CreateRoadmapInitiativeRequestPriority;
   notes?: string;
+  domain?: string;
+  planYear?: number;
+  planQuarter?: string;
+  complexity?: string;
+  businessImpact?: string;
+  dependency?: string;
+}
+
+export interface UpdateRoadmapInitiativeBody {
+  portfolio?: string;
+  product?: string;
+  application?: string;
+  initiativeType?: string;
+  description?: string;
+  expectedOutcome?: string;
+  technology?: string;
+  currentVersion?: string;
+  upgradeVersion?: string;
+  serviceCategory?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  priority?: string;
+  notes?: string;
+  domain?: string;
+  planYear?: number;
+  planQuarter?: string;
+  complexity?: string;
+  businessImpact?: string;
+  dependency?: string;
 }
 
 export interface RoadmapSummary {
@@ -857,7 +886,7 @@ export interface RoadmapAlert {
   alertType: RoadmapAlertAlertType;
   title: string;
   message: string;
-  workNumber: string;
+  jiraId: string;
   portfolio: string;
   daysOverdue?: number | null;
 }

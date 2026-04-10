@@ -11,7 +11,7 @@ export const roadmapInitiativesTable = pgTable("roadmap_initiatives", {
   technology: varchar("technology", { length: 100 }).notNull(),
   currentVersion: varchar("current_version", { length: 50 }).notNull().default(""),
   upgradeVersion: varchar("upgrade_version", { length: 50 }).notNull().default(""),
-  workNumber: varchar("work_number", { length: 20 }).notNull().unique(),
+  jiraId: varchar("jira_id", { length: 20 }).notNull().unique(),
   serviceCategory: varchar("service_category", { length: 100 }).notNull(),
   startDate: varchar("start_date", { length: 10 }).notNull(),
   endDate: varchar("end_date", { length: 10 }).notNull(),

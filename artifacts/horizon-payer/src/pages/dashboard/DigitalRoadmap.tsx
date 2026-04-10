@@ -1,11 +1,15 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   useGetRoadmapInitiatives,
   useGetRoadmapSummary,
   useGetRoadmapAlerts,
+  useCreateRoadmapInitiative,
+  useUpdateRoadmapInitiative,
   type RoadmapInitiative,
   type RoadmapAlert,
+  type CreateRoadmapInitiativeRequest,
 } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -24,6 +28,8 @@ import {
   Zap,
   BarChart2,
   Circle,
+  Pencil,
+  Plus,
 } from "lucide-react";
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
@@ -195,7 +201,7 @@ function tlBarStyle(startDate: string, endDate: string): { left: string; width: 
 
 // ─── Timeline View ────────────────────────────────────────────────────────────
 
-function TimelineView({ initiatives, onSelect }: { initiatives: RoadmapInitiative[]; onSelect: (i: RoadmapInitiative) => void }) {
+function TimelineView({ initiatives, onSelect, onEdit }: { initiatives: RoadmapInitiative[]; onSelect: (i: RoadmapInitiative) => void; onEdit: (i: RoadmapInitiative) => void; }) {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   const grouped = useMemo(() => {
@@ -291,9 +297,18 @@ function TimelineView({ initiatives, onSelect }: { initiatives: RoadmapInitiativ
                     >
                       {/* Label column */}
                       <div className="w-52 flex-shrink-0 border-r border-border px-3 py-1.5 group-hover:bg-muted/20 transition-colors">
-                        <p className="text-xs font-medium truncate leading-tight">{init.application}</p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs font-medium truncate leading-tight flex-1">{init.application}</p>
+                          <button
+                            onClick={e => { e.stopPropagation(); onEdit(init); }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground flex-shrink-0"
+                            title="Edit initiative"
+                          >
+                            <Pencil className="h-2.5 w-2.5" />
+                          </button>
+                        </div>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <span className="text-[10px] font-mono text-muted-foreground">{init.workNumber}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{init.jiraId}</span>
                           <SmallBadge label={init.status} className={cn(STATUS_STYLE[init.status] ?? "", "text-[9px] py-0 px-1")} />
                         </div>
                       </div>
@@ -324,14 +339,14 @@ function TimelineView({ initiatives, onSelect }: { initiatives: RoadmapInitiativ
                             backgroundColor: hex + (isHovered ? "ff" : "cc"),
                           }}
                         >
-                          <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.workNumber}</span>
+                          <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.jiraId}</span>
                         </div>
                         {/* Hover tooltip */}
                         {isHovered && (
                           <div className="absolute z-40 pointer-events-none" style={{ left: bar.left, bottom: "calc(100% + 4px)" }}>
                             <div className="bg-popover border border-border rounded-lg shadow-2xl p-3 w-72">
                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                <span className="font-mono text-[10px] text-muted-foreground">{init.workNumber}</span>
+                                <span className="font-mono text-[10px] text-muted-foreground">{init.jiraId}</span>
                                 <SmallBadge label={init.status} className={STATUS_STYLE[init.status] ?? ""} />
                                 {init.complexity && <SmallBadge label={`${init.complexity} complexity`} className={COMPLEXITY_STYLE[init.complexity] ?? ""} />}
                               </div>
@@ -378,6 +393,308 @@ function TimelineView({ initiatives, onSelect }: { initiatives: RoadmapInitiativ
         </div>
       </div>
     </Card>
+  );
+}
+
+// ─── Initiative Form Modal ────────────────────────────────────────────────────
+
+const EMPTY_FORM: Omit<CreateRoadmapInitiativeRequest, "initiativeType" | "status" | "priority"> & {
+  initiativeType: string; status: string; priority: string;
+} = {
+  portfolio: "", product: "", application: "", initiativeType: "Upgrade", description: "",
+  expectedOutcome: "", technology: "", currentVersion: "", upgradeVersion: "",
+  serviceCategory: "", startDate: "", endDate: "", status: "Planned", priority: "Medium",
+  notes: "", domain: "Enterprise Platforms", planYear: 1, planQuarter: "Q1",
+  complexity: "Med", businessImpact: "", dependency: "",
+};
+
+function FieldRow({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function FormInput({ value, onChange, placeholder, type = "text", required }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; type?: string; required?: boolean;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      required={required}
+      className="w-full text-sm border border-border rounded-md px-3 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/40 placeholder:text-muted-foreground/50"
+    />
+  );
+}
+
+function FormSelect({ value, onChange, options }: {
+  value: string; onChange: (v: string) => void; options: { value: string; label: string }[];
+}) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className="w-full text-sm border border-border rounded-md px-3 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+    >
+      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  );
+}
+
+function FormTextarea({ value, onChange, placeholder, rows = 3 }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; rows?: number;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full text-sm border border-border rounded-md px-3 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500/40 placeholder:text-muted-foreground/50 resize-none"
+    />
+  );
+}
+
+function InitiativeFormModal({
+  editTarget,
+  onClose,
+  onSaved,
+}: {
+  editTarget: RoadmapInitiative | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const isEdit = editTarget !== null;
+  const [form, setForm] = useState(() =>
+    isEdit ? {
+      portfolio: editTarget.portfolio,
+      product: editTarget.product,
+      application: editTarget.application,
+      initiativeType: editTarget.initiativeType as string,
+      description: editTarget.description,
+      expectedOutcome: editTarget.expectedOutcome,
+      technology: editTarget.technology,
+      currentVersion: editTarget.currentVersion,
+      upgradeVersion: editTarget.upgradeVersion,
+      serviceCategory: editTarget.serviceCategory,
+      startDate: editTarget.startDate,
+      endDate: editTarget.endDate,
+      status: editTarget.status as string,
+      priority: editTarget.priority as string,
+      notes: editTarget.notes,
+      domain: editTarget.domain ?? "Enterprise Platforms",
+      planYear: editTarget.planYear ?? 1,
+      planQuarter: editTarget.planQuarter ?? "Q1",
+      complexity: editTarget.complexity ?? "Med",
+      businessImpact: editTarget.businessImpact ?? "",
+      dependency: editTarget.dependency ?? "",
+    } : { ...EMPTY_FORM }
+  );
+
+  const [error, setError] = useState<string | null>(null);
+  const createMutation = useCreateRoadmapInitiative();
+  const updateMutation = useUpdateRoadmapInitiative();
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
+  const set = (key: keyof typeof form) => (v: string | number) =>
+    setForm(f => ({ ...f, [key]: v }));
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      if (isEdit && editTarget) {
+        await updateMutation.mutateAsync({ id: editTarget.id, data: form });
+      } else {
+        await createMutation.mutateAsync({
+          data: {
+            ...form,
+            initiativeType: form.initiativeType as CreateRoadmapInitiativeRequest["initiativeType"],
+            status: form.status as CreateRoadmapInitiativeRequest["status"],
+            priority: form.priority as CreateRoadmapInitiativeRequest["priority"],
+          },
+        });
+      }
+      onSaved();
+    } catch (err: unknown) {
+      setError((err as Error)?.message ?? "Failed to save. Please try again.");
+    }
+  }, [form, isEdit, editTarget, createMutation, updateMutation, onSaved]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30 dark:bg-black/50" />
+      <div
+        className="relative w-full max-w-2xl bg-background border border-border rounded-xl shadow-2xl mt-8 mb-8"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <div>
+            <h2 className="text-base font-semibold">
+              {isEdit ? "Edit Initiative" : "New Initiative"}
+            </h2>
+            {isEdit && (
+              <p className="text-xs text-muted-foreground mt-0.5 font-mono">
+                Jira ID: <span className="font-semibold text-foreground">{editTarget!.jiraId}</span>
+              </p>
+            )}
+            {!isEdit && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Jira ID will be auto-generated on save
+              </p>
+            )}
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto" style={{ maxHeight: "calc(90vh - 130px)" }}>
+          {error && (
+            <div className="rounded-md bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <FieldRow label="Application / Initiative Name" required>
+              <FormInput value={form.application} onChange={set("application")} placeholder="e.g. Claims Processing Engine" required />
+            </FieldRow>
+            <FieldRow label="Initiative Type" required>
+              <FormSelect value={form.initiativeType} onChange={set("initiativeType")} options={[
+                { value: "Upgrade", label: "Upgrade" },
+                { value: "Ticket Reduction", label: "Ticket Reduction" },
+                { value: "Transformation", label: "Transformation" },
+              ]} />
+            </FieldRow>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FieldRow label="Portfolio" required>
+              <FormInput value={form.portfolio} onChange={set("portfolio")} placeholder="e.g. Enrollment & Eligibility" required />
+            </FieldRow>
+            <FieldRow label="Product" required>
+              <FormInput value={form.product} onChange={set("product")} placeholder="e.g. Membership System" required />
+            </FieldRow>
+          </div>
+
+          <FieldRow label="Description" required>
+            <FormTextarea value={form.description} onChange={set("description")} placeholder="Describe what this initiative entails…" required />
+          </FieldRow>
+
+          <FieldRow label="Expected Outcome" required>
+            <FormTextarea value={form.expectedOutcome} onChange={set("expectedOutcome")} placeholder="What will be achieved?" required />
+          </FieldRow>
+
+          <FieldRow label="Business Impact">
+            <FormTextarea value={form.businessImpact} onChange={set("businessImpact")} placeholder="Quantified business value (e.g. 25% cost reduction)…" rows={2} />
+          </FieldRow>
+
+          <div className="grid grid-cols-3 gap-4">
+            <FieldRow label="Technology" required>
+              <FormInput value={form.technology} onChange={set("technology")} placeholder="e.g. Angular, .NET 8" required />
+            </FieldRow>
+            <FieldRow label="Current Version">
+              <FormInput value={form.currentVersion} onChange={set("currentVersion")} placeholder="e.g. 4.8" />
+            </FieldRow>
+            <FieldRow label="Upgrade Version">
+              <FormInput value={form.upgradeVersion} onChange={set("upgradeVersion")} placeholder="e.g. 8.0" />
+            </FieldRow>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FieldRow label="Service Category" required>
+              <FormInput value={form.serviceCategory} onChange={set("serviceCategory")} placeholder="e.g. Platform Upgrade" required />
+            </FieldRow>
+            <FieldRow label="Domain">
+              <FormSelect value={form.domain} onChange={set("domain")} options={DOMAINS.map(d => ({ value: d, label: d }))} />
+            </FieldRow>
+          </div>
+
+          <div className="grid grid-cols-4 gap-4">
+            <FieldRow label="Plan Year">
+              <FormSelect value={String(form.planYear)} onChange={v => set("planYear")(Number(v))} options={[
+                { value: "1", label: "Year 1 · 2026" },
+                { value: "2", label: "Year 2 · 2027" },
+                { value: "3", label: "Year 3 · 2028" },
+              ]} />
+            </FieldRow>
+            <FieldRow label="Quarter">
+              <FormSelect value={form.planQuarter} onChange={set("planQuarter")} options={["Q1","Q2","Q3","Q4"].map(q => ({ value: q, label: q }))} />
+            </FieldRow>
+            <FieldRow label="Complexity">
+              <FormSelect value={form.complexity} onChange={set("complexity")} options={[
+                { value: "Low", label: "Low" },
+                { value: "Med", label: "Medium" },
+                { value: "High", label: "High" },
+              ]} />
+            </FieldRow>
+            <FieldRow label="Dependency">
+              <FormInput value={form.dependency} onChange={set("dependency")} placeholder="e.g. HLGN-1004" />
+            </FieldRow>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FieldRow label="Start Date" required>
+              <FormInput type="date" value={form.startDate} onChange={set("startDate")} required />
+            </FieldRow>
+            <FieldRow label="End Date" required>
+              <FormInput type="date" value={form.endDate} onChange={set("endDate")} required />
+            </FieldRow>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <FieldRow label="Status" required>
+              <FormSelect value={form.status} onChange={set("status")} options={[
+                { value: "Planned", label: "Planned" },
+                { value: "Active", label: "Active" },
+                { value: "Completed", label: "Completed" },
+                { value: "At Risk", label: "At Risk" },
+              ]} />
+            </FieldRow>
+            <FieldRow label="Priority" required>
+              <FormSelect value={form.priority} onChange={set("priority")} options={[
+                { value: "High", label: "High" },
+                { value: "Medium", label: "Medium" },
+                { value: "Low", label: "Low" },
+              ]} />
+            </FieldRow>
+          </div>
+
+          <FieldRow label="Notes">
+            <FormTextarea value={form.notes} onChange={set("notes")} placeholder="Additional context, risks, or decisions…" rows={2} />
+          </FieldRow>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-muted transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="px-5 py-2 text-sm font-medium rounded-md bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {isPending && <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+              {isEdit ? "Save Changes" : "Create Initiative"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -464,7 +781,7 @@ function DetailPanel({ initiative, onClose }: { initiative: RoadmapInitiative; o
         <div className="flex items-start justify-between p-5 border-b border-border sticky top-0 bg-background z-10">
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="text-xs font-mono text-muted-foreground">{initiative.workNumber}</span>
+              <span className="text-xs font-mono text-muted-foreground">{initiative.jiraId}</span>
               {initiative.domain && (
                 <span className={cn("inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium border", domStyle.badge)}>
                   <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", domStyle.dot)} />
@@ -556,7 +873,7 @@ function AlertsPanel({ alerts, onDismiss }: { alerts: RoadmapAlert[]; onDismiss:
             <thead>
               <tr className="bg-muted/50 border-b border-border">
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-1.5 px-3 w-20">Sev</th>
-                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-1.5 px-3 w-24">Work #</th>
+                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-1.5 px-3 w-24">Jira ID</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-1.5 px-3">Details</th>
                 <th className="w-8 py-1.5 px-3" />
               </tr>
@@ -573,7 +890,7 @@ function AlertsPanel({ alerts, onDismiss }: { alerts: RoadmapAlert[]; onDismiss:
                       {alert.severity}
                     </span>
                   </td>
-                  <td className="py-1.5 px-3 font-mono text-muted-foreground whitespace-nowrap">{alert.workNumber ?? "—"}</td>
+                  <td className="py-1.5 px-3 font-mono text-muted-foreground whitespace-nowrap">{alert.jiraId ?? "—"}</td>
                   <td className="py-1.5 px-3 text-muted-foreground max-w-sm truncate" title={alert.message}>{alert.message}</td>
                   <td className="py-1.5 px-3">
                     <button onClick={() => onDismiss(alert.id)} className="opacity-40 hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"><X className="h-3 w-3" /></button>
@@ -643,7 +960,7 @@ function ImpactMap({ initiatives }: { initiatives: RoadmapInitiative[] }) {
                       {cell?.items.map(item => (
                         <div key={item.id} className="flex items-center gap-1">
                           <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", DOMAIN_STYLE[item.domain ?? ""]?.dot ?? "bg-slate-400")} />
-                          <span className="truncate text-[10px] font-medium leading-tight">{item.workNumber}</span>
+                          <span className="truncate text-[10px] font-medium leading-tight">{item.jiraId}</span>
                         </div>
                       )) ?? null}
                       {(!cell || cell.items.length === 0) && <span className="text-muted-foreground/40 text-[10px]">—</span>}
@@ -676,11 +993,13 @@ function DomainGroup({
   domain,
   initiatives,
   onSelect,
+  onEdit,
   defaultOpen = true,
 }: {
   domain: string;
   initiatives: RoadmapInitiative[];
   onSelect: (i: RoadmapInitiative) => void;
+  onEdit: (i: RoadmapInitiative) => void;
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -712,7 +1031,7 @@ function DomainGroup({
           <table className="w-full text-xs" style={{ minWidth: 820 }}>
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-24">Work #</th>
+                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-28">Jira ID</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3">Initiative</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Year</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-12">Q</th>
@@ -721,6 +1040,7 @@ function DomainGroup({
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Depends On</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-24">Status</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Priority</th>
+                <th className="w-8 py-2 px-3" />
               </tr>
             </thead>
             <tbody>
@@ -729,13 +1049,17 @@ function DomainGroup({
                   key={init.id}
                   onClick={() => onSelect(init)}
                   className={cn(
-                    "border-b border-border/50 cursor-pointer hover:bg-muted/40 transition-colors",
+                    "border-b border-border/50 cursor-pointer hover:bg-muted/40 transition-colors group",
                     i % 2 !== 0 && "bg-muted/10",
                     init.status === "At Risk" && "bg-red-50/40 dark:bg-red-950/10 hover:bg-red-50/60 dark:hover:bg-red-950/20",
                     init.status === "Completed" && "opacity-70"
                   )}
                 >
-                  <td className="py-2 px-3 font-mono text-muted-foreground whitespace-nowrap">{init.workNumber}</td>
+                  <td className="py-2 px-3 font-mono text-muted-foreground whitespace-nowrap">
+                    <div className="flex items-center gap-1.5">
+                      <span>{init.jiraId}</span>
+                    </div>
+                  </td>
                   <td className="py-2 px-3">
                     <p className="font-medium leading-snug text-foreground max-w-xs truncate" title={init.application}>{init.application}</p>
                     <p className="text-muted-foreground text-[11px] truncate max-w-xs">{init.description.slice(0, 80)}{init.description.length > 80 ? "…" : ""}</p>
@@ -756,6 +1080,15 @@ function DomainGroup({
                   </td>
                   <td className="py-2 px-3 whitespace-nowrap">
                     <SmallBadge label={init.priority} className={PRIORITY_STYLE[init.priority] ?? ""} />
+                  </td>
+                  <td className="py-2 px-2 whitespace-nowrap">
+                    <button
+                      onClick={e => { e.stopPropagation(); onEdit(init); }}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                      title="Edit initiative"
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -807,6 +1140,30 @@ function SectionView({
   const [yearFilter, setYearFilter] = useState<YearFilter>(0);
   const [domainFilter, setDomainFilter] = useState("All");
   const [view, setView] = useState<"table" | "heatmap" | "timeline">("table");
+  const [formOpen, setFormOpen] = useState(false);
+  const [formTarget, setFormTarget] = useState<RoadmapInitiative | null>(null);
+  const queryClient = useQueryClient();
+
+  const handleEdit = useCallback((init: RoadmapInitiative) => {
+    setFormTarget(init);
+    setFormOpen(true);
+  }, []);
+
+  const handleNewInitiative = useCallback(() => {
+    setFormTarget(null);
+    setFormOpen(true);
+  }, []);
+
+  const handleFormClose = useCallback(() => {
+    setFormOpen(false);
+    setFormTarget(null);
+  }, []);
+
+  const handleFormSaved = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["/api/roadmap/initiatives"] });
+    setFormOpen(false);
+    setFormTarget(null);
+  }, [queryClient]);
 
   const sectionItems = useMemo(
     () => initiatives.filter(i => i.initiativeType === initiativeType),
@@ -879,6 +1236,13 @@ function SectionView({
 
       {/* Domain filter + view toggle */}
       <div className="flex items-center gap-3 flex-wrap">
+        <button
+          onClick={handleNewInitiative}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex-shrink-0"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          New Initiative
+        </button>
         <div className="flex items-center gap-2 flex-wrap">
           {domainOptions.map(d => (
             <button
@@ -918,7 +1282,7 @@ function SectionView({
           <ImpactMap initiatives={filtered} />
         </Card>
       ) : view === "timeline" ? (
-        <TimelineView initiatives={filtered} onSelect={onSelect} />
+        <TimelineView initiatives={filtered} onSelect={onSelect} onEdit={handleEdit} />
       ) : filtered.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
@@ -931,6 +1295,7 @@ function SectionView({
               domain={domain}
               initiatives={filtered.filter(i => i.domain === domain)}
               onSelect={onSelect}
+              onEdit={handleEdit}
               defaultOpen={idx < 3}
             />
           ))}
@@ -939,10 +1304,20 @@ function SectionView({
               domain="Enterprise Platforms"
               initiatives={filtered.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number]))}
               onSelect={onSelect}
+              onEdit={handleEdit}
               defaultOpen={false}
             />
           )}
         </div>
+      )}
+
+      {/* Form Modal */}
+      {formOpen && (
+        <InitiativeFormModal
+          editTarget={formTarget}
+          onClose={handleFormClose}
+          onSaved={handleFormSaved}
+        />
       )}
     </div>
   );
