@@ -1,0 +1,79 @@
+1. Required Structure
+
+Divide the roadmap into three tabs / sections:
+
+A. Technical Debt Removal (Upgrades)
+Focus on:
+Legacy upgrades
+Platform modernization (SharePoint, CP4BA, Databricks, etc.)
+Infrastructure refresh
+Security & compliance upgrades
+Data for this section is already available → use and organize into roadmap format
+B. Transformative Roadmap (Strategic)
+Focus on:
+AI-driven operations (AIOps)
+Command Center (CareOps360)
+Data & AI platform (Data Fabric, Databricks, etc.)
+Intelligent automation & GenAI
+Product/platform modernization
+IMPORTANT:
+Use the uploaded file (Excel) as the source of truth for this section
+→ Extract initiatives and map them into a 3-year phased roadmap
+C. Ticket Reduction Plan
+Focus on:
+Incident reduction
+Automation of repetitive tickets
+Shift-left strategies
+Self-healing systems
+Knowledge management / AI agents
+Data already exists → structure into roadmap across 3 years
+2. Domain-Based Categorization
+
+Across all three sections, categorize initiatives into product domains, such as:
+
+Payer (Core Claims, Membership, Billing)
+Provider (Network, Contracting, Provider Ops)
+Clinical / Care Management
+Digital / Member Experience
+Data & Analytics
+Enterprise Platforms / Shared Services
+
+Each initiative must be mapped to one domain.
+
+3. Time Horizon (3-Year View)
+
+Create a phased roadmap:
+
+Year 1 – Quick Wins & Foundation
+High-impact, low complexity initiatives
+In-flight programs
+Immediate cost reduction / stabilization
+Year 2 – Scale & Integration
+Platform scaling
+Cross-domain integration
+Expansion of AI/automation
+Year 3 – Transform & Optimize
+Legacy elimination
+Fully AI-driven operations
+Enterprise-wide optimization
+4. Output Format (VERY IMPORTANT)
+
+Provide output in table format for each section with the following columns:
+
+| Initiative Name | Description | Domain | Year | Quarter | Complexity (Low/Med/High) | Business Impact | Dependency | Status (Planned/In-Flight/Ready) |
+
+5. Additional Requirements
+Clearly highlight:
+Quick wins (Year 1)
+Strategic bets (Year 2–3)
+Show logical sequencing (dependencies between initiatives)
+Use consulting-style language (IBM / McKinsey level clarity)
+Avoid generic statements — be specific and actionable
+Include ~10–15 initiatives per section
+6. Optional Enhancements
+
+Also generate:
+
+A visual roadmap summary (timeline style)
+A heatmap of impact vs effort
+A summary of business outcomes per year

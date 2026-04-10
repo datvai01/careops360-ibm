@@ -765,6 +765,12 @@ export interface RoadmapInitiative {
   notes: string;
   daysOverdue?: number | null;
   daysUntilEnd?: number | null;
+  domain?: string;
+  planYear?: number;
+  planQuarter?: string;
+  complexity?: string;
+  businessImpact?: string;
+  dependency?: string;
 }
 
 export type CreateRoadmapInitiativeRequestInitiativeType =

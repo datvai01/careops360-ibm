@@ -18,4 +18,10 @@ export const roadmapInitiativesTable = pgTable("roadmap_initiatives", {
   status: varchar("status", { length: 30 }).notNull(),
   priority: varchar("priority", { length: 20 }).notNull(),
   notes: text("notes").notNull().default(""),
+  domain: varchar("domain", { length: 100 }).notNull().default(""),
+  planYear: integer("plan_year").notNull().default(1),
+  planQuarter: varchar("plan_quarter", { length: 5 }).notNull().default("Q1"),
+  complexity: varchar("complexity", { length: 10 }).notNull().default("Med"),
+  businessImpact: text("business_impact").notNull().default(""),
+  dependency: text("dependency").notNull().default(""),
 });
