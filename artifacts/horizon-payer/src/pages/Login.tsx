@@ -262,12 +262,10 @@ export default function Login() {
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Login credentials for this portal are provided as part of the{" "}
                 <span className="font-semibold text-foreground">IBM–Horizon BCBS RFP Response</span>.
-                Please refer to the access credentials section of that document for your username and password.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 If you have not received credentials or require assistance, please contact your{" "}
-                <span className="font-semibold text-foreground">IBM Administrator</span> or the IBM delivery team at{" "}
-                <span className="font-mono text-xs font-medium text-foreground">ibm@horizon.com</span>.
+                <span className="font-semibold text-foreground">IBM delivery team</span>.
               </p>
             </div>
 

@@ -331,8 +331,8 @@ async function seed() {
   // Users
   await db.delete(usersTable);
   await db.insert(usersTable).values([
-    { id: "1", username: "exec@horizon.com", passwordHash: "Horizon&IBMPartnership2026", name: "Sarah Mitchell", role: "executive", email: "exec@horizon.com", avatar: "SM", title: "Chief Executive Officer" },
-    { id: "4", username: "ibm@horizon.com", passwordHash: "Horizon&IBMPartnership2026", name: "David Kumar", role: "ibm_delivery", email: "ibm@horizon.com", avatar: "DK", title: "IBM AMS Delivery Manager" },
+    { id: "1", username: "exec@horizon.com", passwordHash: "Horizon&IBM2026", name: "Sarah Mitchell", role: "executive", email: "exec@horizon.com", avatar: "SM", title: "Chief Executive Officer" },
+    { id: "4", username: "ibm@horizon.com", passwordHash: "Horizon&IBM2026", name: "David Kumar", role: "ibm_delivery", email: "ibm@horizon.com", avatar: "DK", title: "IBM AMS Delivery Manager" },
   ]);
   console.log("  users seeded");
 
