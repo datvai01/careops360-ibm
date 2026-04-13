@@ -73,8 +73,8 @@ const C = {
 /* ─────────────────────── DATA ─────────────────────── */
 
 const KPI_TILES = [
-  { label: "Total Certified Resources", value: "214", sub: "Current, active certifications", icon: Award, color: C.blue, delta: "+18 vs prior quarter" },
-  { label: "Planned Certifications", value: "312", sub: "Next 6–12 months", icon: Target, color: C.purple, delta: "+46% growth planned" },
+  { label: "Total Certified Resources", value: "382", sub: "Distinct employees with active certifications", icon: Award, color: C.blue, delta: "4,599 total certifications" },
+  { label: "Planned Certifications", value: "450+", sub: "Target headcount, next 6–12 months", icon: Target, color: C.purple, delta: "Directional growth target" },
   { label: "Workforce AI-Enabled", value: "41%", sub: "Of total delivery team", icon: Brain, color: C.teal, delta: "→ 78% target by Month 12" },
   { label: "Automation Coverage", value: "63%", sub: "Processes with automation", icon: Zap, color: C.orange, delta: "→ 91% target by Month 12" },
   { label: "FTE Productivity Gain", value: "~70%", sub: "Manual work eliminated", icon: TrendingUp, color: C.green, delta: "124 FTEs redeployed" },
@@ -117,19 +117,22 @@ type CapRow = {
   impact: string;
 };
 
+// Certified headcounts sourced from Certifications_list_13-Apr-2026 (Distinct Count of EmployeeId per category)
 const CAPABILITY_TABLE: CapRow[] = [
-  { area: "AI / ML / GenAI",            sub: "LLM, RAG, ML Ops, AIOps",             current: 14,  planned: 42,  priority: "Critical", impact: "Auto-remediation, predictive ops" },
-  { area: "AI / ML / GenAI",            sub: "Natural Language Processing",          current: 8,   planned: 22,  priority: "Critical", impact: "AI Copilot, root cause analysis" },
-  { area: "Automation / AIOps",         sub: "Runbook Automation, Self-Heal",        current: 31,  planned: 54,  priority: "Critical", impact: "70% manual effort reduction" },
-  { area: "Automation / AIOps",         sub: "DevOps / GitOps / SRE",               current: 28,  planned: 41,  priority: "High",     impact: "Release velocity, MTTR reduction" },
-  { area: "Data Engineering",           sub: "Real-Time Streaming, Kafka",           current: 17,  planned: 34,  priority: "Critical", impact: "Real-time validation pipeline" },
-  { area: "Data Engineering",           sub: "MDM, Data Quality, Mastering",        current: 11,  planned: 28,  priority: "High",     impact: "Single source of truth, accuracy" },
-  { area: "Integration (API / EDI)",    sub: "REST, FHIR, 834/820 EDI",             current: 24,  planned: 36,  priority: "High",     impact: "Faster partner onboarding" },
-  { area: "Integration (API / EDI)",    sub: "Event-Driven Architecture",           current: 9,   planned: 21,  priority: "High",     impact: "1-day member activation" },
-  { area: "Cloud & Platform",           sub: "AWS, Azure, OpenShift",               current: 38,  planned: 52,  priority: "Medium",   impact: "Scale, reliability, cloud costs" },
-  { area: "Cloud & Platform",           sub: "Kubernetes, Service Mesh",             current: 21,  planned: 31,  priority: "Medium",   impact: "Resilience, zero-downtime deploys" },
-  { area: "Healthcare Domain",          sub: "HIPAA, ACA, 834 Compliance",           current: 19,  planned: 26,  priority: "High",     impact: "Audit-readiness, accuracy" },
-  { area: "Healthcare Domain",          sub: "Claims, Prior Auth, Enrollment",      current: 17,  planned: 22,  priority: "Medium",   impact: "Domain accuracy in AI outputs" },
+  { area: "AI / ML & Data Science",          sub: "GenAI, ML Ops, AIOps, Data Science",       current: 307, planned: 390, priority: "Critical", impact: "Auto-remediation, predictive ops, AI Copilot" },
+  { area: "IBM Products & Technologies",      sub: "IBM Platform, Tooling & Enablement",       current: 338, planned: 390, priority: "High",     impact: "Platform capability, delivery quality" },
+  { area: "Industry-Specific (Healthcare)",   sub: "Healthcare, Compliance & Regulatory",      current: 342, planned: 380, priority: "High",     impact: "Audit-readiness, domain accuracy" },
+  { area: "IBM Consulting & Professional",    sub: "Consulting Methods, Profession Certs",     current: 227, planned: 270, priority: "High",     impact: "Delivery methodology, advisory quality" },
+  { area: "Agile & Project Management",       sub: "Agile, Scrum, SAFe, PMI",                 current: 176, planned: 210, priority: "Medium",   impact: "Delivery velocity, programme governance" },
+  { area: "Cloud Platforms",                  sub: "AWS, Azure, OpenShift, Cloud Native",      current: 250, planned: 300, priority: "High",     impact: "Scale, resilience, cloud cost optimisation" },
+  { area: "Automation & RPA",                 sub: "Automation, RPA, Self-Heal, AIOps",       current: 91,  planned: 135, priority: "Critical", impact: "Manual effort reduction across ops workflows" },
+  { area: "Programming & Development",        sub: "Software Engineering & Development",       current: 79,  planned: 105, priority: "Medium",   impact: "Build velocity, code quality" },
+  { area: "DevOps & Infrastructure",          sub: "CI/CD, GitOps, SRE, Observability",       current: 41,  planned: 68,  priority: "High",     impact: "Release cadence, MTTR reduction" },
+  { area: "Big Data & Analytics",             sub: "Data Engineering, Streaming, Analytics",  current: 53,  planned: 85,  priority: "Critical", impact: "Real-time validation pipeline" },
+  { area: "Integration & APIs",               sub: "REST, FHIR, EDI, Event-Driven Arch",      current: 33,  planned: 55,  priority: "High",     impact: "Partner onboarding, 1-day activation" },
+  { area: "Security & Compliance",            sub: "HIPAA, Security, Compliance",             current: 26,  planned: 45,  priority: "High",     impact: "Risk reduction, regulatory adherence" },
+  { area: "Database & Data Management",       sub: "MDM, Data Quality, Mastering, DB Admin",  current: 18,  planned: 35,  priority: "High",     impact: "Single source of truth, data integrity" },
+  { area: "Red Hat Technologies",             sub: "Red Hat OpenShift & Portfolio",            current: 5,   planned: 18,  priority: "Medium",   impact: "Container platform, hybrid cloud" },
 ];
 
 
