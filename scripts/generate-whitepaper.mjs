@@ -7,7 +7,7 @@ import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
   TextRun, AlignmentType, WidthType, BorderStyle,
   ShadingType, TableLayoutType, VerticalAlign, PageBreak,
-  Header, Footer, ImageRun,
+  Header, Footer, ImageRun, PageNumber,
 } from 'docx';
 import { writeFileSync, readFileSync } from 'fs';
 
@@ -439,6 +439,59 @@ function divider(color = C.blue) {
 // PAGES
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ─── Table of Contents ────────────────────────────────────────────────────────
+function toc() {
+  const sections = [
+    { num: '01', title: 'Executive Summary',                    sub: 'AI-Led Transformation of AMS' },
+    { num: '02', title: 'The Transformation Imperative',        sub: 'Horizon\'s Strategic Objectives & IBM\'s Design Rationale' },
+    { num: '03', title: 'CareOps360 Command Center',            sub: 'IBM\'s Executive Operations Platform for Real-Time Visibility' },
+    { num: '04', title: 'AIOps & Agentic AI Operations',        sub: 'From Reactive to Autonomous, Self-Healing Operations' },
+    { num: '05', title: 'Platform Modernization',               sub: 'Integration Modernization, Mainframe Migration & App Rationalization' },
+    { num: '06', title: 'Quality Engineering',                  sub: 'Measurable Quality at Every Milestone' },
+    { num: '07', title: 'Phased Transformation Roadmap',        sub: 'Stabilization to Autonomous Operations' },
+    { num: '08', title: 'Claims & Prior Authorization',         sub: 'AI-Augmented Adjudication at Scale' },
+    { num: '09', title: 'Enrollment Intelligence',              sub: 'AI-Assisted Intake and Surge Management' },
+    { num: '10', title: 'Member Services & Contact Center',     sub: 'Omnichannel Engagement and Digital Deflection' },
+    { num: '11', title: 'Capability Uplift & AI Readiness',     sub: 'Workforce Enablement and Automation Maturity' },
+    { num: '12', title: 'Why IBM as Your Transformation Partner', sub: 'Scale, Depth, and Skin in the Game' },
+    { num: '13', title: 'IBM\'s Modernization Investment with Horizon', sub: 'Digital Front Door, Mainframe & ICOE Partnership' },
+    { num: '14', title: 'Next Steps & Call to Action',          sub: 'Mobilizing the Partnership' },
+    { num: 'A',  title: 'Appendix A — Programme Initiative Register', sub: '60 Initiatives: Upgrade, Ticket Reduction & Transformation' },
+  ];
+  return [
+    ...sp(2),
+    new Paragraph({ children: [Rb('Table of Contents', { size: 52, color: C.navy })], spacing: { before: 240, after: 80 }, border: thinBottom(C.blue) }),
+    new Paragraph({ children: [R('IBM × Horizon BCBS — AI-First Transformation Proposal, April 2026', { size: 20, color: C.mid, italics: true })], spacing: { after: 280 } }),
+    ...sections.map(({ num, title, sub }) =>
+      new Table({
+        layout: TableLayoutType.FIXED,
+        width: { size: PW, type: WidthType.DXA },
+        borders: noBorder(),
+        rows: [new TableRow({ children: [
+          new TableCell({
+            children: [new Paragraph({ children: [Rb(num, { size: 26, color: C.blue })], alignment: AlignmentType.CENTER })],
+            width: { size: 600, type: WidthType.DXA },
+            shading: { fill: C.fblue, type: ShadingType.CLEAR },
+            margins: { top: 80, bottom: 80, left: 100, right: 100 },
+            borders: { right: { style: BorderStyle.SINGLE, size: 8, color: C.white }, top: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, bottom: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' } },
+            verticalAlign: VerticalAlign.CENTER,
+          }),
+          new TableCell({
+            children: [
+              new Paragraph({ children: [Rb(title, { size: 22, color: C.navy })], spacing: { after: 20 } }),
+              new Paragraph({ children: [R(sub, { size: 18, color: C.mid, italics: true })], spacing: { after: 0 } }),
+            ],
+            width: { size: 8472, type: WidthType.DXA },
+            margins: { top: 80, bottom: 80, left: 160, right: 0 },
+            borders: { bottom: { style: BorderStyle.SINGLE, size: 2, color: C.rule, space: 4 }, top: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' } },
+          }),
+        ]})],
+      })
+    ),
+    pgBreak(),
+  ];
+}
+
 // ─── Cover ────────────────────────────────────────────────────────────────────
 function cover() {
   return [
@@ -596,7 +649,7 @@ function p2() {
     ...sp(1),
 
     ...barChart(
-      'Figure 1: Current vs. Target — Automation Coverage by Domain',
+      'Figure 2: Estimated Baseline Automation Coverage — Current State by AMS Domain',
       [
         { label: 'Incident Triage',       value: 45, color: C.mid },
         { label: 'Test Execution',        value: 38, color: C.mid },
@@ -605,8 +658,32 @@ function p2() {
         { label: 'Deployment Validation', value: 15, color: C.mid },
       ],
       '%',
-      'Estimated baseline automation coverage across AMS domains (current state). IBM\'s proposal targets 80%+ automation across all domains within 12 months.'
+      'Estimated baseline automation coverage — current state. IBM\'s proposal targets 80%+ across all domains within 12 months.'
     ),
+    ...sp(1),
+
+    new Paragraph({ children: [Rb('Current State vs. IBM Target — Key Operational Metrics', { size: 22, color: C.navy })], spacing: { before: 120, after: 100 }, border: { left: { style: BorderStyle.SINGLE, size: 20, color: C.blue, space: 8 } }, indent: { left: 120 } }),
+    dataTable(
+      ['Operational Metric', 'Estimated Current State', 'IBM 12-Month Target', 'Direction'],
+      [
+        ['Test Automation Coverage',       '~25%',           '80%+',                  '↑ +3x'],
+        ['MTTR (Mean Time to Resolve)',     '> 4 hours',      '< 1.8 hours',           '↓ 55%'],
+        ['Defect Escape to Production',     'High / Untracked','65% Reduction',        '↓ Best-in-class'],
+        ['Incident P3/P4 Auto-Resolution',  '< 10%',          '> 74%',                 '↑ 7x'],
+        ['Regression Cycle Time',           'Multi-day manual','70% Faster',           '↓ Automated'],
+        ['Alert Noise per Shift',           'Unfiltered high', '> 60% Reduced',        '↓ AI-filtered'],
+        ['Enrollment Error Ticket Rate',    'High / Reactive', '~110 tickets/mo saved','↓ Zero-touch'],
+        ['Prior Auth Avg Review Hours',     '>72 hours',       'Target: <24 hours',    '↓ AI-assisted'],
+        ['System Availability (AMS)',       '~99.7%',          '99.95%',               '↑ AI-ops'],
+      ],
+      [2700, 2000, 2100, 2272],
+      { greenValues: ['↑ +3x', '↓ 55%', '↓ Best-in-class', '↑ 7x', '↓ Automated', '↓ AI-filtered', '↓ Zero-touch', '↓ AI-assisted', '↑ AI-ops'] }
+    ),
+    ...sp(1),
+    new Paragraph({
+      children: [R('All current-state estimates are directional and will be formally baselined during Phase 0 discovery. IBM\'s committed targets will be contractually agreed at programme commencement. See Appendix A for the complete 60-initiative programme portfolio.', { size: 17, color: C.mid, italics: true })],
+      spacing: { after: 100 },
+    }),
     pgBreak(),
   ];
 }
@@ -654,6 +731,14 @@ function p3() {
           'HIPAA-compliant — no PHI data in the command center',
           'Architecture-ready for production data integration',
         ], { bg: C.lgray, accent: C.navy }),
+        ...sp(1),
+        infoBox('Portal Credentials (Demo Environment)', [
+          'URL: See Replit preview — /dashboard',
+          'Horizon Executive: exec@horizon.com',
+          'IBM Executive: ibm@horizon.com',
+          'Password: Horizon&IBM2026',
+          'Note: Demo mode only — no live PHI or production data',
+        ], { bg: C.fblue, accent: C.blue }),
       ]
     ),
     ...sp(1),
@@ -794,14 +879,13 @@ function p6() {
 
     twoCol(
       [
-        new Paragraph({ children: [Rb('Integration Modernization', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
-        body('IBM\'s Integration Modernization program restructures IBM\'s delivery organization to align with Horizon\'s evolving platform landscape — introducing DevSecOps pipelines, product-centric engineering squads, and shared services for API management, identity, and data integration.'),
-        ch2('ICOE Deliverables'),
-        blt('Dedicated engineering squads aligned to Horizon product and platform domains.'),
-        blt('DevSecOps pipelines replacing manual release management processes.'),
-        blt('Integration Simplification roadmap — reducing point-to-point complexity.'),
-        blt('Document Generation Modernization (HLGS upgrade roadmap).'),
-        blt('Observability and SRE practices for proactive system health management.'),
+        new Paragraph({ children: [Rb('Integration Modernization — Real-Time, Cloud-Native', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('IBM\'s Integration Modernization program transforms Horizon\'s data exchange backbone from point-to-point batch processes to a cloud-native, event-driven, real-time integration architecture — enabling claims, eligibility, provider, and member data to flow continuously across systems without overnight lag.'),
+        ch2('From Batch to Real-Time Streaming'),
+        blt([Rb('MOM API-First Hub (HLGN-1053): ', { size: 20, color: C.blue }), R('Transform Horizon\'s Messaging-Oriented Middleware from point-to-point topology to an API-first enterprise integration hub — enabling real-time, event-driven partner data exchange across claims, eligibility, and provider domains.', { size: 20, color: C.slate })]),
+        blt([Rb('Event Streaming Architecture: ', { size: 20, color: C.blue }), R('Replace batch ETL with Apache Kafka-based event streaming on AWS MSK — delivering sub-second data freshness across enrollment, claims, and provider systems.', { size: 20, color: C.slate })]),
+        blt([Rb('API Gateway Consolidation: ', { size: 20, color: C.blue }), R('Unified API gateway via AWS API Gateway + IBM API Connect — replacing 70+ point-to-point integrations with governed, observable, versioned APIs.', { size: 20, color: C.slate })]),
+        blt([Rb('ODM Cloud-Native (HLGN-1054): ', { size: 20, color: C.blue }), R('Migrate IBM ODM Decision Center from on-premise to containerized cloud environment, enabling real-time business rule evaluation and business-user-configurable workflows.', { size: 20, color: C.slate })]),
         ...sp(1),
         ch2('Application Rationalisation'),
         body('IBM will conduct a structured assessment of Horizon\'s ~500 application portfolio using Texture and other IBM assets and accelerators like ICCA — identifying candidates for decommission, consolidation, cloud migration, or AI-augmented modernization.'),
@@ -821,11 +905,14 @@ function p6() {
           [2200, 2600, 2200]
         ),
         ...sp(1),
-        infoBox('Technical Debt Governance', [
-          'All stacks maintained to n-2 versions',
-          'Architecture Review Board (IBM + Horizon)',
-          'Rollback gates at every migration phase',
-          'Zero-disruption contractual commitment',
+        infoBox('Technical Debt Governance — n-1 Version Standard', [
+          'IBM commits to maintaining all Horizon stacks at n-1 (one version behind latest LTS) — balancing security currency with stability',
+          'Quarterly version review cadence: IBM + Horizon ARB jointly assess all frameworks, runtimes, and vendor platforms',
+          'Upgrade backlog surfaced in CareOps360 Transformation Roadmap — every pending upgrade tracked with risk, owner, and deadline',
+          'n-1 compliance report delivered monthly to Horizon CTO: highlights stacks at EOL risk, CVE exposure, and upgrade progress',
+          'Priority-1 CVEs receive emergency patch within 72 hours regardless of n-1 cadence',
+          'Rollback gates at every upgrade phase — no production cutover without parallel validation',
+          '2026 Year 1: 25 platform upgrades in flight (Angular 17, .NET 8, ODM 9.2, SAP BO 4.3)',
         ], { bg: C.lgray, accent: C.navy }),
       ]
     ),
@@ -878,18 +965,28 @@ function p7() {
     ),
     ...sp(1),
 
-    ...barChart(
-      'Figure 5: Quality KPI Improvement Targets — 12-Month Programme',
+    new Paragraph({ children: [Rb('Figure 5: Quality Engineering — Before & After IBM Transformation', { size: 21, color: C.navy })], spacing: { before: 120, after: 80 } }),
+    dataTable(
+      ['Quality Metric', 'Current State', '6-Month Target', '12-Month Target', 'Method'],
       [
-        { label: 'Test Automation Coverage',        value: 80, color: C.green  },
-        { label: 'Defect Escape Rate Reduction',    value: 65, color: C.blue   },
-        { label: 'Regression Cycle Time Cut',       value: 70, color: C.teal   },
-        { label: 'Test Maintenance Effort Reduced', value: 55, color: C.navy   },
-        { label: 'Production Incident Rate',        value: 40, color: C.orange },
+        ['Test Automation Coverage',    '~25%',           '55%',            '80%+',           'GenAI self-generating tests'],
+        ['Defect Escape to Production', 'High / tracked manually', '40% reduction', '65% reduction', 'AI defect prediction'],
+        ['Regression Cycle Time',       'Multi-day manual', '50% faster',   '70% faster',     'Intelligent test selection'],
+        ['Mean Time to Detect (MTTD)',  '> 2 hours',       '< 30 min',      '< 15 min',       'AIOps + telemetry feedback'],
+        ['AI-Generated Test Cases',     '< 5%',            '40%+',          '> 70%',          'IBM Consulting Advantage'],
+        ['Test Maintenance Effort',     'High manual rework','30% reduction','55% reduction',  'Self-healing test scripts'],
+        ['Production Incident Rate',    'Baseline',        '20% reduction', '40% reduction',  'Shift-left quality gates'],
+        ['Critical Defect Leakage',     'Measured quarterly','Monthly SLA',  'Zero-leakage SLA','End-to-end traceability'],
+        ['Release Confidence Score',    'Not measured',    'Tracked',       '> 90% green',    'CareOps360 quality tile'],
       ],
-      '%',
-      'IBM\'s quality engineering targets for Horizon\'s AMS portfolio at 12-month programme maturity.'
+      [2400, 1600, 1600, 1700, 1772],
+      { greenValues: ['80%+', '65% reduction', '70% faster', '< 15 min', '> 70%', '55% reduction', '40% reduction', 'Zero-leakage SLA', '> 90% green'] }
     ),
+    new Paragraph({
+      children: [R('Figure 5: IBM Quality Engineering targets across Horizon\'s AMS portfolio — current state vs. 6- and 12-month programme milestones. All targets will be formally baselined and committed at contract commencement.', { size: 16, color: C.mid, italics: true })],
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 80, after: 200 },
+    }),
     pgBreak(),
   ];
 }
@@ -1298,6 +1395,139 @@ function p10() {
   ];
 }
 
+// ─── Appendix: Programme Initiative Register ──────────────────────────────────
+function appendix() {
+  const AW = [900, 1100, 1700, 900, 4472]; // col widths summing to PW
+
+  function appTable(rows) {
+    return dataTable(
+      ['Jira ID', 'Domain', 'Product / Application', 'Status', 'Expected Outcome'],
+      rows,
+      AW,
+      { greenValues: ['Completed'] }
+    );
+  }
+
+  function sectionHdr(label, count, color = C.blue) {
+    return new Table({
+      layout: TableLayoutType.FIXED,
+      width: { size: PW, type: WidthType.DXA },
+      borders: noBorder(),
+      rows: [new TableRow({ children: [new TableCell({
+        children: [new Paragraph({ children: [Rb(`${label}  (${count})`, { size: 22, color: C.white })], spacing: { before: 60, after: 60 } })],
+        shading: { fill: color, type: ShadingType.CLEAR },
+        margins: { top: 80, bottom: 80, left: 160, right: 160 },
+        borders: noBorder(),
+      })]})],
+    });
+  }
+
+  const upgrades = [
+    ['HLGN-1001', 'Enterprise Platforms', 'IBM ODM',                    'Active',    '40% improvement in rules processing speed; AI-assisted decision support'],
+    ['HLGN-1002', 'Digital',              'WAM SSO',                    'Active',    'Enhanced security posture, modern UI for 3,200+ internal users'],
+    ['HLGN-1003', 'Enterprise Platforms', 'Internal Cloud Apps (×8)',   'Completed', 'Standardized Angular 17 baseline; eliminated CVE-2022-25869 vulnerability class'],
+    ['HLGN-1004', 'Payer',               'Fee Schedule Repository',    'Planned',   'LTS compliance; 25% fee processing performance gain'],
+    ['HLGN-1005', 'Payer',               'GroupFee Application',       'Planned',   'Shared codebase benefits; 20% lower group fee maintenance cost'],
+    ['HLGN-1006', 'Enterprise Platforms', 'NAR Windows Platform',       'Completed', 'EOL server risk eliminated; security posture hardened'],
+    ['HLGN-1007', 'Clinical',            'CareRadius Angular Frontend', 'Active',    'Modern UI components, improved page load, enhanced maintainability'],
+    ['HLGN-1008', 'Clinical',            'CareRadius VB6 Legacy',      'Planned',   'VB6 runtime eliminated; 60% reduction in legacy-related incident tickets'],
+    ['HLGN-1009', 'Clinical',            'CareRadius SAP BO',          'Active',    'Improved report performance, new visualizations, renewed vendor support'],
+    ['HLGN-1010', 'Digital',             'Communication Services',     'Active',    'Enhanced member notifications, improved mobile responsiveness'],
+    ['HLGN-1011', 'Enterprise Platforms', 'Doc Portal',                 'Planned',   'Modern document management; 30% improved search/retrieval performance'],
+    ['HLGN-1012', 'Enterprise Platforms', 'Horizon ECM',                'Planned',   'Improved content workflow; modern security standards compliance'],
+    ['HLGN-1013', 'Data & Analytics',    'Cognos BI',                  'Completed', 'AI-assisted insights, improved cloud connectivity and dashboard performance'],
+    ['HLGN-1014', 'Data & Analytics',    'Tableau Analytics',          'Completed', 'Pulse AI analytics integration, improved extract performance'],
+    ['HLGN-1015', 'Payer',               'Membership System',          'Active',    '50% processing time reduction; real-time eligibility verification'],
+    ['HLGN-1016', 'Data & Analytics',    'MPD Mainframe Extracts',     'Planned',   'Near real-time data; batch windows reduced from 6hrs to 45min'],
+    ['HLGN-1017', 'Payer',               'Route Code Eligibility',     'Planned',   'Real-time eligibility routing; reduced manual intervention'],
+    ['HLGN-1018', 'Payer',               'EDI Eligibility Data Store', 'Planned',   'Expanded trading partner support; eligibility disputes reduced 25%'],
+    ['HLGN-1019', 'Digital',             'Consumer Data Management',   'Planned',   'Improved self-service capabilities; modern accessibility standards (WCAG)'],
+    ['HLGN-1020', 'Payer',               'Personal Representative Mgmt','Planned',  'Platform support through 2029; improved performance; security compliance'],
+    ['HLGN-1021', 'Payer',               'NASCO',                      'Planned',   'Enhanced NASCO feature set; improved SLA compliance; HIPAA 2024 readiness'],
+    ['HLGN-1022', 'Payer',               'Legacy Finance Platform',    'Planned',   'Unsupported .NET 3.5 eliminated; 35% improvement in financial processing'],
+    ['HLGN-1023', 'Payer',               'Universal Payment System',   'Active',    'PCI DSS 4.0 compliance; improved payment reliability and audit trail'],
+    ['HLGN-1024', 'Enterprise Platforms', 'Image Plus',                 'Active',    'Improved document processing speed; enhanced OCR accuracy; vendor renewal'],
+    ['HLGN-1025', 'Payer',               'Financial Reporting Suite',  'Planned',   'Unified technology stack; 20% lower maintenance cost'],
+  ];
+
+  const ticketReductions = [
+    ['HLGN-1026', 'Payer',              'IDR System',               'Completed',  '~120 monthly tickets eliminated; 100% automation of SSN randomization updates'],
+    ['HLGN-1027', 'Payer',              'HMU',                      'Active',     '~85 monthly data discrepancy tickets eliminated via timestamp fix'],
+    ['HLGN-1028', 'Payer',              'Billing Portal',           'Active',     '~200 monthly tickets reduced; 2-day SLA improvement for billing resolution'],
+    ['HLGN-1029', 'Data & Analytics',   'Data Load Pipeline',       'Completed',  '60% reduction in data load anomaly tickets across 12 reporting systems'],
+    ['HLGN-1030', 'Payer',              'Claims Audit Engine',      'Active',     '~150 monthly audit exception tickets eliminated via automated reconciliation'],
+    ['HLGN-1031', 'Enterprise Platforms','API Management',          'Active',     '~75 monthly API support tickets reduced; improved developer self-service'],
+    ['HLGN-1032', 'Enterprise Platforms','File Processing Service', 'Completed',  '~60 monthly operations tickets eliminated; 4-hour batch window reduction'],
+    ['HLGN-1033', 'Digital',            'Broker Sales Portal',      'Planned',    '~90 monthly portal tickets reduced for complex subgroup configurations'],
+    ['HLGN-1034', 'Payer',              'Member Enrollment System', 'Planned',    '~110 monthly enrollment error tickets reduced; 15% clean submission improvement'],
+    ['HLGN-1035', 'Enterprise Platforms','ChatOps Platform',        'Planned',    '~130 monthly incident tickets consolidated; MTTR reduced by 40%'],
+    ['HLGN-1036', 'Clinical',           'Authorization Integration','Active',     '~95 monthly authorization error tickets prevented via partner validation'],
+    ['HLGN-1037', 'Payer',              'Member Data Hub',          'At Risk',    '~180 monthly member discrepancy tickets — MDM governance (recovery plan active)'],
+    ['HLGN-1038', 'Payer',              'MPV Processing',           'Completed',  '~70 monthly reprocessing tickets eliminated; 78% reduction sustained in production'],
+    ['HLGN-1039', 'Digital',            'Survey Platform',          'Planned',    '~45 monthly survey tickets proactively resolved via ELK monitoring alerts'],
+    ['HLGN-1040', 'Payer',              'Membership Workflow Engine','Planned',   '~65 monthly DB update delay tickets eliminated via queue management improvements'],
+    ['HLGN-1041', 'Digital',            'IVR Platform',             'Planned',    '~55 monthly IVR configuration tickets eliminated; real-time plan data in IVR'],
+    ['HLGN-1042', 'Payer',              'Premium Rating Engine',    'At Risk',    '~80 monthly rating mismatch tickets — vendor data quality (recovery plan active)'],
+    ['HLGN-1043', 'Payer',              'Claims Adjudication',      'Completed',  '~100 monthly escalation tickets reduced; 20% improvement in first-contact resolution'],
+    ['HLGN-1044', 'Digital',            'Broker Management Portal', 'Planned',    '~90 monthly manual broker update tickets via broker self-service portal launch'],
+  ];
+
+  const transformations = [
+    ['HLGN-1045', 'Payer',              'SHBS-UPS',                 'Planned',    'MS Access dependency eliminated; multi-user access; full audit trail compliance'],
+    ['HLGN-1046', 'Enterprise Platforms','CareOps360',              'Active',     '90% reduction in executive reporting cycle time; real-time operational decision support'],
+    ['HLGN-1047', 'Enterprise Platforms','IBM BAW',                 'Active',     '80% reduction in manual workflow handling time; full audit trail for regulated processes'],
+    ['HLGN-1048', 'Payer',              'IKA',                      'Planned',    'Straight-through processing for 95% of eligibility; manual intervention near zero'],
+    ['HLGN-1049', 'Payer',              'HVCPS',                    'Planned',    '99.9% payment calculation accuracy; auto-reconciliation eliminating manual review'],
+    ['HLGN-1050', 'Data & Analytics',   'OnDemand',                 'Planned',    'Report delivery from 48hrs to real-time self-service; 80% IT reporting ticket reduction'],
+    ['HLGN-1051', 'Digital',            'HLGS Document Generation', 'Planned',    '40% letter generation cost reduction; multi-channel delivery; real-time composition'],
+    ['HLGN-1052', 'Provider',           'IPA',                      'Planned',    'Provider audit cycle 30→10 days; 60% manual effort reduction; provider satisfaction up'],
+    ['HLGN-1053', 'Enterprise Platforms','MOM Integration Hub',     'Planned',    'API-first hub replacing batch; real-time event streaming; 50% integration cost reduction'],
+    ['HLGN-1054', 'Enterprise Platforms','IBM ODM Cloud-Native',    'Planned',    'Business-user-configurable rules; IT rule-change tickets → zero; sub-second evaluation'],
+    ['HLGN-1055', 'Payer',              'SBC Compliance Automation','Planned',    '100% ERISA/ACA SBC compliance; automated generation and distribution across all plans'],
+    ['HLGN-1056', 'Digital',            'Smartcomm Cloud Platform', 'Planned',    '50% document production cost reduction; omni-channel delivery; centralized brand control'],
+    ['HLGN-1057', 'Data & Analytics',   'Enterprise BI (Power BI)', 'Planned',    '40% analytics licensing cost reduction; single platform for 1,200+ business users'],
+    ['HLGN-1058', 'Provider',           'CAGUI Pharmacy Crosswalk', 'Planned',    '70% manual crosswalk effort reduced; automated alignment across 15,000+ provider contracts'],
+    ['HLGN-1059', 'Clinical',           'Prior Auth AI Engine',     'Planned',    '85% auto-approval rate; auth cycle 3 days→4 hours; $4.2M annual cost avoidance'],
+    ['HLGN-1060', 'Digital',            'GenAI Member Engagement',  'Planned',    '25% engagement improvement; 18% care gap closure; 30% contact center deflection'],
+  ];
+
+  return [
+    ...secTitle('Appendix A — Programme Initiative Register', '60 Initiatives Across Upgrade, Ticket Reduction & Transformation — April 2026 Baseline'),
+
+    callout(
+      [R('This register is sourced from the Horizon programme roadmap (April 2026). All initiatives are tracked live in CareOps360\'s Transformation Roadmap dashboard — with phase, status, owner, and risk updated in real time. See Appendix reference in Section 02.', { size: 20, color: C.slate })],
+      { bg: C.fblue, accent: C.blue, center: false }
+    ),
+    ...sp(1),
+
+    kpiStrip([
+      { value: '25', label: 'Platform Upgrades',       color: C.blue  },
+      { value: '19', label: 'Ticket Reductions',       color: C.teal  },
+      { value: '16', label: 'Transformation Programmes', color: C.navy },
+      { value: '60', label: 'Total Initiatives',       color: C.green },
+    ]),
+    ...sp(1),
+
+    sectionHdr('Section 1 — Platform & Framework Upgrades (n-1 Compliance)', 25, C.navy),
+    appTable(upgrades),
+    ...sp(1),
+
+    sectionHdr('Section 2 — Ticket Reduction Initiatives (Automation & Quality Improvement)', 19, C.teal),
+    appTable(ticketReductions),
+    ...sp(1),
+
+    sectionHdr('Section 3 — Strategic Transformation Programmes', 16, C.blue),
+    appTable(transformations),
+    ...sp(1),
+
+    new Paragraph({
+      children: [R('Source: Horizon BCBS Programme Roadmap — horizon-roadmap-all-2026-04-10. All status, timelines, and outcomes are per April 2026 baseline. IBM committed delivery targets are formally agreed at contract commencement. At-Risk initiatives have active recovery plans in place.', { size: 16, color: C.mid, italics: true })],
+      spacing: { after: 100 },
+      alignment: AlignmentType.JUSTIFIED,
+    }),
+  ];
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // BUILD DOCUMENT
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1323,15 +1553,36 @@ const doc = new Document({
     },
     footers: {
       default: new Footer({ children: [
-        new Paragraph({
-          children: [R('© 2026 IBM Corporation. Confidential and Proprietary.  IBM-HZN-AMS-RFP-2026-CAS', { size: 16, color: C.mid, italics: true })],
-          border: { top: { style: BorderStyle.SINGLE, size: 4, color: C.blue, space: 4 } },
-          alignment: AlignmentType.CENTER,
+        new Table({
+          layout: TableLayoutType.FIXED,
+          width: { size: PW, type: WidthType.DXA },
+          borders: noBorder(),
+          rows: [new TableRow({ children: [
+            new TableCell({
+              children: [new Paragraph({ children: [R('© 2026 IBM Corporation  ·  Confidential  ·  IBM-HZN-AMS-RFP-2026-CAS', { size: 15, color: C.mid, italics: true })], alignment: AlignmentType.LEFT })],
+              width: { size: 7200, type: WidthType.DXA },
+              borders: { top: { style: BorderStyle.SINGLE, size: 4, color: C.blue, space: 4 }, bottom: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' } },
+              margins: { top: 80 },
+            }),
+            new TableCell({
+              children: [new Paragraph({
+                children: [
+                  R('Page ', { size: 15, color: C.mid }),
+                  new TextRun({ children: [PageNumber.CURRENT], font: 'Calibri', size: 15, color: C.navy, bold: true }),
+                ],
+                alignment: AlignmentType.RIGHT,
+              })],
+              width: { size: 1872, type: WidthType.DXA },
+              borders: { top: { style: BorderStyle.SINGLE, size: 4, color: C.blue, space: 4 }, bottom: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, left: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' }, right: { style: BorderStyle.SINGLE, size: 0, color: 'FFFFFF' } },
+              margins: { top: 80 },
+            }),
+          ]})],
         }),
       ]}),
     },
     children: [
       ...cover(),
+      ...toc(),
       ...p1(),
       ...p2(),
       ...p3(),
@@ -1346,6 +1597,7 @@ const doc = new Document({
       ...p9(),
       ...p4(),
       ...p10(),
+      ...appendix(),
     ],
   }],
 });
