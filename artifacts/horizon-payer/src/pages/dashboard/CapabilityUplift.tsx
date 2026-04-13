@@ -343,9 +343,10 @@ function ExecSummary() {
         <div>
           <p className="text-sm font-semibold mb-1">Strategic Capability Narrative</p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            IBM is evolving the Horizon delivery model from traditional operations to AI-augmented and autonomous operations over 12 months.
-            Certified AI/ML resources will grow <strong className="text-foreground">3×</strong>, automation coverage reaches <strong className="text-foreground">91%</strong>,
-            and 124 FTEs are redeployed from manual tasks to higher-value advisory work — directly enabling the Digital Front Door value of <strong className="text-foreground">$16M–$26M</strong>.
+            IBM is evolving the Horizon delivery model from traditional operations to AI-augmented and autonomous operations.
+            Certified AI and ML resources are expanding significantly, automation coverage is scaling across all enrollment workflows,
+            and delivery staff are being redeployed from manual tasks to higher-value advisory and engineering roles —
+            directly enabling measurable transformation outcomes across the Digital Front Door program.
           </p>
         </div>
       </div>
