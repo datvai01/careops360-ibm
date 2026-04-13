@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "xV1CQrmAlfG-QH5103-T1"
+uri = "file://IBM_Horizon_Transformation_Executive_Briefing_April2026.docx"
+type = "word_document"
+title = "IBM × Horizon Transformation — Executive Briefing (April 2026)"
