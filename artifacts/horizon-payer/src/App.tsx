@@ -19,6 +19,7 @@ import AppHealth from "@/pages/dashboard/AppHealth";
 import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
 import DigitalRoadmap from "@/pages/dashboard/DigitalRoadmap";
+import EnrollmentIntelligence from "@/pages/dashboard/EnrollmentIntelligence";
 import Help from "@/pages/dashboard/Help";
 
 const queryClient = new QueryClient({
@@ -48,6 +49,7 @@ function DashboardRouter() {
         <Route path="/dashboard/ibm-ams" component={IbmAms} />
         <Route path="/dashboard/ask" component={Ask} />
         <Route path="/dashboard/digital-roadmap" component={DigitalRoadmap} />
+        <Route path="/dashboard/enrollment-intelligence" component={EnrollmentIntelligence} />
         <Route path="/dashboard/help" component={Help} />
         <Route component={NotFound} />
       </Switch>

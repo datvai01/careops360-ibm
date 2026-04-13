@@ -21,6 +21,7 @@ import {
   MoonIcon,
   HelpCircleIcon,
   Info,
+  GitMerge,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
       { name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
       { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
       { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
+      { name: "Enrollment Intelligence", path: "/dashboard/enrollment-intelligence", icon: GitMerge },
     ],
   },
   {

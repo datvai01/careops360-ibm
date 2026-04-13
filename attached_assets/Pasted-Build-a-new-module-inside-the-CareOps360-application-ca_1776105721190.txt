@@ -1,0 +1,129 @@
+Build a new module inside the CareOps360 application called “Enrollment Intelligence Hub.” This module should feel like a natural extension of the existing CareOps360 platform and should have a clean, modern, executive-friendly healthcare operations UI. The design should be intuitive, not overly technical, and should focus on operational visibility, AI-assisted remediation, and compliance traceability.
+
+Purpose of the module:
+Create a digital front door for member enrollment operations that validates incoming enrollment data early, identifies issues before records are mastered, uses AI to recommend or auto-apply fixes where confidence is high, routes exceptions to operations staff, and tracks syndication and reconciliation across downstream systems.
+
+Overall experience:
+The module should look like a command center inside CareOps360. Use a polished enterprise dashboard style with cards, KPI tiles, tabs, grids, status badges, filters, and drill-down panels. Keep the UX simple and highly visual. Avoid clutter. Make it feel like a healthcare operations cockpit rather than a developer tool.
+
+Add a new main navigation item:
+“Enrollment Intelligence”
+
+Inside this module, create the following sections:
+
+1. Overview Dashboard
+Create a landing page with top KPI cards and operational summary widgets. Include:
+- Time-to-Good
+- Auto-Match Confidence Rate
+- Manual Intervention Rate
+- Records in Queue
+- Failed Records
+- SLA Compliance
+- Syndication Success Rate
+
+Also include:
+- A trend chart for enrollment volume and issue volume
+- A donut or bar chart for issue types
+- A source breakdown by EDI, API, Excel/XLSX, and MFT
+- A queue summary by status: Passed, Needs Fix, Failed, In Progress, Remediated
+
+2. Intake and Validation
+Create a screen that shows incoming enrollment records from multiple channels. Include:
+- Source filters for EDI 834, API, Excel/XLSX, and MFT Drop
+- A searchable data grid of incoming records
+- Validation result badges such as Passed, Warning, Failed
+- Rule tags such as PCP Check, COB Check, Demographic Consistency, Effective Date Sequence, Eligibility Validation
+- A record detail drawer or side panel showing all validation checks and rule results
+
+The design intent is to show that eligibility and validation checks happen before mastering.
+
+3. AI Remediation
+Create a section where AI-assisted remediation is displayed clearly.
+For each flagged record, show:
+- Record ID
+- Identified issue
+- Recommended remediation
+- Confidence score
+- Explainability text such as “Why this recommendation was made”
+- Actions: Auto Apply, Send to Steward, Escalate
+
+Add two clear groupings:
+- Auto-Resolved Records
+- Human Review Required
+
+Use a threshold model where high-confidence cases can be auto-applied and lower-confidence cases go to manual review.
+
+4. Operations Command Center
+Create a work queue experience for support teams, internal admins, and trading partners.
+Include:
+- A triage table with columns for Record ID, Member Name, Issue Type, Priority, Source, Assigned To, SLA Timer, Status
+- Filters by user role, issue type, priority, and aging
+- Assignment and ownership controls
+- SLA breach risk highlighting
+- A side panel for activity history and notes
+
+This should feel like an operational case management workspace.
+
+5. Syndication and Distribution
+Create a visual section showing mastered records being distributed to downstream systems.
+Show target systems such as:
+- NMS
+- Members Edge
+- NASCO
+- Care Radius
+- API Cache
+- Analytics Feed
+
+Include:
+- Sync status
+- Last attempt timestamp
+- Success/failure indicators
+- Retry capability
+- Per-system reconciliation state
+
+A simple flow or node-based visual is fine, but keep it elegant and not overly technical.
+
+6. Reconciliation and Feedback Loop
+Create a section for downstream acknowledgements and closed-loop processing.
+Include:
+- ACK / NACK status by target system
+- Reconciliation summary
+- Open exceptions
+- Retry queue
+- SLA compliance metrics
+- Audit-ready reporting summary
+
+7. Compliance and Audit
+Create a section focused on traceability and compliance-by-design.
+Include:
+- Rule version history
+- Audit logs
+- Decision traceability
+- Record lineage from intake to validation to remediation to syndication
+- Exportable audit report button
+
+This section should communicate trust, transparency, and operational governance.
+
+UI and UX requirements:
+- Use a modern healthcare enterprise dashboard aesthetic
+- Keep the layout spacious and executive-friendly
+- Use status colors and badges carefully
+- Make tables readable and interactive
+- Use tabs or sub-navigation for major sections
+- Add sample data throughout so the module feels realistic
+- Use realistic but fictional healthcare enrollment data
+- Ensure all text, labels, and metrics are polished and presentation-ready
+
+Technical expectations:
+- Build this as a production-style front-end module/component that can plug into the existing CareOps360 app
+- Use reusable components
+- Include responsive behavior for desktop-first usage
+- Seed the module with artificial sample records, issues, SLAs, and system statuses
+- Maintain consistent styling with CareOps360 branding
+- Prioritize a high-quality UI over backend complexity
+
+Optional enhancement:
+Add an “Operations Copilot” panel or floating assistant that summarizes queue health, recommends priority actions, and highlights records at risk of SLA breach.
+
+Important:
+Do not make this look like a raw admin tool. It should feel like a premium healthcare 
