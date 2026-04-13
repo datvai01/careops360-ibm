@@ -536,8 +536,8 @@ function p1() {
         blt('AI-First Operating Model — AI embedded across every layer of AMS and QA lifecycle.'),
         blt('Tech Arbitrage over Labour Arbitrage — Compressing cost through automation, not headcount.'),
         blt('Outcome-Based Delivery — Committed SLAs tied to measurable business outcomes.'),
-        blt('Zero-Disruption Transition — Risk-free phased transition protecting operational continuity.'),
-        blt('Continuous Innovation Engine — Horizon Innovation Council driving sustained value beyond steady state.'),
+        blt('Zero-Disruption Delivery — Risk-free phased transition protecting operational continuity.'),
+        blt('Continuous Innovation Engine — Horizon Transformation Office driving sustained value beyond steady state.'),
         ...sp(1),
         infoBox('IBM\'s Scale Behind This Proposal', [
           '20,000+ AI & data practitioners globally',
@@ -545,6 +545,8 @@ function p1() {
           '40,000+ AI & analytics engagements',
           '15,000+ people across 40 global delivery centres',
           'Leader in Enterprise Software Quality & Testing',
+          'Enterprise partnerships with AWS, Salesforce and IBM Technology',
+          'IBM\'s client-0 success story which saved IBM ~3.4B USD',
         ], { bg: C.lblue, accent: C.blue }),
       ]
     ),
@@ -572,7 +574,7 @@ function p2() {
         blt('High-quality services delivered through AI and automation to obtain operational efficiencies.'),
         blt('Realization of a product-oriented operating model.'),
         blt('Focused automation — especially in testing and quality engineering.'),
-        blt('AI tools to drive application modernisation across the portfolio.'),
+        blt('AI tools to drive Agile application modernization across the portfolio.'),
         blt('Consultative support applying deep healthcare payer best practices.'),
         ...sp(1),
         ch2('Cost Structure Expectations'),
@@ -649,7 +651,7 @@ function p3() {
         infoBox('Access & Security', [
           'Role-based access: IBM and Horizon executives',
           'Token-authenticated sessions with inactivity timeout',
-          'HIPAA-compliant — no PHI in demonstration mode',
+          'HIPAA-compliant — no PHI data in the command center',
           'Architecture-ready for production data integration',
         ], { bg: C.lgray, accent: C.navy }),
       ]
@@ -701,16 +703,11 @@ function p4() {
         ),
       ],
       [
-        new Paragraph({ children: [Rb('Mainframe Modernization — IBM as Risk Sharer', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        new Paragraph({ children: [Rb('Mainframe Modernization — IBM as a Partner with AWS', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
         body('Horizon\'s mainframe infrastructure is mission-critical — hosting eligibility processing, claims engine logic, financial settlement, and benefit adjudication. IBM understands that modernizing this estate is not merely a technical programme — it is a strategic risk management exercise that must be executed with surgical precision.'),
         body('IBM proposes a phased, parallel-run migration approach — wrapping mainframe workloads with modern APIs before cloud rehosting, running parallel environments until transaction equivalence is validated, and only cutting over when all stakeholders have confidence. IBM brings AI-assisted COBOL-to-Java conversion tooling that compresses the code conversion timeline by 40–60% compared to manual approaches.'),
         ch2('ICOE Modernization — IBM as Architecture Partner'),
         body('The Integration Centre of Excellence Modernization is IBM\'s commitment to restructure the delivery organisation to match Horizon\'s evolving platform landscape. This means product-centric engineering squads, DevSecOps pipelines, API management simplification, and observability-first SRE practices — all delivered as a sustained organisational evolution, not a one-time project.'),
-        ch2('Other Strategic Programs IBM Will Co-Invest In'),
-        blt([Rb('CoreEnroll Membership Modernization: ', { size: 20, color: C.blue }), R('Legacy enrollment platform to cloud-native migration with 50% eligibility processing speed improvement target.', { size: 20, color: C.slate })]),
-        blt([Rb('RateVault Fee Schedule Management: ', { size: 20, color: C.blue }), R('.NET framework upgrade and LTS compliance delivering 25% rate processing efficiency improvement.', { size: 20, color: C.slate })]),
-        blt([Rb('Document Generation (HLGS): ', { size: 20, color: C.blue }), R('Modernization of Horizon\'s Letter Generation System to support digital-first member communications.', { size: 20, color: C.slate })]),
-        blt([Rb('GroupRate Application Modernization: ', { size: 20, color: C.blue }), R('Shared codebase modernization for group rate management across Horizon\'s commercial portfolio.', { size: 20, color: C.slate })]),
         ...sp(1),
         callout(
           [Rb('IBM\'s commitment: ', { size: 21, color: C.navy }), R('Every modernization investment IBM makes at Horizon compounds Horizon\'s long-term competitive capability — not IBM\'s dependency. The goal is a Horizon that operates better, faster, and smarter with every programme completed.', { size: 21, color: C.slate })],
@@ -720,10 +717,9 @@ function p4() {
     ),
     ...sp(1),
     kpiStrip([
-      { value: '5',          label: 'DFD Programme Phases',          color: C.blue  },
-      { value: 'COBOL→Java', label: 'AI-Assisted Code Conversion',   color: C.teal  },
-      { value: '60+',        label: 'Modernization Initiatives',     color: C.navy  },
-      { value: 'Zero',       label: 'Disruption Commitment',         color: C.green },
+      { value: 'ICA + AIOps', label: 'AI-Infused Delivery',       color: C.blue  },
+      { value: '60+',         label: 'Modernization Initiatives',  color: C.navy  },
+      { value: 'Zero',        label: 'Disruption Commitment',      color: C.green },
     ]),
     pgBreak(),
   ];
@@ -755,19 +751,19 @@ function p5() {
       [
         new Paragraph({ children: [Rb('Value Realization', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
         dataTable(
-          ['Metric', 'Baseline', 'With AIOps'],
+          ['Metric', 'With AIOps'],
           [
-            ['MTTR (Mean Time to Resolve)', '4.2 hrs',    '< 1.8 hrs'],
-            ['Alert Noise per Shift',       'High',       '> 60% Reduced'],
-            ['P3/P4 Auto-Resolution',       '< 10%',      '> 74%'],
-            ['Change Failure Rate',         'Baseline',   '40% Reduction'],
-            ['System Availability',         '99.7%',      '99.95%'],
-            ['Ops Manual Triage Hours',     'Full load',  '~30% Reduction'],
+            ['MTTR (Mean Time to Resolve)', '< 1.8 hrs'],
+            ['Alert Noise per Shift',       '> 60% Reduced'],
+            ['P3/P4 Auto-Resolution',       '> 74%'],
+            ['Change Failure Rate',         '40% Reduction'],
+            ['System Availability',         '99.95%'],
+            ['Ops Manual Triage Hours',     '~30% Reduction'],
           ],
-          [2800, 1800, 2400]
+          [4000, 2960]
         ),
         ...sp(1),
-        ch2('Built on Horizon\'s AWS Stack', C.navy),
+        ch2('Built for Horizon\'s AWS Stack', C.navy),
         blt('Agent Layer: AWS AgentCore & Bedrock'),
         blt('Model Layer: AWS Bedrock with native Guardrails'),
         blt('Vector Store: AWS OpenSearch + PostgreSQL'),
@@ -775,8 +771,8 @@ function p5() {
         blt('IBM ContextForge for institutional knowledge management'),
         ...sp(1),
         approvalStrip([
-          { icon: '✓', label: 'ARB Approval Secured',    sub: 'Architecture Review Board', color: C.green },
-          { icon: '✓', label: 'GenAI Board Approved',    sub: 'Horizon GenAI Governance',  color: C.green },
+          { icon: '✓', label: 'Horizon\'s ARB Approval Secured', sub: 'Architecture Review Board', color: C.green },
+          { icon: '✓', label: 'Horizon\'s GenAI Board Approved', sub: 'Horizon GenAI Governance',  color: C.green },
         ]),
       ]
     ),
@@ -794,12 +790,12 @@ function p5() {
 // ─── Page 6: Platform Modernisation ──────────────────────────────────────────
 function p6() {
   return [
-    ...secTitle('Platform Modernization', 'ICOE Modernization, Mainframe Migration & Application Rationalization'),
+    ...secTitle('Platform Modernization', 'Integration Modernization, Mainframe Migration & Application Rationalization'),
 
     twoCol(
       [
-        new Paragraph({ children: [Rb('ICOE Modernization', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
-        body('IBM\'s Integration Centre of Excellence (ICOE) Modernization program restructures IBM\'s delivery organization to align with Horizon\'s evolving platform landscape — introducing DevSecOps pipelines, product-centric engineering squads, and shared services for API management, identity, and data integration.'),
+        new Paragraph({ children: [Rb('Integration Modernization', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('IBM\'s Integration Modernization program restructures IBM\'s delivery organization to align with Horizon\'s evolving platform landscape — introducing DevSecOps pipelines, product-centric engineering squads, and shared services for API management, identity, and data integration.'),
         ch2('ICOE Deliverables'),
         blt('Dedicated engineering squads aligned to Horizon product and platform domains.'),
         blt('DevSecOps pipelines replacing manual release management processes.'),
@@ -808,7 +804,7 @@ function p6() {
         blt('Observability and SRE practices for proactive system health management.'),
         ...sp(1),
         ch2('Application Rationalisation'),
-        body('IBM will conduct a structured assessment of Horizon\'s ~500 application portfolio using the BUILD ONCE, BENEFIT (BOB) framework — identifying candidates for decommission, consolidation, cloud migration, or AI-augmented modernization.'),
+        body('IBM will conduct a structured assessment of Horizon\'s ~500 application portfolio using Texture and other IBM assets and accelerators like ICCA — identifying candidates for decommission, consolidation, cloud migration, or AI-augmented modernization.'),
       ],
       [
         new Paragraph({ children: [Rb('Mainframe Modernization Roadmap', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
@@ -837,7 +833,7 @@ function p6() {
     kpiStrip([
       { value: '~500',       label: 'Applications Assessed',     color: C.blue  },
       { value: 'COBOL→Java', label: 'AI-Assisted Conversion',    color: C.teal  },
-      { value: 'n-2',        label: 'Stack Version Governance',  color: C.navy  },
+      { value: 'n-1',        label: 'Stack Version Governance',  color: C.navy  },
       { value: 'Zero',       label: 'Disruption Commitment',     color: C.green },
     ]),
     pgBreak(),
@@ -1058,7 +1054,7 @@ function pEnrollment() {
         ),
         ...sp(1),
         infoBox('Surge Protection', [
-          'Predictive surge detection alerts leadership 72+ hours ahead',
+          'Predictive surge detection alerts leadership ahead',
           'Capacity modelling integrated with workforce planning',
           'Auto-escalation on queue depth threshold breach',
           'Open enrollment operational command centre built in',
@@ -1199,7 +1195,7 @@ function p9() {
     ...secTitle('Why IBM as Your Transformation Partner', 'Scale, Depth, and Skin in the Game'),
 
     callout(
-      [Rb('IBM is the only partner', { size: 23, color: C.navy }), R(' that brings together AI-first operating platform capability, deep healthcare payer domain expertise, proven global delivery scale, and a willingness to ', { size: 23, color: C.slate }), Rb('share outcome risk', { size: 23, color: C.blue }), R(' through an outcome-based engagement model.', { size: 23, color: C.slate })],
+      [Rb('IBM is the only partner', { size: 23, color: C.navy }), R(' that brings together AI-first operating platform capability, Horizon\'s institutional knowledge, deep healthcare payer domain expertise, proven global delivery scale, and a willingness to ', { size: 23, color: C.slate }), Rb('share outcome risk', { size: 23, color: C.blue }), R(' through an outcome-based engagement model.', { size: 23, color: C.slate })],
       { bg: C.lblue, accent: C.blue, center: false }
     ),
     ...sp(1),
