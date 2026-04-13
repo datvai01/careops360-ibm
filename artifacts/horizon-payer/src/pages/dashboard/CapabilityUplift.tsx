@@ -408,72 +408,6 @@ function CapabilityTable() {
 }
 
 
-function AIDeepDive() {
-  return (
-    <div className="space-y-4">
-      <SectionHeader icon={Brain} title="AI Capability Deep Dive" sub="Focused view of AI/ML/GenAI certification pipeline and use cases enabled" color={C.purple} />
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* cert table */}
-        <div className="space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Certification Pipeline</div>
-          {AI_CERTS.map((c) => (
-            <div key={c.label} className="rounded-lg border p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="text-sm font-semibold">{c.label}</div>
-                <GrowthPill current={c.current} planned={c.planned} />
-              </div>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span><strong className="text-foreground">{c.current}</strong> current</span>
-                <ArrowUpRight size={11} style={{ color: C.purple }} />
-                <span><strong className="text-foreground">{c.planned}</strong> planned</span>
-              </div>
-              <div className="flex gap-2">
-                <div className="h-1.5 rounded-full bg-muted flex-1 overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${(c.current / c.planned) * 100}%`, background: C.purple }} />
-                </div>
-              </div>
-              <div className="text-xs text-muted-foreground">Use cases: {c.use}</div>
-            </div>
-          ))}
-        </div>
-        {/* radar */}
-        <div className="space-y-3">
-          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Capability Radar — Current vs Planned</div>
-          <ResponsiveContainer width="100%" height={280}>
-            <RadarChart data={RADAR_DATA} outerRadius="75%">
-              <PolarGrid stroke="#e5e7eb" />
-              <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-              <Radar name="Current" dataKey="current" stroke={C.blue} fill={C.blue} fillOpacity={0.18} strokeWidth={2} />
-              <Radar name="Planned" dataKey="planned" stroke={C.purple} fill={C.purple} fillOpacity={0.12} strokeWidth={2} strokeDasharray="5 3" />
-            </RadarChart>
-          </ResponsiveContainer>
-          <div className="flex gap-4 justify-center">
-            <div className="flex items-center gap-1.5 text-xs"><div className="w-3 h-0.5 rounded" style={{ background: C.blue }} />Current</div>
-            <div className="flex items-center gap-1.5 text-xs"><div className="w-3 h-0.5 rounded border-t-2 border-dashed" style={{ borderColor: C.purple }} />Planned</div>
-          </div>
-          {/* use case chips */}
-          <div className="rounded-xl border p-3 space-y-2" style={{ background: `${C.purple}07`, borderColor: `${C.purple}25` }}>
-            <div className="text-xs font-bold" style={{ color: C.purple }}>AI Use Cases Enabled by Uplift</div>
-            {[
-              { label: "Auto-Remediation", stat: "95%", color: C.green },
-              { label: "Predictive Issue Detection", stat: "~80% fewer surprises", color: C.teal },
-              { label: "AI Copilot for Operations", stat: "Live at Month 6", color: C.blue },
-              { label: "Root Cause Analysis", stat: "5 min MTTR", color: C.orange },
-            ].map(u => (
-              <div key={u.label} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: u.color }} />
-                  <span>{u.label}</span>
-                </div>
-                <span className="font-bold" style={{ color: u.color }}>{u.stat}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function WorkforceTransformation() {
   return (
@@ -525,53 +459,6 @@ function WorkforceTransformation() {
   );
 }
 
-function BusinessValueImpact() {
-  return (
-    <div className="space-y-4">
-      <SectionHeader icon={Zap} title="Business Value Impact" sub="How capability uplift maps to measurable transformation outcomes" color={C.green} />
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* bar chart */}
-        <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Value by Capability Domain ($M)</div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={VALUE_IMPACT} layout="vertical" margin={{ left: 8, right: 24 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={v => `$${v}M`} domain={[0, 12]} />
-              <YAxis type="category" dataKey="cap" tick={{ fontSize: 10 }} width={88} />
-              <RTooltip formatter={(v: any) => [`$${v}M`, "Estimated Value"]} />
-              <Bar dataKey={(d) => parseFloat(d.value.replace(/[$M+]/g, ""))} radius={[0, 4, 4, 0]}>
-                {VALUE_IMPACT.map((d, i) => <Cell key={i} fill={d.color} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        {/* value cards */}
-        <div className="space-y-2.5">
-          {VALUE_IMPACT.map((v) => (
-            <div key={v.cap} className="rounded-lg border p-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: v.color }} />
-                <div>
-                  <div className="text-xs font-bold">{v.cap}</div>
-                  <div className="text-xs text-muted-foreground">{v.metric}</div>
-                </div>
-              </div>
-              <div className="text-base font-black flex-shrink-0" style={{ color: v.color }}>{v.value}</div>
-            </div>
-          ))}
-          <div className="rounded-lg border p-3 flex items-center justify-between"
-            style={{ background: `${C.blue}08`, borderColor: `${C.blue}25` }}>
-            <div className="flex items-center gap-2">
-              <Info size={14} style={{ color: C.blue }} />
-              <span className="text-xs font-semibold">Total Estimated Value</span>
-            </div>
-            <span className="text-base font-black" style={{ color: C.blue }}>$16M–$26M</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 
 /* ─────────────────────── PAGE ─────────────────────── */
@@ -598,9 +485,7 @@ export default function CapabilityUplift() {
       <ExecSummary />
       <MaturityProgression />
       <CapabilityTable />
-      <AIDeepDive />
       <WorkforceTransformation />
-      <BusinessValueImpact />
     </div>
   );
 }
