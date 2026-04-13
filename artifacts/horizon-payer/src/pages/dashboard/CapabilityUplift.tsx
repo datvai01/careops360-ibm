@@ -444,20 +444,6 @@ function WorkforceTransformation() {
           ))}
         </div>
       </div>
-      {/* stat strip */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "FTEs Redeployed", value: "124", sub: "Manual → advisory & AI ops", color: C.teal },
-          { label: "Manual Work Eliminated", value: "~70%", sub: "Through automation + AI", color: C.orange },
-          { label: "Skills Shift", value: "Ops → AI Ops", sub: "Domain + AI hybrid model", color: C.purple },
-        ].map(s => (
-          <div key={s.label} className="rounded-xl border p-3 text-center">
-            <div className="text-xl font-black" style={{ color: s.color }}>{s.value}</div>
-            <div className="text-xs font-semibold mt-1">{s.label}</div>
-            <div className="text-xs text-muted-foreground">{s.sub}</div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
