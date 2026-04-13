@@ -510,35 +510,16 @@ function p1() {
         body('The incumbent delivery model — reactive, labour-intensive, and fragmented across towers — is no longer sufficient to meet Horizon\'s growth objectives or competitive imperatives.'),
         ch2('What IBM Proposes'),
         body('IBM proposes a structured transition from reactive application support to a predictive, self-healing, and continuously improving AI-first operating model — delivered through IBM\'s proven Assets, Assistants, and Accelerators framework, and governed through an outcome-based accountability model.'),
-        ch2('Value Realization — Live Portal Metrics'),
-        body('CareOps360, IBM\'s purpose-built executive command centre, surfaces live operational intelligence across all AMS towers. The metrics below are drawn directly from the running production-equivalent environment as of April 2026:'),
-        new Paragraph({
-          children: [
-            Rb('4.29M ', { size: 22, color: C.blue }), R('Active Members under management  ', { size: 20, color: C.slate }),
-            Rb('$1.69B ', { size: 22, color: C.blue }), R('Claims settled (7 days)', { size: 20, color: C.slate }),
-          ],
-          spacing: { before: 60, after: 40 },
-        }),
-        new Paragraph({
-          children: [
-            Rb('99.4% ', { size: 22, color: C.green }), R('Application availability  ', { size: 20, color: C.slate }),
-            Rb('96.8% ', { size: 22, color: C.green }), R('SLA attainment', { size: 20, color: C.slate }),
-          ],
-          spacing: { before: 40, after: 40 },
-        }),
-        new Paragraph({
-          children: [
-            Rb('$3.2M ', { size: 22, color: C.teal }), R('YTD automation savings  ', { size: 20, color: C.slate }),
-            Rb('47 sec ', { size: 22, color: C.teal }), R('Call Centre ASA', { size: 20, color: C.slate }),
-          ],
-          spacing: { before: 40, after: 80 },
-        }),
-        new Paragraph({
-          children: [
-            Rb('$12M+ ', { size: 22, color: C.navy }), R('Projected annual AIOps savings at full deployment', { size: 20, color: C.slate }),
-          ],
-          spacing: { before: 40, after: 80 },
-        }),
+        ch2('Value Realization — What Will Be Monitored'),
+        body('Once live, CareOps360 will surface real-time operational intelligence across all AMS towers through a single executive command centre. The following metrics will be tracked and reported continuously to Horizon leadership:'),
+        blt('Active members under management and enrollment velocity'),
+        blt('Claims settled volume and adjudication cycle times'),
+        blt('Application availability and SLA attainment across 500+ applications'),
+        blt('Automation savings — YTD and cumulative cost avoidance'),
+        blt('Call Centre Average Speed of Answer and first-contact resolution'),
+        blt('Incident MTTR trends and AIOps-driven deflection rates'),
+        blt('Projected and realised annual AIOps savings versus committed baseline'),
+        body('All metrics will be baselined at contract commencement and tracked against IBM\'s committed outcome targets on a monthly governance cadence.'),
       ],
       [
         new Paragraph({
@@ -547,7 +528,7 @@ function p1() {
           spacing: { before: 60, after: 40 },
         }),
         new Paragraph({
-          children: [R('Figure 1: CareOps360 Executive Dashboard — live operations as of April 13, 2026', { size: 15, color: C.mid, italics: true })],
+          children: [R('Figure 1: CareOps360 Executive Dashboard — platform overview (illustrative data shown; live metrics populated upon go-live)', { size: 15, color: C.mid, italics: true })],
           alignment: AlignmentType.CENTER,
           spacing: { after: 100 },
         }),
@@ -569,10 +550,10 @@ function p1() {
     ),
     ...sp(1),
     kpiStrip([
-      { value: '4.29M',    label: 'Active Members Managed',   color: C.blue  },
-      { value: '$3.2M',    label: 'YTD Automation Savings',   color: C.teal  },
-      { value: '99.4%',    label: 'Application Availability', color: C.green },
-      { value: '$12M+',    label: 'Projected Annual AIOps',   color: C.navy  },
+      { value: '~500',      label: 'Applications in Scope',         color: C.blue  },
+      { value: 'Phase 0→4', label: 'Structured Delivery Roadmap',   color: C.teal  },
+      { value: '24×7',      label: 'Global AIOps Coverage',         color: C.green },
+      { value: 'AI-First',  label: 'Operating Model Commitment',    color: C.navy  },
     ]),
     pgBreak(),
   ];
