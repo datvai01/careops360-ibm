@@ -20,6 +20,7 @@ import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
 import DigitalRoadmap from "@/pages/dashboard/DigitalRoadmap";
 import EnrollmentIntelligence from "@/pages/dashboard/EnrollmentIntelligence";
+import DigitalFrontDoorRoadmap from "@/pages/dashboard/DigitalFrontDoorRoadmap";
 import Help from "@/pages/dashboard/Help";
 
 const queryClient = new QueryClient({
@@ -50,6 +51,7 @@ function DashboardRouter() {
         <Route path="/dashboard/ask" component={Ask} />
         <Route path="/dashboard/digital-roadmap" component={DigitalRoadmap} />
         <Route path="/dashboard/enrollment-intelligence" component={EnrollmentIntelligence} />
+        <Route path="/dashboard/digital-front-door-roadmap" component={DigitalFrontDoorRoadmap} />
         <Route path="/dashboard/help" component={Help} />
         <Route component={NotFound} />
       </Switch>

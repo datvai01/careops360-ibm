@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1222,6 +1223,38 @@ export default function EnrollmentIntelligence() {
           </Button>
         </div>
       </div>
+
+      {/* Digital Front Door Roadmap Launch Card */}
+      <Link href="/dashboard/digital-front-door-roadmap">
+        <div className="group flex items-center gap-5 rounded-xl border p-5 cursor-pointer transition-all hover:shadow-md hover:border-primary/40"
+          style={{ background: "linear-gradient(135deg, #0f62fe0d 0%, #8a3ffc09 100%)", borderColor: "#0f62fe22" }}>
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-md"
+            style={{ background: "linear-gradient(135deg, #0f62fe 0%, #8a3ffc 100%)" }}>
+            <Layers size={22} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-base group-hover:text-primary transition-colors">Digital Front Door Roadmap</p>
+              <span className="px-2 py-0.5 rounded-full text-xs font-semibold border"
+                style={{ background: "#24a14810", borderColor: "#24a14830", color: "#24a148" }}>
+                $16M–$26M Value
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              View 12-month transformation timeline — six sequential value layers and quantified business outcomes
+            </p>
+            <div className="flex items-center gap-4 mt-2.5">
+              {["Week 3 go-live", "95% auto-remediation", "124 FTEs redeployed", "4d → 1d activation"].map(chip => (
+                <span key={chip} className="text-xs text-muted-foreground flex items-center gap-1">
+                  <div className="w-1 h-1 rounded-full" style={{ background: "#0f62fe" }} />
+                  {chip}
+                </span>
+              ))}
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+        </div>
+      </Link>
 
       {/* Sub-navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
