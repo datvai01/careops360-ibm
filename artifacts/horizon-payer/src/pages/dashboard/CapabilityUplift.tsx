@@ -248,7 +248,8 @@ function ExecSummary() {
             IBM is evolving the Horizon delivery model from traditional operations to AI-augmented and autonomous operations.
             Certified AI and ML resources are expanding significantly, automation coverage is scaling across all enrollment workflows,
             and delivery staff are being redeployed from manual tasks to higher-value advisory and engineering roles —
-            directly enabling measurable transformation outcomes across the Digital Front Door program.
+            directly enabling measurable transformation outcomes across the Digital Front Door program, Quote to Cart,
+            ICOE Modernization, Mainframe Modernization, and other strategic Horizon initiatives.
           </p>
         </div>
       </div>
