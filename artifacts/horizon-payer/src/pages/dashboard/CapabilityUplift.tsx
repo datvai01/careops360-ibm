@@ -835,20 +835,6 @@ export default function CapabilityUplift() {
           <h1 className="text-3xl font-bold tracking-tight">Capability Uplift & AI Readiness</h1>
           <p className="text-muted-foreground mt-1">How IBM capability evolution directly enables Horizon transformation outcomes</p>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <Link href="/dashboard/enrollment-intelligence">
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9" style={{ borderColor: `${C.blue}30` }}>
-              <Layers size={14} style={{ color: C.blue }} />
-              Enrollment Intelligence
-            </Button>
-          </Link>
-          <Link href="/dashboard/digital-front-door-roadmap">
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9" style={{ borderColor: `${C.teal}30` }}>
-              <TrendingUp size={14} style={{ color: C.teal }} />
-              DFD Roadmap
-            </Button>
-          </Link>
-        </div>
       </div>
 
       {/* Sections */}
