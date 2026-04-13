@@ -54,7 +54,6 @@ const NAV_GROUPS: NavGroup[] = [
       { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
       { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
       { name: "Enrollment Intelligence", path: "/dashboard/enrollment-intelligence", icon: GitMerge },
-      { name: "Digital Front Door Roadmap", path: "/dashboard/digital-front-door-roadmap", icon: TrendingUp },
     ],
   },
   {
