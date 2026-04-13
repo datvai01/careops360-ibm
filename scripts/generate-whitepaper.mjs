@@ -490,6 +490,7 @@ function cover() {
 
 // ─── Page 1: Executive Summary ────────────────────────────────────────────────
 function p1() {
+  const dashImg = readFileSync('screenshots/exec-overview.jpg');
   return [
     ...secTitle('Executive Summary', 'A Strategic Proposal for AI-Led Transformation of Application Management Services'),
 
@@ -509,9 +510,48 @@ function p1() {
         body('The incumbent delivery model — reactive, labour-intensive, and fragmented across towers — is no longer sufficient to meet Horizon\'s growth objectives or competitive imperatives.'),
         ch2('What IBM Proposes'),
         body('IBM proposes a structured transition from reactive application support to a predictive, self-healing, and continuously improving AI-first operating model — delivered through IBM\'s proven Assets, Assistants, and Accelerators framework, and governed through an outcome-based accountability model.'),
+        ch2('Value Realization — Live Portal Metrics'),
+        body('CareOps360, IBM\'s purpose-built executive command centre, surfaces live operational intelligence across all AMS towers. The metrics below are drawn directly from the running production-equivalent environment as of April 2026:'),
+        new Paragraph({
+          children: [
+            Rb('4.29M ', { size: 22, color: C.blue }), R('Active Members under management  ', { size: 20, color: C.slate }),
+            Rb('$1.69B ', { size: 22, color: C.blue }), R('Claims settled (7 days)', { size: 20, color: C.slate }),
+          ],
+          spacing: { before: 60, after: 40 },
+        }),
+        new Paragraph({
+          children: [
+            Rb('99.4% ', { size: 22, color: C.green }), R('Application availability  ', { size: 20, color: C.slate }),
+            Rb('96.8% ', { size: 22, color: C.green }), R('SLA attainment', { size: 20, color: C.slate }),
+          ],
+          spacing: { before: 40, after: 40 },
+        }),
+        new Paragraph({
+          children: [
+            Rb('$3.2M ', { size: 22, color: C.teal }), R('YTD automation savings  ', { size: 20, color: C.slate }),
+            Rb('47 sec ', { size: 22, color: C.teal }), R('Call Centre ASA', { size: 20, color: C.slate }),
+          ],
+          spacing: { before: 40, after: 80 },
+        }),
+        new Paragraph({
+          children: [
+            Rb('$12M+ ', { size: 22, color: C.navy }), R('Projected annual AIOps savings at full deployment', { size: 20, color: C.slate }),
+          ],
+          spacing: { before: 40, after: 80 },
+        }),
       ],
       [
-        new Paragraph({ children: [Rb('Five Strategic Commitments', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        new Paragraph({
+          children: [new ImageRun({ data: dashImg, transformation: { width: 295, height: 184 }, type: 'jpg' })],
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 60, after: 40 },
+        }),
+        new Paragraph({
+          children: [R('Figure 1: CareOps360 Executive Dashboard — live operations as of April 13, 2026', { size: 15, color: C.mid, italics: true })],
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 100 },
+        }),
+        new Paragraph({ children: [Rb('Five Strategic Commitments', { size: 24, color: C.navy })], spacing: { before: 80, after: 80 } }),
         blt('AI-First Operating Model — AI embedded across every layer of AMS and QA lifecycle.'),
         blt('Tech Arbitrage over Labour Arbitrage — Compressing cost through automation, not headcount.'),
         blt('Outcome-Based Delivery — Committed SLAs tied to measurable business outcomes.'),
@@ -529,10 +569,10 @@ function p1() {
     ),
     ...sp(1),
     kpiStrip([
-      { value: '~500',      label: 'Applications in Scope',   color: C.blue  },
-      { value: 'AI-First',  label: 'Operating Model',         color: C.teal  },
-      { value: 'Phase 0→4', label: 'Structured Roadmap',      color: C.navy  },
-      { value: '24×7',      label: 'Global Support Coverage', color: C.green },
+      { value: '4.29M',    label: 'Active Members Managed',   color: C.blue  },
+      { value: '$3.2M',    label: 'YTD Automation Savings',   color: C.teal  },
+      { value: '99.4%',    label: 'Application Availability', color: C.green },
+      { value: '$12M+',    label: 'Projected Annual AIOps',   color: C.navy  },
     ]),
     pgBreak(),
   ];
