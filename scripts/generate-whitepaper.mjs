@@ -617,28 +617,39 @@ function p3() {
     twoCol(
       [
         new Paragraph({ children: [Rb('What Is CareOps360?', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
-        body('CareOps360 is IBM\'s production-grade executive operations platform purpose-built for the Horizon BCBS engagement. It delivers real-time operational intelligence across all AMS towers — enrollment, applications, infrastructure, and quality — through a single, unified command centre accessible to Horizon\'s executive and operational leadership.'),
-        body('Built on IBM\'s AIOps observability framework, CareOps360 surfaces predictive insights, SLA performance, enrollment intelligence, digital front door metrics, and transformation roadmap progress in real time.'),
-        ch2('Key Capabilities'),
-        blt('Real-time application health monitoring across 500+ applications.'),
-        blt('Enrollment Intelligence dashboard with predictive surge modelling.'),
-        blt('Digital Front Door programme tracking — Quote to Cart, member activation, channel metrics.'),
-        blt('IBM AIOps value realisation — MTTR trends, automation coverage, incident economics.'),
-        blt('Transformation Roadmap — live phase progress and milestone tracking.'),
-        blt('Auto-export, session logging, and HIPAA-compliant audit trail.'),
+        body('CareOps360 is IBM\'s production-grade executive operations platform purpose-built for the Horizon BCBS engagement. It delivers real-time operational intelligence across all AMS towers — enrollment, claims, applications, infrastructure, and quality — through a single, unified command centre accessible to Horizon\'s executive and operational leadership. The platform is architecture-ready for live production data and is currently deployed in a production-equivalent environment.'),
+        body('Built on IBM\'s AIOps observability framework, CareOps360 surfaces predictive insights, SLA performance, enrollment intelligence, digital front door metrics, and transformation roadmap progress — eliminating the need for manual reporting aggregation.'),
+        ch2('Dashboards Delivered'),
+        blt('Executive Overview — Cross-tower operational pulse with 8 real-time KPI tiles.'),
+        blt('Application Health — 500+ app inventory, incident register, availability trends.'),
+        blt('Claims Operations — Daily volume, adjudication queue, denial analytics.'),
+        blt('Prior Authorization — Backlog, review SLA, procedure-level approval rates.'),
+        blt('Enrollment Intelligence — AI-assisted intake, pipeline health, surge detection.'),
+        blt('Member Services — Contact centre, chatbot containment, digital adoption.'),
+        blt('IBM AIOps Value — Automation savings, shift-left rate, self-heal event tracking.'),
+        blt('Transformation Roadmap — 60-initiative portfolio with phase and risk status.'),
+        blt('Capability Uplift — Workforce certification, automation coverage, AI readiness.'),
       ],
       [
-        new Paragraph({ children: [Rb('Platform Architecture', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
-        body('CareOps360 is built on a modern, cloud-native stack with real-time data polling from IBM\'s AIOps and observability layers. It features:'),
-        blt('PostgreSQL + Drizzle ORM for structured operational data.'),
-        blt('Session-authenticated access with auto-logout on inactivity.'),
-        blt('Dark/light mode, disclaimer banners, and structured export.'),
-        blt('API-connected to IBM\'s AIOps event correlation and analytics engines.'),
+        new Paragraph({ children: [Rb('Metrics Monitored via CareOps360', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        dataTable(
+          ['Metric Domain', 'What Will Be Tracked'],
+          [
+            ['Application Ops',      'Availability, MTTR, incident volume by severity'],
+            ['Claims',               'Volume, adjudication rate, TAT, denial drivers'],
+            ['Prior Auth',           'Backlog, review SLA, auto-approval rate'],
+            ['Enrollment',           'Time-to-good, auto-match rate, queue health'],
+            ['Member Services',      'ASA, FCR, chatbot containment, digital adoption'],
+            ['AIOps Value',          'Savings YTD, shift-left rate, self-heal events'],
+            ['Transformation',       'Phase progress, milestone risk, initiative velocity'],
+          ],
+          [2400, 4560]
+        ),
         ...sp(1),
         infoBox('Access & Security', [
           'Role-based access: IBM and Horizon executives',
           'Token-authenticated sessions with inactivity timeout',
-          'All data HIPAA-compliant — no PHI in demonstration mode',
+          'HIPAA-compliant — no PHI in demonstration mode',
           'Architecture-ready for production data integration',
         ], { bg: C.lgray, accent: C.navy }),
       ]
@@ -646,29 +657,36 @@ function p3() {
     ...sp(1),
 
     ...imgBlock(
-      'screenshots/portal-login.jpg',
-      'Figure 2: CareOps360 Command Center — IBM\'s executive operations portal for Horizon BCBS leadership. Secured access with IBM AIOps integration.',
-      680, 395
+      'screenshots/exec-overview.jpg',
+      'Figure 2: CareOps360 Executive Overview — eight operational KPIs spanning members, claims, prior auth, infrastructure, SLA, and automation savings. Platform shown in production-equivalent environment; metrics are illustrative.',
+      680, 425
     ),
     pgBreak(),
   ];
 }
 
-// ─── Page 4: Digital Front Door ───────────────────────────────────────────────
+// ─── Page 4 (Second-to-Last): Modernization Investment Partnership ─────────────
 function p4() {
   return [
-    ...secTitle('Digital Front Door & Quote to Cart Initiatives', 'Transforming Member Engagement from Reactive Service to Intelligent Self-Service'),
+    ...secTitle('IBM\'s Modernization Investment with Horizon', 'Co-Investing in Digital Front Door, Quote to Cart, Mainframe Modernization, and ICOE — As a True Partnership'),
+
+    callout([
+      R('"IBM will ', { size: 23, color: C.navy }),
+      Rb('invest alongside Horizon', { size: 23, color: C.blue }),
+      R(' in the modernization programs that define the next decade of Horizon\'s competitiveness. These are not service-delivery engagements — they are ', { size: 23, color: C.navy }),
+      Rb('strategic co-investments', { size: 23, color: C.blue }),
+      R(' where IBM brings capital, capability, and commitment to shared outcomes."', { size: 23, color: C.navy }),
+    ], { bg: C.lblue, accent: C.blue }),
+    ...sp(1),
 
     twoCol(
       [
-        new Paragraph({ children: [Rb('The Digital Front Door Vision', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
-        body('The Digital Front Door (DFD) program is the centrepiece of Horizon\'s member experience transformation. IBM\'s role is to design, build, and operate a unified digital engagement layer that replaces fragmented channel experiences with a seamless, AI-enhanced member journey — from plan discovery through to claims and care navigation.'),
-        body('For Horizon\'s leadership, DFD is not merely a web or mobile initiative — it is a fundamental shift in how the health plan relationships with its members: from reactive, call-centre-dependent service to proactive, intelligent digital engagement.'),
-        ch2('Quote to Cart — Horizon\'s Highest Near-Term ROI Initiative'),
-        body('Quote to Cart enables prospective and renewing members to receive a personalised plan quote, compare options, select coverage, and complete payment — entirely within a digital channel. This compresses the sales cycle from days to minutes and directly reduces broker dependency for individual and small-group purchases.'),
-      ],
-      [
-        new Paragraph({ children: [Rb('DFD Programme Roadmap', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        new Paragraph({ children: [Rb('Digital Front Door — IBM as Co-Builder', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('The Digital Front Door is Horizon\'s most visible member-facing transformation programme. IBM will not merely provide delivery resources — IBM will co-design, co-build, and co-operate the unified digital engagement layer that gives Horizon members a seamless, AI-enhanced experience from plan discovery through care navigation.'),
+        body('This is a programme where IBM brings its healthcare digital accelerators, member experience design patterns, and proven BCBS digital transformation playbook — reducing time to market, compressing risk, and ensuring Horizon is not starting from a blank page.'),
+        ch2('Quote to Cart — Compressing the Purchase Cycle'),
+        body('Quote to Cart is Horizon\'s highest near-term ROI digital initiative. IBM will co-invest in the design and delivery of a fully digital plan comparison, selection, and payment flow that enables prospective and renewing members to transact entirely within a digital channel — compressing the sales cycle from days to minutes and directly reducing broker dependency for straightforward purchases.'),
+        ch2('DFD Programme Roadmap'),
         dataTable(
           ['Phase', 'Focus Area', 'Status'],
           [
@@ -678,31 +696,35 @@ function p4() {
             ['Phase 4', 'AI Personalisation Engine',          'Q3 2026'],
             ['Phase 5', 'Autonomous Member CX',               '2027'],
           ],
-          [1200, 3500, 1800],
+          [1100, 3400, 1800],
           { greenValues: ['Complete'] }
         ),
+      ],
+      [
+        new Paragraph({ children: [Rb('Mainframe Modernization — IBM as Risk Sharer', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('Horizon\'s mainframe infrastructure is mission-critical — hosting eligibility processing, claims engine logic, financial settlement, and benefit adjudication. IBM understands that modernizing this estate is not merely a technical programme — it is a strategic risk management exercise that must be executed with surgical precision.'),
+        body('IBM proposes a phased, parallel-run migration approach — wrapping mainframe workloads with modern APIs before cloud rehosting, running parallel environments until transaction equivalence is validated, and only cutting over when all stakeholders have confidence. IBM brings AI-assisted COBOL-to-Java conversion tooling that compresses the code conversion timeline by 40–60% compared to manual approaches.'),
+        ch2('ICOE Modernization — IBM as Architecture Partner'),
+        body('The Integration Centre of Excellence Modernization is IBM\'s commitment to restructure the delivery organisation to match Horizon\'s evolving platform landscape. This means product-centric engineering squads, DevSecOps pipelines, API management simplification, and observability-first SRE practices — all delivered as a sustained organisational evolution, not a one-time project.'),
+        ch2('Other Strategic Programs IBM Will Co-Invest In'),
+        blt([Rb('CoreEnroll Membership Modernization: ', { size: 20, color: C.blue }), R('Legacy enrollment platform to cloud-native migration with 50% eligibility processing speed improvement target.', { size: 20, color: C.slate })]),
+        blt([Rb('RateVault Fee Schedule Management: ', { size: 20, color: C.blue }), R('.NET framework upgrade and LTS compliance delivering 25% rate processing efficiency improvement.', { size: 20, color: C.slate })]),
+        blt([Rb('Document Generation (HLGS): ', { size: 20, color: C.blue }), R('Modernization of Horizon\'s Letter Generation System to support digital-first member communications.', { size: 20, color: C.slate })]),
+        blt([Rb('GroupRate Application Modernization: ', { size: 20, color: C.blue }), R('Shared codebase modernization for group rate management across Horizon\'s commercial portfolio.', { size: 20, color: C.slate })]),
         ...sp(1),
         callout(
-          [Rb('Quote to Cart', { size: 21, color: C.navy }), R(' compresses the plan purchase cycle from ', { size: 21, color: C.slate }), Rb('days → minutes', { size: 21, color: C.blue }), R(' and eliminates broker intermediation for straightforward purchases.', { size: 21, color: C.slate })],
+          [Rb('IBM\'s commitment: ', { size: 21, color: C.navy }), R('Every modernization investment IBM makes at Horizon compounds Horizon\'s long-term competitive capability — not IBM\'s dependency. The goal is a Horizon that operates better, faster, and smarter with every programme completed.', { size: 21, color: C.slate })],
           { bg: C.lgreen, accent: C.green, center: false }
         ),
       ]
     ),
     ...sp(1),
-
-    ...barChart(
-      'Figure 3: Target Digital Self-Service Adoption Rates by Member Transaction Type',
-      [
-        { label: 'Online Enrollment',       value: 85, color: C.blue  },
-        { label: 'Plan Comparison (QTC)',   value: 78, color: C.teal  },
-        { label: 'Digital ID Card',         value: 95, color: C.green },
-        { label: 'Claims Status',           value: 90, color: C.blue  },
-        { label: 'Provider Search',         value: 82, color: C.teal  },
-        { label: 'Benefits Inquiry',        value: 75, color: C.navy  },
-      ],
-      '%',
-      'Target digital self-service adoption rates across key member transaction types following DFD programme completion.'
-    ),
+    kpiStrip([
+      { value: '5',          label: 'DFD Programme Phases',          color: C.blue  },
+      { value: 'COBOL→Java', label: 'AI-Assisted Code Conversion',   color: C.teal  },
+      { value: '60+',        label: 'Modernization Initiatives',     color: C.navy  },
+      { value: 'Zero',       label: 'Disruption Commitment',         color: C.green },
+    ]),
     pgBreak(),
   ];
 }
@@ -760,17 +782,10 @@ function p5() {
     ),
     ...sp(1),
 
-    ...barChart(
-      'Figure 4: Incident Resolution Time Reduction by Severity Category (IBM AIOps vs. Baseline)',
-      [
-        { label: 'P1 — Critical',     value: 57, color: C.red    },
-        { label: 'P2 — High',         value: 48, color: C.orange },
-        { label: 'P3 — Medium',       value: 65, color: C.blue   },
-        { label: 'P4 — Low',          value: 80, color: C.teal   },
-        { label: 'Change-Induced',    value: 40, color: C.navy   },
-      ],
-      '% faster',
-      'Projected incident resolution time improvements by severity following Agentic AI deployment. Percentages represent reduction vs. baseline MTTR.'
+    ...imgBlock(
+      'screenshots/ibm-ams.jpg',
+      'Figure 4: IBM AIOps Value Dashboard — automation savings, shift-left rate, self-heal events, and monthly cost reduction trend by driver. Metrics are illustrative; live values tracked upon go-live.',
+      680, 425
     ),
     pgBreak(),
   ];
@@ -908,6 +923,12 @@ function p8() {
         blt('COBOL → Java migration complete for pilot workstream.'),
         blt('Enterprise-wide observability platform fully deployed.'),
         blt('Claims adjudication cutover initiated.'),
+        ...sp(1),
+        ch2('Roadmap Metrics Tracked in CareOps360', C.navy),
+        blt('Total initiatives in portfolio: 60 across 4 domains (Payer, Clinical, Digital, Enterprise).'),
+        blt('Active / In-Flight initiatives tracked against quarterly milestones.'),
+        blt('At-risk initiatives flagged for executive escalation within 48 hours.'),
+        blt('Dependency maps surfaced to prevent cascade delays.'),
       ],
       [
         ch2('Governance at Every Phase', C.navy),
@@ -916,7 +937,257 @@ function p8() {
         blt('Delivery Operations Reviews: Bi-weekly SLA and incident trends.'),
         blt('Financial Governance: Monthly actuals vs. committed model.'),
         blt('Innovation Council: Quarterly idea pipeline and prioritisation.'),
+        ...sp(1),
+        infoBox('Transformation Portfolio at a Glance', [
+          '60 total initiatives across 3 delivery years',
+          '25 Year 1 initiatives — Technical Debt, Digital, Payer',
+          '15 Active / In-Flight as of programme launch',
+          '9 Completed milestones in foundation phase',
+          '2 At-Risk initiatives under executive monitoring',
+        ], { bg: C.lblue, accent: C.blue }),
       ]
+    ),
+    ...sp(1),
+    ...imgBlock(
+      'screenshots/transformation-roadmap.jpg',
+      'Figure 5: CareOps360 Transformation Roadmap — 60-initiative portfolio tracked by type, domain, phase, and risk status. Live milestone and dependency tracking available on go-live.',
+      680, 425
+    ),
+    pgBreak(),
+  ];
+}
+
+// ─── Page 9a: Claims & Prior Authorization ────────────────────────────────────
+function pClaims() {
+  return [
+    ...secTitle('Claims & Prior Authorization Operations', 'AI-Augmented Adjudication, Backlog Management, and Denial Reduction at Scale'),
+
+    callout(
+      [R('Claims and prior authorization are among Horizon\'s highest-volume, highest-risk operational domains. IBM embeds AI-driven intelligence to ', { size: 22, color: C.slate }), Rb('accelerate adjudication, reduce denials, and eliminate manual backlog management', { size: 22, color: C.navy }), R(' — at enterprise scale.', { size: 22, color: C.slate })],
+      { bg: C.lblue, accent: C.blue, center: false }
+    ),
+    ...sp(1),
+
+    twoCol(
+      [
+        new Paragraph({ children: [Rb('Claims Operations Intelligence', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('IBM\'s CareOps360 platform surfaces real-time visibility into the claims lifecycle — from receipt through adjudication, settlement, and denial management. Operational leads and executives can identify queue bottlenecks, denial spikes, and auto-adjudication performance degradation in real time, without waiting for next-day reporting.'),
+        ch2('What IBM Will Deliver'),
+        blt('AI-enhanced auto-adjudication rules engine — reducing manual adjudication rates from baseline.'),
+        blt('Denial pattern analytics — identifying root causes across procedure, eligibility, and coordination of benefits failure modes.'),
+        blt('Real-time claims dashboard: volume by line of business, TAT trending, denial driver breakdown.'),
+        blt('SLA-bound adjudication commitments: average turnaround time reduction target to be agreed at contract.'),
+        ch2('Claims Metrics That Will Be Tracked'),
+        blt('Claims received daily — volume trend and year-over-year comparison.'),
+        blt('Claims in adjudication — queue depth and aging by payer class.'),
+        blt('Auto-adjudication rate — target improvement trajectory over programme life.'),
+        blt('Denial rate by denial code — top-5 denial reasons tracked monthly.'),
+        blt('Average turnaround days — actuals vs. SLA commitment.'),
+      ],
+      [
+        new Paragraph({ children: [Rb('Prior Authorization: AI-Assisted Review', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('Prior authorization is a significant operational and member experience pressure point. Horizon\'s current backlog and review cycle times create friction for providers and members alike. IBM will deploy AI-assisted review tooling to triage and prioritise requests, identify auto-approvable cases, and flag clinically complex cases for expedited human review.'),
+        ch2('Prior Auth Metrics That Will Be Tracked'),
+        dataTable(
+          ['Metric', 'Target Direction'],
+          [
+            ['Requests Received Daily',        'Trend monitored weekly'],
+            ['Average Review Hours',           'Reduction target (baseline to agreed)'],
+            ['Urgent Request SLA',             '100% within 72-hr regulatory SLA'],
+            ['Backlog Size',                   'Reduction tracked monthly'],
+            ['Auto-Approval Rate (low-risk)',   'Increase target: >40% by Month 12'],
+            ['Top Procedure Approval Rates',   'Category-level variance monitoring'],
+          ],
+          [3000, 3960]
+        ),
+        ...sp(1),
+        callout(
+          [Rb('Target: ', { size: 21, color: C.navy }), R('100% of urgent prior auth requests resolved within regulatory SLA. AI-assisted triage to reduce average review time by 30%+ within 12 months.', { size: 21, color: C.slate })],
+          { bg: C.lgreen, accent: C.green, center: false }
+        ),
+      ]
+    ),
+    ...sp(1),
+    ...imgBlock(
+      'screenshots/claims.jpg',
+      'Figure 6: CareOps360 Claims Operations Dashboard — daily volume, adjudication queue, settlement metrics, auto-adjudication rate, and top denial reasons. Illustrative data shown; live metrics populated on go-live.',
+      680, 425
+    ),
+    pgBreak(),
+  ];
+}
+
+// ─── Page 9b: Enrollment Intelligence ─────────────────────────────────────────
+function pEnrollment() {
+  return [
+    ...secTitle('Enrollment Intelligence & AI-Assisted Intake', 'From Manual Queue Management to Autonomous, Predictive Enrollment Operations'),
+
+    twoCol(
+      [
+        new Paragraph({ children: [Rb('The Enrollment Challenge at Horizon', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('Horizon\'s enrollment pipeline processes tens of thousands of records across individual, group, and government segments — with high volumes during open enrollment periods creating significant operational risk. Manual validation, eligibility matching, and exception handling consume substantial operational capacity and introduce SLA risk when not actively monitored.'),
+        body('IBM\'s Enrollment Intelligence solution transforms this from a reactive, queue-management function into a proactive, AI-augmented enrollment operations capability — with real-time visibility into pipeline health, SLA compliance, and AI remediation rates.'),
+        ch2('What IBM Will Deliver'),
+        blt('End-to-end enrollment pipeline monitoring: intake, validation, AI remediation, and syndication.'),
+        blt('Auto-match rate improvement: AI-assisted eligibility matching reduces manual intervention volumes.'),
+        blt('Surge detection and capacity modelling: predictive alerts for open enrollment demand spikes.'),
+        blt('SLA breach alerting: real-time flag when queue health degrades beyond threshold.'),
+        blt('Compliance & audit trail: full record-level traceability for regulatory examination.'),
+        ch2('Enrollment Metrics That Will Be Tracked'),
+        blt('Time-to-good (intake to validated record) — reduction target agreed at contract baseline.'),
+        blt('Auto-match rate — AI eligibility matching accuracy, tracked monthly.'),
+        blt('Manual intervention rate — percentage of records requiring human review.'),
+        blt('Records in queue — real-time queue depth with aging breakdown.'),
+        blt('SLA compliance rate — percentage of records processed within agreed SLA.'),
+        blt('Failed records — hard failure volume and root cause trend.'),
+      ],
+      [
+        new Paragraph({ children: [Rb('Enrollment Intelligence Hub', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('CareOps360\'s Enrollment Intelligence Hub provides a unified, multi-tab view of the enrollment lifecycle — from Operations Overview and Intake & Validation through to AI Remediation, Syndication, Reconciliation, and Compliance & Audit. The hub includes an embedded Operations Copilot for real-time queue health summaries and priority recommendations.'),
+        dataTable(
+          ['Hub Tab', 'Purpose'],
+          [
+            ['Overview',           'Pipeline health, KPI summary, SLA status'],
+            ['Intake & Validation', 'Record-level validation status and error patterns'],
+            ['AI Remediation',     'Auto-fix rate, remediation type breakdown'],
+            ['Operations Command', 'Queue management and intervention workflow'],
+            ['Syndication',        'Downstream system feed status and reconciliation'],
+            ['Compliance & Audit', 'Regulatory traceability and exception log'],
+          ],
+          [2400, 4560]
+        ),
+        ...sp(1),
+        infoBox('Surge Protection', [
+          'Predictive surge detection alerts leadership 72+ hours ahead',
+          'Capacity modelling integrated with workforce planning',
+          'Auto-escalation on queue depth threshold breach',
+          'Open enrollment operational command centre built in',
+        ], { bg: C.lteal, accent: C.teal }),
+      ]
+    ),
+    ...sp(1),
+    ...imgBlock(
+      'screenshots/enrollment.jpg',
+      'Figure 7: CareOps360 Enrollment Intelligence Hub — pipeline health KPIs, auto-match rate, manual intervention tracking, queue depth, and AI Remediation overview. Illustrative data; live metrics upon go-live.',
+      680, 425
+    ),
+    pgBreak(),
+  ];
+}
+
+// ─── Page 9c: Member Services & Contact Center ────────────────────────────────
+function pContact() {
+  return [
+    ...secTitle('Member Services & Contact Center Intelligence', 'Reducing Contact Volume, Elevating Digital Experience, and Measuring Every Interaction'),
+
+    callout(
+      [R('IBM\'s approach to member services transforms the contact centre from a cost centre to a ', { size: 22, color: C.slate }), Rb('digital engagement command post', { size: 22, color: C.navy }), R(' — where AI containment, self-service, and agent augmentation work together to reduce call volume, improve FCR, and increase member satisfaction.', { size: 22, color: C.slate })],
+      { bg: C.lteal, accent: C.teal, center: false }
+    ),
+    ...sp(1),
+
+    twoCol(
+      [
+        new Paragraph({ children: [Rb('The Member Experience Opportunity', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('Contact centre performance is a direct signal of operational quality across the enterprise. High call volumes, elevated abandonment rates, and low first-call resolution typically reflect process failures upstream — in enrollment, claims, prior auth, and provider services — that force members to call. IBM addresses this systemically, not just at the contact centre surface.'),
+        ch2('What IBM Will Deliver'),
+        blt('AI-powered chatbot and IVR containment: increasing self-service resolution to reduce agent handle time.'),
+        blt('Agent Assist tooling: surfacing relevant member context, prior interactions, and suggested resolution paths in real time.'),
+        blt('Digital adoption acceleration: driving members to portal and mobile for routine transactions.'),
+        blt('Contact reason analytics: identifying and feeding back upstream root causes driving call volume.'),
+        blt('FCR improvement programme: structured analysis of repeat contacts and intervention design.'),
+        ch2('Member Services Metrics That Will Be Tracked'),
+        blt('Calls received daily — volume trend and driver breakdown by call reason.'),
+        blt('Average Speed of Answer (ASA) — target reduction from baseline.'),
+        blt('Abandonment rate — threshold monitored in real time.'),
+        blt('First Call Resolution (FCR) — target improvement trajectory.'),
+        blt('Chatbot containment rate — self-service automation coverage.'),
+        blt('Digital adoption rate — percentage of members using digital channels for routine transactions.'),
+      ],
+      [
+        new Paragraph({ children: [Rb('Contact Center KPI Targets', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        dataTable(
+          ['Metric', 'Target Direction'],
+          [
+            ['Avg Speed of Answer',       'Reduction from baseline (target at contract)'],
+            ['First Call Resolution',     'Improvement target: +8–12 pts vs. baseline'],
+            ['Abandonment Rate',          'Reduction target: <5% at steady state'],
+            ['Chatbot Containment',       'Target: >60% by Month 18'],
+            ['Digital Adoption',          'Target: >50% of routine transactions digital'],
+            ['Member Complaints Volume',  'Monthly trend tracked; trigger threshold set'],
+          ],
+          [3000, 3960]
+        ),
+        ...sp(1),
+        ch2('Digital Channel Strategy', C.navy),
+        body('IBM\'s Digital Front Door investment directly reduces contact volume by enabling members to complete plan comparison, enrollment changes, claims status lookup, prior auth status, and ID card requests entirely within digital channels — reducing broker and call-centre dependency for Horizon\'s most frequent transaction types.'),
+        ...sp(1),
+        infoBox('Contact Reason Feedback Loop', [
+          'Top call reasons surfaced daily in CareOps360',
+          'Root cause analysis drives upstream process fixes',
+          'Agent Assist reduces handle time per contact',
+          'Monthly member satisfaction trend tracked',
+        ], { bg: C.lgray, accent: C.navy }),
+      ]
+    ),
+    ...sp(1),
+    ...imgBlock(
+      'screenshots/contact-center.jpg',
+      'Figure 8: CareOps360 Member Services Dashboard — calls, ASA, abandonment rate, FCR, chatbot containment, digital adoption, and top call reasons by category. Illustrative data; live metrics upon go-live.',
+      680, 425
+    ),
+    pgBreak(),
+  ];
+}
+
+// ─── Page 9d: Capability Uplift & AI Readiness ───────────────────────────────
+function pCapability() {
+  return [
+    ...secTitle('Capability Uplift & AI Readiness', 'How IBM\'s Delivery Capability Directly Enables Horizon\'s Transformation Outcomes'),
+
+    twoCol(
+      [
+        new Paragraph({ children: [Rb('A Workforce Built for AI-First Delivery', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        body('IBM\'s transformation proposal is backed by a deeply credentialled, continuously upskilling delivery team that brings AI and automation expertise directly into Horizon\'s operating environment. Capability investment is not a separate training programme — it is embedded into every phase of delivery, with certifications, automation coverage, and AI-readiness metrics tracked in CareOps360.'),
+        body('IBM is evolving the Horizon delivery model from traditional operations to AI-augmented and autonomous operations. Certified AI and ML resources are expanding significantly, automation coverage is scaling across all workflows, and delivery staff are being redeployed from manual tasks to higher-value advisory and engineering roles — directly enabling measurable transformation outcomes.'),
+        ch2('The Strategic Capability Narrative'),
+        body('IBM\'s people strategy for Horizon is threefold: certify deep expertise in AI, healthcare, and IBM platforms; automate the repeatable so people focus on the complex; and redeploy freed capacity toward the strategic programmes that matter most — Digital Front Door, Quote to Cart, ICOE Modernization, and Mainframe Modernization.'),
+        ch2('Capability Metrics That Will Be Tracked'),
+        blt('Total certified professionals on the Horizon engagement — headcount and credential breakdown.'),
+        blt('AI/ML certifications: target growth trajectory month-over-month.'),
+        blt('Automation coverage: percentage of delivery processes with automation applied.'),
+        blt('Workforce AI-enabled percentage: share of team using AI tooling in daily delivery.'),
+        blt('FTE productivity gain: reduction in manual effort per unit of delivery output.'),
+        blt('Auto-remediation readiness: target capability milestone for self-healing operations.'),
+      ],
+      [
+        new Paragraph({ children: [Rb('Capability Dashboard', { size: 26, color: C.navy })], spacing: { before: 80, after: 100 } }),
+        dataTable(
+          ['Capability Area', 'Metric Tracked', 'Target'],
+          [
+            ['AI / ML Certifications',    'Certified professionals',    'Growth to plan'],
+            ['Planned Certifications',    'Next 6–12 month pipeline',   'Headcount target'],
+            ['Workforce AI-Enabled',      '% using AI daily',           '78% by Month 12'],
+            ['Automation Coverage',       '% processes automated',      '91% by Month 12'],
+            ['FTE Productivity Gain',     'Manual effort eliminated',   'Target agreed'],
+            ['Auto-Remediation Ready',    'Self-heal milestone',        'Achieved Month 6'],
+          ],
+          [2400, 2400, 2160]
+        ),
+        ...sp(1),
+        infoBox('IBM Certification Domains at Horizon', [
+          'AI / Machine Learning — model deployment, AIOps, LLM operations',
+          'Healthcare & Payer — BCBS models, CMS compliance, HIPAA',
+          'IBM Platform — consulting advantage, cloud architecture, hybrid cloud',
+          'Cloud Engineering — AWS, OpenShift, DevSecOps, SRE',
+        ], { bg: C.lblue, accent: C.blue }),
+      ]
+    ),
+    ...sp(1),
+    ...imgBlock(
+      'screenshots/capability-uplift.jpg',
+      'Figure 9: CareOps360 Capability Uplift Dashboard — certified resources, planned certifications, automation coverage, workforce AI-enablement, productivity gain, and auto-remediation readiness. Illustrative data; live metrics upon go-live.',
+      680, 425
     ),
     pgBreak(),
   ];
@@ -1068,12 +1339,16 @@ const doc = new Document({
       ...p1(),
       ...p2(),
       ...p3(),
-      ...p4(),
       ...p5(),
       ...p6(),
       ...p7(),
       ...p8(),
+      ...pClaims(),
+      ...pEnrollment(),
+      ...pContact(),
+      ...pCapability(),
       ...p9(),
+      ...p4(),
       ...p10(),
     ],
   }],
