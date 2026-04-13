@@ -22,6 +22,7 @@ import DigitalRoadmap from "@/pages/dashboard/DigitalRoadmap";
 import EnrollmentIntelligence from "@/pages/dashboard/EnrollmentIntelligence";
 import DigitalFrontDoorRoadmap from "@/pages/dashboard/DigitalFrontDoorRoadmap";
 import Help from "@/pages/dashboard/Help";
+import CapabilityUplift from "@/pages/dashboard/CapabilityUplift";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -53,6 +54,7 @@ function DashboardRouter() {
         <Route path="/dashboard/enrollment-intelligence" component={EnrollmentIntelligence} />
         <Route path="/dashboard/digital-front-door-roadmap" component={DigitalFrontDoorRoadmap} />
         <Route path="/dashboard/help" component={Help} />
+        <Route path="/dashboard/capability-uplift" component={CapabilityUplift} />
         <Route component={NotFound} />
       </Switch>
     </AppShell>

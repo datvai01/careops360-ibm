@@ -23,6 +23,7 @@ import {
   Info,
   GitMerge,
   TrendingUp,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,6 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Value & Insights",
     items: [
       { name: "IBM AIOps Value", path: "/dashboard/ibm-ams", icon: CpuIcon },
+      { name: "Capability Uplift & AI Readiness", path: "/dashboard/capability-uplift", icon: Award },
       { name: "Transformation Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
     ],
   },

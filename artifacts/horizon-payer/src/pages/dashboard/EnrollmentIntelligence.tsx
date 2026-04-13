@@ -14,7 +14,7 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Clock, RefreshCw, Download, Search,
   ChevronRight, ChevronDown, Zap, User, ArrowUpRight, Shield, GitBranch,
   Activity, Database, RotateCcw, FileCheck, Bot, X, Info, Layers,
-  TrendingUp, TrendingDown, Users, AlertCircle,
+  TrendingUp, TrendingDown, Users, AlertCircle, Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -1205,6 +1205,12 @@ export default function EnrollmentIntelligence() {
           <p className="text-muted-foreground mt-1">End-to-end enrollment pipeline — intake, validation, AI remediation, and syndication</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Link href="/dashboard/capability-uplift">
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9" style={{ borderColor: "#8a3ffc30" }}>
+              <Award size={14} style={{ color: "#8a3ffc" }} />
+              Team Capability Evolution
+            </Button>
+          </Link>
           <Link href="/dashboard/digital-front-door-roadmap">
             <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9 border-primary/30 hover:border-primary/60 hover:text-primary" style={{ borderColor: "#0f62fe30" }}>
               <Layers size={14} style={{ color: C.blue }} />
