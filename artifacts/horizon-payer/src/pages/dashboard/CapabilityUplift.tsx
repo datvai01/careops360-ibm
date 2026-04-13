@@ -573,49 +573,6 @@ function BusinessValueImpact() {
   );
 }
 
-function CopilotInsightBox() {
-  return (
-    <div className="rounded-xl border p-5 space-y-3"
-      style={{ background: "linear-gradient(135deg, #0f62fe08 0%, #8a3ffc08 100%)", borderColor: `${C.purple}25` }}>
-      <div className="flex items-center gap-2">
-        <Cpu size={16} style={{ color: C.purple }} />
-        <span className="text-sm font-bold">AI Capability Copilot Insights</span>
-        <span className="ml-auto px-2 py-0.5 rounded-full text-xs font-semibold"
-          style={{ background: `${C.purple}15`, color: C.purple }}>Strategic Advisory</span>
-      </div>
-      <div className="grid md:grid-cols-3 gap-3">
-        {[
-          {
-            icon: AlertCircle,
-            color: C.orange,
-            label: "Capability Gap",
-            text: "AI/ML skills are the most critical gap — current 41% AI-enablement must reach 78% by Month 12. Accelerate LLM and RAG certification tracks now.",
-          },
-          {
-            icon: Shield,
-            color: C.red,
-            label: "Risk Area",
-            text: "Layer 4 (Record Mastering) has the lowest current strength (41%). MDM and AI identity resolution uplift must begin no later than Month 2 to avoid downstream delays.",
-          },
-          {
-            icon: Target,
-            color: C.green,
-            label: "Recommended Focus",
-            text: "Prioritize AIOps + GenAI certifications for the Command Center team. This unlocks $2M+ cost avoidance and is the critical path to autonomous operations.",
-          },
-        ].map((item) => (
-          <div key={item.label} className="rounded-lg bg-background border p-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <item.icon size={14} style={{ color: item.color }} />
-              <span className="text-xs font-bold" style={{ color: item.color }}>{item.label}</span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /* ─────────────────────── PAGE ─────────────────────── */
 
@@ -644,7 +601,6 @@ export default function CapabilityUplift() {
       <AIDeepDive />
       <WorkforceTransformation />
       <BusinessValueImpact />
-      <CopilotInsightBox />
     </div>
   );
 }
