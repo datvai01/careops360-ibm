@@ -316,7 +316,7 @@ function CapabilityTable() {
   const [search, setSearch] = useState("");
   const [area, setArea]     = useState("all");
   const [priority, setPri]  = useState("all");
-  const [sort, setSort]     = useState<"growth" | "current" | "planned">("growth");
+  const [sort, setSort]     = useState<"growth" | "current" | "planned">("current");
 
   const areas = ["all", ...Array.from(new Set(CAPABILITY_TABLE.map(r => r.area)))];
 
