@@ -1429,12 +1429,11 @@ export default function EnrollmentIntelligence() {
   const [copilotOpen, setCopilotOpen] = useState(true);
 
   const TABS = [
-    { id: "overview",            label: "Overview",             icon: Activity   },
-    { id: "member-demographics", label: "Member Demographics",  icon: Users      },
-    { id: "member-services",     label: "Member Services",      icon: Headphones },
-    { id: "ops",                 label: "Operations Command",   icon: Users      },
-    { id: "syndication",         label: "Syndication",          icon: GitBranch  },
-    { id: "reconciliation",      label: "Reconciliation",       icon: RefreshCw  },
+    { id: "overview",            label: "Overview",            icon: Activity  },
+    { id: "member-demographics", label: "Member Demographics", icon: Users     },
+    { id: "ops",                 label: "Operations Command",  icon: Users     },
+    { id: "syndication",         label: "Syndication",         icon: GitBranch },
+    { id: "reconciliation",      label: "Reconciliation",      icon: RefreshCw },
   ];
 
   return (
@@ -1515,7 +1514,6 @@ export default function EnrollmentIntelligence() {
 
         <TabsContent value="overview"             className="mt-6"><OverviewSection /></TabsContent>
         <TabsContent value="member-demographics"  className="mt-6"><MemberDemographicsSection /></TabsContent>
-        <TabsContent value="member-services"      className="mt-6"><MemberServicesSection /></TabsContent>
         <TabsContent value="ops"                  className="mt-6"><OpsCommandSection /></TabsContent>
         <TabsContent value="syndication"          className="mt-6"><SyndicationSection /></TabsContent>
         <TabsContent value="reconciliation"       className="mt-6"><ReconciliationSection /></TabsContent>

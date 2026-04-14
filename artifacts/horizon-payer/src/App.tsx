@@ -21,6 +21,7 @@ import EnrollmentIntelligence from "@/pages/dashboard/EnrollmentIntelligence";
 import DigitalFrontDoorRoadmap from "@/pages/dashboard/DigitalFrontDoorRoadmap";
 import Help from "@/pages/dashboard/Help";
 import CapabilityUplift from "@/pages/dashboard/CapabilityUplift";
+import MemberServices from "@/pages/dashboard/MemberServices";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -44,7 +45,8 @@ function DashboardRouter() {
         <Route path="/dashboard/prior-auth" component={PriorAuth} />
         <Route path="/dashboard/providers" component={Providers} />
         <Route path="/dashboard/contact-center" component={() => <Redirect to="/dashboard/enrollment-intelligence" />} />
-        <Route path="/dashboard/vendor-invoices" component={VendorInvoices} />
+        <Route path="/dashboard/vendor-invoices"  component={VendorInvoices}  />
+        <Route path="/dashboard/member-services"  component={MemberServices}  />
         <Route path="/dashboard/app-health" component={AppHealth} />
         <Route path="/dashboard/ibm-ams" component={IbmAms} />
         <Route path="/dashboard/ask" component={Ask} />
