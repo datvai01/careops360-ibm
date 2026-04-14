@@ -54,13 +54,12 @@ const NAV_GROUPS: NavGroup[] = [
       { name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
       { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
       { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
-      { name: "Enrollment Intelligence", path: "/dashboard/enrollment-intelligence", icon: GitMerge },
+      { name: "Member & Enrollment Ops", path: "/dashboard/enrollment-intelligence", icon: HeadphonesIcon },
     ],
   },
   {
     label: "Operations & Support",
     items: [
-      { name: "Contact Center", path: "/dashboard/contact-center", icon: HeadphonesIcon },
       { name: "Vendor Invoices", path: "/dashboard/vendor-invoices", icon: DollarSignIcon },
     ],
   },
