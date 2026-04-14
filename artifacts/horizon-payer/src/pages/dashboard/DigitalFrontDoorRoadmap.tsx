@@ -648,6 +648,25 @@ export default function DigitalFrontDoorRoadmap() {
         </p>
       </div>
 
+      {/* ── IBM Vision Note ── */}
+      <div className="flex items-start gap-4 rounded-xl border px-5 py-4" style={{ borderColor: "#0f62fe30", background: "linear-gradient(135deg, #0f62fe08 0%, #0f62fe04 100%)" }}>
+        <div className="flex-shrink-0 mt-0.5 w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#0f62fe15" }}>
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="4" fill="#0f62fe" />
+            <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fill="white" fontSize="16" fontWeight="bold" fontFamily="Arial">i</text>
+          </svg>
+        </div>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: "#0f62fe" }}>IBM Vision — Subject to Collaborative Refinement with Horizon</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-4xl">
+            This roadmap represents IBM's proposed vision and strategic direction for the Digital Front Door transformation programme.
+            All timelines, sequencing, value targets, and capability layers will be validated, adjusted, and finalised in partnership
+            with Horizon BCBS leadership and subject matter experts during the programme discovery and planning phase.
+            This is a starting point for a shared conversation — not a unilateral commitment.
+          </p>
+        </div>
+      </div>
+
       {/* ── 1. Executive Value Summary ── */}
       <section>
         <SectionTitle label="Executive Value Summary" sub="Quantified outcomes across the 12-month transformation horizon" />
