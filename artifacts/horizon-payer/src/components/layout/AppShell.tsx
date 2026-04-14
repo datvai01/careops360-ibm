@@ -226,7 +226,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div key={group.label}>
                 {sidebarOpen && (
                   <div className={cn("px-3 mb-0.5", gi > 0 && "pt-1.5")}>
-                    <span className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50 select-none">
                       {group.label}
                     </span>
                   </div>
@@ -251,7 +251,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           title={!sidebarOpen ? item.name : undefined}
                         >
                           <Icon className={cn("w-3.5 h-3.5 flex-shrink-0", isActive ? "text-primary" : "")} />
-                          {sidebarOpen && <span className="ml-2.5 text-xs truncate">{item.name}</span>}
+                          {sidebarOpen && <span className="ml-2.5 text-[13px] truncate">{item.name}</span>}
                         </div>
                       </Link>
                     );
