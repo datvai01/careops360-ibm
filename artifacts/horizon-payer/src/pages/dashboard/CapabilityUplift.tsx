@@ -238,21 +238,6 @@ function ExecSummary() {
           </div>
         ))}
       </div>
-      {/* AI summary box */}
-      <div className="rounded-xl border p-4 flex items-start gap-3"
-        style={{ background: `${C.blue}08`, borderColor: `${C.blue}25` }}>
-        <Brain size={18} style={{ color: C.blue }} className="mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="text-sm font-semibold mb-1">Strategic Capability Narrative</p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            IBM is evolving the Horizon delivery model from traditional operations to AI-augmented and autonomous operations.
-            Certified AI and ML resources are expanding significantly, automation coverage is scaling across all enrollment workflows,
-            and delivery staff are being redeployed from manual tasks to higher-value advisory and engineering roles —
-            directly enabling measurable transformation outcomes across the Digital Front Door program, Quote to Cart,
-            ICOE Modernization, Mainframe Modernization, and other strategic Horizon initiatives.
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
