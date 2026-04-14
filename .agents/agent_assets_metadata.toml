@@ -12,3 +12,9 @@ id = "D408ujSPgtMj2fG3dX-nD"
 uri = "file://IBM_Horizon_AI_Transformation_Proposal_Apr2026.docx"
 type = "word_document"
 title = "IBM × Horizon BCBS — AI-First Transformation Proposal (April 2026) — v7 Final"
+
+[[outputs]]
+id = "fVkkc2XdxL18nGd6Ndb07"
+uri = "file://.local/outputs/Horizon-Paye.pptx"
+type = "slides"
+title = "Horizon Paye.pptx"
