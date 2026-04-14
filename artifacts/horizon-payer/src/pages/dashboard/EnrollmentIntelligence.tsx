@@ -1429,15 +1429,12 @@ export default function EnrollmentIntelligence() {
   const [copilotOpen, setCopilotOpen] = useState(true);
 
   const TABS = [
-    { id: "overview",          label: "Overview",              icon: Activity    },
-    { id: "member-demographics", label: "Member Demographics",  icon: Users       },
-    { id: "member-services",   label: "Member Services",       icon: Headphones  },
-    { id: "intake",            label: "Intake & Validation",   icon: FileCheck   },
-    { id: "remediation",   label: "AI Remediation",        icon: Bot         },
-    { id: "ops",           label: "Operations Command",    icon: Users       },
-    { id: "syndication",   label: "Syndication",           icon: GitBranch   },
-    { id: "reconciliation",label: "Reconciliation",        icon: RefreshCw   },
-    { id: "compliance",    label: "Compliance & Audit",    icon: Shield      },
+    { id: "overview",            label: "Overview",             icon: Activity   },
+    { id: "member-demographics", label: "Member Demographics",  icon: Users      },
+    { id: "member-services",     label: "Member Services",      icon: Headphones },
+    { id: "ops",                 label: "Operations Command",   icon: Users      },
+    { id: "syndication",         label: "Syndication",          icon: GitBranch  },
+    { id: "reconciliation",      label: "Reconciliation",       icon: RefreshCw  },
   ];
 
   return (
@@ -1450,7 +1447,7 @@ export default function EnrollmentIntelligence() {
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Live Operations</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Member & Enrollment Operations</h1>
-          <p className="text-muted-foreground mt-1">Enrollment pipeline, member services, AI remediation, contact center, and compliance</p>
+          <p className="text-muted-foreground mt-1">Enrollment pipeline, member demographics, member services, and operations command</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Link href="/dashboard/digital-front-door-roadmap">
@@ -1496,12 +1493,9 @@ export default function EnrollmentIntelligence() {
         <TabsContent value="overview"             className="mt-6"><OverviewSection /></TabsContent>
         <TabsContent value="member-demographics"  className="mt-6"><MemberDemographicsSection /></TabsContent>
         <TabsContent value="member-services"      className="mt-6"><MemberServicesSection /></TabsContent>
-        <TabsContent value="intake"          className="mt-6"><IntakeSection /></TabsContent>
-        <TabsContent value="remediation"    className="mt-6"><AiRemediationSection /></TabsContent>
-        <TabsContent value="ops"            className="mt-6"><OpsCommandSection /></TabsContent>
-        <TabsContent value="syndication"    className="mt-6"><SyndicationSection /></TabsContent>
-        <TabsContent value="reconciliation" className="mt-6"><ReconciliationSection /></TabsContent>
-        <TabsContent value="compliance"     className="mt-6"><ComplianceSection /></TabsContent>
+        <TabsContent value="ops"                  className="mt-6"><OpsCommandSection /></TabsContent>
+        <TabsContent value="syndication"          className="mt-6"><SyndicationSection /></TabsContent>
+        <TabsContent value="reconciliation"       className="mt-6"><ReconciliationSection /></TabsContent>
       </Tabs>
 
       {/* Floating Copilot */}
