@@ -75,7 +75,7 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="horizon-ui-theme">
+      <ThemeProvider defaultTheme="light" storageKey="horizon-ui-theme">
         <TimeRangeProvider>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
