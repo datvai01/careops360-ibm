@@ -50,10 +50,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Member & Care Operations",
     items: [
+      { name: "Member & Enrollment Ops", path: "/dashboard/enrollment-intelligence", icon: HeadphonesIcon },
       { name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
       { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
       { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
-      { name: "Member & Enrollment Ops", path: "/dashboard/enrollment-intelligence", icon: HeadphonesIcon },
     ],
   },
   {
