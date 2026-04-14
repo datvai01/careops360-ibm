@@ -1379,7 +1379,7 @@ function MemberDemographicsSection() {
 }
 
 // ─── OPERATIONS COPILOT ───────────────────────────────────────────────────────
-function OperationsCopilot({ onClose }: { onClose: () => void }) {
+function OperationsCopilot({ onClose, onViewQueue }: { onClose: () => void; onViewQueue: () => void }) {
   return (
     <div className="fixed bottom-6 right-6 w-80 rounded-2xl border shadow-2xl bg-card z-50 overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b" style={{ background: "linear-gradient(135deg, #1a237e 0%, #0f62fe 100%)" }}>
@@ -1414,7 +1414,7 @@ function OperationsCopilot({ onClose }: { onClose: () => void }) {
           ))}
         </div>
         <div className="pt-1">
-          <Button size="sm" className="w-full text-xs h-8" style={{ background: C.blue }}>
+          <Button size="sm" className="w-full text-xs h-8" style={{ background: C.blue }} onClick={onViewQueue}>
             <Activity size={12} className="mr-1.5" /> View Full Queue Analysis
           </Button>
         </div>
@@ -1522,7 +1522,12 @@ export default function EnrollmentIntelligence() {
       </Tabs>
 
       {/* Floating Copilot */}
-      {copilotOpen && <OperationsCopilot onClose={() => setCopilotOpen(false)} />}
+      {copilotOpen && (
+        <OperationsCopilot
+          onClose={() => setCopilotOpen(false)}
+          onViewQueue={() => { setActiveTab("ops"); setCopilotOpen(false); }}
+        />
+      )}
     </div>
   );
 }
