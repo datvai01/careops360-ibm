@@ -1477,18 +1477,41 @@ export default function EnrollmentIntelligence() {
 
       {/* Sub-navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex flex-wrap h-auto gap-1 bg-muted/50 p-1 rounded-xl">
-          {TABS.map(({ id, label, icon: Icon }) => (
-            <TabsTrigger
-              key={id}
-              value={id}
-              className="flex items-center gap-1.5 text-xs h-8 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold"
-            >
-              <Icon size={13} />
-              {label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        {/* Tab bar */}
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="flex overflow-x-auto scrollbar-none">
+            {TABS.map(({ id, label, icon: Icon }, idx) => (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  "relative flex flex-col items-center gap-1.5 px-6 py-4 min-w-[120px] flex-1 transition-all duration-150 select-none",
+                  idx !== TABS.length - 1 && "border-r border-border",
+                  activeTab === id
+                    ? "bg-primary/5 text-primary"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                )}
+              >
+                <Icon
+                  size={18}
+                  className={cn(
+                    "transition-colors",
+                    activeTab === id ? "text-primary" : "text-muted-foreground/70"
+                  )}
+                />
+                <span className={cn(
+                  "text-xs font-medium text-center leading-tight whitespace-nowrap",
+                  activeTab === id && "font-semibold"
+                )}>
+                  {label}
+                </span>
+                {activeTab === id && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full" style={{ background: "#0f62fe" }} />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <TabsContent value="overview"             className="mt-6"><OverviewSection /></TabsContent>
         <TabsContent value="member-demographics"  className="mt-6"><MemberDemographicsSection /></TabsContent>
