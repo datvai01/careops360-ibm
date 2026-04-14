@@ -14,10 +14,10 @@ import {
   CheckCircle2, AlertTriangle, XCircle, Clock, RefreshCw, Download, Search,
   ChevronRight, ChevronDown, Zap, User, ArrowUpRight, Shield, GitBranch,
   Activity, Database, RotateCcw, FileCheck, Bot, X, Info, Layers,
-  TrendingUp, TrendingDown, Users, AlertCircle, Award, Headphones, MessageSquare,
+  TrendingUp, TrendingDown, Users, AlertCircle, Headphones, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGetContactCenterKpis, useGetTopCallReasons, useGetHourlyCallVolume } from "@workspace/api-client-react";
+import { useGetContactCenterKpis, useGetTopCallReasons, useGetHourlyCallVolume, useGetMemberKpis, useGetEnrollmentTrends, useGetMembersByProduct } from "@workspace/api-client-react";
 import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { KpiCard } from "@/components/ui/kpi-card";
 
@@ -1290,6 +1290,94 @@ function MemberServicesSection() {
   );
 }
 
+// ─── MEMBER DEMOGRAPHICS SECTION ─────────────────────────────────────────────
+const MEMBER_PRODUCT_COLORS = ['#0f62fe', '#24a148', '#8a3ffc', '#002d9c', '#da1e28'];
+
+function MemberDemographicsSection() {
+  const { periodOption } = useTimeRange();
+  const { data: kpis, isLoading: isKpisLoading } = useGetMemberKpis({});
+  const { data: trends, isLoading: isTrendsLoading } = useGetEnrollmentTrends();
+  const { data: products, isLoading: isProductsLoading } = useGetMembersByProduct();
+  const slicedDaily = trends?.daily?.slice(-periodOption.days);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard title="Total Active Members"    metric={kpis?.totalActiveMembers}    isLoading={isKpisLoading} />
+        <KpiCard title="New Enrollments (Today)" metric={kpis?.newEnrollmentsToday}   isLoading={isKpisLoading} />
+        <KpiCard title="Terminations"            metric={kpis?.terminations}           isLoading={isKpisLoading} />
+        <KpiCard title="Exception Queue"         metric={kpis?.exceptionQueueSize}     isLoading={isKpisLoading} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle>Enrollment Trends</CardTitle>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
+                {periodOption.shortLabel}
+              </span>
+            </div>
+            <CardDescription>{periodOption.label}</CardDescription>
+          </CardHeader>
+          <CardContent className="h-80">
+            {isTrendsLoading ? (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">Loading chart...</div>
+            ) : trends && slicedDaily ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={slicedDaily} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }} />
+                  <Legend />
+                  <Line type="monotone" dataKey="enrollments" name="Enrollments" stroke="#24a148" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="terminations" name="Terminations" stroke="#da1e28" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Members by Product</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            {isProductsLoading ? (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">Loading chart...</div>
+            ) : products ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={products}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="count"
+                    nameKey="product"
+                  >
+                    {products.map((_entry: unknown, index: number) => (
+                      <Cell key={`cell-${index}`} fill={MEMBER_PRODUCT_COLORS[index % MEMBER_PRODUCT_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
+                    formatter={(value: number) => new Intl.NumberFormat('en-US').format(value)}
+                  />
+                  <Legend verticalAlign="bottom" height={36} />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // ─── OPERATIONS COPILOT ───────────────────────────────────────────────────────
 function OperationsCopilot({ onClose }: { onClose: () => void }) {
   return (
@@ -1341,9 +1429,10 @@ export default function EnrollmentIntelligence() {
   const [copilotOpen, setCopilotOpen] = useState(true);
 
   const TABS = [
-    { id: "overview",      label: "Overview",              icon: Activity    },
-    { id: "member-services",label: "Member Services",      icon: Headphones  },
-    { id: "intake",        label: "Intake & Validation",   icon: FileCheck   },
+    { id: "overview",          label: "Overview",              icon: Activity    },
+    { id: "member-demographics", label: "Member Demographics",  icon: Users       },
+    { id: "member-services",   label: "Member Services",       icon: Headphones  },
+    { id: "intake",            label: "Intake & Validation",   icon: FileCheck   },
     { id: "remediation",   label: "AI Remediation",        icon: Bot         },
     { id: "ops",           label: "Operations Command",    icon: Users       },
     { id: "syndication",   label: "Syndication",           icon: GitBranch   },
@@ -1364,12 +1453,6 @@ export default function EnrollmentIntelligence() {
           <p className="text-muted-foreground mt-1">Enrollment pipeline, member services, AI remediation, contact center, and compliance</p>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Link href="/dashboard/capability-uplift">
-            <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9" style={{ borderColor: "#8a3ffc30" }}>
-              <Award size={14} style={{ color: "#8a3ffc" }} />
-              Team Capability Evolution
-            </Button>
-          </Link>
           <Link href="/dashboard/digital-front-door-roadmap">
             <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9 border-primary/30 hover:border-primary/60 hover:text-primary" style={{ borderColor: "#0f62fe30" }}>
               <Layers size={14} style={{ color: C.blue }} />
@@ -1410,8 +1493,9 @@ export default function EnrollmentIntelligence() {
           ))}
         </TabsList>
 
-        <TabsContent value="overview"        className="mt-6"><OverviewSection /></TabsContent>
-        <TabsContent value="member-services" className="mt-6"><MemberServicesSection /></TabsContent>
+        <TabsContent value="overview"             className="mt-6"><OverviewSection /></TabsContent>
+        <TabsContent value="member-demographics"  className="mt-6"><MemberDemographicsSection /></TabsContent>
+        <TabsContent value="member-services"      className="mt-6"><MemberServicesSection /></TabsContent>
         <TabsContent value="intake"          className="mt-6"><IntakeSection /></TabsContent>
         <TabsContent value="remediation"    className="mt-6"><AiRemediationSection /></TabsContent>
         <TabsContent value="ops"            className="mt-6"><OpsCommandSection /></TabsContent>

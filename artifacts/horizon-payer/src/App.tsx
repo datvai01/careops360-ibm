@@ -9,7 +9,6 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import { AppShell } from "@/components/layout/AppShell";
 import ExecutiveOverview from "@/pages/dashboard/ExecutiveOverview";
-import Members from "@/pages/dashboard/Members";
 import Claims from "@/pages/dashboard/Claims";
 import PriorAuth from "@/pages/dashboard/PriorAuth";
 import Providers from "@/pages/dashboard/Providers";
@@ -40,7 +39,7 @@ function DashboardRouter() {
     <AppShell>
       <Switch>
         <Route path="/dashboard" component={ExecutiveOverview} />
-        <Route path="/dashboard/members" component={Members} />
+        <Route path="/dashboard/members" component={() => <Redirect to="/dashboard/enrollment-intelligence" />} />
         <Route path="/dashboard/claims" component={Claims} />
         <Route path="/dashboard/prior-auth" component={PriorAuth} />
         <Route path="/dashboard/providers" component={Providers} />
