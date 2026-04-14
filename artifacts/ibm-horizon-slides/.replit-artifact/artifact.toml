@@ -1,0 +1,31 @@
+kind = "slides"
+previewPath = "/ibm-horizon-slides/"
+title = "IBM × Horizon BCBS — AI-First Transformation"
+version = "1.0.0"
+id = "artifacts/ibm-horizon-slides"
+router = "path"
+
+[[integratedSkills]]
+name = "slides"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/ibm-horizon-slides/" ]
+localPort = 22652
+
+[services.development]
+run = "pnpm --filter @workspace/ibm-horizon-slides run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ibm-horizon-slides", "run", "build" ]
+publicDir = "artifacts/ibm-horizon-slides/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22652"
+BASE_PATH = "/ibm-horizon-slides/"
