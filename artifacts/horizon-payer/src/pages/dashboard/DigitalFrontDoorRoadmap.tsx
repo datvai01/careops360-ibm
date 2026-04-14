@@ -663,15 +663,6 @@ export default function DigitalFrontDoorRoadmap() {
         <MilestoneTimeline />
       </section>
 
-      {/* ── 3. Value Waves ── */}
-      <section>
-        <SectionTitle
-          label="Three Value Waves"
-          sub="Sequenced waves of business value — each building on the prior layer"
-        />
-        <ValueWaves />
-      </section>
-
       {/* ── 4. Six Layers ── */}
       <section>
         <div className="flex items-start justify-between gap-4 mb-6">
