@@ -266,9 +266,9 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t06",
-    title: "IBM Instana Bootcamp",
+    title: "COBOL to Java & .NET AI Bootcamp",
     vendor: "IBM",
-    track: "AIOps",
+    track: "Application Modernization",
     date: "2026-07-21",
     endDate: "2026-07-23",
     format: "Hybrid",
@@ -276,8 +276,8 @@ const TRAINING_EVENTS: TrainingEvent[] = [
     enrolled: 19,
     level: "Professional",
     color: "#0f62fe",
-    description: "Advanced AIOps engineering — IBM Instana full-stack observability, Turbonomic resource optimisation, and automated remediation workflow design.",
-    certificationEarned: "IBM Certified Specialist – AIOps",
+    description: "AI-assisted COBOL to Java & .NET modernization — IBM watsonx Code Assistant for Z, automated code translation, test generation, and refactoring strategies for legacy healthcare payer systems. Covers COBOL analysis, AI-driven code conversion, regression testing, and phased migration planning.",
+    certificationEarned: "IBM watsonx Code Assistant Specialist Badge",
   },
   {
     id: "t07",
@@ -715,7 +715,6 @@ function fmtDate(iso: string) {
 }
 
 function TrainingCalendar() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterVendor, setFilterVendor] = useState("all");
   const [filterTrack, setFilterTrack]   = useState("all");
 
@@ -726,8 +725,6 @@ function TrainingCalendar() {
     (filterVendor === "all" || e.vendor === filterVendor) &&
     (filterTrack  === "all" || e.track  === filterTrack)
   );
-
-  const selected = TRAINING_EVENTS.find(e => e.id === selectedId) ?? null;
 
   const totalSeats    = TRAINING_EVENTS.reduce((s, e) => s + e.seats, 0);
   const totalEnrolled = TRAINING_EVENTS.reduce((s, e) => s + e.enrolled, 0);
@@ -802,27 +799,65 @@ function TrainingCalendar() {
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1.5">
                       {monthEvents.map(ev => {
-                        const isSelected = selectedId === ev.id;
                         const fillPct = Math.round((ev.enrolled / ev.seats) * 100);
+                        const days = Math.round((new Date(ev.endDate).getTime() - new Date(ev.date).getTime()) / 86400000) + 1;
                         return (
-                          <button
-                            key={ev.id}
-                            onClick={() => setSelectedId(isSelected ? null : ev.id)}
-                            className="flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium transition-all hover:shadow-sm text-left"
-                            style={{
-                              borderColor: isSelected ? ev.color : `${ev.color}40`,
-                              background: isSelected ? `${ev.color}15` : `${ev.color}08`,
-                              color: isSelected ? ev.color : "var(--foreground)",
-                            }}
-                          >
-                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color }} />
-                            <span className="max-w-[160px] truncate">{ev.title}</span>
-                            <span className="text-muted-foreground flex-shrink-0">{fmtDate(ev.date)}</span>
-                            {ev.format === "Virtual" && <Monitor size={10} className="text-muted-foreground flex-shrink-0" />}
-                            {ev.format === "In-Person" && <MapPin size={10} className="text-muted-foreground flex-shrink-0" />}
-                            {ev.format === "Hybrid" && <Layers size={10} className="text-muted-foreground flex-shrink-0" />}
-                            <span className="tabular-nums text-muted-foreground flex-shrink-0">{fillPct}%</span>
-                          </button>
+                          <Tooltip key={ev.id} delayDuration={100}>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium cursor-default transition-all hover:shadow-md hover:scale-[1.02]"
+                                style={{
+                                  borderColor: `${ev.color}40`,
+                                  background: `${ev.color}08`,
+                                  color: "var(--foreground)",
+                                }}
+                              >
+                                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color }} />
+                                <span className="max-w-[160px] truncate">{ev.title}</span>
+                                <span className="text-muted-foreground flex-shrink-0">{fmtDate(ev.date)}</span>
+                                {ev.format === "Virtual" && <Monitor size={10} className="text-muted-foreground flex-shrink-0" />}
+                                {ev.format === "In-Person" && <MapPin size={10} className="text-muted-foreground flex-shrink-0" />}
+                                {ev.format === "Hybrid" && <Layers size={10} className="text-muted-foreground flex-shrink-0" />}
+                                <span className="tabular-nums text-muted-foreground flex-shrink-0">{fillPct}%</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" className="p-0 overflow-hidden max-w-xs" sideOffset={6}>
+                              <div className="p-3 space-y-2.5" style={{ borderTop: `3px solid ${ev.color}` }}>
+                                {/* Header */}
+                                <div>
+                                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                                    <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: `${ev.color}25`, color: ev.color }}>{ev.vendor}</span>
+                                    <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ background: `${levelColors[ev.level]}20`, color: levelColors[ev.level] }}>{ev.level}</span>
+                                    <span className="text-xs text-muted-foreground">{ev.format}</span>
+                                  </div>
+                                  <div className="font-semibold text-sm leading-snug">{ev.title}</div>
+                                  <div className="text-xs text-muted-foreground mt-0.5">
+                                    {fmtDate(ev.date)} – {fmtDate(ev.endDate)} · {days}d · {ev.track}
+                                  </div>
+                                </div>
+                                {/* Enrollment bar */}
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Enrollment</span>
+                                    <span className="font-semibold tabular-nums" style={{ color: ev.color }}>{ev.enrolled}/{ev.seats} ({fillPct}%)</span>
+                                  </div>
+                                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                                    <div className="h-full rounded-full" style={{ width: `${fillPct}%`, background: ev.color }} />
+                                  </div>
+                                </div>
+                                {/* Description */}
+                                <p className="text-xs text-muted-foreground leading-relaxed">{ev.description}</p>
+                                {/* Cert */}
+                                <div className="flex items-start gap-1.5 pt-1 border-t">
+                                  <Award size={11} style={{ color: ev.color }} className="mt-0.5 flex-shrink-0" />
+                                  <div className="text-xs">
+                                    <span className="font-semibold">Credential: </span>
+                                    <span className="text-muted-foreground">{ev.certificationEarned}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                         );
                       })}
                     </div>
@@ -833,48 +868,6 @@ function TrainingCalendar() {
           </tbody>
         </table>
       </div>
-
-      {/* Detail panel — shows when a pill is selected */}
-      {selected && (
-        <div className="rounded-xl border p-4 space-y-3 transition-all" style={{ borderColor: `${selected.color}40`, background: `${selected.color}06` }}>
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: `${selected.color}20`, color: selected.color }}>{selected.vendor}</span>
-                <span className="px-1.5 py-0.5 rounded text-xs font-semibold" style={{ background: `${levelColors[selected.level]}15`, color: levelColors[selected.level] }}>{selected.level}</span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {selected.format === "Virtual" && <><Monitor size={11} /> Virtual</>}
-                  {selected.format === "In-Person" && <><MapPin size={11} /> In-Person</>}
-                  {selected.format === "Hybrid" && <><Layers size={11} /> Hybrid</>}
-                </span>
-                <span className="text-xs text-muted-foreground">{selected.track}</span>
-              </div>
-              <div className="font-bold text-base">{selected.title}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">
-                {fmtDate(selected.date)} – {fmtDate(selected.endDate)} &nbsp;·&nbsp; {Math.round((new Date(selected.endDate).getTime() - new Date(selected.date).getTime()) / 86400000) + 1} days
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <div className="text-2xl font-black tabular-nums" style={{ color: selected.color }}>{Math.round((selected.enrolled / selected.seats) * 100)}%</div>
-              <div className="text-xs text-muted-foreground">{selected.enrolled}/{selected.seats} enrolled</div>
-            </div>
-          </div>
-
-          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${Math.round((selected.enrolled / selected.seats) * 100)}%`, background: selected.color }} />
-          </div>
-
-          <p className="text-xs text-muted-foreground leading-relaxed">{selected.description}</p>
-
-          <div className="flex items-start gap-2">
-            <Award size={12} style={{ color: selected.color }} className="mt-0.5 flex-shrink-0" />
-            <div>
-              <div className="text-xs font-semibold">Certification Earned</div>
-              <div className="text-xs text-muted-foreground">{selected.certificationEarned}</div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {filtered.length === 0 && (
         <div className="text-center py-8 text-sm text-muted-foreground">No training events match the selected filters.</div>
