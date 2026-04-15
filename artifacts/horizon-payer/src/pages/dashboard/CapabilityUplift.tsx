@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,7 +39,6 @@ import {
   Cell,
 } from "recharts";
 import {
-  ArrowLeft,
   ChevronDown,
   ChevronUp,
   Brain,
@@ -861,9 +859,6 @@ export default function CapabilityUplift() {
     <div className="space-y-6 max-w-7xl mx-auto pb-20">
       {/* Page header */}
       <div>
-        <Link href="/dashboard/ibm-ams" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors">
-          <ArrowLeft size={13} /> IBM AIOps Value
-        </Link>
         <div className="flex items-center gap-2 mb-1">
           <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: C.purple }} />
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBM Delivery Capability</span>
