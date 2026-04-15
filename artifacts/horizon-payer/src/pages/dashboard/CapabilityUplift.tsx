@@ -821,7 +821,7 @@ function TrainingCalendar() {
                                 <span className="tabular-nums text-muted-foreground flex-shrink-0">{fillPct}%</span>
                               </div>
                             </TooltipTrigger>
-                            <TooltipContent side="top" align="start" className="p-0 overflow-hidden max-w-xs" sideOffset={6}>
+                            <TooltipContent side="top" align="start" className="p-0 overflow-hidden max-w-xs bg-background text-foreground border border-border shadow-xl rounded-xl" sideOffset={6}>
                               <div className="p-3 space-y-2.5" style={{ borderTop: `3px solid ${ev.color}` }}>
                                 {/* Header */}
                                 <div>
