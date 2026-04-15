@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -190,7 +191,7 @@ type TrainingEvent = {
 const TRAINING_EVENTS: TrainingEvent[] = [
   {
     id: "t01",
-    title: "IBM AIOps Fundamentals",
+    title: "IBM AIOps Bootcamp",
     vendor: "IBM",
     track: "AIOps",
     date: "2026-05-05",
@@ -205,7 +206,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t02",
-    title: "AWS Generative AI Practitioner",
+    title: "AWS Gen AI Lunch & Learn",
     vendor: "AWS",
     track: "AI / GenAI",
     date: "2026-05-19",
@@ -235,7 +236,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t04",
-    title: "Databricks Data Engineering Associate",
+    title: "Databricks Data Engineering Bootcamp",
     vendor: "Databricks",
     track: "Data & Analytics",
     date: "2026-06-16",
@@ -250,7 +251,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t05",
-    title: "Snowflake SnowPro Core",
+    title: "Snowflake Core Bootcamp",
     vendor: "Snowflake",
     track: "Data & Analytics",
     date: "2026-07-07",
@@ -265,7 +266,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t06",
-    title: "IBM AIOps Advanced — Instana & Turbonomic",
+    title: "IBM Instana Bootcamp",
     vendor: "IBM",
     track: "AIOps",
     date: "2026-07-21",
@@ -280,7 +281,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t07",
-    title: "Databricks Machine Learning Professional",
+    title: "Mosaic AI Bootcamp",
     vendor: "Databricks",
     track: "AI / GenAI",
     date: "2026-08-11",
@@ -295,7 +296,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t08",
-    title: "AWS Gen AI Advanced — Bedrock Fine-Tuning",
+    title: "AWS Bedrock Deep Dive Bootcamp",
     vendor: "AWS",
     track: "AI / GenAI",
     date: "2026-09-01",
@@ -310,7 +311,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t09",
-    title: "Snowflake SnowPro Advanced — Data Engineering",
+    title: "Snowflake Cortex Bootcamp",
     vendor: "Snowflake",
     track: "Data & Analytics",
     date: "2026-09-22",
@@ -325,7 +326,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t10",
-    title: "IBM AIOps Expert — Self-Healing Systems",
+    title: "IBM Self-Healing Ops Bootcamp",
     vendor: "IBM",
     track: "AIOps",
     date: "2026-10-13",
@@ -340,7 +341,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t11",
-    title: "Databricks Gen AI Engineering",
+    title: "Databricks GenAI Bootcamp",
     vendor: "Databricks",
     track: "AI / GenAI",
     date: "2026-11-03",
@@ -370,7 +371,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t13",
-    title: "Tosca Fundamentals",
+    title: "Tosca Foundations Lunch & Learn",
     vendor: "Tricentis",
     track: "Quality Engineering",
     date: "2026-06-09",
@@ -385,7 +386,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t14",
-    title: "Tosca Test Architect",
+    title: "Tosca Test Architect Bootcamp",
     vendor: "Tricentis",
     track: "Quality Engineering",
     date: "2026-08-18",
@@ -400,7 +401,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t15",
-    title: "Tosca AI-Assisted Testing",
+    title: "Tosca AI Testing Bootcamp",
     vendor: "Tricentis",
     track: "Quality Engineering",
     date: "2026-10-20",
@@ -739,7 +740,7 @@ function TrainingCalendar() {
 
   return (
     <div className="space-y-4">
-      <SectionHeader icon={CalendarDays} title="Training Calendar" sub="Upcoming certification programmes — May through November 2026" color={C.teal} />
+      <SectionHeader icon={CalendarDays} title="Bootcamp & Learning Calendar" sub="Upcoming bootcamps and lunch & learns — May through November 2026" color={C.teal} />
 
       {/* KPI strip */}
       <div className="grid grid-cols-4 gap-3">
@@ -886,28 +887,42 @@ function TrainingCalendar() {
 
 export default function CapabilityUplift() {
   return (
-    <div className="space-y-10 max-w-7xl mx-auto pb-20">
+    <div className="space-y-6 max-w-7xl mx-auto pb-20">
       {/* Page header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <Link href="/dashboard/ibm-ams" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors">
-            <ArrowLeft size={13} /> IBM AIOps Value
-          </Link>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: C.purple }} />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBM Delivery Capability</span>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight">Skills & Enablement</h1>
-          <p className="text-muted-foreground mt-1">How IBM capability evolution and structured training directly enables Horizon transformation outcomes</p>
+      <div>
+        <Link href="/dashboard/ibm-ams" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors">
+          <ArrowLeft size={13} /> IBM AIOps Value
+        </Link>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: C.purple }} />
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBM Delivery Capability</span>
         </div>
+        <h1 className="text-3xl font-bold tracking-tight">Skills & Enablement</h1>
+        <p className="text-muted-foreground mt-1">IBM capability evolution and structured learning directly enabling Horizon transformation outcomes</p>
       </div>
 
-      {/* Sections */}
-      <ExecSummary />
-      <MaturityProgression />
-      <CapabilityTable />
-      <TrainingCalendar />
-      <WorkforceTransformation />
+      {/* Three-tab layout */}
+      <Tabs defaultValue="exec-summary">
+        <TabsList className="h-9">
+          <TabsTrigger value="exec-summary" className="text-xs px-4">Executive Summary</TabsTrigger>
+          <TabsTrigger value="maturity" className="text-xs px-4">Capability Maturity</TabsTrigger>
+          <TabsTrigger value="bootcamps" className="text-xs px-4">Bootcamp Calendar</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="exec-summary" className="mt-6 space-y-10">
+          <ExecSummary />
+          <WorkforceTransformation />
+        </TabsContent>
+
+        <TabsContent value="maturity" className="mt-6 space-y-10">
+          <MaturityProgression />
+          <CapabilityTable />
+        </TabsContent>
+
+        <TabsContent value="bootcamps" className="mt-6">
+          <TrainingCalendar />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
