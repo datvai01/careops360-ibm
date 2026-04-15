@@ -220,8 +220,8 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t03",
-    title: "BOB (Bedrock Onboarding Bootcamp)",
-    vendor: "AWS / IBM",
+    title: "IBM BOB — Build on Bedrock",
+    vendor: "IBM BOB",
     track: "AI / GenAI",
     date: "2026-06-02",
     endDate: "2026-06-04",
@@ -230,8 +230,8 @@ const TRAINING_EVENTS: TrainingEvent[] = [
     enrolled: 28,
     level: "Associate",
     color: "#8a3ffc",
-    description: "Intensive 3-day hands-on bootcamp covering Amazon Bedrock architecture, model customisation, RAG implementation, and GenAI application deployment on AWS.",
-    certificationEarned: "AWS Bedrock Practitioner Badge",
+    description: "IBM Build on Bedrock (bob.ibm.com) — 3-day hands-on programme covering IBM's curated GenAI toolchain built on Amazon Bedrock: foundation model selection, RAG implementation, IBM watsonx integration, and enterprise-grade GenAI application patterns for regulated industries.",
+    certificationEarned: "IBM BOB Practitioner Badge",
   },
   {
     id: "t04",
@@ -355,8 +355,8 @@ const TRAINING_EVENTS: TrainingEvent[] = [
   },
   {
     id: "t12",
-    title: "BOB Advanced — Enterprise GenAI Architecture",
-    vendor: "AWS / IBM",
+    title: "IBM BOB Advanced — Enterprise GenAI",
+    vendor: "IBM BOB",
     track: "AI / GenAI",
     date: "2026-11-17",
     endDate: "2026-11-19",
@@ -365,27 +365,73 @@ const TRAINING_EVENTS: TrainingEvent[] = [
     enrolled: 17,
     level: "Expert",
     color: "#8a3ffc",
-    description: "Advanced BOB — multi-agent orchestration, enterprise GenAI governance, cross-cloud LLM deployment strategies, and responsible AI frameworks for regulated industries.",
-    certificationEarned: "Enterprise GenAI Architect Certificate",
+    description: "Advanced IBM Build on Bedrock (bob.ibm.com) — multi-agent orchestration, enterprise GenAI governance, cross-cloud LLM deployment, and IBM-specific responsible AI frameworks for HIPAA-regulated environments.",
+    certificationEarned: "IBM BOB Advanced Architect Certificate",
+  },
+  {
+    id: "t13",
+    title: "Tosca Fundamentals",
+    vendor: "Tricentis",
+    track: "Quality Engineering",
+    date: "2026-06-09",
+    endDate: "2026-06-10",
+    format: "Virtual",
+    seats: 30,
+    enrolled: 24,
+    level: "Foundational",
+    color: "#00b388",
+    description: "Tricentis Tosca Fundamentals — model-based test automation, test case design, linear execution lists, and test data management for enterprise applications and claims processing systems.",
+    certificationEarned: "Tricentis Tosca AS1 Certification",
+  },
+  {
+    id: "t14",
+    title: "Tosca Test Architect",
+    vendor: "Tricentis",
+    track: "Quality Engineering",
+    date: "2026-08-18",
+    endDate: "2026-08-20",
+    format: "Virtual",
+    seats: 20,
+    enrolled: 14,
+    level: "Professional",
+    color: "#00b388",
+    description: "Tricentis Tosca Test Architect — advanced test design patterns, API test automation, Tosca Commander configurations, distributed execution, and CI/CD pipeline integration with Jenkins and Azure DevOps.",
+    certificationEarned: "Tricentis Tosca Test Architect Certification",
+  },
+  {
+    id: "t15",
+    title: "Tosca AI-Assisted Testing",
+    vendor: "Tricentis",
+    track: "Quality Engineering",
+    date: "2026-10-20",
+    endDate: "2026-10-21",
+    format: "Hybrid",
+    seats: 20,
+    enrolled: 11,
+    level: "Expert",
+    color: "#00b388",
+    description: "Tricentis Tosca AI-Assisted Testing — AI-powered test case generation, self-healing test automation, vision AI for UI testing, and intelligent test impact analysis across the healthcare payer application portfolio.",
+    certificationEarned: "Tricentis AI Testing Specialist Badge",
   },
 ];
 
 const VENDOR_COLORS: Record<string, string> = {
-  IBM: "#0f62fe",
-  AWS: "#ff9900",
-  "AWS / IBM": "#8a3ffc",
+  IBM:        "#0f62fe",
+  "IBM BOB":  "#8a3ffc",
+  AWS:        "#ff9900",
   Databricks: "#ff3621",
-  Snowflake: "#29b5e8",
+  Snowflake:  "#29b5e8",
+  Tricentis:  "#00b388",
 };
 
 const MONTHS_2026 = [
-  { key: "2026-05", label: "May 2026" },
-  { key: "2026-06", label: "Jun 2026" },
-  { key: "2026-07", label: "Jul 2026" },
-  { key: "2026-08", label: "Aug 2026" },
-  { key: "2026-09", label: "Sep 2026" },
-  { key: "2026-10", label: "Oct 2026" },
-  { key: "2026-11", label: "Nov 2026" },
+  { key: "2026-05", label: "May",  full: "May 2026" },
+  { key: "2026-06", label: "Jun",  full: "Jun 2026" },
+  { key: "2026-07", label: "Jul",  full: "Jul 2026" },
+  { key: "2026-08", label: "Aug",  full: "Aug 2026" },
+  { key: "2026-09", label: "Sep",  full: "Sep 2026" },
+  { key: "2026-10", label: "Oct",  full: "Oct 2026" },
+  { key: "2026-11", label: "Nov",  full: "Nov 2026" },
 ];
 
 /* ─────────────────────── HELPERS ─────────────────────── */
@@ -663,92 +709,12 @@ function WorkforceTransformation() {
 
 /* ─────────────────────── TRAINING CALENDAR ─────────────────────── */
 
-function LevelBadge({ level }: { level: TrainingEvent["level"] }) {
-  const map: Record<string, { bg: string; color: string }> = {
-    Foundational: { bg: "#24a14815", color: "#24a148" },
-    Associate:    { bg: "#0f62fe15", color: "#0f62fe" },
-    Professional: { bg: "#8a3ffc15", color: "#8a3ffc" },
-    Expert:       { bg: "#da1e2815", color: "#da1e28" },
-  };
-  const s = map[level] || map.Associate;
-  return (
-    <span className="px-1.5 py-0.5 rounded text-xs font-semibold" style={{ background: s.bg, color: s.color }}>{level}</span>
-  );
-}
-
-function FormatIcon({ format }: { format: TrainingEvent["format"] }) {
-  if (format === "Virtual") return <Monitor size={12} className="text-muted-foreground" />;
-  if (format === "In-Person") return <MapPin size={12} className="text-muted-foreground" />;
-  return <Layers size={12} className="text-muted-foreground" />;
-}
-
-function TrainingCard({ ev, expanded, onToggle }: { ev: TrainingEvent; expanded: boolean; onToggle: () => void }) {
-  const start = new Date(ev.date);
-  const end = new Date(ev.endDate);
-  const days = Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
-  const fillPct = Math.round((ev.enrolled / ev.seats) * 100);
-  const spotsLeft = ev.seats - ev.enrolled;
-
-  const dayLabel = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  const endLabel = end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-  return (
-    <div
-      className="rounded-xl border transition-all hover:shadow-md cursor-pointer"
-      style={{ borderLeft: `3px solid ${ev.color}` }}
-      onClick={onToggle}
-    >
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: `${ev.color}18`, color: ev.color }}>{ev.vendor}</span>
-              <LevelBadge level={ev.level} />
-              <span className="flex items-center gap-1 text-xs text-muted-foreground"><FormatIcon format={ev.format} />{ev.format}</span>
-            </div>
-            <div className="font-semibold text-sm leading-snug">{ev.title}</div>
-            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <CalendarDays size={11} />{dayLabel} – {endLabel} · {days}d
-              </span>
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <GraduationCap size={11} />{ev.track}
-              </span>
-            </div>
-          </div>
-          <div className="flex-shrink-0 text-right">
-            <div className="text-lg font-black tabular-nums" style={{ color: ev.color }}>{fillPct}%</div>
-            <div className="text-xs text-muted-foreground">{spotsLeft} spots left</div>
-          </div>
-        </div>
-
-        {/* Enrollment bar */}
-        <div className="mt-3 flex items-center gap-2">
-          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${fillPct}%`, background: ev.color }} />
-          </div>
-          <span className="text-xs text-muted-foreground tabular-nums">{ev.enrolled}/{ev.seats}</span>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="px-4 pb-4 border-t bg-muted/20 space-y-3 pt-3">
-          <p className="text-xs text-muted-foreground leading-relaxed">{ev.description}</p>
-          <div className="flex items-start gap-2">
-            <Award size={12} style={{ color: ev.color }} className="mt-0.5 flex-shrink-0" />
-            <div>
-              <div className="text-xs font-semibold">Certification Earned</div>
-              <div className="text-xs text-muted-foreground">{ev.certificationEarned}</div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function TrainingCalendar() {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [filterVendor, setFilterVendor] = useState("all");
   const [filterTrack, setFilterTrack]   = useState("all");
 
@@ -760,86 +726,158 @@ function TrainingCalendar() {
     (filterTrack  === "all" || e.track  === filterTrack)
   );
 
+  const selected = TRAINING_EVENTS.find(e => e.id === selectedId) ?? null;
+
   const totalSeats    = TRAINING_EVENTS.reduce((s, e) => s + e.seats, 0);
   const totalEnrolled = TRAINING_EVENTS.reduce((s, e) => s + e.enrolled, 0);
-  const virtualPct    = Math.round((TRAINING_EVENTS.filter(e => e.format === "Virtual").length / TRAINING_EVENTS.length) * 100);
   const certCount     = TRAINING_EVENTS.length;
+  const virtualPct    = Math.round((TRAINING_EVENTS.filter(e => e.format === "Virtual").length / certCount) * 100);
+
+  const levelColors: Record<string, string> = {
+    Foundational: "#24a148", Associate: "#0f62fe", Professional: "#8a3ffc", Expert: "#da1e28",
+  };
 
   return (
-    <div className="space-y-5">
-      <SectionHeader icon={CalendarDays} title="Training Calendar" sub="Upcoming IBM, AWS, Databricks & Snowflake certification programmes — May through November 2026" color={C.teal} />
+    <div className="space-y-4">
+      <SectionHeader icon={CalendarDays} title="Training Calendar" sub="Upcoming certification programmes — May through November 2026" color={C.teal} />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Programmes Scheduled", value: certCount, unit: "", color: C.blue },
-          { label: "Total Seats", value: totalSeats, unit: "", color: C.teal },
-          { label: "Enrolled", value: totalEnrolled, unit: `/ ${totalSeats}`, color: C.purple },
-          { label: "Delivered Virtually", value: virtualPct, unit: "%", color: C.green },
+          { label: "Programmes", value: String(certCount), color: C.blue },
+          { label: "Total Seats", value: String(totalSeats), color: C.teal },
+          { label: "Enrolled", value: `${totalEnrolled}`, color: C.purple },
+          { label: "Virtual", value: `${virtualPct}%`, color: C.green },
         ].map(k => (
-          <div key={k.label} className="rounded-xl border p-3 space-y-1">
-            <div className="text-2xl font-black tabular-nums" style={{ color: k.color }}>{k.value}<span className="text-sm font-semibold ml-0.5">{k.unit}</span></div>
+          <div key={k.label} className="rounded-lg border p-2.5 space-y-0.5">
+            <div className="text-xl font-black tabular-nums" style={{ color: k.color }}>{k.value}</div>
             <div className="text-xs text-muted-foreground">{k.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      {/* Filters + legend */}
+      <div className="flex flex-wrap items-center gap-2">
         <Select value={filterVendor} onValueChange={setFilterVendor}>
-          <SelectTrigger className="h-8 text-xs w-44"><SelectValue placeholder="All Vendors" /></SelectTrigger>
+          <SelectTrigger className="h-7 text-xs w-36"><SelectValue placeholder="All Vendors" /></SelectTrigger>
           <SelectContent>
             {vendors.map(v => <SelectItem key={v} value={v} className="text-xs">{v === "all" ? "All Vendors" : v}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={filterTrack} onValueChange={setFilterTrack}>
-          <SelectTrigger className="h-8 text-xs w-44"><SelectValue placeholder="All Tracks" /></SelectTrigger>
+          <SelectTrigger className="h-7 text-xs w-40"><SelectValue placeholder="All Tracks" /></SelectTrigger>
           <SelectContent>
             {tracks.map(t => <SelectItem key={t} value={t} className="text-xs">{t === "all" ? "All Tracks" : t}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
-
-      {/* Vendor legend */}
-      <div className="flex flex-wrap gap-3">
+        <div className="flex-1" />
         {Object.entries(VENDOR_COLORS).map(([v, col]) => (
-          <div key={v} className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ background: col }} />
+          <div key={v} className="flex items-center gap-1">
+            <div className="w-2 h-2 rounded-full" style={{ background: col }} />
             <span className="text-xs text-muted-foreground">{v}</span>
           </div>
         ))}
       </div>
 
-      {/* Month-grouped timeline */}
-      <div className="space-y-6">
-        {MONTHS_2026.map(month => {
-          const monthEvents = filtered.filter(e => e.date.startsWith(month.key));
-          if (monthEvents.length === 0) return null;
-          return (
-            <div key={month.key}>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="px-3 py-1 rounded-full text-xs font-bold"
-                  style={{ background: `${C.blue}12`, color: C.blue }}>{month.label}</div>
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-xs text-muted-foreground">{monthEvents.length} event{monthEvents.length > 1 ? "s" : ""}</span>
+      {/* Compact monthly calendar grid */}
+      <div className="rounded-xl border overflow-hidden">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-muted/40 border-b">
+              <th className="text-left text-xs font-bold px-3 py-2 w-16 text-muted-foreground">Month</th>
+              <th className="text-left text-xs font-bold px-3 py-2 text-muted-foreground">Events</th>
+            </tr>
+          </thead>
+          <tbody>
+            {MONTHS_2026.map((month, mi) => {
+              const monthEvents = filtered.filter(e => e.date.startsWith(month.key));
+              if (monthEvents.length === 0) return null;
+              return (
+                <tr key={month.key} className={cn("border-b last:border-0", mi % 2 === 0 ? "bg-background" : "bg-muted/20")}>
+                  <td className="px-3 py-2 align-top">
+                    <div className="text-xs font-bold text-muted-foreground whitespace-nowrap pt-0.5">{month.label}</div>
+                    <div className="text-xs text-muted-foreground">{monthEvents.length} event{monthEvents.length > 1 ? "s" : ""}</div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {monthEvents.map(ev => {
+                        const isSelected = selectedId === ev.id;
+                        const fillPct = Math.round((ev.enrolled / ev.seats) * 100);
+                        return (
+                          <button
+                            key={ev.id}
+                            onClick={() => setSelectedId(isSelected ? null : ev.id)}
+                            className="flex items-center gap-1.5 px-2 py-1 rounded-md border text-xs font-medium transition-all hover:shadow-sm text-left"
+                            style={{
+                              borderColor: isSelected ? ev.color : `${ev.color}40`,
+                              background: isSelected ? `${ev.color}15` : `${ev.color}08`,
+                              color: isSelected ? ev.color : "var(--foreground)",
+                            }}
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color }} />
+                            <span className="max-w-[160px] truncate">{ev.title}</span>
+                            <span className="text-muted-foreground flex-shrink-0">{fmtDate(ev.date)}</span>
+                            {ev.format === "Virtual" && <Monitor size={10} className="text-muted-foreground flex-shrink-0" />}
+                            {ev.format === "In-Person" && <MapPin size={10} className="text-muted-foreground flex-shrink-0" />}
+                            {ev.format === "Hybrid" && <Layers size={10} className="text-muted-foreground flex-shrink-0" />}
+                            <span className="tabular-nums text-muted-foreground flex-shrink-0">{fillPct}%</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Detail panel — shows when a pill is selected */}
+      {selected && (
+        <div className="rounded-xl border p-4 space-y-3 transition-all" style={{ borderColor: `${selected.color}40`, background: `${selected.color}06` }}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: `${selected.color}20`, color: selected.color }}>{selected.vendor}</span>
+                <span className="px-1.5 py-0.5 rounded text-xs font-semibold" style={{ background: `${levelColors[selected.level]}15`, color: levelColors[selected.level] }}>{selected.level}</span>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  {selected.format === "Virtual" && <><Monitor size={11} /> Virtual</>}
+                  {selected.format === "In-Person" && <><MapPin size={11} /> In-Person</>}
+                  {selected.format === "Hybrid" && <><Layers size={11} /> Hybrid</>}
+                </span>
+                <span className="text-xs text-muted-foreground">{selected.track}</span>
               </div>
-              <div className="grid md:grid-cols-2 gap-3">
-                {monthEvents.map(ev => (
-                  <TrainingCard
-                    key={ev.id}
-                    ev={ev}
-                    expanded={expandedId === ev.id}
-                    onToggle={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
-                  />
-                ))}
+              <div className="font-bold text-base">{selected.title}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                {fmtDate(selected.date)} – {fmtDate(selected.endDate)} &nbsp;·&nbsp; {Math.round((new Date(selected.endDate).getTime() - new Date(selected.date).getTime()) / 86400000) + 1} days
               </div>
             </div>
-          );
-        })}
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-sm text-muted-foreground">No training events match the selected filters.</div>
-        )}
-      </div>
+            <div className="text-right flex-shrink-0">
+              <div className="text-2xl font-black tabular-nums" style={{ color: selected.color }}>{Math.round((selected.enrolled / selected.seats) * 100)}%</div>
+              <div className="text-xs text-muted-foreground">{selected.enrolled}/{selected.seats} enrolled</div>
+            </div>
+          </div>
+
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${Math.round((selected.enrolled / selected.seats) * 100)}%`, background: selected.color }} />
+          </div>
+
+          <p className="text-xs text-muted-foreground leading-relaxed">{selected.description}</p>
+
+          <div className="flex items-start gap-2">
+            <Award size={12} style={{ color: selected.color }} className="mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="text-xs font-semibold">Certification Earned</div>
+              <div className="text-xs text-muted-foreground">{selected.certificationEarned}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {filtered.length === 0 && (
+        <div className="text-center py-8 text-sm text-muted-foreground">No training events match the selected filters.</div>
+      )}
     </div>
   );
 }
