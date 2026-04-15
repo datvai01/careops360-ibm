@@ -289,7 +289,6 @@ function OverviewSection() {
         <KpiTile label="Records in Queue"        value="1,620"   sub="awaiting validation"   trend="124 new today" trendDir="neutral" color={C.amber}  />
         <KpiTile label="Failed Records"          value="500"     sub="hard failures"          trend="-12 from peak" trendDir="up"      color={C.red}    />
         <KpiTile label="SLA Compliance"          value="97.3%"   sub="within SLA window"      trend="+0.5% WoW"    trendDir="up"      color={C.green}  />
-        <KpiTile label="Syndication Success"     value="95.8%"   sub="downstream sync rate"   trend="API cache down" trendDir="down"   color={C.amber}  />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1432,8 +1431,6 @@ export default function EnrollmentIntelligence() {
     { id: "overview",            label: "Overview",            icon: Activity  },
     { id: "member-demographics", label: "Member Demographics", icon: Users     },
     { id: "ops",                 label: "Operations Command",  icon: Users     },
-    { id: "syndication",         label: "Syndication",         icon: GitBranch },
-    { id: "reconciliation",      label: "Reconciliation",      icon: RefreshCw },
   ];
 
   return (
@@ -1515,8 +1512,6 @@ export default function EnrollmentIntelligence() {
         <TabsContent value="overview"             className="mt-6"><OverviewSection /></TabsContent>
         <TabsContent value="member-demographics"  className="mt-6"><MemberDemographicsSection /></TabsContent>
         <TabsContent value="ops"                  className="mt-6"><OpsCommandSection /></TabsContent>
-        <TabsContent value="syndication"          className="mt-6"><SyndicationSection /></TabsContent>
-        <TabsContent value="reconciliation"       className="mt-6"><ReconciliationSection /></TabsContent>
       </Tabs>
 
       {/* Floating Copilot */}
