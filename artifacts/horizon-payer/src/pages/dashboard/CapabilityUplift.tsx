@@ -58,6 +58,12 @@ import {
   Cpu,
   AlertCircle,
   Info,
+  CalendarDays,
+  MapPin,
+  Monitor,
+  BookOpen,
+  GraduationCap,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -161,6 +167,225 @@ const VALUE_IMPACT = [
   { cap: "Integration",   metric: "Partner Onboarding Speed",    value: "$2.1M",   color: C.orange },
   { cap: "Domain Skills", metric: "Compliance & Accuracy",       value: "$0.8M",   color: C.green },
   { cap: "Automation",    metric: "70% Manual Work Eliminated",  value: "$9.7M",   color: "#da1e28" },
+];
+
+/* ─────────────────────── TRAINING CALENDAR DATA ─────────────────────── */
+
+type TrainingEvent = {
+  id: string;
+  title: string;
+  vendor: string;
+  track: string;
+  date: string;          // ISO yyyy-mm-dd
+  endDate: string;       // ISO yyyy-mm-dd
+  format: "Virtual" | "In-Person" | "Hybrid";
+  seats: number;
+  enrolled: number;
+  level: "Foundational" | "Associate" | "Professional" | "Expert";
+  color: string;
+  description: string;
+  certificationEarned: string;
+};
+
+const TRAINING_EVENTS: TrainingEvent[] = [
+  {
+    id: "t01",
+    title: "IBM AIOps Fundamentals",
+    vendor: "IBM",
+    track: "AIOps",
+    date: "2026-05-05",
+    endDate: "2026-05-07",
+    format: "Virtual",
+    seats: 40,
+    enrolled: 34,
+    level: "Foundational",
+    color: "#0f62fe",
+    description: "Foundational training on IBM Watson AIOps — event correlation, alert deduplication, and AI-driven incident management for ops teams.",
+    certificationEarned: "IBM AIOps Foundations Badge",
+  },
+  {
+    id: "t02",
+    title: "AWS Generative AI Practitioner",
+    vendor: "AWS",
+    track: "AI / GenAI",
+    date: "2026-05-19",
+    endDate: "2026-05-21",
+    format: "Virtual",
+    seats: 50,
+    enrolled: 47,
+    level: "Foundational",
+    color: "#ff9900",
+    description: "AWS Gen AI Practitioner certification prep — large language models, prompt engineering, Amazon Bedrock, and responsible AI practices.",
+    certificationEarned: "AWS Certified AI Practitioner (AIF-C01)",
+  },
+  {
+    id: "t03",
+    title: "BOB (Bedrock Onboarding Bootcamp)",
+    vendor: "AWS / IBM",
+    track: "AI / GenAI",
+    date: "2026-06-02",
+    endDate: "2026-06-04",
+    format: "In-Person",
+    seats: 30,
+    enrolled: 28,
+    level: "Associate",
+    color: "#8a3ffc",
+    description: "Intensive 3-day hands-on bootcamp covering Amazon Bedrock architecture, model customisation, RAG implementation, and GenAI application deployment on AWS.",
+    certificationEarned: "AWS Bedrock Practitioner Badge",
+  },
+  {
+    id: "t04",
+    title: "Databricks Data Engineering Associate",
+    vendor: "Databricks",
+    track: "Data & Analytics",
+    date: "2026-06-16",
+    endDate: "2026-06-18",
+    format: "Virtual",
+    seats: 35,
+    enrolled: 29,
+    level: "Associate",
+    color: "#ff3621",
+    description: "Databricks Certified Associate Developer — Delta Lake, Apache Spark, streaming pipelines, Unity Catalog, and medallion architecture for healthcare data.",
+    certificationEarned: "Databricks Certified Data Engineer Associate",
+  },
+  {
+    id: "t05",
+    title: "Snowflake SnowPro Core",
+    vendor: "Snowflake",
+    track: "Data & Analytics",
+    date: "2026-07-07",
+    endDate: "2026-07-09",
+    format: "Virtual",
+    seats: 30,
+    enrolled: 22,
+    level: "Associate",
+    color: "#29b5e8",
+    description: "SnowPro Core certification prep — Snowflake architecture, virtual warehouses, data sharing, performance tuning, and security for enterprise workloads.",
+    certificationEarned: "Snowflake SnowPro Core Certification",
+  },
+  {
+    id: "t06",
+    title: "IBM AIOps Advanced — Instana & Turbonomic",
+    vendor: "IBM",
+    track: "AIOps",
+    date: "2026-07-21",
+    endDate: "2026-07-23",
+    format: "Hybrid",
+    seats: 25,
+    enrolled: 19,
+    level: "Professional",
+    color: "#0f62fe",
+    description: "Advanced AIOps engineering — IBM Instana full-stack observability, Turbonomic resource optimisation, and automated remediation workflow design.",
+    certificationEarned: "IBM Certified Specialist – AIOps",
+  },
+  {
+    id: "t07",
+    title: "Databricks Machine Learning Professional",
+    vendor: "Databricks",
+    track: "AI / GenAI",
+    date: "2026-08-11",
+    endDate: "2026-08-13",
+    format: "Virtual",
+    seats: 25,
+    enrolled: 18,
+    level: "Professional",
+    color: "#ff3621",
+    description: "ML engineering on Databricks — MLflow, Feature Store, model serving, model monitoring, and AutoML for healthcare prediction workloads.",
+    certificationEarned: "Databricks Certified ML Professional",
+  },
+  {
+    id: "t08",
+    title: "AWS Gen AI Advanced — Bedrock Fine-Tuning",
+    vendor: "AWS",
+    track: "AI / GenAI",
+    date: "2026-09-01",
+    endDate: "2026-09-03",
+    format: "Virtual",
+    seats: 20,
+    enrolled: 16,
+    level: "Professional",
+    color: "#ff9900",
+    description: "Advanced Amazon Bedrock — fine-tuning foundation models, knowledge bases, agents, guardrails, and enterprise GenAI application patterns.",
+    certificationEarned: "AWS Generative AI Engineer Badge",
+  },
+  {
+    id: "t09",
+    title: "Snowflake SnowPro Advanced — Data Engineering",
+    vendor: "Snowflake",
+    track: "Data & Analytics",
+    date: "2026-09-22",
+    endDate: "2026-09-23",
+    format: "Virtual",
+    seats: 20,
+    enrolled: 11,
+    level: "Expert",
+    color: "#29b5e8",
+    description: "SnowPro Advanced specialisation — data engineering patterns, Snowpark, dynamic tables, Cortex AI functions, and Horizon governance at scale.",
+    certificationEarned: "Snowflake SnowPro Advanced: Data Engineer",
+  },
+  {
+    id: "t10",
+    title: "IBM AIOps Expert — Self-Healing Systems",
+    vendor: "IBM",
+    track: "AIOps",
+    date: "2026-10-13",
+    endDate: "2026-10-15",
+    format: "In-Person",
+    seats: 20,
+    enrolled: 14,
+    level: "Expert",
+    color: "#0f62fe",
+    description: "Expert-level self-healing operations design — runbook automation at scale, AI-driven root-cause analysis, and autonomous remediation architecture for enterprise environments.",
+    certificationEarned: "IBM Certified Expert – Autonomous Ops",
+  },
+  {
+    id: "t11",
+    title: "Databricks Gen AI Engineering",
+    vendor: "Databricks",
+    track: "AI / GenAI",
+    date: "2026-11-03",
+    endDate: "2026-11-05",
+    format: "Virtual",
+    seats: 30,
+    enrolled: 20,
+    level: "Professional",
+    color: "#ff3621",
+    description: "GenAI application engineering on Databricks — LLM fine-tuning with Mosaic AI, RAG pipelines with Vector Search, compound AI systems, and production deployment.",
+    certificationEarned: "Databricks Certified GenAI Engineer",
+  },
+  {
+    id: "t12",
+    title: "BOB Advanced — Enterprise GenAI Architecture",
+    vendor: "AWS / IBM",
+    track: "AI / GenAI",
+    date: "2026-11-17",
+    endDate: "2026-11-19",
+    format: "Hybrid",
+    seats: 25,
+    enrolled: 17,
+    level: "Expert",
+    color: "#8a3ffc",
+    description: "Advanced BOB — multi-agent orchestration, enterprise GenAI governance, cross-cloud LLM deployment strategies, and responsible AI frameworks for regulated industries.",
+    certificationEarned: "Enterprise GenAI Architect Certificate",
+  },
+];
+
+const VENDOR_COLORS: Record<string, string> = {
+  IBM: "#0f62fe",
+  AWS: "#ff9900",
+  "AWS / IBM": "#8a3ffc",
+  Databricks: "#ff3621",
+  Snowflake: "#29b5e8",
+};
+
+const MONTHS_2026 = [
+  { key: "2026-05", label: "May 2026" },
+  { key: "2026-06", label: "Jun 2026" },
+  { key: "2026-07", label: "Jul 2026" },
+  { key: "2026-08", label: "Aug 2026" },
+  { key: "2026-09", label: "Sep 2026" },
+  { key: "2026-10", label: "Oct 2026" },
+  { key: "2026-11", label: "Nov 2026" },
 ];
 
 /* ─────────────────────── HELPERS ─────────────────────── */
@@ -436,6 +661,189 @@ function WorkforceTransformation() {
 
 
 
+/* ─────────────────────── TRAINING CALENDAR ─────────────────────── */
+
+function LevelBadge({ level }: { level: TrainingEvent["level"] }) {
+  const map: Record<string, { bg: string; color: string }> = {
+    Foundational: { bg: "#24a14815", color: "#24a148" },
+    Associate:    { bg: "#0f62fe15", color: "#0f62fe" },
+    Professional: { bg: "#8a3ffc15", color: "#8a3ffc" },
+    Expert:       { bg: "#da1e2815", color: "#da1e28" },
+  };
+  const s = map[level] || map.Associate;
+  return (
+    <span className="px-1.5 py-0.5 rounded text-xs font-semibold" style={{ background: s.bg, color: s.color }}>{level}</span>
+  );
+}
+
+function FormatIcon({ format }: { format: TrainingEvent["format"] }) {
+  if (format === "Virtual") return <Monitor size={12} className="text-muted-foreground" />;
+  if (format === "In-Person") return <MapPin size={12} className="text-muted-foreground" />;
+  return <Layers size={12} className="text-muted-foreground" />;
+}
+
+function TrainingCard({ ev, expanded, onToggle }: { ev: TrainingEvent; expanded: boolean; onToggle: () => void }) {
+  const start = new Date(ev.date);
+  const end = new Date(ev.endDate);
+  const days = Math.round((end.getTime() - start.getTime()) / 86400000) + 1;
+  const fillPct = Math.round((ev.enrolled / ev.seats) * 100);
+  const spotsLeft = ev.seats - ev.enrolled;
+
+  const dayLabel = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const endLabel = end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return (
+    <div
+      className="rounded-xl border transition-all hover:shadow-md cursor-pointer"
+      style={{ borderLeft: `3px solid ${ev.color}` }}
+      onClick={onToggle}
+    >
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: `${ev.color}18`, color: ev.color }}>{ev.vendor}</span>
+              <LevelBadge level={ev.level} />
+              <span className="flex items-center gap-1 text-xs text-muted-foreground"><FormatIcon format={ev.format} />{ev.format}</span>
+            </div>
+            <div className="font-semibold text-sm leading-snug">{ev.title}</div>
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CalendarDays size={11} />{dayLabel} – {endLabel} · {days}d
+              </span>
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <GraduationCap size={11} />{ev.track}
+              </span>
+            </div>
+          </div>
+          <div className="flex-shrink-0 text-right">
+            <div className="text-lg font-black tabular-nums" style={{ color: ev.color }}>{fillPct}%</div>
+            <div className="text-xs text-muted-foreground">{spotsLeft} spots left</div>
+          </div>
+        </div>
+
+        {/* Enrollment bar */}
+        <div className="mt-3 flex items-center gap-2">
+          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${fillPct}%`, background: ev.color }} />
+          </div>
+          <span className="text-xs text-muted-foreground tabular-nums">{ev.enrolled}/{ev.seats}</span>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="px-4 pb-4 border-t bg-muted/20 space-y-3 pt-3">
+          <p className="text-xs text-muted-foreground leading-relaxed">{ev.description}</p>
+          <div className="flex items-start gap-2">
+            <Award size={12} style={{ color: ev.color }} className="mt-0.5 flex-shrink-0" />
+            <div>
+              <div className="text-xs font-semibold">Certification Earned</div>
+              <div className="text-xs text-muted-foreground">{ev.certificationEarned}</div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TrainingCalendar() {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [filterVendor, setFilterVendor] = useState("all");
+  const [filterTrack, setFilterTrack]   = useState("all");
+
+  const vendors = ["all", ...Array.from(new Set(TRAINING_EVENTS.map(e => e.vendor)))];
+  const tracks  = ["all", ...Array.from(new Set(TRAINING_EVENTS.map(e => e.track)))];
+
+  const filtered = TRAINING_EVENTS.filter(e =>
+    (filterVendor === "all" || e.vendor === filterVendor) &&
+    (filterTrack  === "all" || e.track  === filterTrack)
+  );
+
+  const totalSeats    = TRAINING_EVENTS.reduce((s, e) => s + e.seats, 0);
+  const totalEnrolled = TRAINING_EVENTS.reduce((s, e) => s + e.enrolled, 0);
+  const virtualPct    = Math.round((TRAINING_EVENTS.filter(e => e.format === "Virtual").length / TRAINING_EVENTS.length) * 100);
+  const certCount     = TRAINING_EVENTS.length;
+
+  return (
+    <div className="space-y-5">
+      <SectionHeader icon={CalendarDays} title="Training Calendar" sub="Upcoming IBM, AWS, Databricks & Snowflake certification programmes — May through November 2026" color={C.teal} />
+
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Programmes Scheduled", value: certCount, unit: "", color: C.blue },
+          { label: "Total Seats", value: totalSeats, unit: "", color: C.teal },
+          { label: "Enrolled", value: totalEnrolled, unit: `/ ${totalSeats}`, color: C.purple },
+          { label: "Delivered Virtually", value: virtualPct, unit: "%", color: C.green },
+        ].map(k => (
+          <div key={k.label} className="rounded-xl border p-3 space-y-1">
+            <div className="text-2xl font-black tabular-nums" style={{ color: k.color }}>{k.value}<span className="text-sm font-semibold ml-0.5">{k.unit}</span></div>
+            <div className="text-xs text-muted-foreground">{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-2">
+        <Select value={filterVendor} onValueChange={setFilterVendor}>
+          <SelectTrigger className="h-8 text-xs w-44"><SelectValue placeholder="All Vendors" /></SelectTrigger>
+          <SelectContent>
+            {vendors.map(v => <SelectItem key={v} value={v} className="text-xs">{v === "all" ? "All Vendors" : v}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterTrack} onValueChange={setFilterTrack}>
+          <SelectTrigger className="h-8 text-xs w-44"><SelectValue placeholder="All Tracks" /></SelectTrigger>
+          <SelectContent>
+            {tracks.map(t => <SelectItem key={t} value={t} className="text-xs">{t === "all" ? "All Tracks" : t}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Vendor legend */}
+      <div className="flex flex-wrap gap-3">
+        {Object.entries(VENDOR_COLORS).map(([v, col]) => (
+          <div key={v} className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ background: col }} />
+            <span className="text-xs text-muted-foreground">{v}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Month-grouped timeline */}
+      <div className="space-y-6">
+        {MONTHS_2026.map(month => {
+          const monthEvents = filtered.filter(e => e.date.startsWith(month.key));
+          if (monthEvents.length === 0) return null;
+          return (
+            <div key={month.key}>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="px-3 py-1 rounded-full text-xs font-bold"
+                  style={{ background: `${C.blue}12`, color: C.blue }}>{month.label}</div>
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">{monthEvents.length} event{monthEvents.length > 1 ? "s" : ""}</span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-3">
+                {monthEvents.map(ev => (
+                  <TrainingCard
+                    key={ev.id}
+                    ev={ev}
+                    expanded={expandedId === ev.id}
+                    onToggle={() => setExpandedId(expandedId === ev.id ? null : ev.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-sm text-muted-foreground">No training events match the selected filters.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────────────── PAGE ─────────────────────── */
 
 export default function CapabilityUplift() {
@@ -451,8 +859,8 @@ export default function CapabilityUplift() {
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: C.purple }} />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">IBM Delivery Capability</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Capability Uplift & AI Readiness</h1>
-          <p className="text-muted-foreground mt-1">How IBM capability evolution directly enables Horizon transformation outcomes</p>
+          <h1 className="text-3xl font-bold tracking-tight">Skills & Enablement</h1>
+          <p className="text-muted-foreground mt-1">How IBM capability evolution and structured training directly enables Horizon transformation outcomes</p>
         </div>
       </div>
 
@@ -460,6 +868,7 @@ export default function CapabilityUplift() {
       <ExecSummary />
       <MaturityProgression />
       <CapabilityTable />
+      <TrainingCalendar />
       <WorkforceTransformation />
     </div>
   );
