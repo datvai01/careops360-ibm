@@ -55,13 +55,10 @@ import {
   CheckCircle2,
   Clock,
   Target,
-  Layers,
   Cpu,
   AlertCircle,
   Info,
   CalendarDays,
-  MapPin,
-  Monitor,
   BookOpen,
   GraduationCap,
   ExternalLink,
@@ -182,7 +179,7 @@ type TrainingEvent = {
   format: "Virtual" | "In-Person" | "Hybrid";
   seats: number;
   enrolled: number;
-  level: "Foundational" | "Associate" | "Professional" | "Expert";
+  level: "Essentials" | "Associate" | "Professional" | "Expert";
   color: string;
   description: string;
   certificationEarned: string;
@@ -199,7 +196,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
     format: "Virtual",
     seats: 40,
     enrolled: 34,
-    level: "Foundational",
+    level: "Essentials",
     color: "#0f62fe",
     description: "Foundational training on IBM Watson AIOps — event correlation, alert deduplication, and AI-driven incident management for ops teams.",
     certificationEarned: "IBM AIOps Foundations Badge",
@@ -214,7 +211,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
     format: "Virtual",
     seats: 50,
     enrolled: 47,
-    level: "Foundational",
+    level: "Essentials",
     color: "#ff9900",
     description: "AWS Gen AI Practitioner certification prep — large language models, prompt engineering, Amazon Bedrock, and responsible AI practices.",
     certificationEarned: "AWS Certified AI Practitioner (AIF-C01)",
@@ -379,7 +376,7 @@ const TRAINING_EVENTS: TrainingEvent[] = [
     format: "Virtual",
     seats: 30,
     enrolled: 24,
-    level: "Foundational",
+    level: "Essentials",
     color: "#00b388",
     description: "Tricentis Tosca Fundamentals — model-based test automation, test case design, linear execution lists, and test data management for enterprise applications and claims processing systems.",
     certificationEarned: "Tricentis Tosca AS1 Certification",
@@ -726,13 +723,11 @@ function TrainingCalendar() {
     (filterTrack  === "all" || e.track  === filterTrack)
   );
 
-  const totalSeats    = TRAINING_EVENTS.reduce((s, e) => s + e.seats, 0);
-  const totalEnrolled = TRAINING_EVENTS.reduce((s, e) => s + e.enrolled, 0);
-  const certCount     = TRAINING_EVENTS.length;
-  const virtualPct    = Math.round((TRAINING_EVENTS.filter(e => e.format === "Virtual").length / certCount) * 100);
+  const totalSeats = TRAINING_EVENTS.reduce((s, e) => s + e.seats, 0);
+  const certCount  = TRAINING_EVENTS.length;
 
   const levelColors: Record<string, string> = {
-    Foundational: "#24a148", Associate: "#0f62fe", Professional: "#8a3ffc", Expert: "#da1e28",
+    Essentials: "#24a148", Associate: "#0f62fe", Professional: "#8a3ffc", Expert: "#da1e28",
   };
 
   return (
@@ -740,12 +735,11 @@ function TrainingCalendar() {
       <SectionHeader icon={CalendarDays} title="Bootcamp & Learning Calendar" sub="Upcoming bootcamps and lunch & learns — May through November 2026" color={C.teal} />
 
       {/* KPI strip */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {[
           { label: "Programmes", value: String(certCount), color: C.blue },
           { label: "Total Seats", value: String(totalSeats), color: C.teal },
-          { label: "Enrolled", value: `${totalEnrolled}`, color: C.purple },
-          { label: "Virtual", value: `${virtualPct}%`, color: C.green },
+          { label: "Delivery Mode", value: "100% Virtual", color: C.green },
         ].map(k => (
           <div key={k.label} className="rounded-lg border p-2.5 space-y-0.5">
             <div className="text-xl font-black tabular-nums" style={{ color: k.color }}>{k.value}</div>
@@ -799,7 +793,6 @@ function TrainingCalendar() {
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1.5">
                       {monthEvents.map(ev => {
-                        const fillPct = Math.round((ev.enrolled / ev.seats) * 100);
                         const days = Math.round((new Date(ev.endDate).getTime() - new Date(ev.date).getTime()) / 86400000) + 1;
                         return (
                           <Tooltip key={ev.id} delayDuration={100}>
@@ -813,12 +806,8 @@ function TrainingCalendar() {
                                 }}
                               >
                                 <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: ev.color }} />
-                                <span className="max-w-[160px] truncate">{ev.title}</span>
+                                <span>{ev.title}</span>
                                 <span className="text-muted-foreground flex-shrink-0">{fmtDate(ev.date)}</span>
-                                {ev.format === "Virtual" && <Monitor size={10} className="text-muted-foreground flex-shrink-0" />}
-                                {ev.format === "In-Person" && <MapPin size={10} className="text-muted-foreground flex-shrink-0" />}
-                                {ev.format === "Hybrid" && <Layers size={10} className="text-muted-foreground flex-shrink-0" />}
-                                <span className="tabular-nums text-muted-foreground flex-shrink-0">{fillPct}%</span>
                               </div>
                             </TooltipTrigger>
                             <TooltipContent side="top" align="start" className="p-0 overflow-hidden max-w-xs bg-background text-foreground border border-border shadow-xl rounded-xl" sideOffset={6}>
@@ -828,21 +817,10 @@ function TrainingCalendar() {
                                   <div className="flex items-center gap-1.5 flex-wrap mb-1">
                                     <span className="text-xs font-bold px-1.5 py-0.5 rounded" style={{ background: `${ev.color}25`, color: ev.color }}>{ev.vendor}</span>
                                     <span className="text-xs font-semibold px-1.5 py-0.5 rounded" style={{ background: `${levelColors[ev.level]}20`, color: levelColors[ev.level] }}>{ev.level}</span>
-                                    <span className="text-xs text-muted-foreground">{ev.format}</span>
                                   </div>
                                   <div className="font-semibold text-sm leading-snug">{ev.title}</div>
                                   <div className="text-xs text-muted-foreground mt-0.5">
                                     {fmtDate(ev.date)} – {fmtDate(ev.endDate)} · {days}d · {ev.track}
-                                  </div>
-                                </div>
-                                {/* Enrollment bar */}
-                                <div className="space-y-1">
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground">Enrollment</span>
-                                    <span className="font-semibold tabular-nums" style={{ color: ev.color }}>{ev.enrolled}/{ev.seats} ({fillPct}%)</span>
-                                  </div>
-                                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                                    <div className="h-full rounded-full" style={{ width: `${fillPct}%`, background: ev.color }} />
                                   </div>
                                 </div>
                                 {/* Description */}
