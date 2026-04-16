@@ -220,29 +220,34 @@ const doc = new Document({
       ),
 
       H2("The Moment"),
-      BODY("Horizon BCBS manages approximately 500+ applications spanning enrollment, claims adjudication, member services, and data platforms. The incumbent delivery model \u2014 reactive, labor-intensive, and fragmented across towers \u2014 is no longer sufficient to meet Horizon\u2019s growth objectives, competitive imperatives, or the expectations of its 3.7 million members."),
-      BODY("Horizon is not looking for a faster version of today. Horizon is looking for a fundamentally different operating model \u2014 one where AI is the engine, quality is continuous, delivery is zero-touch, and every operational metric connects to a member, a provider, or a patient."),
+      BODY("Horizon BCBS manages approximately 1,000 applications spanning enrollment, claims adjudication, member services, provider operations, and data platforms. The organization faces mounting pressure to modernize operations, reduce administrative burden, and deliver measurably better member and provider experiences \u2014 while managing the complexity of an enterprise-scale portfolio that touches every aspect of the payer value chain."),
+      BODY("The incumbent delivery model \u2014 reactive, labor-intensive, and fragmented across towers \u2014 is no longer sufficient to meet Horizon\u2019s growth objectives, competitive imperatives, or the expectations of its 3.7 million members. Horizon is not looking for a faster version of today. Horizon is looking for a fundamentally different operating model \u2014 one where AI is the engine, quality is continuous, delivery is zero-touch, and every operational metric connects to a member, a provider, or a patient."),
 
       H2("What IBM Proposes"),
       BODY("IBM proposes a structured transition from reactive application support to a predictive, self-healing, continuously improving AI-first operating model \u2014 delivered through IBM\u2019s proven Assets, Assistants, and Accelerators framework, and governed through an outcome-based accountability model that ties IBM\u2019s performance directly to Horizon\u2019s business results."),
+      BODY("This is not a staffing proposal. IBM is proposing a transformation partnership that embeds AI-driven intelligence into the operating model of Horizon BCBS \u2014 enabling a future-ready enterprise that is faster, smarter, and more resilient than today. IBM\u2019s delivery model is built to compound value over time: every sprint, every resolved incident, and every automated test strengthens the foundation for what comes next."),
 
       H2("Five Strategic Commitments"),
-      BULL("AI-First Operating Model \u2014 AI embedded across every layer of development, quality, and operations. Not bolted on. Built in."),
-      BULL("Tech Arbitrage over Labor Arbitrage \u2014 Compressing cost through automation and intelligence, not headcount."),
-      BULL("Outcome-Based Delivery \u2014 Committed SLAs tied to measurable business outcomes. IBM\u2019s success is Horizon\u2019s success."),
-      BULL("Zero-Disruption Transition \u2014 Risk-free phased delivery protecting operational continuity from Day 1."),
-      BULL("Agentic by Core \u2014 AI agents that detect, triage, diagnose, resolve, and learn \u2014 compounding intelligence with every incident."),
+      BULL("AI-First Operating Model \u2014 AI embedded across every layer of development, quality, and operations. Not bolted on. Built in. Every engineer, every tester, every operator works with AI as a partner."),
+      BULL("Tech Arbitrage over Labor Arbitrage \u2014 Compressing cost through automation and intelligence, not headcount. The savings are structural and permanent."),
+      BULL("Outcome-Based Delivery \u2014 Committed SLAs tied to measurable business outcomes. IBM\u2019s success is Horizon\u2019s success. Targets missed trigger IBM remediation \u2014 not rate renegotiations."),
+      BULL("Zero-Disruption Transition \u2014 Risk-free phased delivery protecting operational continuity from Day 1. No production disruption. No member impact. No learning curve at Horizon\u2019s expense."),
+      BULL("Agentic by Core \u2014 AI agents that detect, triage, diagnose, resolve, and learn \u2014 compounding intelligence with every incident. The system gets smarter every day without manual intervention."),
 
+      GAP(6),
       H2("IBM\u2019s Scale Behind This Proposal"),
       BULL("20,000+ AI & data practitioners globally."),
       BULL("81,000+ cloud & architecture experts across IBM Consulting."),
       BULL("40,000+ AI & analytics engagements delivered for global clients."),
       BULL("15,000+ delivery professionals across 40 global delivery centers."),
+      BULL("9 of the top 10 US health payers served by IBM Consulting."),
+      BULL("Leader in Enterprise Software Quality & Testing."),
+      BULL("Enterprise partnerships with AWS, Salesforce, and IBM Technology."),
       BULL("IBM\u2019s Client-0 AI programme saved IBM approximately $3.4B USD \u2014 the same model applied here."),
 
-      GAP(8),
+      GAP(10),
       STAT([
-        ["500+",      "Applications in Scope",    C.blue  ],
+        ["~1,000",    "Applications in Scope",    C.blue  ],
         ["Day 1",     "Efficiencies & Cost Takeout", C.azure ],
         ["24\u00D77", "Global AIOps Coverage",    C.teal  ],
         ["AI-First",  "Agentic by Core",          C.purp  ],
@@ -254,34 +259,39 @@ const doc = new Document({
       // ================================================================
       ...SEC("02", "The Delivery Imperative", "Why Horizon Needs a New Operating Model \u2014 and Why Now"),
 
+      ...Q(
+        "The question is not whether Horizon can afford to transform. The question is whether Horizon can afford not to \u2014 when every delayed claim is a member who loses trust, and every manual process is a cost that compounds.",
+        "IBM Consulting \u2014 Payer Strategy"
+      ),
+
       H2("What Horizon Needs"),
-      BODY("Horizon BCBS is seeking the right strategic partner to enhance and support its Application Development, Maintenance, Data, and Testing Services \u2014 with a clear focus on AI solutions and expertise native to the Horizon environment."),
+      BODY("Horizon BCBS is seeking the right strategic partner to enhance and support its Application Development, Maintenance, Data, and Testing Services \u2014 with a clear focus on AI solutions and expertise native to the Horizon environment. This is not a lift-and-shift of existing operations. This is a mandate to fundamentally improve how Horizon\u2019s ~1,000 applications are built, tested, maintained, and operated."),
 
       H2("Service Transformation Goals"),
-      BULL("High-quality services delivered through AI and automation to achieve operational efficiencies."),
-      BULL("Realization of a product-oriented operating model aligned to business domains."),
-      BULL("Focused automation \u2014 especially in testing and quality engineering \u2014 to measurably reduce cost."),
-      BULL("AI tools to drive Agile application modernization across the portfolio."),
-      BULL("Consultative support applying deep healthcare payer best practices."),
+      BULL("High-quality services delivered through AI and automation to achieve operational efficiencies across all AMS towers."),
+      BULL("Realization of a product-oriented operating model aligned to Horizon\u2019s business domains \u2014 Claims, Enrollment, Member, Provider, Data."),
+      BULL("Focused automation \u2014 especially in testing and quality engineering \u2014 to measurably reduce cost and accelerate delivery cadence."),
+      BULL("AI tools to drive Agile application modernization across the ~1,000-application portfolio."),
+      BULL("Consultative support applying deep healthcare payer best practices \u2014 not generic IT outsourcing patterns."),
 
       H2("Cost Structure Expectations"),
-      BODY("Horizon expects structural cost reduction \u2014 not just efficiency gains. The fixed baseline model signals a clear expectation: year-over-year productivity improvements and cost takeout driven by automation and AI, not rate arbitrage."),
+      BODY("Horizon expects structural cost reduction \u2014 not just efficiency gains. The fixed baseline model signals a clear expectation: year-over-year productivity improvements and cost takeout driven by automation and AI, not rate arbitrage. IBM\u2019s response is designed around technology-driven compression: every dollar saved through automation is a permanent reduction, not a temporary deferral."),
 
       H2("Factors That Shaped IBM\u2019s Solution"),
       H3("End-to-End Integrated Delivery"),
-      BODY("A unified operating model across Application Maintenance, Development, Testing, and Data \u2014 reducing fragmentation and improving accountability across the full lifecycle."),
+      BODY("A unified operating model across Application Maintenance, Development, Testing, and Data \u2014 reducing fragmentation and improving accountability across the full lifecycle. No tower silos. No handoff gaps. One team, one backlog, one set of outcomes."),
       H3("AI at the Core \u2014 Not Bolted On"),
-      BODY("AI is embedded in triage, root cause analysis, resolution, test automation, and continuous validation \u2014 from the first day of delivery."),
+      BODY("AI is embedded in triage, root cause analysis, resolution, test automation, and continuous validation \u2014 from the first day of delivery. IBM does not propose adding AI tools to an existing operating model. IBM proposes a new operating model where AI is the foundation."),
       H3("Transition Without Disruption"),
-      BODY("IBM\u2019s phased transition approach maintains seamless service continuity while progressively modernizing the underlying operating model."),
+      BODY("IBM\u2019s phased transition approach maintains seamless service continuity while progressively modernizing the underlying operating model. Zero production disruption. Zero member impact. Zero learning curve at Horizon\u2019s expense."),
       H3("Open, Elastic Architecture"),
-      BODY("Plug-and-play architecture deploys on Horizon\u2019s existing AWS stack \u2014 avoiding lock-in and enabling flexibility across cloud ecosystems."),
+      BODY("Plug-and-play architecture deploys on Horizon\u2019s existing AWS stack \u2014 avoiding lock-in and enabling flexibility across cloud ecosystems. Built for Horizon\u2019s technology choices, not IBM\u2019s."),
 
-      GAP(4),
+      GAP(6),
       ...Q("IBM\u2019s solution shifts Horizon from reactive incident management to predictive, autonomous operations \u2014 where the member never feels the friction and the provider never waits."),
 
       H2("Current State vs. IBM Target \u2014 Key Operational Metrics"),
-      BODY("All current-state estimates are directional and will be formally baselined during SOW phase. IBM\u2019s committed targets will be contractually agreed at programme commencement.", { sz: 9.5, c: C.g50, i: true, aft: 6 }),
+      BODY("All current-state estimates are directional and will be formally baselined during SOW phase. IBM\u2019s committed targets will be contractually agreed at programme commencement. See Appendix for the complete initiative portfolio.", { sz: 9.5, c: C.g50, i: true, aft: 6 }),
       TBL([
         new TableRow({ children: [HC("Operational Metric", W*0.36), HC("Current State", W*0.20), HC("IBM 12-Month Target", W*0.24), HC("Direction", W*0.20)] }),
         ...[ ["Test Automation Coverage",       "~25%",            "80%+",              "\u2191 +3\u00D7"],
@@ -313,20 +323,23 @@ const doc = new Document({
 
       H2("AI-Augmented Development Model"),
       BODY("IBM transforms Horizon\u2019s engineering model from a traditional project-centric approach to a modern, product-centric engineering organization \u2014 powered by IBM Consulting Advantage accelerators and reusable enterprise assets. AI is not an add-on to the development process. AI is the development process."),
+      BODY("Across Horizon\u2019s ~1,000-application estate, IBM\u2019s development model delivers measurable improvement in speed, quality, and cost \u2014 without adding headcount. The model is designed to compound: every sprint produces not just features, but better tooling, better patterns, and better institutional knowledge."),
 
       H3("AI-Assisted Development"),
-      BODY("Generative AI tools accelerate code generation, review, documentation, and optimization. Developer throughput increases 25\u201335% without adding headcount. Every engineer spends more time on high-value problem-solving and less on repetitive scaffolding."),
+      BODY("Generative AI tools accelerate code generation, review, documentation, and optimization. Developer throughput increases 25\u201335% without adding headcount. Every engineer spends more time on high-value problem-solving and less on repetitive scaffolding. IBM Consulting Advantage accelerators \u2014 a portfolio of 6,500+ production-tested assets \u2014 compress time-to-value for common patterns."),
       H3("DevSecOps Integration"),
-      BODY("Security is embedded left into CI/CD pipelines. Automated vulnerability scanning runs at every stage. Compliance gates and policy enforcement operate from commit to production \u2014 no manual security review bottlenecks."),
+      BODY("Security is embedded left into CI/CD pipelines. Automated vulnerability scanning runs at every stage. Compliance gates and policy enforcement operate from commit to production \u2014 no manual security review bottlenecks. HIPAA, CMS, and PCI compliance checks are automated, not manual."),
       H3("Domain-Aligned Product Squads"),
-      BODY("Teams align to Horizon\u2019s business domains \u2014 Claims, Enrollment, Member Services, Provider Operations. Context stays with the squad. Handoff overhead disappears. Accountability is end-to-end."),
+      BODY("Teams align to Horizon\u2019s business domains \u2014 Claims, Enrollment, Member Services, Provider Operations, Data & Analytics. Context stays with the squad. Handoff overhead disappears. Accountability is end-to-end. A claims developer understands claims \u2014 not just code."),
       H3("Risk-Scored Automated Releases"),
-      BODY("Every deployment passes through AI-scored gates: security posture, test coverage, performance regression, and historical failure patterns. Low-risk changes deploy without human approval cycles. High-risk changes trigger additional validation \u2014 automatically."),
-
-      GAP(4),
-      CALL("Target: 25\u201340% faster time to market across Horizon\u2019s application development portfolio within 12 months of full deployment."),
+      BODY("Every deployment passes through AI-scored gates: security posture, test coverage, performance regression, and historical failure patterns. Low-risk changes deploy without human approval cycles. High-risk changes trigger additional validation \u2014 automatically. The result: faster delivery with fewer production incidents."),
+      H3("Modernization in Stride"),
+      BODY("Modernization is not a separate capital programme. It is embedded into every sprint \u2014 a refactor, an API wrap, a library upgrade, a legacy dependency removed. The application estate improves continuously without a disruptive parallel programme or separate budget request."),
 
       GAP(6),
+      CALL("Target: 25\u201340% faster time to market across Horizon\u2019s application development portfolio within 12 months of full deployment."),
+
+      GAP(8),
       H2("Development Efficiency Gains"),
       BODY("Measured improvement vs. traditional delivery model at comparable payer engagements:", { sz: 9.5, c: C.g50, i: true, aft: 6 }),
       TBL([
@@ -357,23 +370,24 @@ const doc = new Document({
       ),
 
       H2("The Agentic AI Architecture"),
-      BODY("IBM\u2019s AIOps framework is built on a multi-agent architecture where specialized AI agents handle distinct responsibilities across the incident lifecycle \u2014 from detection through resolution and continuous learning. Each agent compounds knowledge with every resolved incident."),
+      BODY("IBM\u2019s AIOps framework is built on a multi-agent architecture where specialized AI agents handle distinct responsibilities across the incident lifecycle \u2014 from detection through resolution and continuous learning. Each agent compounds knowledge with every resolved incident. Across Horizon\u2019s ~1,000 applications, this architecture replaces reactive human triage with proactive, autonomous intelligence."),
+      BODY("The architecture is built on Horizon\u2019s existing AWS stack \u2014 AWS AgentCore & Bedrock at the agent layer, AWS Bedrock with native Guardrails at the model layer, ElasticSearch and PostgreSQL for vector storage, and integrations with ServiceNow, CloudWatch, OpenShift, Splunk, and Horizon\u2019s Anomaly Framework."),
 
       H2("Agent Roles"),
       H3("Help Desk Agent"),
-      BODY("Delivers context-aware guidance and automated actions to help users auto-resolve issues before ticket creation. The member gets their answer without waiting for a human."),
+      BODY("Delivers context-aware guidance and automated actions to help users auto-resolve issues before ticket creation. The member gets their answer without waiting for a human. The provider\u2019s portal issue is resolved before it becomes a support call."),
       H3("Triage Agent"),
-      BODY("Prioritizes tickets based on impact, urgency, and historical patterns \u2014 eliminating manual queue management. The right team responds immediately, every time."),
+      BODY("Prioritizes tickets based on impact, urgency, and historical patterns \u2014 eliminating manual queue management. The right team responds immediately, every time. A P1 claims outage is routed to the claims pod in seconds, not minutes."),
       H3("Root Cause Analysis Agent"),
-      BODY("Correlates signals across 140+ monitoring sources to identify root cause within minutes \u2014 not hours. Diagnosis that used to take a senior engineer now takes an AI agent seconds."),
+      BODY("Correlates signals across 140+ monitoring sources to identify root cause within minutes \u2014 not hours. Diagnosis that used to take a senior engineer now takes an AI agent seconds. Cross-system dependencies are mapped and traced automatically."),
       H3("Resolution Agent"),
-      BODY("Suggests or executes remediation steps based on runbooks and past resolutions. More than 74% of P3/P4 incidents are resolved without human action."),
+      BODY("Suggests or executes remediation steps based on runbooks and past resolutions. More than 74% of P3/P4 incidents are resolved without human action. The provider never knows the system hiccupped. The member never feels the impact."),
       H3("Runbook Generation Agent"),
-      BODY("Auto-generates and updates runbooks from resolved incidents \u2014 compounding operational knowledge over time and eliminating reliance on institutional memory."),
+      BODY("Auto-generates and updates runbooks from resolved incidents \u2014 compounding operational knowledge over time and eliminating reliance on institutional memory. When a senior engineer leaves, the knowledge stays."),
       H3("Continuous Learning Agent"),
-      BODY("Feeds production telemetry back into all agents, ensuring progressive improvement with every incident cycle. The system gets smarter every day."),
+      BODY("Feeds production telemetry back into all agents, ensuring progressive improvement with every incident cycle. The system gets smarter every day. Month 12 operations are fundamentally more capable than Month 1."),
 
-      GAP(4),
+      GAP(6),
       H2("Zero-Touch Operations Pipeline"),
       TBL([new TableRow({ children: [
         STEP("1", "Detect",   ["Correlate 140+\nsources", "Cut noise >60%"],        C.blue),
@@ -421,21 +435,30 @@ const doc = new Document({
 
       H2("Self-Improving Quality Framework"),
       BODY("IBM\u2019s Quality Engineering model embeds measurable validation checkpoints across every stage of development and production \u2014 creating a closed-loop feedback system within the CI/CD pipeline. Production insights, defect analytics, and automation metrics continuously refine testing strategies, enabling sustained defect reduction, faster recovery, and progressive quality improvement over time."),
+      BODY("This is not a testing team. This is a quality engine. It learns from every defect, tightens the net with every release, and ensures that the quality of Horizon\u2019s ~1,000 applications improves continuously \u2014 without manual test plan authoring or regression suite maintenance."),
 
       H2("Quality Controls"),
-      BULL("End-to-end traceability and release readiness visibility."),
-      BULL("Defect leakage, density, and stability metrics (MTTR)."),
-      BULL("Automation coverage with KPI-driven governance."),
-      BULL("AI-driven defect insights and regression optimization."),
-      BULL("Production telemetry feeding back into test strategy."),
+      BULL("End-to-end traceability from requirement to deployed feature \u2014 full release readiness visibility at every gate."),
+      BULL("Defect leakage, density, and stability metrics (MTTR) tracked per domain and per application."),
+      BULL("Automation coverage with KPI-driven governance \u2014 every sprint measured against coverage targets."),
+      BULL("AI-driven defect insights and regression optimization \u2014 models trained on Horizon\u2019s own incident history."),
+      BULL("Production telemetry feeding back into test strategy \u2014 every production incident teaches the quality engine."),
 
       H2("Intelligent Test Automation"),
-      BODY("IBM\u2019s Generative AI capabilities enable self-generating test cases, automated test maintenance, and continuous validation integration \u2014 dramatically reducing the cost and time associated with regression testing across Horizon\u2019s complex, multi-system portfolio."),
+      BODY("IBM\u2019s Generative AI capabilities enable self-generating test cases, automated test maintenance, and continuous validation integration \u2014 dramatically reducing the cost and time associated with regression testing across Horizon\u2019s complex, multi-system portfolio. AI synthesises regression, integration, and edge-case tests directly from the code change \u2014 at commit speed."),
+
+      H2("AI-Powered Quality Capabilities"),
+      H3("GenAI Test Generation"),
+      BODY("AI generates test cases from code changes automatically. Coverage grows without manual test-plan authoring. New features ship with tests from Day 1."),
+      H3("Defect Prediction AI"),
+      BODY("Models trained on Horizon\u2019s own incident history identify high-risk code paths before they reach UAT \u2014 catching defects where they are cheapest to fix."),
+      H3("Production Feedback Loop"),
+      BODY("Every production defect teaches the quality engine. Each release cycle the test suite tightens automatically \u2014 an ever-improving net that strengthens without manual intervention."),
 
       GAP(4),
-      CALL("Target: 80% test automation coverage across Horizon\u2019s application portfolio within 12 months of full deployment."),
+      CALL("Target: 80% test automation coverage across Horizon\u2019s ~1,000-application portfolio within 12 months of full deployment."),
 
-      GAP(4),
+      GAP(6),
       H2("Quality Metrics \u2014 Before & After"),
       BODY("IBM Quality Engineering targets across Horizon\u2019s AMS portfolio \u2014 current state vs. 6- and 12-month programme milestones:", { sz: 9.5, c: C.g50, i: true, aft: 6 }),
       TBL([
@@ -478,14 +501,15 @@ const doc = new Document({
       ),
 
       H2("Claims Operations Intelligence"),
-      BODY("IBM\u2019s CareOps360 platform surfaces real-time visibility into the claims lifecycle \u2014 from receipt through adjudication, settlement, and denial management. Operational leads and executives can identify queue bottlenecks, denial spikes, and auto-adjudication performance degradation in real time."),
+      BODY("Claims and prior authorization are among Horizon\u2019s highest-volume, highest-risk operational domains. IBM embeds AI-driven intelligence to accelerate adjudication, reduce denials, and eliminate manual backlog management \u2014 at enterprise scale across the ~1,000-application estate."),
+      BODY("IBM\u2019s CareOps360 platform surfaces real-time visibility into the claims lifecycle \u2014 from receipt through adjudication, settlement, and denial management. Operational leads and executives identify queue bottlenecks, denial spikes, and auto-adjudication performance degradation in real time, without waiting for next-day reporting."),
       BULL("AI-enhanced auto-adjudication rules engine \u2014 reducing manual adjudication rates from baseline."),
       BULL("Denial pattern analytics \u2014 identifying root causes across procedure, eligibility, and coordination of benefits failures."),
       BULL("Real-time claims dashboard: volume by line of business, TAT trending, denial driver breakdown."),
       BULL("SLA-bound adjudication commitments: turnaround time reduction target agreed at contract."),
 
       H2("Prior Authorization \u2014 AI-Assisted Review"),
-      BODY("Prior authorization is a significant operational and member experience pressure point. IBM deploys AI-assisted review tooling to triage and prioritise requests, identify auto-approvable cases, and flag clinically complex cases for expedited human review."),
+      BODY("Prior authorization is a significant operational and member experience pressure point. Horizon\u2019s current backlog and review cycle times create friction for providers and members alike. IBM deploys AI-assisted review tooling to triage and prioritise requests, identify auto-approvable cases, and flag clinically complex cases for expedited human review."),
       TBL([
         new TableRow({ children: [HC("Prior Auth Metric", W*0.42), HC("Target Direction", W*0.58)] }),
         ...[ ["Requests Received Daily",    "Trend monitored weekly"],
@@ -528,13 +552,18 @@ const doc = new Document({
       // ================================================================
       ...SEC("07", "CareOps360 Command Center", "IBM\u2019s Executive Operations Platform for Real-Time AMS Visibility at Horizon"),
 
+      ...Q(
+        "Horizon\u2019s leadership should never have to ask \u2018how are we doing?\u2019 and wait for a deck. The answer should be live, accurate, and one click away \u2014 every hour of every day. That is what CareOps360 delivers.",
+        "IBM Consulting \u2014 Executive Visibility"
+      ),
+
       H2("What Is CareOps360?"),
-      BODY("CareOps360 is IBM\u2019s production-grade executive operations platform purpose-built for the Horizon BCBS engagement. It delivers real-time operational intelligence across all AMS towers \u2014 enrollment, claims, applications, infrastructure, and quality \u2014 through a single, unified command center accessible to Horizon\u2019s executive and operational leadership."),
-      BODY("Built on IBM\u2019s AIOps observability framework, CareOps360 surfaces predictive insights, SLA performance, enrollment intelligence, digital front door metrics, and transformation roadmap progress \u2014 eliminating the need for manual reporting aggregation."),
+      BODY("CareOps360 is IBM\u2019s production-grade executive operations platform purpose-built for the Horizon BCBS engagement. It delivers real-time operational intelligence across all AMS towers \u2014 enrollment, claims, applications, infrastructure, and quality \u2014 through a single, unified command center accessible to Horizon\u2019s executive and operational leadership. The platform is architecture-ready for live production data and is currently deployed in a production-equivalent environment."),
+      BODY("Built on IBM\u2019s AIOps observability framework, CareOps360 surfaces predictive insights, SLA performance, enrollment intelligence, digital front door metrics, and transformation roadmap progress \u2014 eliminating the need for manual reporting aggregation. No more quarterly decks. No more manual data pulls. Live data, always."),
 
       H2("Dashboards Delivered"),
       BULL("Executive Overview \u2014 Cross-tower operational pulse with 8 real-time KPI tiles."),
-      BULL("Application Health \u2014 500+ app inventory, incident register, availability trends."),
+      BULL("Application Health \u2014 ~1,000 app inventory, incident register, availability trends."),
       BULL("Claims Operations \u2014 Daily volume, adjudication queue, denial analytics."),
       BULL("Prior Authorization \u2014 Backlog, review SLA, procedure-level approval rates."),
       BULL("Enrollment Intelligence \u2014 AI-assisted intake, pipeline health, surge detection."),
@@ -607,18 +636,23 @@ const doc = new Document({
 
       GAP(6),
       H2("Governance at Every Phase"),
-      BULL("Executive Steering Committee: Quarterly IBM VP + Horizon CIO/COO review."),
-      BULL("Program Management Office: Monthly health reporting and risk register."),
-      BULL("Delivery Operations Reviews: Bi-weekly SLA and incident trends."),
-      BULL("Financial Governance: Monthly actuals vs. committed model."),
-      BULL("Innovation Council: Quarterly idea pipeline and prioritization."),
+      BODY("IBM\u2019s governance model ensures continuous accountability from the operational team to the boardroom. Every metric is live in CareOps360 \u2014 no manual reporting, no quarterly surprises."),
+      BULL("Executive Steering Committee: Quarterly IBM VP + Horizon CIO/COO review \u2014 strategic direction, value realization, and programme health."),
+      BULL("Program Management Office: Monthly health reporting and risk register \u2014 every initiative tracked against milestones."),
+      BULL("Delivery Operations Reviews: Bi-weekly SLA and incident trends \u2014 operational cadence with the teams doing the work."),
+      BULL("Financial Governance: Monthly actuals vs. committed model \u2014 cost takeout tracked to the dollar."),
+      BULL("Innovation Council: Quarterly idea pipeline and prioritization \u2014 business-case-backed innovation at Horizon\u2019s direction."),
 
       GAP(6),
       H2("Transformation Portfolio at a Glance"),
-      BULL("60 total initiatives across 3 delivery years."),
-      BULL("25 Year 1 initiatives \u2014 Technical Debt, Digital, Payer."),
-      BULL("15 Active / In-Flight as of programme launch."),
-      BULL("All initiatives tracked live in CareOps360\u2019s Transformation Roadmap dashboard."),
+      BULL("60 total initiatives across 3 delivery years \u2014 across Payer, Clinical, Digital, and Enterprise domains."),
+      BULL("25 Year 1 initiatives \u2014 Technical Debt, Digital, Payer \u2014 delivering immediate, measurable value."),
+      BULL("15 Active / In-Flight as of programme launch \u2014 no ramp-up delay."),
+      BULL("9 milestones completed in foundation phase \u2014 demonstrating immediate traction."),
+      BULL("All initiatives tracked live in CareOps360\u2019s Transformation Roadmap dashboard with phase, status, owner, and risk updated in real time."),
+
+      GAP(4),
+      CALL("CareOps360 makes every metric above visible in real time from Day 1. No manual reporting. No quarterly decks. Live data, always."),
 
 
       // ================================================================
@@ -632,16 +666,17 @@ const doc = new Document({
       ),
 
       H2("Integration Modernization \u2014 Real-Time, Cloud-Native"),
-      BODY("IBM\u2019s Integration Modernization programme transforms Horizon\u2019s data exchange backbone from point-to-point batch processes to a cloud-native, event-driven, real-time integration architecture \u2014 enabling claims, eligibility, provider, and member data to flow continuously without overnight lag."),
-      BULL("MOM API-First Hub \u2014 Transform Messaging-Oriented Middleware to an API-first enterprise integration hub."),
-      BULL("Event Streaming Architecture \u2014 Replace batch ETL with Apache Kafka-based event streaming on AWS MSK."),
-      BULL("API Gateway Consolidation \u2014 Unified gateway replacing 70+ point-to-point integrations with governed, observable APIs."),
+      BODY("IBM\u2019s Integration Modernization programme transforms Horizon\u2019s data exchange backbone from point-to-point batch processes to a cloud-native, event-driven, real-time integration architecture \u2014 enabling claims, eligibility, provider, and member data to flow continuously across systems without overnight lag. When a member\u2019s eligibility changes at 3 PM, every downstream system reflects it at 3:01 PM \u2014 not 6 AM the next day."),
+      BULL("MOM API-First Hub (HLGN-1053) \u2014 Transform Horizon\u2019s Messaging-Oriented Middleware from point-to-point topology to an API-first enterprise integration hub \u2014 enabling real-time, event-driven partner data exchange across claims, eligibility, and provider domains."),
+      BULL("Event Streaming Architecture \u2014 Replace batch ETL with Apache Kafka-based event streaming on AWS MSK \u2014 delivering sub-second data freshness across enrollment, claims, and provider systems."),
+      BULL("API Gateway Consolidation \u2014 Unified API gateway via AWS API Gateway + IBM API Connect \u2014 replacing 70+ point-to-point integrations with governed, observable, versioned APIs."),
+      BULL("ODM Cloud-Native (HLGN-1054) \u2014 Migrate IBM ODM Decision Center from on-premises to containerized cloud environment, enabling real-time business rule evaluation and business-user-configurable workflows."),
 
       H2("Application Rationalization"),
-      BODY("IBM will conduct a structured assessment of Horizon\u2019s ~500+ application portfolio using Texture and IBM accelerators \u2014 identifying candidates for decommission, consolidation, cloud migration, or AI-augmented modernization."),
+      BODY("IBM will conduct a structured assessment of Horizon\u2019s ~1,000 application portfolio using Texture and IBM accelerators like ICCA \u2014 identifying candidates for decommission, consolidation, cloud migration, or AI-augmented modernization. Every application is catalogued, scored for business criticality, and assigned a modernization path. Redundant applications are consolidated. End-of-life platforms are replaced. The portfolio becomes leaner, faster, and cheaper to operate."),
 
       H2("Mainframe Modernization Roadmap"),
-      BODY("Horizon\u2019s mainframe hosts critical batch processing, eligibility logic, and financial settlement. IBM\u2019s strategy executes phased migration preserving continuity:"),
+      BODY("Horizon\u2019s mainframe hosts critical batch processing, eligibility logic, and financial settlement. IBM understands that modernizing this estate is not merely a technical programme \u2014 it is a strategic risk management exercise that must be executed with surgical precision. IBM proposes a phased, parallel-run migration approach:"),
       TBL([
         new TableRow({ children: [HC("Workstream", W*0.28), HC("Approach", W*0.44), HC("Timeline", W*0.28)] }),
         ...[ ["Eligibility Processing", "API-wrap \u2192 Cloud rehost",     "Q2\u2013Q4 2026"],
@@ -665,7 +700,7 @@ const doc = new Document({
 
       GAP(8),
       STAT([
-        ["500+",          "Applications Assessed", C.blue  ],
+        ["~1,000",        "Applications Assessed", C.blue  ],
         ["COBOL\u2192Java","AI-Assisted Conversion", C.azure ],
         ["n\u22121/2",     "Stack Version Governance", C.teal ],
         ["Zero",          "Disruption Commitment",   C.purp  ],
@@ -682,17 +717,22 @@ const doc = new Document({
         "IBM Consulting, Healthcare & Payer Delivery"
       ),
 
+      H2("Enterprise Transformation, Not Just IT"),
+      BODY("IBM\u2019s proposal delivers unified transformation across Operations, Development, and Quality Engineering \u2014 not siloed initiatives that optimize one tower while creating drag in another. IBM\u2019s delivery philosophy \u2014 AI-Embedded Operations, Scalable Architecture, and Outcome-Based Engagement \u2014 ensures that every IBM investment compounds Horizon\u2019s capability, not IBM\u2019s margin."),
+
       H2("What Differentiates IBM"),
       H3("Skin in the Game"),
-      BODY("Outcome-based engagement with IBM\u2019s full capability depth behind every phase \u2014 IBM\u2019s success is tied directly to Horizon\u2019s outcomes. Not activity metrics. Business results."),
+      BODY("Outcome-based engagement with IBM\u2019s full capability depth behind every phase \u2014 IBM\u2019s success is tied directly to Horizon\u2019s outcomes. Targets missed trigger IBM remediation plans \u2014 not contract renegotiations or rate discussions. IBM carries the delivery risk."),
       H3("AI at Depth, Not at Surface"),
-      BODY("IBM\u2019s Agentic AI, Generative AI, and AIOps capabilities are production-proven across healthcare and financial services \u2014 not proof-of-concept. Live at comparable payers today."),
+      BODY("IBM\u2019s Agentic AI, Generative AI, and AIOps capabilities are production-proven across healthcare and financial services \u2014 not proof-of-concept. Live at comparable payers today. Horizon benefits from Day 1, not after a 12-month buildout."),
       H3("IBM Consulting Advantage"),
-      BODY("Horizon realises accelerated value through IBM Consulting\u2019s portfolio of 6,500+ assets and accelerators, strategic initiatives including IBM Build on Bedrock (BOB)."),
+      BODY("Horizon realises accelerated value through IBM Consulting\u2019s portfolio of 6,500+ assets and accelerators, strategic initiatives including IBM Build on Bedrock (BOB). These are production-tested assets, not templates."),
       H3("Transformation Office"),
-      BODY("IBM commits a structured quarterly innovation process \u2014 governed, prioritized, business-case-backed innovation at Horizon\u2019s direction. Not a roadmap slide. A working programme."),
+      BODY("IBM commits a structured quarterly innovation process \u2014 governed, prioritized, business-case-backed innovation at Horizon\u2019s direction. Not a roadmap slide. A working programme with dedicated leadership and budget."),
+      H3("Continuous Innovation Included"),
+      BODY("Innovation sprints, AI tooling, and accelerators are built into the base delivery model. Transformation is not a separate future line item \u2014 it is embedded in every phase of the partnership."),
 
-      GAP(4),
+      GAP(6),
       STAT([
         ["20K+",  "AI Practitioners",   C.blue  ],
         ["81K+",  "Cloud Experts",       C.azure ],
@@ -700,13 +740,14 @@ const doc = new Document({
         ["15K+",  "Global Delivery Centers", C.purp ],
       ]),
 
-      GAP(6),
+      GAP(8),
       H2("Healthcare Payer Pedigree"),
       BODY("IBM brings deep healthcare payer expertise \u2014 including BCBS operating models, CMS regulatory compliance, HIPAA data governance, enrollment lifecycle management, and claims adjudication platform knowledge \u2014 directly into Horizon\u2019s delivery team from Day 1."),
       BULL("AWS Partner of the Year 2025 \u2014 Enterprise AI delivery."),
       BULL("Leader in Enterprise Software Quality & Testing."),
-      BULL("Proven BCBS engagement track record."),
+      BULL("Proven BCBS engagement track record \u2014 9 of the top 10 US health payers served."),
       BULL("Gartner Leader across 7 Data and AI Magic Quadrants (2025\u20132026)."),
+      BULL("CMS & HIPAA compliance expertise \u2014 regulatory readiness from Day 1."),
 
       GAP(6),
       H2("Recommended Next Steps"),
