@@ -18,3 +18,9 @@ id = "fVkkc2XdxL18nGd6Ndb07"
 uri = "file://.local/outputs/Horizon-Paye.pptx"
 type = "slides"
 title = "Horizon Paye.pptx"
+
+[[outputs]]
+id = "sUjtZjA8q5wd4DmJDi-BT"
+uri = "file://attached_assets/IBM_Horizon_AMS_Executive_Summary_April2026.docx"
+type = "word_document"
+title = "IBM × Horizon AMS Executive Summary — April 2026"
