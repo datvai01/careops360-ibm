@@ -2,7 +2,7 @@
  * IBM × Horizon BCBS — Application Development, Maintenance & Quality Engineering
  * Executive Summary — C-Suite — 10 Pages — Consulting Grade
  *
- * Layout: Single-column + two-column ghost tables for dense content
+ * Layout: Word-native columns via section properties (Layout > Columns)
  * Style:  Elegant, crisp, white-paper grade
  */
 
@@ -10,7 +10,7 @@ import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
   TextRun, AlignmentType, BorderStyle, WidthType,
   ShadingType, TableLayoutType, Header, Footer, PageNumber,
-  convertInchesToTwip,
+  convertInchesToTwip, SectionType, ColumnBreak,
 } from "docx";
 import { writeFileSync } from "fs";
 
@@ -26,6 +26,7 @@ const hp  = pt => Math.round(pt * 2);
 const sp  = pt => Math.round(pt * 20);
 const inc = n  => convertInchesToTwip(n);
 const W   = 9360;
+const Wh  = 4500;
 const sh  = fill => ({ type: ShadingType.CLEAR, fill });
 
 const BN = { style: BorderStyle.NONE, size: 0, color: "auto" };
@@ -35,15 +36,15 @@ const BB = { style: BorderStyle.SINGLE, size: 14, color: C.blue };
 const NB = { top: BN, bottom: BN, left: BN, right: BN, insideH: BN, insideV: BN };
 const CB = { top: BT, bottom: BT, left: BT, right: BT };
 
-const R = (t, o = {}) => new TextRun({ text: t, font: FN, size: hp(o.sz ?? 10), bold: o.b ?? false, italics: o.i ?? false, color: o.c ?? C.g100 });
+const R = (t, o = {}) => new TextRun({ text: t, font: FN, size: hp(o.sz ?? 10), bold: o.b ?? false, italics: o.i ?? false, color: o.c ?? C.g100, break: o.brk });
 const P = (runs, o = {}) => new Paragraph({ children: Array.isArray(runs) ? runs : [runs], spacing: { before: sp(o.bef ?? 0), after: sp(o.aft ?? 0) }, alignment: o.al, indent: (o.l || o.r) ? { left: sp(o.l ?? 0), right: sp(o.r ?? 0) } : undefined, border: o.bd, shading: o.bg ? sh(o.bg) : undefined, pageBreakBefore: o.pb ?? false });
 const GAP = (pt = 4) => new Paragraph({ children: [new TextRun({ text: "", font: FN, size: hp(4) })], spacing: { before: 0, after: sp(pt) } });
 
 const BODY = (t, o = {}) => P([R(t, { sz: o.sz ?? 10, c: o.c ?? C.g70, i: o.i })], { aft: o.aft ?? 4, bef: o.bef ?? 0, al: o.al });
 const BULL = (t, o = {}) => new Paragraph({ children: [R(t, { sz: o.sz ?? 9.5, c: o.c ?? C.g70 })], bullet: { level: 0 }, spacing: { before: sp(0.5), after: sp(2.5) } });
 
-const SEC = (num, title, sub = "", pb = true) => [
-  new Paragraph({ children: [], border: { top: { style: BorderStyle.SINGLE, size: 18, color: C.blue, space: 8 } }, spacing: { before: sp(pb ? 0 : 10), after: sp(3) }, pageBreakBefore: pb }),
+const SEC_HEAD = (num, title, sub = "") => [
+  new Paragraph({ children: [], border: { top: { style: BorderStyle.SINGLE, size: 18, color: C.blue, space: 8 } }, spacing: { before: sp(0), after: sp(3) } }),
   new Paragraph({ children: [R(num + "  ", { sz: 9, b: true, c: C.blue }), R(title, { sz: 16, b: true, c: C.navy })], spacing: { before: 0, after: sub ? sp(2) : sp(6) } }),
   ...(sub ? [BODY(sub, { i: true, sz: 9.5, aft: 6, c: C.g50 })] : []),
 ];
@@ -58,31 +59,25 @@ const Q = (text, attr = "") => [
 
 const CALL = (t, fill = C.lb1, c = C.navy) => new Paragraph({ children: [R(t, { sz: 10, b: true, c })], shading: sh(fill), spacing: { before: sp(5), after: sp(5) }, indent: { left: inc(0.2), right: inc(0.2) } });
 
+const COLBRK = () => new Paragraph({ children: [new TextRun({ children: [new ColumnBreak()], font: FN, size: hp(2) })] });
+
 // Table helpers
-const gc = (items, w) => new TableCell({ children: Array.isArray(items) ? items : [items], shading: sh(C.white), width: w ? { size: Math.round(w), type: WidthType.DXA } : undefined, borders: NB, margins: { top: 0, bottom: 0, left: sp(2), right: sp(2) }, verticalAlign: "top" });
 const HC = (t, w, o = {}) => new TableCell({ children: [new Paragraph({ children: [R(t, { sz: 9, b: true, c: o.c ?? C.navy })], spacing: { before: sp(2.5), after: sp(2.5) }, alignment: o.al })], shading: sh(o.f ?? C.lb2), width: w ? { size: Math.round(w), type: WidthType.DXA } : undefined, borders: { top: BB, bottom: BM, left: BT, right: BT }, margins: { top: sp(2), bottom: sp(2), left: sp(6), right: sp(6) }, verticalAlign: "center" });
 const DC = (t, w, o = {}) => new TableCell({ children: [new Paragraph({ children: [R(t, { sz: o.sz ?? 9, b: o.b ?? false, c: o.c ?? C.g100, i: o.i })], spacing: { before: sp(1.5), after: sp(1.5) }, alignment: o.al })], shading: sh(o.f ?? C.white), width: w ? { size: Math.round(w), type: WidthType.DXA } : undefined, borders: CB, margins: { top: sp(2), bottom: sp(2), left: sp(6), right: sp(6) }, verticalAlign: "center" });
 const VC = (t, w, o = {}) => DC(t, w, { b: true, c: C.blue, f: C.lb1, ...o });
 const TBL = (rows, w = W) => new Table({ width: { size: Math.round(w), type: WidthType.DXA }, layout: TableLayoutType.FIXED, borders: NB, rows });
 const alt = i => (i % 2 === 0 ? C.white : C.g10);
 
-// Two-column ghost layout
-const TWO = (left, right, sl = 0.48) => TBL([new TableRow({ children: [
-  gc(left,    W * sl),
-  gc([GAP(0)], W * 0.04),
-  gc(right,   W * (1 - sl - 0.04)),
-]})], W);
-
 // Stat boxes
-const STAT = items => TBL([new TableRow({ children: items.map(([val, lab, col = C.blue]) => new TableCell({
+const STAT = (items, w = W) => TBL([new TableRow({ children: items.map(([val, lab, col = C.blue]) => new TableCell({
   children: [
     new Paragraph({ children: [R(val, { sz: 24, b: true, c: col })], alignment: AlignmentType.CENTER, spacing: { before: sp(6), after: sp(2) } }),
     new Paragraph({ children: [R(lab, { sz: 8.5, b: true, c: C.navy })], alignment: AlignmentType.CENTER, spacing: { before: 0, after: sp(6) } }),
   ],
-  shading: sh(C.lb1), width: { size: Math.round(W / items.length), type: WidthType.DXA },
+  shading: sh(C.lb1), width: { size: Math.round(w / items.length), type: WidthType.DXA },
   borders: { top: { style: BorderStyle.SINGLE, size: 10, color: col }, bottom: BT, left: BT, right: BT },
   margins: { top: sp(3), bottom: sp(3), left: sp(4), right: sp(4) }, verticalAlign: "center",
-})) })], W);
+})) })], w);
 
 // Pipeline step
 const STEP = (n, title, lines, col = C.blue) => new TableCell({
@@ -98,8 +93,8 @@ const STEP = (n, title, lines, col = C.blue) => new TableCell({
 });
 
 // Bar chart
-const BAR = (label, pct, val, col = C.blue) => {
-  const lw = 2800, vw = 1160, bw = W - lw - vw;
+const BAR = (label, pct, val, col = C.blue, w = W) => {
+  const lw = Math.round(w * 0.30), vw = Math.round(w * 0.12), bw = w - lw - vw;
   const f = Math.round(bw * Math.min(pct, 100) / 100);
   return new TableRow({ children: [
     new TableCell({ children: [BODY(label, { sz: 9, aft: 0 })], width: { size: lw, type: WidthType.DXA }, shading: sh(C.white), borders: NB, margins: { top: sp(2), bottom: sp(2), right: sp(4) }, verticalAlign: "center" }),
@@ -114,6 +109,27 @@ const HDR = () => new Header({ children: [new Paragraph({ children: [R("IBM \u00
 const FTR = () => new Footer({ children: [new Paragraph({ children: [R("CareOps360  \u00B7  IBM AIOps  \u00B7  IBM Consulting Advantage  \u00B7  April 2026  |  ", { sz: 7, c: C.blue }), new TextRun({ children: [PageNumber.CURRENT], font: FN, size: hp(7), color: C.g50 })], border: { top: { style: BorderStyle.SINGLE, size: 2, color: C.g20, space: 3 } }, spacing: { before: sp(2), after: 0 } })] });
 const hf = () => ({ headers: { default: HDR() }, footers: { default: FTR() } });
 
+const oneCol = (children, type = SectionType.CONTINUOUS) => ({
+  properties: { page: { margin: MG }, type, column: { count: 1 } },
+  ...hf(),
+  children,
+});
+const twoCol = (children) => ({
+  properties: { page: { margin: MG }, type: SectionType.CONTINUOUS, column: { count: 2, space: inc(0.35), separate: false } },
+  ...hf(),
+  children,
+});
+const newPage1Col = (children) => ({
+  properties: { page: { margin: MG }, type: SectionType.NEXT_PAGE, column: { count: 1 } },
+  ...hf(),
+  children,
+});
+const newPage2Col = (children) => ({
+  properties: { page: { margin: MG }, type: SectionType.NEXT_PAGE, column: { count: 2, space: inc(0.35), separate: false } },
+  ...hf(),
+  children,
+});
+
 // ════════════════════════════════════════════════════════════════════════════
 const doc = new Document({
   creator: "IBM Consulting",
@@ -121,7 +137,7 @@ const doc = new Document({
   sections: [
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  PAGE 1 — COVER
+    //  PAGE 1 — COVER (single column, zero margins)
     // ═══════════════════════════════════════════════════════════════════════
     { properties: { page: { margin: { top: 0, bottom: 0, left: 0, right: 0 } } }, children: [
       new Paragraph({ children: [R("  IBM CONSULTING   |   HEALTHCARE & PAYER DELIVERY   |   AMS PRACTICE", { sz: 8.5, b: true, c: C.white })], shading: sh(C.navy), spacing: { before: sp(12), after: sp(12) } }),
@@ -137,99 +153,97 @@ const doc = new Document({
       P([R("An Executive Summary for Horizon BCBS Leadership", { sz: 13, i: true, c: C.g50 })], { aft: 4, l: 55 }),
       P([R("Where Every Line of Code, Every Test, and Every Resolved Incident\nIs Measured by the Member It Serves", { sz: 11, i: true, c: C.g70 })], { aft: 30, l: 55 }),
 
-      TBL([new TableRow({ children: [
-        gc([P([R("Submitted by:", { sz: 9.5, b: true, c: C.navy })], { aft: 1 }), BODY("IBM Consulting \u2014 Healthcare & Payer Delivery", { aft: 0, sz: 9.5 })], W * 0.44),
-        gc([P([R("Submitted to:", { sz: 9.5, b: true, c: C.navy })], { aft: 1 }), BODY("Horizon BCBS \u2014 Executive Leadership & Technology Office", { aft: 0, sz: 9.5 })], W * 0.56),
-      ]})], W),
+      new Paragraph({ children: [
+        R("Submitted by: ", { sz: 9.5, b: true, c: C.navy }),
+        R("IBM Consulting \u2014 Healthcare & Payer Delivery          ", { sz: 9.5, c: C.g70 }),
+        R("Submitted to: ", { sz: 9.5, b: true, c: C.navy }),
+        R("Horizon BCBS \u2014 Executive Leadership & Technology Office", { sz: 9.5, c: C.g70 }),
+      ], spacing: { before: sp(4), after: sp(4) }, indent: { left: inc(1.1) } }),
 
       GAP(4),
-      TBL([new TableRow({ children: [gc([
-        P([R("Confidential  |  April 2026  |  Ref: IBM-HZN-AMS-RFP-2026-CAS", { sz: 9, c: C.g50 })], { aft: 0 }),
-      ], W)]})], W),
+      P([R("Confidential  |  April 2026  |  Ref: IBM-HZN-AMS-RFP-2026-CAS", { sz: 9, c: C.g50 })], { aft: 0, l: 55 }),
 
       GAP(42),
 
       new Paragraph({ children: [R("  Powered by CareOps360  \u00B7  IBM AIOps  \u00B7  IBM Consulting Advantage  \u00B7  HIPAA Compliant  \u00B7  \u00A9 2026 IBM Corporation", { sz: 8, c: C.white })], shading: sh(C.navy), spacing: { before: sp(4), after: sp(4) } }),
     ]},
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  CONTENT
-    // ═══════════════════════════════════════════════════════════════════════
-    { properties: { page: { margin: MG } }, ...hf(), children: [
 
-      // ─── PAGE 2: EXECUTIVE SUMMARY ─────────────────────────────────────
-      ...SEC("01", "Executive Summary", "AI-First, Member-Centred Transformation of Application Management Services"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 2 — EXECUTIVE SUMMARY (heading + quote = 1col, body = 2col, stats = 1col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("01", "Executive Summary", "AI-First, Member-Centred Transformation of Application Management Services"),
       ...Q(
         "A mother enrolling her newborn should not wait five days because two systems failed to sync. A provider submitting a prior auth should not chase a fax. IBM is here to make those moments disappear.",
         "IBM Consulting, Healthcare & Payer Delivery"
       ),
+    ]),
+    twoCol([
+      H2("The Moment", { bef: 2 }),
+      BODY("Horizon BCBS manages ~1,000 applications spanning enrollment, claims, member services, provider operations, and data platforms. The incumbent model \u2014 reactive, labor-intensive, fragmented \u2014 cannot meet Horizon\u2019s growth objectives or the expectations of its 3.7 million members."),
+      BODY("Horizon needs a fundamentally different operating model \u2014 one where AI is the engine, quality is continuous, delivery is zero-touch, and every metric connects to a member, a provider, or a patient."),
 
-      TWO(
-        [
-          H2("The Moment", { bef: 2 }),
-          BODY("Horizon BCBS manages ~1,000 applications spanning enrollment, claims, member services, provider operations, and data platforms. The incumbent model \u2014 reactive, labor-intensive, fragmented \u2014 cannot meet Horizon\u2019s growth objectives or the expectations of its 3.7 million members."),
-          BODY("Horizon needs a fundamentally different operating model \u2014 one where AI is the engine, quality is continuous, delivery is zero-touch, and every metric connects to a member, a provider, or a patient."),
+      H2("What IBM Proposes", { bef: 4 }),
+      BODY("A structured transition from reactive support to a predictive, self-healing, AI-first operating model \u2014 delivered through IBM\u2019s Assets, Assistants & Accelerators framework and governed through outcome-based accountability."),
 
-          H2("What IBM Proposes", { bef: 4 }),
-          BODY("A structured transition from reactive support to a predictive, self-healing, AI-first operating model \u2014 delivered through IBM\u2019s Assets, Assistants & Accelerators framework and governed through outcome-based accountability that ties IBM\u2019s performance directly to Horizon\u2019s business results."),
-        ],
-        [
-          H2("Five Strategic Commitments", { bef: 2 }),
-          BULL("AI-First Operating Model \u2014 AI across every layer of dev, quality, and operations. Built in, not bolted on."),
-          BULL("Tech Arbitrage over Labor Arbitrage \u2014 Cost compression through automation, not headcount."),
-          BULL("Outcome-Based Delivery \u2014 SLAs tied to business outcomes. IBM carries the delivery risk."),
-          BULL("Zero-Disruption Transition \u2014 No production disruption. No member impact. No learning curve."),
-          BULL("Agentic by Core \u2014 AI agents that detect, triage, diagnose, resolve, and learn autonomously."),
+      COLBRK(),
 
-          H2("IBM\u2019s Scale", { bef: 4 }),
-          BULL("20,000+ AI practitioners  \u00B7  81,000+ cloud experts"),
-          BULL("40,000+ AI engagements  \u00B7  9 of top 10 US health payers"),
-          BULL("Client-0 AI programme saved IBM ~$3.4B USD"),
-        ],
-      ),
+      H2("Five Strategic Commitments", { bef: 2 }),
+      BULL("AI-First Operating Model \u2014 AI across every layer of dev, quality, and operations. Built in, not bolted on."),
+      BULL("Tech Arbitrage over Labor Arbitrage \u2014 Cost compression through automation, not headcount."),
+      BULL("Outcome-Based Delivery \u2014 SLAs tied to business outcomes. IBM carries the delivery risk."),
+      BULL("Zero-Disruption Transition \u2014 No production disruption. No member impact. No learning curve."),
+      BULL("Agentic by Core \u2014 AI agents that detect, triage, diagnose, resolve, and learn autonomously."),
 
-      GAP(8),
+      H2("IBM\u2019s Scale", { bef: 4 }),
+      BULL("20,000+ AI practitioners  \u00B7  81,000+ cloud experts"),
+      BULL("40,000+ AI engagements  \u00B7  9 of top 10 US health payers"),
+      BULL("Client-0 AI programme saved IBM ~$3.4B USD"),
+    ]),
+    oneCol([
+      GAP(6),
       STAT([
         ["~1,000",    "Applications in Scope",      C.blue  ],
         ["Day 1",     "Efficiencies & Cost Takeout", C.azure ],
         ["24\u00D77", "Global AIOps Coverage",       C.teal  ],
         ["AI-First",  "Agentic by Core",             C.purp  ],
       ]),
+    ]),
 
 
-      // ─── PAGE 3: THE DELIVERY IMPERATIVE ───────────────────────────────
-      ...SEC("02", "The Delivery Imperative", "Why Horizon Needs a New Operating Model \u2014 and Why Now"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 3 — THE DELIVERY IMPERATIVE (heading 1col, body 2col, table 1col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("02", "The Delivery Imperative", "Why Horizon Needs a New Operating Model \u2014 and Why Now"),
       ...Q(
         "The question is not whether Horizon can afford to transform. It is whether Horizon can afford not to \u2014 when every delayed claim is a member who loses trust, and every manual process is a cost that compounds.",
         "IBM Consulting \u2014 Payer Strategy"
       ),
+    ]),
+    twoCol([
+      H2("What Horizon Needs", { bef: 2 }),
+      BODY("A strategic partner to transform Application Development, Maintenance, Data, and Testing \u2014 with AI solutions native to the Horizon environment."),
+      BULL("AI-driven operational efficiencies across all AMS towers"),
+      BULL("Product-oriented model aligned to business domains"),
+      BULL("Automation in testing and QE to measurably reduce cost"),
+      BULL("Agile modernization across the ~1,000-app portfolio"),
+      BULL("Deep healthcare payer consulting expertise"),
 
-      TWO(
-        [
-          H2("What Horizon Needs", { bef: 2 }),
-          BODY("A strategic partner to transform Application Development, Maintenance, Data, and Testing \u2014 with AI solutions native to the Horizon environment."),
-          H2("Transformation Goals", { bef: 4 }),
-          BULL("AI-driven operational efficiencies across all AMS towers"),
-          BULL("Product-oriented model aligned to business domains"),
-          BULL("Automation in testing and QE to measurably reduce cost"),
-          BULL("Agile modernization across the ~1,000-app portfolio"),
-          BULL("Deep healthcare payer consulting expertise"),
-        ],
-        [
-          H2("IBM\u2019s Design Rationale", { bef: 2 }),
-          H3("End-to-End Delivery"),
-          BODY("Unified model across Maintenance, Dev, Testing, Data. No silos. One team, one backlog, one set of outcomes.", { sz: 9.5 }),
-          H3("AI at the Core"),
-          BODY("AI embedded in triage, RCA, resolution, test automation, and validation from Day 1.", { sz: 9.5 }),
-          H3("Zero-Disruption Transition"),
-          BODY("Phased approach preserving operational continuity. Zero member impact.", { sz: 9.5 }),
-          H3("Open Architecture"),
-          BODY("Deployed on Horizon\u2019s AWS stack. No vendor lock-in.", { sz: 9.5 }),
-        ],
-      ),
+      COLBRK(),
 
+      H2("IBM\u2019s Design Rationale", { bef: 2 }),
+      H3("End-to-End Delivery"),
+      BODY("Unified model across Maintenance, Dev, Testing, Data. No silos. One team, one backlog, one set of outcomes.", { sz: 9.5 }),
+      H3("AI at the Core"),
+      BODY("AI embedded in triage, RCA, resolution, test automation, and validation from Day 1.", { sz: 9.5 }),
+      H3("Zero-Disruption Transition"),
+      BODY("Phased approach preserving operational continuity. Zero member impact.", { sz: 9.5 }),
+      H3("Open Architecture"),
+      BODY("Deployed on Horizon\u2019s AWS stack. No vendor lock-in.", { sz: 9.5 }),
+    ]),
+    oneCol([
       GAP(6),
       H2("Current State vs. IBM 12-Month Targets"),
       BODY("Estimates are directional; formally baselined during SOW. Committed targets agreed at programme commencement.", { sz: 8.5, c: C.g50, i: true, aft: 4 }),
@@ -249,38 +263,39 @@ const doc = new Document({
           DC(d, W*0.26, { c: C.blue, b: true, f: alt(i), al: AlignmentType.CENTER }),
         ]})),
       ], W),
+    ]),
 
 
-      // ─── PAGE 4: AI-FIRST APPLICATION DEVELOPMENT ──────────────────────
-      ...SEC("03", "AI-First Application Development", "Agentic Engineering  \u00B7  Risk-Scored Pipelines  \u00B7  Domain-Aligned Squads"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 4 — AI-FIRST APPLICATION DEVELOPMENT (heading 1col, body 2col, charts 1col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("03", "AI-First Application Development", "Agentic Engineering  \u00B7  Risk-Scored Pipelines  \u00B7  Domain-Aligned Squads"),
       ...Q(
         "When a member\u2019s enrollment takes two weeks because a downstream app is slow, that is not a technology problem \u2014 that is a trust problem. Every sprint is measured by whether the member\u2019s experience got better.",
         "IBM \u2014 Member Experience Engineering"
       ),
+    ]),
+    twoCol([
+      H2("How IBM Builds Faster", { bef: 2 }),
+      H3("AI-Assisted Development"),
+      BODY("GenAI accelerates code generation, review, and documentation. Developer throughput +25\u201335% without adding headcount. IBM Consulting Advantage: 6,500+ production-tested assets.", { sz: 9.5 }),
+      H3("DevSecOps Integration"),
+      BODY("Security embedded left into CI/CD. Automated vulnerability scanning at every stage. HIPAA, CMS, PCI compliance automated.", { sz: 9.5 }),
+      H3("Domain-Aligned Squads"),
+      BODY("Teams aligned to Claims, Enrollment, Member, Provider, Data. Context stays with the squad. Accountability is end-to-end.", { sz: 9.5 }),
 
-      TWO(
-        [
-          H2("How IBM Builds Faster", { bef: 2 }),
-          H3("AI-Assisted Development"),
-          BODY("GenAI accelerates code generation, review, and documentation. Developer throughput +25\u201335% without adding headcount. IBM Consulting Advantage: 6,500+ production-tested assets.", { sz: 9.5 }),
-          H3("DevSecOps Integration"),
-          BODY("Security embedded left into CI/CD. Automated vulnerability scanning at every stage. HIPAA, CMS, PCI compliance automated.", { sz: 9.5 }),
-          H3("Domain-Aligned Squads"),
-          BODY("Teams aligned to Claims, Enrollment, Member, Provider, Data. Context stays with the squad. Accountability is end-to-end.", { sz: 9.5 }),
-        ],
-        [
-          GAP(18),
-          H3("Risk-Scored Releases"),
-          BODY("AI-scored gates: security, coverage, performance, historical risk. Low-risk deploys without human approval. Faster delivery, fewer incidents.", { sz: 9.5 }),
-          H3("Modernization in Stride"),
-          BODY("Embedded in every sprint \u2014 refactor, API wrap, library upgrade. The estate improves continuously without a separate capital programme.", { sz: 9.5 }),
+      COLBRK(),
 
-          GAP(4),
-          CALL("25\u201340% faster time to market within 12 months"),
-        ],
-      ),
+      H3("Risk-Scored Releases"),
+      BODY("AI-scored gates: security, coverage, performance, historical risk. Low-risk deploys without human approval. Faster delivery, fewer incidents.", { sz: 9.5 }),
+      H3("Modernization in Stride"),
+      BODY("Embedded in every sprint \u2014 refactor, API wrap, library upgrade. The estate improves continuously without a separate capital programme.", { sz: 9.5 }),
 
+      GAP(4),
+      CALL("25\u201340% faster time to market within 12 months"),
+    ]),
+    oneCol([
       GAP(6),
       H2("Development Efficiency Gains"),
       TBL([
@@ -291,46 +306,46 @@ const doc = new Document({
         BAR("Modernization-in-stride",           60, "Debt \u221230%/yr", "005D5D"),
       ], W),
 
-      GAP(6),
+      GAP(4),
       STAT([
         ["25\u201340%", "Faster Time to Market", C.blue  ],
         ["2\u00D7",     "Deploy Frequency",      C.azure ],
         ["\u221260%",   "Change Failure Rate",   C.teal  ],
         ["80%+",        "Test Automation",        C.purp  ],
       ]),
+    ]),
 
 
-      // ─── PAGE 5: ZERO-TOUCH OPERATIONS & AIOPS ─────────────────────────
-      ...SEC("04", "Zero-Touch Application Maintenance", "Agentic AI Operations \u2014 From Reactive Firefighting to Self-Healing"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 5 — ZERO-TOUCH OPERATIONS & AIOPS (heading 1col, agents 2col, pipeline+stats 1col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("04", "Zero-Touch Application Maintenance", "Agentic AI Operations \u2014 From Reactive Firefighting to Self-Healing"),
       ...Q(
         "When a claims system fails at 2 AM, the first responder should be an AI agent \u2014 not a sleep-deprived engineer. The provider should never know. The member should never feel it. That is zero-touch.",
         "IBM AIOps"
       ),
-
       BODY("IBM\u2019s AIOps framework uses a multi-agent architecture \u2014 specialized AI agents across the incident lifecycle from detection through resolution and continuous learning. Built on Horizon\u2019s AWS stack: AgentCore & Bedrock, ElasticSearch, PostgreSQL, ServiceNow, CloudWatch, Splunk."),
+    ]),
+    twoCol([
+      H2("Agent Roles", { bef: 2 }),
+      H3("Help Desk Agent"),
+      BODY("Context-aware guidance; auto-resolves issues before ticket creation.", { sz: 9.5 }),
+      H3("Triage Agent"),
+      BODY("Impact-based prioritization; eliminates manual queue management.", { sz: 9.5 }),
+      H3("Root Cause Analysis"),
+      BODY("Correlates 140+ sources; identifies root cause in minutes, not hours.", { sz: 9.5 }),
 
-      TWO(
-        [
-          H2("Agent Roles", { bef: 4 }),
-          H3("Help Desk Agent"),
-          BODY("Context-aware guidance; auto-resolves issues before ticket creation.", { sz: 9.5 }),
-          H3("Triage Agent"),
-          BODY("Impact-based prioritization; eliminates manual queue management.", { sz: 9.5 }),
-          H3("Root Cause Analysis"),
-          BODY("Correlates 140+ sources; identifies root cause in minutes, not hours.", { sz: 9.5 }),
-        ],
-        [
-          GAP(24),
-          H3("Resolution Agent"),
-          BODY("Executes remediation from runbooks. >74% of P3/P4 incidents resolved without human action.", { sz: 9.5 }),
-          H3("Runbook Generation"),
-          BODY("Auto-generates runbooks from resolved incidents. Knowledge compounds; no institutional memory loss.", { sz: 9.5 }),
-          H3("Continuous Learning"),
-          BODY("Production telemetry feeds all agents. Month 12 is fundamentally smarter than Month 1.", { sz: 9.5 }),
-        ],
-      ),
+      COLBRK(),
 
+      H3("Resolution Agent"),
+      BODY("Executes remediation from runbooks. >74% of P3/P4 incidents resolved without human action.", { sz: 9.5 }),
+      H3("Runbook Generation"),
+      BODY("Auto-generates runbooks from resolved incidents. Knowledge compounds; no institutional memory loss.", { sz: 9.5 }),
+      H3("Continuous Learning"),
+      BODY("Production telemetry feeds all agents. Month 12 is fundamentally smarter than Month 1.", { sz: 9.5 }),
+    ]),
+    oneCol([
       GAP(4),
       H2("Zero-Touch Pipeline"),
       TBL([new TableRow({ children: [
@@ -341,59 +356,61 @@ const doc = new Document({
         STEP("5", "Learn",    ["Update runbooks", "Prevent repeat"], "005D5D"),
       ]})], W),
 
-      GAP(6),
+      GAP(4),
       STAT([
         [">74%",     "P3/P4 Auto-Resolved",  C.blue  ],
         [">60%",     "Alert Noise Reduced",    C.teal  ],
         ["99.9%+",   "Availability Target",    C.azure ],
         ["<1.8 hrs", "Mean Time to Resolve",   C.purp  ],
       ]),
+    ]),
 
 
-      // ─── PAGE 6: QUALITY ENGINEERING ───────────────────────────────────
-      ...SEC("05", "Quality Engineering", "Measurable Quality at Every Milestone \u2014 Improved with Every Release"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 6 — QUALITY ENGINEERING (heading 1col, body 2col, metrics table 1col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("05", "Quality Engineering", "Measurable Quality at Every Milestone \u2014 Improved with Every Release"),
       ...Q(
         "Every undetected defect in a claims system is a patient who doesn\u2019t get care on time. Every missed test is a provider who submits correctly and gets denied. Quality is not a phase. Quality is the promise.",
         "IBM Quality Engineering"
       ),
+    ]),
+    twoCol([
+      H2("Self-Improving Framework", { bef: 2 }),
+      BODY("Closed-loop feedback within CI/CD. Production insights, defect analytics, and automation metrics continuously refine testing \u2014 sustaining defect reduction with every release across ~1,000 applications."),
 
-      TWO(
-        [
-          H2("Self-Improving Framework", { bef: 2 }),
-          BODY("Closed-loop feedback within CI/CD. Production insights, defect analytics, and automation metrics continuously refine testing \u2014 sustaining defect reduction with every release across ~1,000 applications."),
+      H2("AI-Powered Capabilities", { bef: 4 }),
+      H3("GenAI Test Generation"),
+      BODY("AI synthesises tests from code changes at commit speed. Coverage grows without manual test plans.", { sz: 9.5 }),
+      H3("Defect Prediction"),
+      BODY("Models trained on Horizon\u2019s incident history identify high-risk paths before UAT.", { sz: 9.5 }),
+      H3("Production Feedback Loop"),
+      BODY("Every production defect teaches the engine. The net tightens automatically every release.", { sz: 9.5 }),
 
-          H2("AI-Powered Capabilities", { bef: 4 }),
-          H3("GenAI Test Generation"),
-          BODY("AI synthesises tests from code changes at commit speed. Coverage grows without manual test plans.", { sz: 9.5 }),
-          H3("Defect Prediction"),
-          BODY("Models trained on Horizon\u2019s incident history identify high-risk paths before UAT.", { sz: 9.5 }),
-          H3("Production Feedback Loop"),
-          BODY("Every production defect teaches the engine. The net tightens automatically every release.", { sz: 9.5 }),
-        ],
-        [
-          H2("Quality Controls", { bef: 2 }),
-          BULL("End-to-end traceability and release readiness"),
-          BULL("Defect leakage, density, stability metrics (MTTR)"),
-          BULL("Automation coverage with KPI governance"),
-          BULL("AI-driven defect insights and regression optimisation"),
-          BULL("Production telemetry feeding back into test strategy"),
+      COLBRK(),
 
-          GAP(2),
-          CALL("Target: 80%+ test automation in 12 months"),
+      H2("Quality Controls", { bef: 2 }),
+      BULL("End-to-end traceability and release readiness"),
+      BULL("Defect leakage, density, stability metrics (MTTR)"),
+      BULL("Automation coverage with KPI governance"),
+      BULL("AI-driven defect insights and regression optimisation"),
+      BULL("Production telemetry feeding back into test strategy"),
 
-          GAP(2),
-          H2("Coverage Journey", { bef: 2 }),
-          TBL([
-            BAR("Month 0",  25, "~25%",  C.g50),
-            BAR("Month 3",  45, "45%",   "0072C3"),
-            BAR("Month 6",  55, "55%",   C.azure),
-            BAR("Month 9",  72, "72%",   C.blue),
-            BAR("Month 12", 82, "80%+",  C.navy),
-          ], W * 0.48),
-        ],
-      ),
+      GAP(2),
+      CALL("Target: 80%+ test automation in 12 months"),
 
+      GAP(2),
+      H2("Coverage Journey", { bef: 2 }),
+      TBL([
+        BAR("Month 0",  25, "~25%",  C.g50, Wh),
+        BAR("Month 3",  45, "45%",   "0072C3", Wh),
+        BAR("Month 6",  55, "55%",   C.azure, Wh),
+        BAR("Month 9",  72, "72%",   C.blue, Wh),
+        BAR("Month 12", 82, "80%+",  C.navy, Wh),
+      ], Wh),
+    ]),
+    oneCol([
       GAP(4),
       H2("Quality Metrics \u2014 Before & After"),
       TBL([
@@ -412,124 +429,128 @@ const doc = new Document({
           DC(e, W*0.30, { c: C.g70, f: alt(i), sz: 8.5 }),
         ]})),
       ], W),
+    ]),
 
 
-      // ─── PAGE 7: MEMBER & PROVIDER EXPERIENCE ─────────────────────────
-      ...SEC("06", "Member & Provider Experience", "Every Operational Improvement Measured by the Human It Serves"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 7 — MEMBER & PROVIDER EXPERIENCE (heading 1col, body 2col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("06", "Member & Provider Experience", "Every Operational Improvement Measured by the Human It Serves"),
       ...Q(
         "The best technology is invisible to the member. The claim processes correctly. The prior auth comes back in hours, not days. The enrollment is seamless. That is the measure. Everything else is infrastructure.",
         "IBM \u2014 Healthcare Payer Design"
       ),
+    ]),
+    twoCol([
+      H2("Claims Operations", { bef: 2 }),
+      BODY("Real-time visibility from receipt through adjudication, settlement, and denial management via CareOps360."),
+      BULL("AI auto-adjudication rules engine"),
+      BULL("Denial pattern analytics by procedure, eligibility, COB"),
+      BULL("Real-time dashboard: volume, TAT, denial drivers"),
+      BULL("SLA-bound adjudication commitments"),
 
-      TWO(
-        [
-          H2("Claims Operations", { bef: 2 }),
-          BODY("Real-time visibility from receipt through adjudication, settlement, and denial management via CareOps360."),
-          BULL("AI auto-adjudication rules engine"),
-          BULL("Denial pattern analytics by procedure, eligibility, COB"),
-          BULL("Real-time dashboard: volume, TAT, denial drivers"),
-          BULL("SLA-bound adjudication commitments"),
+      GAP(4),
+      H2("Enrollment Intelligence", { bef: 2 }),
+      BODY("Transform reactive batch enrollment into proactive, real-time, AI-augmented operations."),
+      BULL("Canonical 834 transformation at intake"),
+      BULL("Real-time validation \u2014 errors in minutes, not hours"),
+      BULL("Shift-left member mastering \u2014 COB resolved earlier"),
+      BULL("Agentic remediation with confidence scoring"),
 
-          GAP(4),
-          H2("Enrollment Intelligence", { bef: 2 }),
-          BODY("Transform reactive batch enrollment into proactive, real-time, AI-augmented operations."),
-          BULL("Canonical 834 transformation at intake"),
-          BULL("Real-time validation \u2014 errors in minutes, not hours"),
-          BULL("Shift-left member mastering \u2014 COB resolved earlier"),
-          BULL("Agentic remediation with confidence scoring"),
-        ],
-        [
-          H2("Prior Authorization", { bef: 2 }),
-          BODY("AI-assisted review: triage, auto-approve low-risk, flag complex cases for expedited human review."),
-          TBL([
-            new TableRow({ children: [HC("Metric", W*0.23), HC("Target", W*0.24)] }),
-            ...[ ["Review Hours",     "\u221230%+"],
-                 ["Urgent SLA",       "100% within 72 hrs"],
-                 ["Backlog",          "Monthly reduction"],
-                 ["Auto-Approval",    ">40% by Month 12"],
-            ].map(([a,b], i) => new TableRow({ children: [DC(a, W*0.23, { b: true, f: alt(i), sz: 8.5 }), VC(b, W*0.24, { sz: 8.5 })] })),
-          ], W * 0.48),
+      COLBRK(),
 
-          GAP(4),
-          H2("Business Domain KPIs", { bef: 2 }),
-          TBL([
-            new TableRow({ children: [HC("Domain", W*0.17), HC("Metric", W*0.20), HC("Target", W*0.11)] }),
-            ...[ ["Claims",     "Cycle time",         "\u221230%"],
-                 ["Enrollment", "Time-to-good",       "\u221240%"],
-                 ["Member",     "First-contact res.",  "+25%"],
-                 ["Provider",   "Auth auto-approve",  ">40%"],
-                 ["IT Ops",     "Auto-resolution",    ">74%"],
-            ].map(([a,b,c], i) => new TableRow({ children: [DC(a, W*0.17, { b: true, f: alt(i), sz: 8.5 }), DC(b, W*0.20, { c: C.g70, f: alt(i), sz: 8.5 }), VC(c, W*0.11, { sz: 8.5, al: AlignmentType.CENTER })] })),
-          ], W * 0.48),
-        ],
-      ),
+      H2("Prior Authorization", { bef: 2 }),
+      BODY("AI-assisted review: triage, auto-approve low-risk, flag complex cases for expedited human review."),
+      TBL([
+        new TableRow({ children: [HC("Metric", Wh*0.46), HC("Target", Wh*0.54)] }),
+        ...[ ["Review Hours",     "\u221230%+"],
+             ["Urgent SLA",       "100% within 72 hrs"],
+             ["Backlog",          "Monthly reduction"],
+             ["Auto-Approval",    ">40% by Month 12"],
+        ].map(([a,b], i) => new TableRow({ children: [DC(a, Wh*0.46, { b: true, f: alt(i), sz: 8.5 }), VC(b, Wh*0.54, { sz: 8.5 })] })),
+      ], Wh),
+
+      GAP(4),
+      H2("Business Domain KPIs", { bef: 2 }),
+      TBL([
+        new TableRow({ children: [HC("Domain", Wh*0.28), HC("Metric", Wh*0.42), HC("Target", Wh*0.30)] }),
+        ...[ ["Claims",     "Cycle time",         "\u221230%"],
+             ["Enrollment", "Time-to-good",       "\u221240%"],
+             ["Member",     "First-contact res.",  "+25%"],
+             ["Provider",   "Auth auto-approve",  ">40%"],
+             ["IT Ops",     "Auto-resolution",    ">74%"],
+        ].map(([a,b,c], i) => new TableRow({ children: [DC(a, Wh*0.28, { b: true, f: alt(i), sz: 8.5 }), DC(b, Wh*0.42, { c: C.g70, f: alt(i), sz: 8.5 }), VC(c, Wh*0.30, { sz: 8.5, al: AlignmentType.CENTER })] })),
+      ], Wh),
+    ]),
 
 
-      // ─── PAGE 8: CAREOPS360 + GOVERNANCE ───────────────────────────────
-      ...SEC("07", "CareOps360 & Governance", "Real-Time Executive Visibility  \u00B7  No Manual Reporting  \u00B7  Live Data, Always"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 8 — CAREOPS360 & GOVERNANCE (heading 1col, body 2col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("07", "CareOps360 & Governance", "Real-Time Executive Visibility  \u00B7  No Manual Reporting  \u00B7  Live Data, Always"),
       ...Q(
         "Horizon\u2019s leadership should never ask \u2018how are we doing?\u2019 and wait for a deck. The answer should be live, accurate, and one click away \u2014 every hour of every day.",
         "IBM \u2014 Executive Visibility"
       ),
+    ]),
+    twoCol([
+      H2("What Is CareOps360?", { bef: 2 }),
+      BODY("IBM\u2019s production-grade executive operations platform \u2014 real-time intelligence across all AMS towers through a single command center. Deployed in production-equivalent environment; architecture-ready for live data."),
 
-      TWO(
-        [
-          H2("What Is CareOps360?", { bef: 2 }),
-          BODY("IBM\u2019s production-grade executive operations platform \u2014 real-time intelligence across all AMS towers through a single command center. Deployed in production-equivalent environment; architecture-ready for live data."),
+      H2("Dashboards", { bef: 4 }),
+      BULL("Executive Overview \u2014 8 real-time KPI tiles"),
+      BULL("Application Health \u2014 ~1,000 app inventory"),
+      BULL("Claims Operations \u2014 Volume, queue, denials"),
+      BULL("Prior Auth \u2014 Backlog, SLA, approval rates"),
+      BULL("Enrollment Intelligence \u2014 Pipeline, surge detection"),
+      BULL("Member Services \u2014 ASA, FCR, chatbot containment"),
+      BULL("AIOps Value \u2014 Savings, shift-left, self-heal"),
+      BULL("Transformation Roadmap \u2014 60 initiatives tracked"),
+      BULL("Capability Uplift \u2014 Certifications, AI readiness"),
 
-          H2("Dashboards", { bef: 4 }),
-          BULL("Executive Overview \u2014 8 real-time KPI tiles"),
-          BULL("Application Health \u2014 ~1,000 app inventory"),
-          BULL("Claims Operations \u2014 Volume, queue, denials"),
-          BULL("Prior Auth \u2014 Backlog, SLA, approval rates"),
-          BULL("Enrollment Intelligence \u2014 Pipeline, surge detection"),
-          BULL("Member Services \u2014 ASA, FCR, chatbot containment"),
-          BULL("AIOps Value \u2014 Savings, shift-left, self-heal"),
-          BULL("Transformation Roadmap \u2014 60 initiatives tracked"),
-          BULL("Capability Uplift \u2014 Certifications, AI readiness"),
-        ],
-        [
-          H2("Metrics Tracked", { bef: 2 }),
-          TBL([
-            new TableRow({ children: [HC("Domain", W*0.17), HC("What\u2019s Tracked", W*0.30)] }),
-            ...[ ["App Ops",       "Availability, MTTR, incidents"],
-                 ["Claims",        "Volume, TAT, denial drivers"],
-                 ["Prior Auth",    "Backlog, SLA, auto-approval"],
-                 ["Enrollment",    "Time-to-good, queue health"],
-                 ["Member Svc",    "ASA, FCR, digital adoption"],
-                 ["AIOps",         "Savings, self-heal events"],
-                 ["Transform",     "Phase progress, risk, velocity"],
-            ].map(([a,b], i) => new TableRow({ children: [DC(a, W*0.17, { b: true, c: C.blue, f: alt(i), sz: 8.5 }), DC(b, W*0.30, { c: C.g70, f: alt(i), sz: 8.5 })] })),
-          ], W * 0.48),
+      COLBRK(),
 
-          GAP(4),
-          H2("Governance Cadence", { bef: 2 }),
-          TBL([
-            new TableRow({ children: [HC("Forum", W*0.14), HC("Cadence", W*0.10), HC("Focus", W*0.23)] }),
-            ...[ ["Ops Review",     "Weekly",     "SLA, MTTR, pipeline velocity"],
-                 ["Exec Briefing",  "Monthly",    "Cost takeout, automation, KPIs"],
-                 ["Board / ELT",    "Quarterly",  "Total value, innovation roadmap"],
-            ].map(([a,b,c], i) => new TableRow({ children: [DC(a, W*0.14, { b: true, f: alt(i), sz: 8.5 }), VC(b, W*0.10, { sz: 8.5, al: AlignmentType.CENTER }), DC(c, W*0.23, { c: C.g70, f: alt(i), sz: 8.5 })] })),
-          ], W * 0.48),
+      H2("Metrics Tracked", { bef: 2 }),
+      TBL([
+        new TableRow({ children: [HC("Domain", Wh*0.34), HC("What\u2019s Tracked", Wh*0.66)] }),
+        ...[ ["App Ops",       "Availability, MTTR, incidents"],
+             ["Claims",        "Volume, TAT, denial drivers"],
+             ["Prior Auth",    "Backlog, SLA, auto-approval"],
+             ["Enrollment",    "Time-to-good, queue health"],
+             ["Member Svc",    "ASA, FCR, digital adoption"],
+             ["AIOps",         "Savings, self-heal events"],
+             ["Transform",     "Phase progress, risk, velocity"],
+        ].map(([a,b], i) => new TableRow({ children: [DC(a, Wh*0.34, { b: true, c: C.blue, f: alt(i), sz: 8.5 }), DC(b, Wh*0.66, { c: C.g70, f: alt(i), sz: 8.5 })] })),
+      ], Wh),
 
-          GAP(2),
-          H2("Access & Security", { bef: 2 }),
-          BULL("Role-based access \u00B7 Token-authenticated sessions"),
-          BULL("HIPAA-compliant \u00B7 No PHI in command center"),
-        ],
-      ),
+      GAP(4),
+      H2("Governance Cadence", { bef: 2 }),
+      TBL([
+        new TableRow({ children: [HC("Forum", Wh*0.28), HC("Cadence", Wh*0.22), HC("Focus", Wh*0.50)] }),
+        ...[ ["Ops Review",     "Weekly",     "SLA, MTTR, pipeline velocity"],
+             ["Exec Briefing",  "Monthly",    "Cost takeout, automation, KPIs"],
+             ["Board / ELT",    "Quarterly",  "Total value, innovation roadmap"],
+        ].map(([a,b,c], i) => new TableRow({ children: [DC(a, Wh*0.28, { b: true, f: alt(i), sz: 8.5 }), VC(b, Wh*0.22, { sz: 8.5, al: AlignmentType.CENTER }), DC(c, Wh*0.50, { c: C.g70, f: alt(i), sz: 8.5 })] })),
+      ], Wh),
+
+      GAP(2),
+      H2("Access & Security", { bef: 2 }),
+      BULL("Role-based access \u00B7 Token-authenticated sessions"),
+      BULL("HIPAA-compliant \u00B7 No PHI in command center"),
+    ]),
 
 
-      // ─── PAGE 9: PHASED ROADMAP ────────────────────────────────────────
-      ...SEC("08", "Phased Delivery Roadmap", "Risk-Controlled  \u00B7  Compounding Value  \u00B7  Zero Disruption"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 9 — PHASED DELIVERY ROADMAP (mostly 1col for wide tables, 2col for details)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("08", "Phased Delivery Roadmap", "Risk-Controlled  \u00B7  Compounding Value  \u00B7  Zero Disruption"),
       ...Q(
         "Every day a claim processes faster, a prior auth returns sooner, or an outage resolves before a provider notices \u2014 that is a day Horizon\u2019s members experience the IBM difference. That starts in Week 1, not Year 2.",
         "IBM Delivery Governance"
       ),
-
       TBL([
         new TableRow({ children: [HC("Phase", W*0.13), HC("Time", W*0.09), HC("Key Deliverables", W*0.48), HC("Value Signal", W*0.30)] }),
         ...[ ["Phase 0\nFoundation",   "0\u20138 Wk",
@@ -554,100 +575,99 @@ const doc = new Document({
           VC(va, W*0.30),
         ]})),
       ], W),
+    ]),
+    twoCol([
+      GAP(4),
+      H2("Transformation Portfolio", { bef: 2 }),
+      BULL("60 initiatives across 3 delivery years"),
+      BULL("25 Year 1 \u2014 Technical Debt, Digital, Payer"),
+      BULL("15 Active / In-Flight at launch"),
+      BULL("All tracked live in CareOps360"),
 
-      GAP(6),
-      TWO(
-        [
-          H2("Transformation Portfolio", { bef: 2 }),
-          BULL("60 initiatives across 3 delivery years"),
-          BULL("25 Year 1 \u2014 Technical Debt, Digital, Payer"),
-          BULL("15 Active / In-Flight at launch"),
-          BULL("All tracked live in CareOps360"),
+      H2("Technical Debt Governance", { bef: 4 }),
+      BULL("All stacks at n\u22121 (one behind LTS)"),
+      BULL("Quarterly version review: IBM + Horizon ARB"),
+      BULL("P1 CVEs: emergency patch within 72 hours"),
+      BULL("Year 1: 25 platform upgrades"),
 
-          GAP(4),
-          H2("Modernization Roadmap", { bef: 2 }),
-          TBL([
-            new TableRow({ children: [HC("Workstream", W*0.17), HC("Timeline", W*0.12)] }),
-            ...[ ["Eligibility",  "Q2\u2013Q4 2026"],
-                 ["COBOL\u2192Java","Q3 2026"],
-                 ["Payments",     "Q3 2026"],
-                 ["Claims Engine","Q1\u2013Q2 2027"],
-                 ["Member Data",  "Q4 2026+"],
-            ].map(([a,b], i) => new TableRow({ children: [DC(a, W*0.17, { b: true, f: alt(i), sz: 8.5 }), VC(b, W*0.12, { sz: 8.5, al: AlignmentType.CENTER })] })),
-          ], W * 0.47 - W*0.18),
-        ],
-        [
-          H2("Technical Debt Governance", { bef: 2 }),
-          BULL("All stacks maintained at n\u22121 (one behind LTS)"),
-          BULL("Quarterly version review: IBM + Horizon ARB"),
-          BULL("Monthly n\u22121 compliance report to CTO"),
-          BULL("P1 CVEs: emergency patch within 72 hours"),
-          BULL("Year 1: 25 platform upgrades (Angular 17, .NET 8, ODM 9.2)"),
+      COLBRK(),
 
-          GAP(4),
-          H2("Cumulative Value Trajectory", { bef: 2 }),
-          TBL([
-            BAR("Month 3",     12, "$1\u20132M",      "0072C3"),
-            BAR("Month 6",     30, "$3\u20135M",      C.azure),
-            BAR("Month 12",    60, "$6\u201310M",     C.blue),
-            BAR("Month 24",   100, "$12\u201318M+",   C.navy),
-          ], W * 0.48),
-        ],
-      ),
+      H2("Modernization Roadmap", { bef: 2 }),
+      TBL([
+        new TableRow({ children: [HC("Workstream", Wh*0.50), HC("Timeline", Wh*0.50)] }),
+        ...[ ["Eligibility Processing",  "Q2\u2013Q4 2026"],
+             ["COBOL\u2192Java Pilot",    "Q3 2026"],
+             ["Payments Settlement",      "Q3 2026"],
+             ["Claims Engine",            "Q1\u2013Q2 2027"],
+             ["Member Data Lake",         "Q4 2026+"],
+        ].map(([a,b], i) => new TableRow({ children: [DC(a, Wh*0.50, { b: true, f: alt(i), sz: 8.5 }), VC(b, Wh*0.50, { sz: 8.5, al: AlignmentType.CENTER })] })),
+      ], Wh),
 
-      GAP(6),
+      GAP(4),
+      H2("Cumulative Value", { bef: 2 }),
+      TBL([
+        BAR("Month 3",     12, "$1\u20132M",      "0072C3", Wh),
+        BAR("Month 6",     30, "$3\u20135M",      C.azure, Wh),
+        BAR("Month 12",    60, "$6\u201310M",     C.blue, Wh),
+        BAR("Month 24",   100, "$12\u201318M+",   C.navy, Wh),
+      ], Wh),
+    ]),
+    oneCol([
+      GAP(4),
       STAT([
         ["~1,000",        "Applications Assessed",   C.blue  ],
         ["COBOL\u2192Java","AI-Assisted Conversion",  C.azure ],
         ["n\u22121/2",     "Stack Governance",         C.teal  ],
         ["Zero",          "Disruption Commitment",    C.purp  ],
       ]),
+    ]),
 
 
-      // ─── PAGE 10: WHY IBM + CALL TO ACTION ─────────────────────────────
-      ...SEC("09", "Why IBM \u2014 and Why Now", "Scale, Depth, Skin in the Game & Next Steps"),
-
+    // ═══════════════════════════════════════════════════════════════════════
+    //  PAGE 10 — WHY IBM + CALL TO ACTION (heading 1col, body 2col, closing 1col)
+    // ═══════════════════════════════════════════════════════════════════════
+    newPage1Col([
+      ...SEC_HEAD("09", "Why IBM \u2014 and Why Now", "Scale, Depth, Skin in the Game & Next Steps"),
       ...Q(
         "IBM\u2019s ultimate accountability is not to a contract \u2014 it is to the 3.7 million members who rely on Horizon\u2019s systems every day. The patient waiting for a prior auth. The provider navigating a claims dispute. The family enrolling for the first time.",
         "IBM Consulting, Healthcare & Payer Delivery"
       ),
+    ]),
+    twoCol([
+      H2("What Differentiates IBM", { bef: 2 }),
+      H3("Skin in the Game"),
+      BODY("Outcome-based SLAs. Targets missed trigger IBM remediation \u2014 not renegotiations. IBM carries the delivery risk.", { sz: 9.5 }),
+      H3("AI at Depth"),
+      BODY("Agentic AI, GenAI, AIOps production-proven at comparable payers. Live today, not future roadmap.", { sz: 9.5 }),
+      H3("Consulting Advantage"),
+      BODY("6,500+ production-tested assets. IBM Build on Bedrock (BOB). Accelerated value from Day 1.", { sz: 9.5 }),
+      H3("Transformation Office"),
+      BODY("Structured quarterly innovation. Governed, prioritized, business-case-backed. Not a slide \u2014 a programme.", { sz: 9.5 }),
+      H3("Innovation Included"),
+      BODY("AI tooling, sprints, accelerators built into base delivery. Not a future line item.", { sz: 9.5 }),
 
-      TWO(
-        [
-          H2("What Differentiates IBM", { bef: 2 }),
-          H3("Skin in the Game"),
-          BODY("Outcome-based SLAs. Targets missed trigger IBM remediation \u2014 not renegotiations. IBM carries the delivery risk.", { sz: 9.5 }),
-          H3("AI at Depth"),
-          BODY("Agentic AI, GenAI, AIOps production-proven at comparable payers. Live today, not future roadmap.", { sz: 9.5 }),
-          H3("Consulting Advantage"),
-          BODY("6,500+ production-tested assets. IBM Build on Bedrock (BOB). Accelerated value from Day 1.", { sz: 9.5 }),
-          H3("Transformation Office"),
-          BODY("Structured quarterly innovation. Governed, prioritized, business-case-backed. Not a slide \u2014 a programme.", { sz: 9.5 }),
-          H3("Innovation Included"),
-          BODY("AI tooling, sprints, accelerators built into base delivery. Not a future line item.", { sz: 9.5 }),
-        ],
-        [
-          H2("Healthcare Payer Pedigree", { bef: 2 }),
-          BULL("9 of top 10 US health payers served"),
-          BULL("AWS Partner of the Year 2025"),
-          BULL("Leader in Enterprise Software Quality & Testing"),
-          BULL("Gartner Leader: 7 Data & AI Magic Quadrants"),
-          BULL("CMS & HIPAA compliance expertise"),
+      COLBRK(),
 
-          GAP(4),
-          H2("Next Steps", { bef: 2 }),
-          H3("Weeks 1\u20132"),
-          BODY("Executive alignment: IBM VP + Horizon CIO/COO confirm scope and governance.", { sz: 9.5 }),
-          H3("Weeks 2\u20134"),
-          BODY("Phase 0 SOW agreed. CareOps360 walkthrough. Innovation Council constituted.", { sz: 9.5 }),
-          H3("Week 4"),
-          BODY("Phase 0 live. IBM and Horizon operate as one integrated team.", { sz: 9.5 }),
+      H2("Healthcare Payer Pedigree", { bef: 2 }),
+      BULL("9 of top 10 US health payers served"),
+      BULL("AWS Partner of the Year 2025"),
+      BULL("Leader in Enterprise Software Quality & Testing"),
+      BULL("Gartner Leader: 7 Data & AI Magic Quadrants"),
+      BULL("CMS & HIPAA compliance expertise"),
 
-          GAP(2),
-          CALL("IBM is ready. Phase 0 mobilizes within 5 business days."),
-        ],
-      ),
+      GAP(4),
+      H2("Next Steps", { bef: 2 }),
+      H3("Weeks 1\u20132"),
+      BODY("Executive alignment: IBM VP + Horizon CIO/COO confirm scope and governance.", { sz: 9.5 }),
+      H3("Weeks 2\u20134"),
+      BODY("Phase 0 SOW agreed. CareOps360 walkthrough. Innovation Council constituted.", { sz: 9.5 }),
+      H3("Week 4"),
+      BODY("Phase 0 live. IBM and Horizon operate as one integrated team.", { sz: 9.5 }),
 
+      GAP(2),
+      CALL("IBM is ready. Phase 0 mobilizes within 5 business days."),
+    ]),
+    oneCol([
       GAP(6),
       STAT([
         ["20K+",  "AI Practitioners",    C.blue  ],
@@ -667,8 +687,8 @@ const doc = new Document({
       P([R("IBM is committed to Horizon\u2019s success \u2014 not as a vendor, but as a transformation partner with shared stakes in every outcome.", { sz: 9.5, i: true, c: C.g70 })], { aft: 6, al: AlignmentType.CENTER }),
       new Paragraph({ children: [], border: { top: { style: BorderStyle.SINGLE, size: 2, color: C.g20 } }, spacing: { before: sp(4), after: sp(3) } }),
       P([R("\u00A9 2026 IBM Corporation  \u00B7  IBM-HZN-AMS-RFP-2026-CAS  \u00B7  Confidential  \u00B7  All figures based on IBM programme data and industry benchmarks.", { sz: 7.5, c: C.g50 })], { al: AlignmentType.CENTER }),
+    ]),
 
-    ]},
   ],
 });
 
