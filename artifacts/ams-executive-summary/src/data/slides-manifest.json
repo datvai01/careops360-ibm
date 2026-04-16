@@ -1,0 +1,82 @@
+[
+  {
+    "id": "ams-es-0001-1111-1111-111111111101",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide01Title.tsx",
+    "title": "AMS Transformation — Executive Summary",
+    "description": "Title slide — IBM × Horizon BCBS AMS Transformation Executive Summary, April 2026",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111102",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide02TheMoment.tsx",
+    "title": "The Moment & The Proposal",
+    "description": "Context — 500 applications, rising operational load, and IBM's three-part proposal",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111103",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide03ExecutiveSnapshot.tsx",
+    "title": "Executive Snapshot",
+    "description": "Four directional targets — 40-50% cost reduction, 25-40% speed, 30% incidents, 30-50% MTTR",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111104",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide04SixTenets.tsx",
+    "title": "Six Core Tenets",
+    "description": "The six operating principles governing every delivery decision",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111105",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide05CurrentState.tsx",
+    "title": "Current State vs. 12-Month Targets",
+    "description": "Six metrics — test automation, MTTR, defect escape, P3/P4 auto-resolution, alert noise, availability",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111106",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide06AIOps.tsx",
+    "title": "AIOps & Agentic AI Operations",
+    "description": "Six purpose-built AI agents with directional value impact and expected operational outcomes",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111107",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide07Platform.tsx",
+    "title": "Platform & Data Modernization",
+    "description": "Integration hub, mainframe modernization, and DataOps — approach and illustrative timeline",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111108",
+    "position": 8,
+    "filepath": "src/pages/slides/Slide08Quality.tsx",
+    "title": "Quality Engineering",
+    "description": "GenAI-assisted QE — automation coverage, defect escape, regression cycle, and MTTD targets",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111109",
+    "position": 9,
+    "filepath": "src/pages/slides/Slide09Roadmap.tsx",
+    "title": "Phased Roadmap & Governance",
+    "description": "Five phases from Foundation to Transform, plus the KPI framework",
+    "speakerNotes": ""
+  },
+  {
+    "id": "ams-es-0001-1111-1111-111111111110",
+    "position": 10,
+    "filepath": "src/pages/slides/Slide10WhyIBM.tsx",
+    "title": "Why IBM",
+    "description": "Five IBM differentiators and four scale statistics — the closing commitment",
+    "speakerNotes": ""
+  }
+]
