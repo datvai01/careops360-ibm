@@ -11,6 +11,7 @@ import financeRouter from "./finance";
 import applicationsRouter from "./applications";
 import ibmamsRouter from "./ibmams";
 import roadmapRouter from "./roadmap";
+import downloadsRouter from "./downloads";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(financeRouter);
 router.use(applicationsRouter);
 router.use(ibmamsRouter);
 router.use(roadmapRouter);
+router.use(downloadsRouter);
 
 export default router;
