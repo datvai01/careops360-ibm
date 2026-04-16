@@ -67,10 +67,10 @@ const TBL = (rows, w = W) => new Table({ width: { size: Math.round(w), type: Wid
 const alt = i => (i % 2 === 0 ? C.white : C.g10);
 
 // Two-column ghost layout
-const TWO = (left, right, sl = 0.47) => TBL([new TableRow({ children: [
+const TWO = (left, right, sl = 0.48) => TBL([new TableRow({ children: [
   gc(left,    W * sl),
-  gc([GAP(0)], W * 0.06),
-  gc(right,   W * (1 - sl - 0.06)),
+  gc([GAP(0)], W * 0.04),
+  gc(right,   W * (1 - sl - 0.04)),
 ]})], W);
 
 // Stat boxes
@@ -390,7 +390,7 @@ const doc = new Document({
             BAR("Month 6",  55, "55%",   C.azure),
             BAR("Month 9",  72, "72%",   C.blue),
             BAR("Month 12", 82, "80%+",  C.navy),
-          ], W * 0.47),
+          ], W * 0.48),
         ],
       ),
 
@@ -449,19 +449,19 @@ const doc = new Document({
                  ["Backlog",          "Monthly reduction"],
                  ["Auto-Approval",    ">40% by Month 12"],
             ].map(([a,b], i) => new TableRow({ children: [DC(a, W*0.23, { b: true, f: alt(i), sz: 8.5 }), VC(b, W*0.24, { sz: 8.5 })] })),
-          ], W * 0.47),
+          ], W * 0.48),
 
           GAP(4),
           H2("Business Domain KPIs", { bef: 2 }),
           TBL([
-            new TableRow({ children: [HC("Domain", W*0.17), HC("Metric", W*0.20), HC("Target", W*0.10)] }),
+            new TableRow({ children: [HC("Domain", W*0.17), HC("Metric", W*0.20), HC("Target", W*0.11)] }),
             ...[ ["Claims",     "Cycle time",         "\u221230%"],
                  ["Enrollment", "Time-to-good",       "\u221240%"],
                  ["Member",     "First-contact res.",  "+25%"],
                  ["Provider",   "Auth auto-approve",  ">40%"],
                  ["IT Ops",     "Auto-resolution",    ">74%"],
-            ].map(([a,b,c], i) => new TableRow({ children: [DC(a, W*0.17, { b: true, f: alt(i), sz: 8.5 }), DC(b, W*0.20, { c: C.g70, f: alt(i), sz: 8.5 }), VC(c, W*0.10, { sz: 8.5, al: AlignmentType.CENTER })] })),
-          ], W * 0.47),
+            ].map(([a,b,c], i) => new TableRow({ children: [DC(a, W*0.17, { b: true, f: alt(i), sz: 8.5 }), DC(b, W*0.20, { c: C.g70, f: alt(i), sz: 8.5 }), VC(c, W*0.11, { sz: 8.5, al: AlignmentType.CENTER })] })),
+          ], W * 0.48),
         ],
       ),
 
@@ -502,7 +502,7 @@ const doc = new Document({
                  ["AIOps",         "Savings, self-heal events"],
                  ["Transform",     "Phase progress, risk, velocity"],
             ].map(([a,b], i) => new TableRow({ children: [DC(a, W*0.17, { b: true, c: C.blue, f: alt(i), sz: 8.5 }), DC(b, W*0.30, { c: C.g70, f: alt(i), sz: 8.5 })] })),
-          ], W * 0.47),
+          ], W * 0.48),
 
           GAP(4),
           H2("Governance Cadence", { bef: 2 }),
@@ -512,7 +512,7 @@ const doc = new Document({
                  ["Exec Briefing",  "Monthly",    "Cost takeout, automation, KPIs"],
                  ["Board / ELT",    "Quarterly",  "Total value, innovation roadmap"],
             ].map(([a,b,c], i) => new TableRow({ children: [DC(a, W*0.14, { b: true, f: alt(i), sz: 8.5 }), VC(b, W*0.10, { sz: 8.5, al: AlignmentType.CENTER }), DC(c, W*0.23, { c: C.g70, f: alt(i), sz: 8.5 })] })),
-          ], W * 0.47),
+          ], W * 0.48),
 
           GAP(2),
           H2("Access & Security", { bef: 2 }),
@@ -591,7 +591,7 @@ const doc = new Document({
             BAR("Month 6",     30, "$3\u20135M",      C.azure),
             BAR("Month 12",    60, "$6\u201310M",     C.blue),
             BAR("Month 24",   100, "$12\u201318M+",   C.navy),
-          ], W * 0.47),
+          ], W * 0.48),
         ],
       ),
 
