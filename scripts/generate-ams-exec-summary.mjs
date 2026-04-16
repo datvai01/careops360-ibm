@@ -1,301 +1,269 @@
 import {
   Document, Packer, Paragraph, Table, TableRow, TableCell,
-  TextRun, HeadingLevel, AlignmentType, BorderStyle, WidthType,
+  TextRun, AlignmentType, BorderStyle, WidthType,
   ShadingType, TableLayoutType, Header, Footer, PageNumber,
-  NumberFormat, convertInchesToTwip, UnderlineType,
-  PageBreak, SectionType
+  convertInchesToTwip, PageBreak
 } from "docx";
 import { writeFileSync } from "fs";
 
-const IBM_BLUE = "0F62FE";
-const IBM_NAVY = "001141";
-const IBM_NAVY2 = "001D6C";
-const IBM_COOL_GRAY = "F2F4F8";
-const IBM_GRAY_70 = "525252";
-const IBM_GRAY_100 = "161616";
-const WHITE = "FFFFFF";
-const GREEN = "198038";
+// Colors
+const IBM_BLUE   = "0F62FE";
+const IBM_NAVY   = "001141";
+const IBM_NAVY2  = "001D6C";
+const GRAY_70    = "525252";
+const GRAY_100   = "161616";
+const WHITE      = "FFFFFF";
+const LIGHT_BLUE = "EBF2FF";
+const LIGHT_BG   = "F2F4F8";
+const GREEN      = "1A7E3B";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Font - use Calibri for maximum compatibility
+const FONT = "Calibri";
 
-const pt = (n) => n * 20; // half-points to twips (1pt = 20 twip)
+// ── Utility functions ─────────────────────────────────────────────────────────
 
-const run = (text, opts = {}) =>
-  new TextRun({ text, font: "IBM Plex Sans", size: pt(10.5), ...opts });
+const twip = (pts) => pts * 20;
 
-const boldRun = (text, opts = {}) =>
-  run(text, { bold: true, ...opts });
+const makeRun = (text, opts = {}) =>
+  new TextRun({ text, font: FONT, size: twip(opts.size || 10.5), ...opts });
 
-const blueRun = (text, opts = {}) =>
-  boldRun(text, { color: IBM_BLUE, ...opts });
+const spacer = () =>
+  new Paragraph({ children: [makeRun("")], spacing: { before: 0, after: 0 } });
 
-const spacer = (pts = 6) =>
-  new Paragraph({
-    children: [new TextRun({ text: "", size: pt(pts) })],
-    spacing: { before: 0, after: 0 },
-  });
-
-const hrLine = () =>
+const blueHR = () =>
   new Paragraph({
     children: [],
-    border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: IBM_BLUE, space: 4 } },
+    border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: IBM_BLUE, space: 4 } },
+    spacing: { before: 80, after: 80 },
+  });
+
+const thinHR = () =>
+  new Paragraph({
+    children: [],
+    border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: "D0D0D0", space: 4 } },
     spacing: { before: 60, after: 60 },
   });
 
-const thinHr = () =>
+const sectionHead = (num, title) => [
   new Paragraph({
     children: [],
-    border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC", space: 2 } },
-    spacing: { before: 40, after: 40 },
-  });
-
-/** Section heading: large IBM blue bold text with blue top border */
-const sectionHeading = (number, title) => [
-  new Paragraph({
-    children: [],
-    border: { top: { style: BorderStyle.SINGLE, size: 12, color: IBM_BLUE, space: 6 } },
-    spacing: { before: pt(16), after: 0 },
+    border: { top: { style: BorderStyle.SINGLE, size: 16, color: IBM_BLUE, space: 8 } },
+    spacing: { before: twip(14), after: 0 },
   }),
   new Paragraph({
     children: [
-      new TextRun({ text: number + "  ", font: "IBM Plex Sans", size: pt(9), color: IBM_BLUE, bold: true }),
-      new TextRun({ text: title.toUpperCase(), font: "IBM Plex Sans", size: pt(13), bold: true, color: IBM_NAVY }),
+      makeRun(num + "  ", { bold: true, color: IBM_BLUE, size: 9 }),
+      makeRun(title.toUpperCase(), { bold: true, color: IBM_NAVY, size: 14 }),
     ],
-    spacing: { before: 40, after: pt(5) },
+    spacing: { before: 60, after: twip(4) },
   }),
 ];
 
-/** Sub-heading within a section */
-const subHeading = (text) =>
+const subHead = (text) =>
   new Paragraph({
-    children: [new TextRun({ text, font: "IBM Plex Sans", size: pt(10.5), bold: true, color: IBM_BLUE })],
-    spacing: { before: pt(8), after: pt(3) },
+    children: [makeRun(text, { bold: true, color: IBM_BLUE, size: 11 })],
+    spacing: { before: twip(8), after: twip(3) },
   });
 
-/** Body paragraph */
-const body = (text, opts = {}) =>
+const bodyPara = (text) =>
   new Paragraph({
-    children: [run(text, { color: IBM_GRAY_100 })],
+    children: [makeRun(text, { color: GRAY_100 })],
     spacing: { before: 60, after: 60 },
-    ...opts,
   });
 
-/** Bullet paragraph */
-const bullet = (text, bold_prefix = "") =>
+const bulletPara = (label, text) =>
   new Paragraph({
     children: [
-      bold_prefix ? boldRun(bold_prefix + " ", { color: IBM_NAVY }) : new TextRun(""),
-      run(text, { color: IBM_GRAY_100 }),
+      makeRun(label ? label + "  " : "", { bold: true, color: IBM_NAVY }),
+      makeRun(text, { color: GRAY_100 }),
     ],
     bullet: { level: 0 },
     spacing: { before: 40, after: 40 },
   });
 
-/** Metric highlight: bold blue number + description */
-const metric = (number, label, description) =>
-  new Paragraph({
-    children: [
-      new TextRun({ text: number + "  ", font: "IBM Plex Sans", size: pt(14), bold: true, color: IBM_BLUE }),
-      new TextRun({ text: label, font: "IBM Plex Sans", size: pt(10.5), bold: true, color: IBM_NAVY }),
-      new TextRun({ text: "  —  " + description, font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_70 }),
-    ],
-    spacing: { before: 60, after: 60 },
-  });
+// Table helpers
+const W = 9360; // content width in DXA (6.5in)
 
-/** Shaded row cell */
-const cell = (text, opts = {}) =>
+const hCell = (text, w) =>
   new TableCell({
     children: [
       new Paragraph({
-        children: [
-          new TextRun({
-            text,
-            font: "IBM Plex Sans",
-            size: pt(9.5),
-            color: opts.color || IBM_GRAY_100,
-            bold: opts.bold || false,
-          }),
-        ],
-        spacing: { before: 60, after: 60 },
-        alignment: opts.align || AlignmentType.LEFT,
-      }),
-    ],
-    margins: { top: 60, bottom: 60, left: 100, right: 100 },
-    shading: opts.shade
-      ? { type: ShadingType.SOLID, fill: opts.shade }
-      : undefined,
-    width: opts.width ? { size: opts.width, type: WidthType.DXA } : undefined,
-    borders: {
-      top: { style: BorderStyle.SINGLE, size: 2, color: "E0E0E0" },
-      bottom: { style: BorderStyle.SINGLE, size: 2, color: "E0E0E0" },
-      left: { style: BorderStyle.SINGLE, size: 2, color: "E0E0E0" },
-      right: { style: BorderStyle.SINGLE, size: 2, color: "E0E0E0" },
-    },
-  });
-
-/** Navy header cell */
-const headerCell = (text, widthDxa) =>
-  new TableCell({
-    children: [
-      new Paragraph({
-        children: [
-          new TextRun({ text, font: "IBM Plex Sans", size: pt(9.5), bold: true, color: WHITE }),
-        ],
+        children: [makeRun(text, { bold: true, color: WHITE, size: 9.5 })],
         spacing: { before: 60, after: 60 },
       }),
     ],
-    margins: { top: 60, bottom: 60, left: 100, right: 100 },
+    margins: { top: 60, bottom: 60, left: 120, right: 120 },
     shading: { type: ShadingType.SOLID, fill: IBM_NAVY },
-    width: widthDxa ? { size: widthDxa, type: WidthType.DXA } : undefined,
+    width: w ? { size: w, type: WidthType.DXA } : undefined,
     borders: {
-      top: { style: BorderStyle.SINGLE, size: 2, color: IBM_BLUE },
-      bottom: { style: BorderStyle.SINGLE, size: 2, color: IBM_BLUE },
-      left: { style: BorderStyle.SINGLE, size: 2, color: IBM_BLUE },
-      right: { style: BorderStyle.SINGLE, size: 2, color: IBM_BLUE },
+      top:    { style: BorderStyle.SINGLE, size: 4, color: IBM_BLUE },
+      bottom: { style: BorderStyle.SINGLE, size: 4, color: IBM_BLUE },
+      left:   { style: BorderStyle.SINGLE, size: 4, color: IBM_BLUE },
+      right:  { style: BorderStyle.SINGLE, size: 4, color: IBM_BLUE },
     },
   });
 
-// ── Document body ─────────────────────────────────────────────────────────────
+const dCell = (text, w, opts = {}) =>
+  new TableCell({
+    children: [
+      new Paragraph({
+        children: [makeRun(text, { bold: opts.bold, color: opts.color || GRAY_100, size: 9.5 })],
+        spacing: { before: 60, after: 60 },
+      }),
+    ],
+    margins: { top: 60, bottom: 60, left: 120, right: 120 },
+    shading: opts.shade ? { type: ShadingType.SOLID, fill: opts.shade } : undefined,
+    width: w ? { size: w, type: WidthType.DXA } : undefined,
+    borders: {
+      top:    { style: BorderStyle.SINGLE, size: 2, color: "DDDDDD" },
+      bottom: { style: BorderStyle.SINGLE, size: 2, color: "DDDDDD" },
+      left:   { style: BorderStyle.SINGLE, size: 2, color: "DDDDDD" },
+      right:  { style: BorderStyle.SINGLE, size: 2, color: "DDDDDD" },
+    },
+  });
 
-const PAGE_W_DXA = 12240; // Letter width in twips (8.5in)
-const MARGIN_DXA = 1080;  // 0.75in margins
-const CONTENT_W  = PAGE_W_DXA - MARGIN_DXA * 2; // usable width
+const statCell = (number, label, w) =>
+  new TableCell({
+    children: [
+      new Paragraph({ children: [makeRun(number, { bold: true, color: IBM_BLUE, size: 20 })], alignment: AlignmentType.CENTER, spacing: { before: 100, after: 40 } }),
+      new Paragraph({ children: [makeRun(label, { bold: true, color: IBM_NAVY, size: 9 })], alignment: AlignmentType.CENTER, spacing: { before: 0, after: 100 } }),
+    ],
+    shading: { type: ShadingType.SOLID, fill: LIGHT_BLUE },
+    margins: { top: 60, bottom: 60, left: 80, right: 80 },
+    width: { size: w, type: WidthType.DXA },
+    borders: {
+      top:    { style: BorderStyle.SINGLE, size: 10, color: IBM_BLUE },
+      bottom: { style: BorderStyle.NONE },
+      left:   { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" },
+      right:  { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" },
+    },
+  });
+
+// ── Build document ────────────────────────────────────────────────────────────
 
 const doc = new Document({
   creator: "IBM Consulting",
   title: "IBM × Horizon BCBS — AMS Transformation Executive Summary",
   description: "Confidential — April 2026",
-  styles: {
-    default: {
-      document: {
-        run: { font: "IBM Plex Sans", size: pt(10.5) },
-      },
-    },
-  },
   sections: [
-    // ── COVER PAGE ────────────────────────────────────────────────────────────
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SECTION 1 — COVER PAGE
+    // ═══════════════════════════════════════════════════════════════════════
     {
       properties: {
         page: {
-          margin: { top: convertInchesToTwip(1.5), bottom: convertInchesToTwip(1.2), left: convertInchesToTwip(1), right: convertInchesToTwip(1) },
+          margin: {
+            top:    convertInchesToTwip(1.5),
+            bottom: convertInchesToTwip(1.0),
+            left:   convertInchesToTwip(1.1),
+            right:  convertInchesToTwip(1.1),
+          },
         },
       },
       children: [
-        // Confidential stamp top right
+        // Confidential line
         new Paragraph({
-          children: [new TextRun({ text: "CONFIDENTIAL", font: "IBM Plex Sans", size: pt(8), bold: true, color: IBM_BLUE, allCaps: true })],
+          children: [makeRun("CONFIDENTIAL  |  APRIL 2026", { bold: true, color: IBM_BLUE, size: 8, allCaps: true })],
           alignment: AlignmentType.RIGHT,
-          spacing: { before: 0, after: pt(60) },
+          spacing: { before: 0, after: twip(8) },
         }),
 
-        spacer(40),
-
-        // IBM accent bar
+        // Blue top rule
         new Paragraph({
           children: [],
-          border: { top: { style: BorderStyle.SINGLE, size: 24, color: IBM_BLUE, space: 0 } },
-          spacing: { before: 0, after: pt(20) },
+          border: { bottom: { style: BorderStyle.SINGLE, size: 28, color: IBM_BLUE } },
+          spacing: { before: 0, after: twip(32) },
         }),
 
-        spacer(16),
-
-        // Title block
+        // Eyebrow
         new Paragraph({
-          children: [new TextRun({ text: "IBM × Horizon Blue Cross Blue Shield", font: "IBM Plex Sans", size: pt(14), color: IBM_BLUE, bold: true })],
-          spacing: { before: 0, after: pt(6) },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "of New Jersey", font: "IBM Plex Sans", size: pt(14), color: IBM_BLUE, bold: true })],
-          spacing: { before: 0, after: pt(24) },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "AMS Transformation", font: "IBM Plex Sans", size: pt(36), bold: true, color: IBM_NAVY })],
-          spacing: { before: 0, after: pt(4) },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "Executive Summary", font: "IBM Plex Sans", size: pt(20), bold: false, color: IBM_GRAY_70 })],
-          spacing: { before: 0, after: pt(32) },
+          children: [makeRun("IBM × Horizon Blue Cross Blue Shield of New Jersey", { bold: true, color: IBM_BLUE, size: 14 })],
+          spacing: { before: 0, after: twip(8) },
         }),
 
-        spacer(20),
-        hrLine(),
-        spacer(20),
-
-        // Key quote
+        // Title
         new Paragraph({
-          children: [
-            new TextRun({ text: '"IBM is not proposing a technology project — IBM is proposing a transformation partnership that embeds AI-driven intelligence into the operating model of Horizon, enabling a future-ready enterprise that is faster, smarter, and more resilient than today."', font: "IBM Plex Sans", size: pt(11), color: IBM_NAVY2, italics: true }),
-          ],
-          spacing: { before: 0, after: pt(24) },
+          children: [makeRun("AMS Transformation", { bold: true, color: IBM_NAVY, size: 36 })],
+          spacing: { before: 0, after: twip(4) },
+        }),
+
+        // Subtitle
+        new Paragraph({
+          children: [makeRun("Executive Summary", { color: GRAY_70, size: 20 })],
+          spacing: { before: 0, after: twip(28) },
+        }),
+
+        blueHR(),
+
+        // Quote
+        new Paragraph({
+          children: [makeRun(
+            "\u201CIBM is not proposing a technology project \u2014 IBM is proposing a transformation " +
+            "partnership that embeds AI-driven intelligence into the operating model of Horizon, enabling " +
+            "a future-ready enterprise that is faster, smarter, and more resilient than today.\u201D",
+            { italics: true, color: IBM_NAVY2, size: 11 }
+          )],
+          spacing: { before: twip(4), after: twip(10) },
           indent: { left: convertInchesToTwip(0.3), right: convertInchesToTwip(0.3) },
         }),
         new Paragraph({
-          children: [new TextRun({ text: "— IBM Consulting, Healthcare & Payer Delivery", font: "IBM Plex Sans", size: pt(9.5), color: IBM_BLUE, bold: true })],
+          children: [makeRun("— IBM Consulting, Healthcare & Payer Delivery", { bold: true, color: IBM_BLUE, size: 9.5 })],
           alignment: AlignmentType.RIGHT,
-          spacing: { before: 0, after: pt(48) },
+          spacing: { before: 0, after: twip(28) },
         }),
 
-        hrLine(),
-        spacer(16),
+        blueHR(),
 
-        // Meta block
-        new Paragraph({
-          children: [new TextRun({ text: "Prepared for:", font: "IBM Plex Sans", size: pt(9.5), bold: true, color: IBM_NAVY })],
-          spacing: { before: 0, after: 0 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "Horizon Healthcare Services", font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_100 })],
-          spacing: { before: 0, after: pt(8) },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "Submitted by:", font: "IBM Plex Sans", size: pt(9.5), bold: true, color: IBM_NAVY })],
-          spacing: { before: 0, after: 0 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "IBM Consulting — Healthcare & Payer Delivery", font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_100 })],
-          spacing: { before: 0, after: pt(8) },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "Date:", font: "IBM Plex Sans", size: pt(9.5), bold: true, color: IBM_NAVY })],
-          spacing: { before: 0, after: 0 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "April 2026", font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_100 })],
-          spacing: { before: 0, after: pt(8) },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "Reference:", font: "IBM Plex Sans", size: pt(9.5), bold: true, color: IBM_NAVY })],
-          spacing: { before: 0, after: 0 },
-        }),
-        new Paragraph({
-          children: [new TextRun({ text: "IBM-HZN-AMS-RFP-2026-CAS", font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_100 })],
-          spacing: { before: 0, after: pt(48) },
-        }),
+        // Document meta
+        spacer(),
+        ...[
+          ["Prepared for:", "Horizon Healthcare Services"],
+          ["Submitted by:", "IBM Consulting — Healthcare & Payer Delivery"],
+          ["Date:", "April 2026"],
+          ["Reference:", "IBM-HZN-AMS-RFP-2026-CAS"],
+        ].flatMap(([label, value]) => [
+          new Paragraph({
+            children: [makeRun(label, { bold: true, color: IBM_NAVY, size: 9.5 })],
+            spacing: { before: twip(4), after: 0 },
+          }),
+          new Paragraph({
+            children: [makeRun(value, { color: GRAY_100 })],
+            spacing: { before: 0, after: twip(4) },
+          }),
+        ]),
 
-        spacer(40),
+        spacer(), spacer(), spacer(),
 
+        // Footer note
         new Paragraph({
-          children: [
-            new TextRun({ text: "Powered by  ", font: "IBM Plex Sans", size: pt(9), color: IBM_GRAY_70 }),
-            new TextRun({ text: "CareOps360  ·  IBM AIOps  ·  IBM Consulting Advantage  ·  ICA", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_BLUE }),
-          ],
-          spacing: { before: 0, after: pt(8) },
+          children: [makeRun("Powered by CareOps360  ·  IBM AIOps  ·  IBM Consulting Advantage  ·  ICA", { bold: true, color: IBM_BLUE, size: 9 })],
+          spacing: { before: twip(6), after: twip(4) },
         }),
         new Paragraph({
-          children: [new TextRun({ text: "© 2026 IBM Corporation. All rights reserved. This document is confidential and intended solely for Horizon Healthcare Services.", font: "IBM Plex Sans", size: pt(8), color: IBM_GRAY_70 })],
+          children: [makeRun(
+            "\u00A9 2026 IBM Corporation. All rights reserved. This document is confidential and intended solely for Horizon Healthcare Services.",
+            { color: GRAY_70, size: 8 }
+          )],
           spacing: { before: 0, after: 0 },
         }),
 
-        // Page break after cover
         new Paragraph({ children: [new PageBreak()], spacing: { before: 0, after: 0 } }),
       ],
     },
 
-    // ── MAIN CONTENT ──────────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════════
+    // SECTION 2 — MAIN CONTENT
+    // ═══════════════════════════════════════════════════════════════════════
     {
       properties: {
         page: {
-          margin: { top: convertInchesToTwip(1), bottom: convertInchesToTwip(0.9), left: convertInchesToTwip(1), right: convertInchesToTwip(1) },
+          margin: {
+            top:    convertInchesToTwip(1.0),
+            bottom: convertInchesToTwip(0.9),
+            left:   convertInchesToTwip(1.1),
+            right:  convertInchesToTwip(1.1),
+          },
         },
       },
       headers: {
@@ -303,11 +271,11 @@ const doc = new Document({
           children: [
             new Paragraph({
               children: [
-                new TextRun({ text: "IBM × Horizon BCBS — AMS Transformation Executive Summary", font: "IBM Plex Sans", size: pt(8.5), color: IBM_GRAY_70 }),
-                new TextRun({ text: "  |  CONFIDENTIAL", font: "IBM Plex Sans", size: pt(8.5), bold: true, color: IBM_BLUE }),
+                makeRun("IBM \u00D7 Horizon BCBS \u2014 AMS Transformation Executive Summary", { color: GRAY_70, size: 8 }),
+                makeRun("  |  CONFIDENTIAL", { bold: true, color: IBM_BLUE, size: 8 }),
               ],
-              border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: IBM_BLUE, space: 4 } },
               alignment: AlignmentType.RIGHT,
+              border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: IBM_BLUE, space: 4 } },
             }),
           ],
         }),
@@ -317,9 +285,8 @@ const doc = new Document({
           children: [
             new Paragraph({
               children: [
-                new TextRun({ text: "© 2026 IBM Corporation   ", font: "IBM Plex Sans", size: pt(8), color: IBM_GRAY_70 }),
-                new TextRun({ text: "Page ", font: "IBM Plex Sans", size: pt(8), color: IBM_GRAY_70 }),
-                new TextRun({ children: [PageNumber.CURRENT], font: "IBM Plex Sans", size: pt(8), color: IBM_GRAY_70 }),
+                makeRun("\u00A9 2026 IBM Corporation   Page ", { color: GRAY_70, size: 8 }),
+                new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: twip(8), color: GRAY_70 }),
               ],
               alignment: AlignmentType.RIGHT,
               border: { top: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC", space: 4 } },
@@ -329,347 +296,265 @@ const doc = new Document({
       },
       children: [
 
-        // ── 1.0 EXECUTIVE SUMMARY ─────────────────────────────────────────────
-        ...sectionHeading("1.0", "Executive Summary"),
-        spacer(4),
-        body("IBM proposes an AI-first operating model that shifts Horizon from reactive support to predictive, self-healing operations—delivering structural cost takeout, faster delivery, and measurable quality across all 500+ applications in scope."),
+        // ── 1.0 Executive Summary ──────────────────────────────────────────
+        ...sectionHead("1.0", "Executive Summary"),
+        bodyPara("IBM proposes an AI-first operating model that shifts Horizon from reactive support to predictive, self-healing operations—delivering structural cost takeout, faster delivery, and measurable quality across all 500+ applications in scope."),
 
-        spacer(6),
-        subHeading("1.1  The Moment"),
-        body("Horizon operates a complex portfolio of approximately 500 applications spanning enrollment, claims adjudication, member services, provider operations, and data platforms. Rising operational load, fragmented tower delivery, and manual processes increase cost and slow modernization. An AI-first, product-oriented operating model is required to deliver structural cost takeout while improving member and provider experience."),
+        spacer(),
+        subHead("1.1  The Moment"),
+        bodyPara("Horizon operates approximately 500 applications spanning enrollment, claims adjudication, member services, provider operations, and data platforms. Rising operational load, fragmented tower delivery, and manual processes increase cost and slow modernization. An AI-first, product-oriented operating model is required to deliver structural cost takeout while improving member and provider experience."),
 
-        spacer(6),
-        subHeading("1.2  What IBM Proposes"),
-        bullet("Transition from reactive support to predictive, self-healing operations using IBM AIOps and Intelligent Cloud Automation (ICA)."),
-        bullet("Integrate Application Management Services (AMS), Quality Engineering (QE), and Data Services into product-aligned pods with end-to-end ownership."),
-        bullet("Embed continuous innovation and modernization within steady-state delivery—delivered through a governed value pipeline, not separate projects."),
+        spacer(),
+        subHead("1.2  What IBM Proposes"),
+        bulletPara("", "Transition from reactive support to predictive, self-healing operations using IBM AIOps and Intelligent Cloud Automation (ICA)."),
+        bulletPara("", "Integrate AMS, Quality Engineering, and Data Services into product-aligned pods with end-to-end ownership."),
+        bulletPara("", "Embed continuous innovation and modernization within steady-state delivery—through a governed value pipeline, not separate projects."),
 
-        spacer(6),
-        subHeading("1.3  Executive Snapshot"),
+        spacer(),
+        subHead("1.3  Executive Snapshot"),
+        spacer(),
 
-        spacer(4),
-        // 4-column snapshot table
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
             new TableRow({
               children: [
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "40–50%", font: "IBM Plex Sans", size: pt(18), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "Structural Cost Takeout", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "operational cost reduction", font: "IBM Plex Sans", size: pt(8.5), color: IBM_GRAY_70 })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 120, bottom: 120, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" } },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "25–40%", font: "IBM Plex Sans", size: pt(18), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "Speed to Value", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "time-to-market acceleration", font: "IBM Plex Sans", size: pt(8.5), color: IBM_GRAY_70 })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 120, bottom: 120, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" }, right: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" } },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "30%", font: "IBM Plex Sans", size: pt(18), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "Incident Reduction", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "improved availability", font: "IBM Plex Sans", size: pt(8.5), color: IBM_GRAY_70 })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 120, bottom: 120, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" }, right: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" } },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "30–50%", font: "IBM Plex Sans", size: pt(18), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "MTTR Reduction", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "target <1.8 hour resolution", font: "IBM Plex Sans", size: pt(8.5), color: IBM_GRAY_70 })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 120, bottom: 120, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" }, right: { style: BorderStyle.NONE } },
-                }),
+                statCell("40–50%", "Structural Cost Takeout", W / 4),
+                statCell("25–40%", "Speed to Value", W / 4),
+                statCell("30%",    "Incident Reduction", W / 4),
+                statCell("30–50%", "MTTR Reduction", W / 4),
+              ],
+            }),
+            new TableRow({
+              children: [
+                dCell("operational cost reduction", W / 4, { shade: LIGHT_BG }),
+                dCell("time-to-market acceleration", W / 4, { shade: LIGHT_BG }),
+                dCell("improved availability", W / 4, { shade: LIGHT_BG }),
+                dCell("target <1.8 hr resolution", W / 4, { shade: LIGHT_BG }),
               ],
             }),
           ],
         }),
-        spacer(4),
         new Paragraph({
-          children: [new TextRun({ text: "All targets are directional. Baselines established in Phase 0 and tracked continuously through executive dashboards.", font: "IBM Plex Sans", size: pt(8.5), color: IBM_GRAY_70, italics: true })],
-          spacing: { before: 40, after: 80 },
+          children: [makeRun("All targets are directional. Baselines established in Phase 0 and tracked through executive dashboards.", { italics: true, color: GRAY_70, size: 8.5 })],
+          spacing: { before: 60, after: 80 },
         }),
 
-        // ── 2.0 TRANSFORMATION OVERVIEW ──────────────────────────────────────
-        ...sectionHeading("2.0", "Transformation Overview"),
-        spacer(4),
-        body("Transformation is embedded into steady-state delivery through an outcome-based governance model—compounding value across operations, engineering, and data. The approach aligns people, process, and platform: product-aligned pods own outcomes end-to-end; automation removes repetitive work; and executive visibility ensures progress is measured transparently."),
+        // ── 2.0 Transformation Overview ───────────────────────────────────
+        ...sectionHead("2.0", "Transformation Overview"),
+        bodyPara("Transformation is embedded into steady-state delivery through an outcome-based governance model—compounding value across operations, engineering, and data. Product-aligned pods own outcomes end-to-end; automation removes repetitive work; and executive visibility ensures progress is measured transparently."),
 
-        spacer(6),
-        subHeading("2.1  Six Core Tenets"),
-        spacer(4),
-
+        spacer(),
+        subHead("2.1  Six Core Tenets"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Tenet", CONTENT_W * 0.3), headerCell("Description", CONTENT_W * 0.7)] }),
-            new TableRow({ children: [cell("AI-First Operating Model", { bold: true, shade: "F7FAFF" }), cell("Embed AI in triage, diagnosis, resolution, test generation, and analytics to shift from reactive to predictive operations.", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Integrated Delivery", { bold: true }), cell("Unified build + run pods across AMS, QE, and Data to reduce handoffs and accelerate change safely.")] }),
-            new TableRow({ children: [cell("Automation & Self-Healing", { bold: true, shade: "F7FAFF" }), cell("Noise reduction, auto-triage, auto-remediation, and runbook automation to eliminate recurring demand.", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Outcome-Driven Transformation", { bold: true }), cell("Apply ticket economics to remove demand; track business impact rather than activity metrics.")] }),
-            new TableRow({ children: [cell("Continuous Innovation", { bold: true, shade: "F7FAFF" }), cell("Modernization sprints and a governed value pipeline to deliver incremental improvements continuously.", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Zero-Disruption Transition", { bold: true }), cell("Risk-controlled onboarding and phased rollout leveraging existing Horizon knowledge to maintain continuity.")] }),
+            new TableRow({ children: [hCell("Tenet", W * 0.32), hCell("Description", W * 0.68)] }),
+            new TableRow({ children: [dCell("AI-First Operating Model", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("Embed AI in triage, diagnosis, resolution, test generation, and analytics to shift from reactive to predictive operations.", W * 0.68, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Integrated Delivery", W * 0.32, { bold: true }), dCell("Unified build + run pods across AMS, QE, and Data to reduce handoffs and accelerate change safely.", W * 0.68)] }),
+            new TableRow({ children: [dCell("Automation & Self-Healing", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("Noise reduction, auto-triage, auto-remediation, and runbook automation to eliminate recurring demand.", W * 0.68, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Outcome-Driven Transformation", W * 0.32, { bold: true }), dCell("Apply ticket economics to remove demand; track business impact rather than activity metrics.", W * 0.68)] }),
+            new TableRow({ children: [dCell("Continuous Innovation", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("Modernization sprints and a governed value pipeline to deliver incremental improvements continuously.", W * 0.68, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Zero-Disruption Transition", W * 0.32, { bold: true }), dCell("Risk-controlled onboarding leveraging existing Horizon knowledge to maintain operational continuity.", W * 0.68)] }),
           ],
         }),
 
-        spacer(8),
-        subHeading("2.2  Current State vs. 12-Month Targets"),
-        spacer(4),
-
+        spacer(),
+        subHead("2.2  Current State vs. 12-Month Targets"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Metric", CONTENT_W * 0.35), headerCell("Current (est.)", CONTENT_W * 0.2), headerCell("12-Month Target", CONTENT_W * 0.27), headerCell("Direction", CONTENT_W * 0.18)] }),
-            new TableRow({ children: [cell("Test Automation Coverage", { bold: true, shade: "F7FAFF" }), cell("~25%", { shade: "F7FAFF" }), cell("80%+", { shade: "F7FAFF", bold: true, color: IBM_BLUE }), cell("↑ 3×", { shade: "F7FAFF", bold: true, color: GREEN })] }),
-            new TableRow({ children: [cell("Mean Time to Resolve (MTTR)", { bold: true }), cell(">4 hours"), cell("<1.8 hours", { bold: true, color: IBM_BLUE }), cell("↓ ~55%", { bold: true, color: GREEN })] }),
-            new TableRow({ children: [cell("Defect Escape to Production", { bold: true, shade: "F7FAFF" }), cell("High / untracked", { shade: "F7FAFF" }), cell("65% reduction", { shade: "F7FAFF", bold: true, color: IBM_BLUE }), cell("↓", { shade: "F7FAFF", bold: true, color: GREEN })] }),
-            new TableRow({ children: [cell("P3/P4 Auto-Resolution", { bold: true }), cell("<10%"), cell(">74%", { bold: true, color: IBM_BLUE }), cell("↑ ~7×", { bold: true, color: GREEN })] }),
-            new TableRow({ children: [cell("Alert Noise per Shift", { bold: true, shade: "F7FAFF" }), cell("Unfiltered high", { shade: "F7FAFF" }), cell(">60% reduced", { shade: "F7FAFF", bold: true, color: IBM_BLUE }), cell("↓", { shade: "F7FAFF", bold: true, color: GREEN })] }),
-            new TableRow({ children: [cell("System Availability", { bold: true }), cell("~99.7%"), cell("99.9%+", { bold: true, color: IBM_BLUE }), cell("↑", { bold: true, color: GREEN })] }),
+            new TableRow({ children: [hCell("Metric", W * 0.36), hCell("Current", W * 0.2), hCell("12-Month Target", W * 0.27), hCell("Trend", W * 0.17)] }),
+            new TableRow({ children: [dCell("Test Automation Coverage", W * 0.36, { bold: true, shade: LIGHT_BG }), dCell("~25%", W * 0.2, { shade: LIGHT_BG }), dCell("80%+", W * 0.27, { bold: true, color: IBM_BLUE, shade: LIGHT_BG }), dCell("↑ 3×", W * 0.17, { bold: true, color: GREEN, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Mean Time to Resolve (MTTR)", W * 0.36, { bold: true }), dCell(">4 hours", W * 0.2), dCell("<1.8 hours", W * 0.27, { bold: true, color: IBM_BLUE }), dCell("↓ ~55%", W * 0.17, { bold: true, color: GREEN })] }),
+            new TableRow({ children: [dCell("Defect Escape to Production", W * 0.36, { bold: true, shade: LIGHT_BG }), dCell("High / untracked", W * 0.2, { shade: LIGHT_BG }), dCell("65% reduction", W * 0.27, { bold: true, color: IBM_BLUE, shade: LIGHT_BG }), dCell("↓", W * 0.17, { bold: true, color: GREEN, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("P3/P4 Auto-Resolution", W * 0.36, { bold: true }), dCell("<10%", W * 0.2), dCell(">74%", W * 0.27, { bold: true, color: IBM_BLUE }), dCell("↑ ~7×", W * 0.17, { bold: true, color: GREEN })] }),
+            new TableRow({ children: [dCell("Alert Noise per Shift", W * 0.36, { bold: true, shade: LIGHT_BG }), dCell("Unfiltered", W * 0.2, { shade: LIGHT_BG }), dCell(">60% reduced", W * 0.27, { bold: true, color: IBM_BLUE, shade: LIGHT_BG }), dCell("↓", W * 0.17, { bold: true, color: GREEN, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("System Availability", W * 0.36, { bold: true }), dCell("~99.7%", W * 0.2), dCell("99.9%+", W * 0.27, { bold: true, color: IBM_BLUE }), dCell("↑", W * 0.17, { bold: true, color: GREEN })] }),
           ],
         }),
 
-        spacer(4),
         new Paragraph({ children: [new PageBreak()], spacing: { before: 0, after: 0 } }),
 
-        // ── 3.0 AIOPS ────────────────────────────────────────────────────────
-        ...sectionHeading("3.0", "AIOps & Agentic AI Operations"),
-        spacer(4),
-        body("IBM's AIOps approach uses correlated telemetry (logs, metrics, traces, events) and operational history (tickets, changes, knowledge) to reduce alert noise, speed triage, and automate common resolutions. Learnings from production continuously feed automation runbooks and quality gates to prevent recurrence."),
+        // ── 3.0 AIOps ─────────────────────────────────────────────────────
+        ...sectionHead("3.0", "AIOps & Agentic AI Operations"),
+        bodyPara("IBM's AIOps platform uses correlated telemetry (logs, metrics, traces, events) and operational history (tickets, changes, knowledge) to reduce alert noise, speed triage, and automate common resolutions. Learnings from production continuously feed automation runbooks and quality gates to prevent recurrence."),
 
-        spacer(6),
-        subHeading("3.1  Purpose-Built AI Agents"),
-        spacer(4),
-
+        spacer(),
+        subHead("3.1  Purpose-Built AI Agents"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Agent Type", CONTENT_W * 0.32), headerCell("Function", CONTENT_W * 0.42), headerCell("Value Impact (dir.)", CONTENT_W * 0.26)] }),
-            new TableRow({ children: [cell("Monitoring & Detection", { bold: true, shade: "F7FAFF" }), cell("Correlation, grouping, anomaly detection", { shade: "F7FAFF" }), cell("$2.5M–$3.5M", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Triage Agent", { bold: true }), cell("Impact-aware routing and prioritization"), cell("$1.3M–$1.5M", { bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Root Cause & Resolution", { bold: true, shade: "F7FAFF" }), cell("Diagnosis, runbook guidance, auto-remediation", { shade: "F7FAFF" }), cell("$2.0M–$3.0M", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Knowledge & Feedback", { bold: true }), cell("Knowledge extraction, continuous learning"), cell("$1.0M–$1.3M", { bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Impact Assessment & Testing", { bold: true, shade: "F7FAFF" }), cell("QE automation and validation", { shade: "F7FAFF" }), cell("$1.2M–$2.0M", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Deployment Agents", { bold: true }), cell("Release automation and risk scoring"), cell("$0.8M–$1.2M", { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [hCell("Agent Type", W * 0.32), hCell("Function", W * 0.42), hCell("Value Impact (dir.)", W * 0.26)] }),
+            new TableRow({ children: [dCell("Monitoring & Detection", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("Correlation, grouping, anomaly detection", W * 0.42, { shade: LIGHT_BG }), dCell("$2.5M–$3.5M", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Triage Agent", W * 0.32, { bold: true }), dCell("Impact-aware routing and prioritization", W * 0.42), dCell("$1.3M–$1.5M", W * 0.26, { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [dCell("Root Cause & Resolution", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("Diagnosis, runbook guidance, auto-remediation", W * 0.42, { shade: LIGHT_BG }), dCell("$2.0M–$3.0M", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Knowledge & Feedback", W * 0.32, { bold: true }), dCell("Knowledge extraction, continuous learning", W * 0.42), dCell("$1.0M–$1.3M", W * 0.26, { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [dCell("Impact Assessment & Testing", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("QE automation and validation", W * 0.42, { shade: LIGHT_BG }), dCell("$1.2M–$2.0M", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Deployment Agents", W * 0.32, { bold: true }), dCell("Release automation and risk scoring", W * 0.42), dCell("$0.8M–$1.2M", W * 0.26, { bold: true, color: IBM_BLUE })] }),
           ],
         }),
 
-        spacer(8),
-        subHeading("3.2  Expected Operational Impact"),
-        bullet(">60% alert noise reduction through correlation and de-duplication, improving engineer focus."),
-        bullet("<1.8 hours MTTR target through intelligent routing, guided diagnostics, and auto-remediation."),
-        bullet(">74% auto-resolution for P3/P4 incidents via self-heal runbooks and workflow automation."),
-        bullet("Closed-loop learning across Incident → Problem → Change to prevent recurrence and reduce demand over time."),
+        spacer(),
+        subHead("3.2  Expected Operational Impact"),
+        bulletPara("", ">60% alert noise reduction through correlation and de-duplication, improving engineer focus on real issues."),
+        bulletPara("", "<1.8 hours MTTR target through intelligent routing, guided diagnostics, and auto-remediation workflows."),
+        bulletPara("", ">74% auto-resolution for P3/P4 incidents via self-heal runbooks and workflow automation."),
+        bulletPara("", "Closed-loop learning across Incident → Problem → Change to prevent recurrence and reduce demand over time."),
 
-        spacer(4),
         new Paragraph({ children: [new PageBreak()], spacing: { before: 0, after: 0 } }),
 
-        // ── 4.0 PLATFORM & DATA ───────────────────────────────────────────────
-        ...sectionHeading("4.0", "Platform & Data Modernization"),
-        spacer(4),
-        body("This workstream modernizes how Horizon integrates, upgrades, and governs platforms—reducing technical debt, improving security posture, and enabling faster change with lower risk. Modernization is delivered as a value chain: standardize integration patterns, instrument for observability, automate operations, and report outcomes through governance."),
+        // ── 4.0 Platform & Data ────────────────────────────────────────────
+        ...sectionHead("4.0", "Platform & Data Modernization"),
+        bodyPara("This workstream modernizes how Horizon integrates, upgrades, and governs platforms—reducing technical debt, improving security posture, and enabling faster change with lower risk. Delivered as a value chain: standardize integration patterns, instrument for observability, automate operations, and report outcomes through governance."),
 
-        bullet("Integration modernization: Evolve from point-to-point and batch-heavy patterns to API-first and event-driven integration."),
-        bullet("Mainframe modernization (phased): API-wrap → rehost → refactor approach with parallel-run validation and risk gates."),
-        bullet("Technical debt governance (n-1 standard): Maintain stacks at n-1 versions with monthly compliance reporting and emergency patching for critical CVEs."),
+        bulletPara("", "Integration modernization: Evolve from point-to-point and batch-heavy patterns to API-first and event-driven integration."),
+        bulletPara("", "Mainframe modernization (phased): API-wrap → rehost → refactor approach with parallel-run validation and risk gates."),
+        bulletPara("", "Technical debt governance (n-1 standard): Maintain stacks at n-1 versions with monthly compliance reporting and emergency patching for critical CVEs."),
 
-        spacer(6),
-        subHeading("4.1  Workstream Timeline"),
-        spacer(4),
-
+        spacer(),
+        subHead("4.1  Workstream Timeline"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Workstream", CONTENT_W * 0.28), headerCell("Approach", CONTENT_W * 0.45), headerCell("Timeline", CONTENT_W * 0.27)] }),
-            new TableRow({ children: [cell("Integration Hub", { bold: true, shade: "F7FAFF" }), cell("API-first hub; event streaming", { shade: "F7FAFF" }), cell("Year 1", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Mainframe Workloads", { bold: true }), cell("API-wrap → rehost → refactor"), cell("Year 1–2", { bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Application Portfolio (~500 apps)", { bold: true, shade: "F7FAFF" }), cell("Assess, rationalize and modernize through ongoing sprints", { shade: "F7FAFF" }), cell("Ongoing", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("DataOps", { bold: true }), cell("Pipeline intelligence + quality engine"), cell("Months 3–12", { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [hCell("Workstream", W * 0.3), hCell("Approach", W * 0.44), hCell("Timeline", W * 0.26)] }),
+            new TableRow({ children: [dCell("Integration Hub", W * 0.3, { bold: true, shade: LIGHT_BG }), dCell("API-first hub; event streaming architecture", W * 0.44, { shade: LIGHT_BG }), dCell("Year 1", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Mainframe Workloads", W * 0.3, { bold: true }), dCell("API-wrap → rehost → refactor with parallel-run validation", W * 0.44), dCell("Year 1–2", W * 0.26, { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [dCell("Application Portfolio (~500 apps)", W * 0.3, { bold: true, shade: LIGHT_BG }), dCell("Assess, rationalize and modernize through ongoing sprints", W * 0.44, { shade: LIGHT_BG }), dCell("Ongoing", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("DataOps", W * 0.3, { bold: true }), dCell("Pipeline intelligence and quality engine", W * 0.44), dCell("Months 3–12", W * 0.26, { bold: true, color: IBM_BLUE })] }),
           ],
         }),
 
-        spacer(4),
         new Paragraph({ children: [new PageBreak()], spacing: { before: 0, after: 0 } }),
 
-        // ── 5.0 QUALITY ENGINEERING ──────────────────────────────────────────
-        ...sectionHeading("5.0", "Quality Engineering"),
-        spacer(4),
-        body("Quality is treated as an always-on control system. GenAI-assisted test generation and maintenance increases automation coverage; shift-left quality gates catch defects earlier; and release readiness is measured continuously to reduce production escapes and incident volumes. Production insights feed back into the test suite so coverage improves with every release."),
+        // ── 5.0 Quality Engineering ────────────────────────────────────────
+        ...sectionHead("5.0", "Quality Engineering"),
+        bodyPara("Quality is treated as an always-on control system. GenAI-assisted test generation and maintenance increases automation coverage; shift-left quality gates catch defects earlier; and release readiness is measured continuously to reduce production escapes and incident volumes. Production insights feed back into the test suite so coverage improves with every release."),
 
-        spacer(6),
-        subHeading("5.1  Quality Progression Targets"),
-        spacer(4),
-
+        spacer(),
+        subHead("5.1  Quality Progression Targets"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Quality Metric", CONTENT_W * 0.3), headerCell("Current", CONTENT_W * 0.18), headerCell("6-Month Target", CONTENT_W * 0.25), headerCell("12-Month Target", CONTENT_W * 0.27)] }),
-            new TableRow({ children: [cell("Automation Coverage", { bold: true, shade: "F7FAFF" }), cell("~25%", { shade: "F7FAFF" }), cell("55%", { shade: "F7FAFF", bold: true }), cell("80%+", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Defect Escape to Production", { bold: true }), cell("High"), cell("40% reduction", { bold: true }), cell("65% reduction", { bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Regression Cycle Time", { bold: true, shade: "F7FAFF" }), cell("Multi-day", { shade: "F7FAFF" }), cell("50% faster", { shade: "F7FAFF", bold: true }), cell("70% faster", { shade: "F7FAFF", bold: true, color: IBM_BLUE })] }),
-            new TableRow({ children: [cell("Mean Time to Detect (MTTD)", { bold: true }), cell(">2 hours"), cell("<30 minutes", { bold: true }), cell("<15 minutes", { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [hCell("Quality Metric", W * 0.32), hCell("Current", W * 0.17), hCell("6-Month Target", W * 0.25), hCell("12-Month Target", W * 0.26)] }),
+            new TableRow({ children: [dCell("Automation Coverage", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("~25%", W * 0.17, { shade: LIGHT_BG }), dCell("55%", W * 0.25, { bold: true, shade: LIGHT_BG }), dCell("80%+", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Defect Escape to Production", W * 0.32, { bold: true }), dCell("High", W * 0.17), dCell("40% reduction", W * 0.25, { bold: true }), dCell("65% reduction", W * 0.26, { bold: true, color: IBM_BLUE })] }),
+            new TableRow({ children: [dCell("Regression Cycle Time", W * 0.32, { bold: true, shade: LIGHT_BG }), dCell("Multi-day", W * 0.17, { shade: LIGHT_BG }), dCell("50% faster", W * 0.25, { bold: true, shade: LIGHT_BG }), dCell("70% faster", W * 0.26, { bold: true, color: IBM_BLUE, shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Mean Time to Detect (MTTD)", W * 0.32, { bold: true }), dCell(">2 hours", W * 0.17), dCell("<30 minutes", W * 0.25, { bold: true }), dCell("<15 minutes", W * 0.26, { bold: true, color: IBM_BLUE })] }),
           ],
         }),
 
-        spacer(4),
         new Paragraph({ children: [new PageBreak()], spacing: { before: 0, after: 0 } }),
 
-        // ── 6.0 PHASED ROADMAP ───────────────────────────────────────────────
-        ...sectionHeading("6.0", "Phased Roadmap & Governance"),
-        spacer(4),
-        body("The transformation follows a structured, risk-controlled journey from stabilization to autonomous operations. Each phase builds on the last—compounding value with every release while protecting operational continuity."),
+        // ── 6.0 Phased Roadmap ─────────────────────────────────────────────
+        ...sectionHead("6.0", "Phased Roadmap & Governance"),
+        bodyPara("The transformation follows a structured, risk-controlled journey from stabilization to autonomous operations. Each phase builds on the last—compounding value with every release while protecting operational continuity throughout."),
 
-        spacer(6),
-        subHeading("6.1  Phased Delivery Roadmap"),
-        spacer(4),
-
+        spacer(),
+        subHead("6.1  Phased Delivery Roadmap"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Phase", CONTENT_W * 0.2), headerCell("Timeframe", CONTENT_W * 0.18), headerCell("Key Deliverables", CONTENT_W * 0.62)] }),
-            new TableRow({ children: [cell("Phase 0 — Foundation", { bold: true, shade: "F7FAFF" }), cell("0–8 weeks", { shade: "F7FAFF" }), cell("Baselines and discovery; transition plan; initial telemetry onboarding and AI enablement", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Phase 1 — Ignite", { bold: true }), cell("1–3 months"), cell("Initial AIOps deployment; QE automation framework; innovation council; quick-win automations")] }),
-            new TableRow({ children: [cell("Phase 2 — Scale", { bold: true, shade: "F7FAFF" }), cell("3–6 months", { shade: "F7FAFF" }), cell("Expand self-heal; agentic triage live; integration modernization pilots; DataOps monitoring expanded", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Phase 3 — Optimize", { bold: true }), cell("6–12 months"), cell("Autonomous ops for common incidents; advanced QE gates; continuous modernization sprints; outcome reporting")] }),
-            new TableRow({ children: [cell("Phase 4 — Transform", { bold: true, shade: "F7FAFF" }), cell("12–24 months", { shade: "F7FAFF" }), cell("Broader autonomy; platform modernization milestones; enterprise observability; co-invest opportunities", { shade: "F7FAFF" })] }),
+            new TableRow({ children: [hCell("Phase", W * 0.22), hCell("Timeframe", W * 0.17), hCell("Key Deliverables", W * 0.61)] }),
+            new TableRow({ children: [dCell("Phase 0 — Foundation", W * 0.22, { bold: true, shade: LIGHT_BG }), dCell("0–8 weeks", W * 0.17, { shade: LIGHT_BG }), dCell("Baselines and discovery; transition plan; telemetry onboarding; AI enablement", W * 0.61, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Phase 1 — Ignite", W * 0.22, { bold: true }), dCell("1–3 months", W * 0.17), dCell("Initial AIOps deployment; QE automation framework; innovation council; quick-win automations", W * 0.61)] }),
+            new TableRow({ children: [dCell("Phase 2 — Scale", W * 0.22, { bold: true, shade: LIGHT_BG }), dCell("3–6 months", W * 0.17, { shade: LIGHT_BG }), dCell("Expand self-heal; agentic triage live; integration modernization pilots; DataOps monitoring expanded", W * 0.61, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Phase 3 — Optimize", W * 0.22, { bold: true }), dCell("6–12 months", W * 0.17), dCell("Autonomous ops for common incidents; advanced QE gates; continuous modernization sprints; outcome reporting", W * 0.61)] }),
+            new TableRow({ children: [dCell("Phase 4 — Transform", W * 0.22, { bold: true, shade: LIGHT_BG }), dCell("12–24 months", W * 0.17, { shade: LIGHT_BG }), dCell("Broader autonomy; platform modernization milestones; enterprise observability; co-invest opportunities", W * 0.61, { shade: LIGHT_BG })] }),
           ],
         }),
 
-        spacer(8),
-        subHeading("6.2  KPI Framework"),
-        spacer(4),
-
+        spacer(),
+        subHead("6.2  KPI Framework"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
-            new TableRow({ children: [headerCell("Value Area", CONTENT_W * 0.28), headerCell("Primary KPIs", CONTENT_W * 0.38), headerCell("Measurement Source", CONTENT_W * 0.34)] }),
-            new TableRow({ children: [cell("Operational Excellence", { bold: true, shade: "F7FAFF" }), cell("MTTR, incident volume, availability", { shade: "F7FAFF" }), cell("ITSM + monitoring + AIOps telemetry", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Automation & Self-Heal", { bold: true }), cell("Auto-resolution %, self-heal count, noise reduction"), cell("ICA/AIOps telemetry")] }),
-            new TableRow({ children: [cell("Quality Engineering", { bold: true, shade: "F7FAFF" }), cell("Automation coverage, defect leakage, regression time", { shade: "F7FAFF" }), cell("QE toolchain + CI/CD", { shade: "F7FAFF" })] }),
-            new TableRow({ children: [cell("Modernization", { bold: true }), cell("Upgrade velocity, n-1 compliance %, tech debt burndown"), cell("Roadmap + CMDB + security scans")] }),
-            new TableRow({ children: [cell("Business Outcomes", { bold: true, shade: "F7FAFF" }), cell("Claims cycle time, enrollment time-to-good, ASA/FCR", { shade: "F7FAFF" }), cell("Ops domain dashboards", { shade: "F7FAFF" })] }),
+            new TableRow({ children: [hCell("Value Area", W * 0.28), hCell("Primary KPIs", W * 0.4), hCell("Measurement Source", W * 0.32)] }),
+            new TableRow({ children: [dCell("Operational Excellence", W * 0.28, { bold: true, shade: LIGHT_BG }), dCell("MTTR, incident volume, availability", W * 0.4, { shade: LIGHT_BG }), dCell("ITSM + monitoring + AIOps telemetry", W * 0.32, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Automation & Self-Heal", W * 0.28, { bold: true }), dCell("Auto-resolution %, self-heal count, noise reduction", W * 0.4), dCell("ICA / AIOps telemetry", W * 0.32)] }),
+            new TableRow({ children: [dCell("Quality Engineering", W * 0.28, { bold: true, shade: LIGHT_BG }), dCell("Automation coverage, defect leakage, regression time", W * 0.4, { shade: LIGHT_BG }), dCell("QE toolchain + CI/CD", W * 0.32, { shade: LIGHT_BG })] }),
+            new TableRow({ children: [dCell("Modernization", W * 0.28, { bold: true }), dCell("Upgrade velocity, n-1 compliance %, tech debt burndown", W * 0.4), dCell("Roadmap + CMDB + security scans", W * 0.32)] }),
+            new TableRow({ children: [dCell("Business Outcomes", W * 0.28, { bold: true, shade: LIGHT_BG }), dCell("Claims cycle time, enrollment time-to-good, ASA/FCR", W * 0.4, { shade: LIGHT_BG }), dCell("Ops domain dashboards", W * 0.32, { shade: LIGHT_BG })] }),
           ],
         }),
+        bodyPara("Reporting is transparent: operational dashboards reviewed monthly; executive outcomes reviewed quarterly. A continuous improvement loop ensures production insights feed both QE and automation backlogs."),
 
-        spacer(6),
-        body("Reporting is transparent: operational dashboards are reviewed monthly, and executive outcomes are reviewed quarterly. A continuous improvement loop ensures production insights feed both QE and automation backlogs."),
-
-        spacer(4),
         new Paragraph({ children: [new PageBreak()], spacing: { before: 0, after: 0 } }),
 
-        // ── 7.0 WHY IBM ──────────────────────────────────────────────────────
-        ...sectionHeading("7.0", "Why IBM"),
-        spacer(4),
-        body("IBM brings deep institutional knowledge, healthcare payer expertise, and proven delivery at scale. Our platform assets are production-grade—not proofs-of-concept—and our governance model aligns teams to measurable outcomes."),
+        // ── 7.0 Why IBM ────────────────────────────────────────────────────
+        ...sectionHead("7.0", "Why IBM"),
+        bodyPara("IBM brings deep institutional knowledge, healthcare payer expertise, and proven delivery at scale. Our platform assets are production-grade — not proofs-of-concept — and our governance model aligns teams to measurable outcomes."),
 
-        spacer(6),
-        subHeading("7.1  IBM Differentiators"),
-        bullet("Deep Horizon institutional knowledge and proven delivery execution across the full application estate."),
-        bullet("Production-grade assets — AIOps, ICA, CareOps360, IBM Consulting Advantage — aligned to enterprise governance from Day 1."),
-        bullet("Healthcare payer domain expertise with compliance-first delivery covering claims, enrollment, and member services."),
-        bullet("Outcome-based accountability with committed SLAs tied to measurable business outcomes and transparent monthly reporting."),
-        bullet("Global delivery network with 24×7 coverage, local leadership engagement, and dedicated Horizon squads."),
+        spacer(),
+        subHead("7.1  IBM Differentiators"),
+        bulletPara("", "Deep Horizon institutional knowledge and proven delivery execution across the full application estate."),
+        bulletPara("", "Production-grade assets — AIOps, ICA, CareOps360, IBM Consulting Advantage — aligned to enterprise governance from Day 1."),
+        bulletPara("", "Healthcare payer domain expertise with compliance-first delivery covering claims, enrollment, and member services."),
+        bulletPara("", "Outcome-based accountability with committed SLAs tied to measurable business outcomes and transparent monthly reporting."),
+        bulletPara("", "Global delivery network with 24×7 coverage, local leadership engagement, and dedicated Horizon squads."),
 
-        spacer(8),
-        subHeading("7.2  IBM at Scale — Behind This Proposal"),
-        spacer(4),
-
+        spacer(),
+        subHead("7.2  IBM at Scale — Behind This Proposal"),
+        spacer(),
         new Table({
-          width: { size: CONTENT_W, type: WidthType.DXA },
+          width: { size: W, type: WidthType.DXA },
           layout: TableLayoutType.FIXED,
           rows: [
             new TableRow({
               children: [
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "20,000+", font: "IBM Plex Sans", size: pt(20), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "AI & Data Practitioners", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 140, bottom: 140, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" } },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "81,000+", font: "IBM Plex Sans", size: pt(20), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "Cloud & Architecture Experts", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 140, bottom: 140, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" }, right: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" } },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "40,000+", font: "IBM Plex Sans", size: pt(20), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "AI/Analytics Engagements", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 140, bottom: 140, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" }, right: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" } },
-                }),
-                new TableCell({
-                  children: [
-                    new Paragraph({ children: [new TextRun({ text: "15,000+", font: "IBM Plex Sans", size: pt(20), bold: true, color: IBM_BLUE })], alignment: AlignmentType.CENTER }),
-                    new Paragraph({ children: [new TextRun({ text: "Delivery Resources across 40 Global Centres", font: "IBM Plex Sans", size: pt(9), bold: true, color: IBM_NAVY })], alignment: AlignmentType.CENTER }),
-                  ],
-                  shading: { type: ShadingType.SOLID, fill: "EBF2FF" },
-                  margins: { top: 140, bottom: 140, left: 80, right: 80 },
-                  width: { size: CONTENT_W / 4, type: WidthType.DXA },
-                  borders: { top: { style: BorderStyle.SINGLE, size: 8, color: IBM_BLUE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.SINGLE, size: 2, color: "CCCCCC" }, right: { style: BorderStyle.NONE } },
-                }),
+                statCell("20,000+",  "AI & Data Practitioners",              W / 4),
+                statCell("81,000+",  "Cloud & Architecture Experts",          W / 4),
+                statCell("40,000+",  "AI/Analytics Engagements Delivered",    W / 4),
+                statCell("15,000+",  "Delivery Resources across 40 Centres",  W / 4),
               ],
             }),
           ],
         }),
 
-        spacer(10),
-        hrLine(),
-        spacer(6),
+        spacer(), spacer(),
+        blueHR(),
+        spacer(),
 
         // Closing statement
         new Paragraph({
           children: [
-            new TextRun({ text: "IBM's commitment to Horizon is not measured in tickets resolved or servers managed — it is measured in ", font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_100, italics: true }),
-            new TextRun({ text: "business outcomes delivered", font: "IBM Plex Sans", size: pt(10.5), bold: true, color: IBM_NAVY, italics: true }),
-            new TextRun({ text: ". Every initiative in this proposal is connected to a measurable result — and every result is owned.", font: "IBM Plex Sans", size: pt(10.5), color: IBM_GRAY_100, italics: true }),
+            makeRun(
+              "\u201CIBM\u2019s commitment to Horizon is not measured in tickets resolved or servers managed \u2014 it is measured in ",
+              { italics: true, color: GRAY_100 }
+            ),
+            makeRun("business outcomes delivered", { bold: true, italics: true, color: IBM_NAVY }),
+            makeRun(". Every initiative in this proposal is connected to a measurable result \u2014 and every result is owned.\u201D", { italics: true, color: GRAY_100 }),
           ],
           spacing: { before: 80, after: 80 },
           indent: { left: convertInchesToTwip(0.3), right: convertInchesToTwip(0.3) },
         }),
-
-        spacer(8),
-
         new Paragraph({
-          children: [new TextRun({ text: "© 2026 IBM Corporation. All rights reserved. Confidential — prepared exclusively for Horizon Healthcare Services. Ref: IBM-HZN-AMS-RFP-2026-CAS", font: "IBM Plex Sans", size: pt(8), color: IBM_GRAY_70 })],
+          children: [makeRun("— IBM Consulting, Healthcare & Payer Delivery", { bold: true, color: IBM_BLUE, size: 9.5 })],
+          alignment: AlignmentType.RIGHT,
+          spacing: { before: 0, after: twip(16) },
+        }),
+
+        thinHR(),
+        new Paragraph({
+          children: [makeRun(
+            "\u00A9 2026 IBM Corporation. All rights reserved. Confidential \u2014 prepared exclusively for Horizon Healthcare Services.  Ref: IBM-HZN-AMS-RFP-2026-CAS",
+            { color: GRAY_70, size: 8 }
+          )],
           alignment: AlignmentType.CENTER,
           spacing: { before: 40, after: 0 },
         }),
@@ -678,8 +563,6 @@ const doc = new Document({
   ],
 });
 
-// ── Write to disk ─────────────────────────────────────────────────────────────
-
 const buffer = await Packer.toBuffer(doc);
 writeFileSync("attached_assets/IBM_Horizon_AMS_Executive_Summary_April2026.docx", buffer);
-console.log("Done — attached_assets/IBM_Horizon_AMS_Executive_Summary_April2026.docx");
+console.log("Done — attached_assets/IBM_Horizon_AMS_Executive_Summary_April2026.docx (" + buffer.length + " bytes)");
