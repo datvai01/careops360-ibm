@@ -1,0 +1,145 @@
+Objective
+
+Transform the document into a boardroom-ready executive report that is:
+
+Crisp and highly scannable
+Visually structured
+Consistent across all sections
+Focused on executive readability
+Formatting Principles to Apply
+1. Executive Readability First
+Every section should be readable in 30–60 seconds
+Break dense paragraphs into:
+2–3 line max paragraphs OR
+Bullet points
+Avoid long text blocks
+2. Strong Section Hierarchy
+
+Apply a clear 3-level hierarchy:
+
+Level 1: Section Titles
+(e.g., “01 EXECUTIVE SUMMARY”)
+Bold, large font
+Clear spacing before and after
+Level 2: Subsection Headers
+(e.g., “The Situation”, “What IBM Proposes”)
+Bold
+Slightly smaller than section titles
+Level 3: Content Labels
+(e.g., “AI-Assisted Development”, “Commit-Level AI Review”)
+Bold inline headers or mini-headings
+
+Ensure hierarchy is consistent across the entire document.
+
+3. Convert Content into Structured Blocks
+
+Wherever possible, convert text into:
+
+Bullet points (max 5 per section)
+Tables for comparisons
+Numbered lists for sequences
+
+Avoid:
+
+Paragraph-heavy sections
+Mixed formatting styles
+4. Premium Table Formatting
+
+For all tables:
+
+Use clear column headers
+Keep column widths balanced
+Align:
+Text → left
+Numbers → right or centered
+Highlight header row (bold)
+Ensure consistent spacing inside cells
+
+Use tables for:
+
+KPIs
+Comparisons (Today vs Future)
+Roadmaps
+Metrics
+5. KPI & Metric Presentation
+Keep each KPI clean and tight:
+Value on one line
+Label directly below or beside
+Ensure consistent format:
+Example: 80%+ Test Automation Coverage
+Avoid splitting numbers across lines
+Align similar metrics visually
+6. Bullet & List Discipline
+Max 4–5 bullets per section
+Each bullet:
+One idea only
+1–2 lines max
+Start bullets with strong action/result words:
+“Reduces…”
+“Enables…”
+“Improves…”
+
+Avoid:
+
+Long sentence bullets
+Inconsistent punctuation
+7. Quote Styling (Executive Voice)
+Format all quotes consistently:
+Italicized
+Separated with spacing
+Keep attribution clean and aligned
+Ensure quotes feel like executive statements, not body text
+8. Consistent Spacing System
+
+Apply a uniform spacing system:
+
+Section → Section: generous spacing
+Header → Content: medium spacing
+Bullet → Bullet: tight spacing
+
+Remove:
+
+Random blank lines
+Uneven gaps
+9. Clean Visual Flow
+
+Ensure each section follows a logical pattern:
+
+Header → Context → Structured Content → Metrics (if applicable)
+
+Avoid:
+
+Jumping between styles
+Mixing tables, paragraphs, and bullets randomly
+10. Language Tightening (Light Touch Only)
+
+Without changing meaning:
+
+Remove filler words
+Shorten long sentences
+Improve clarity and sharpness
+
+Example:
+
+“It is important to note that…” → remove
+“IBM is proposing that…” → “IBM proposes…”
+11. Consistency Across Entire Document
+
+Ensure:
+
+Same font and sizing throughout
+Same bullet style everywhere
+Same table style everywhere
+Same tone (executive, confident, concise)
+Do NOT
+Change business meaning
+Remove key content
+Add new ideas
+Over-design or introduce UI elements
+Expected Output
+
+A client-ready, executive-grade consulting document that:
+
+Looks clean and intentional
+Reads fast and clearly
+Feels like a polished proposal ready for CIO / ELT review
