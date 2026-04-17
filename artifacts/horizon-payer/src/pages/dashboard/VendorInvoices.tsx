@@ -19,7 +19,9 @@ import {
   FileTextIcon,
   FilterIcon,
   ChevronDownIcon,
+  DownloadIcon,
 } from "lucide-react";
+import * as XLSX from "xlsx";
 
 const IBM_BLUE = "#0f62fe";
 
@@ -665,6 +667,57 @@ export default function VendorInvoices() {
       {/* ══ IBM OVERVIEW ════════════════════════════════════════ */}
       {activeView === "overview" && (
         <div className="space-y-4">
+          {/* Export button */}
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const rows = displayInvoices.map((inv) => ({
+                  "Invoice ID": inv.id,
+                  Vendor: inv.vendor,
+                  "Work Order": inv.workNumber,
+                  "Service Category": inv.serviceCategory,
+                  "Invoice Date": inv.invoiceDate,
+                  "Amount (USD)": inv.amount,
+                  Status: inv.status,
+                  "Payment Status": inv.paymentStatus,
+                  "Age (days)": inv.ageDays,
+                  "Cycle Time (days)": inv.cycleTimeDays ?? "",
+                  "Has Exception": inv.hasException ? "Yes" : "No",
+                  "Exception Note": inv.exceptionNote ?? "",
+                }));
+                const totalAmount = displayInvoices.reduce((s, i) => s + (i.amount || 0), 0);
+                const summary = [
+                  { Metric: "Total Invoices", Value: displayInvoices.length },
+                  { Metric: "Total Amount (USD)", Value: totalAmount },
+                  { Metric: "Processed", Value: displayInvoices.filter((i) => i.status === "Processed").length },
+                  { Metric: "Pending", Value: displayInvoices.filter((i) => i.status === "Pending").length },
+                  { Metric: "On Hold", Value: displayInvoices.filter((i) => i.status === "On Hold").length },
+                  { Metric: "With Exceptions", Value: displayInvoices.filter((i) => i.hasException).length },
+                  { Metric: "Filter: Category", Value: selectedCategory ?? "All" },
+                  { Metric: "Filter: Status", Value: selectedStatus ?? "All" },
+                  { Metric: "Filter: Date From", Value: dateFrom || "—" },
+                  { Metric: "Filter: Date To", Value: dateTo || "—" },
+                  { Metric: "Export Date", Value: new Date().toISOString().slice(0, 10) },
+                ];
+                const wb = XLSX.utils.book_new();
+                const wsSum = XLSX.utils.json_to_sheet(summary);
+                wsSum["!cols"] = [{ wch: 24 }, { wch: 24 }];
+                XLSX.utils.book_append_sheet(wb, wsSum, "Summary");
+                const wsInv = XLSX.utils.json_to_sheet(rows);
+                wsInv["!cols"] = Object.keys(rows[0] ?? {}).map((k) => ({ wch: Math.max(k.length + 2, 16) }));
+                XLSX.utils.book_append_sheet(wb, wsInv, "IBM Invoices");
+                XLSX.writeFile(wb, `IBM_Vendor_Invoices_${new Date().toISOString().slice(0, 10)}.xlsx`);
+              }}
+              disabled={displayInvoices.length === 0}
+              className="flex items-center gap-1.5 h-8 px-3 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 flex-shrink-0"
+            >
+              <DownloadIcon className="w-3.5 h-3.5" />
+              Export to Excel
+            </Button>
+          </div>
+
           {/* Category filter pill strip */}
           <div className="flex flex-wrap gap-1.5">
             {byCategory.map((cat) => {

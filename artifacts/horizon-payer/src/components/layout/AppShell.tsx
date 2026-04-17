@@ -42,7 +42,6 @@ type NavItem = { name: string; path: string; icon: React.ElementType };
 type NavGroup = { label: string; items: NavItem[] };
 
 const EXPORT_ENABLED_PATHS = new Set<string>([
-  "/dashboard/vendor-invoices",
   "/dashboard/providers",
 ]);
 
