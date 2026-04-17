@@ -806,10 +806,10 @@ function InitiativeFormModal({
 type IbmAsset = { name: string; tag: string; tagColor: string; value: string; isBob?: boolean };
 
 const IBM_BOB: IbmAsset = {
-  name: "IBM BOB — Business Operations Blueprint",
-  tag: "Core Asset",
+  name: "IBM BOB — Build Once, Benefit",
+  tag: "Reusable Asset Library",
   tagColor: "bg-[#0f62fe] text-white",
-  value: "Pre-configured payer operations template suite covering member enrollment, claims adjudication, prior authorization, provider network management, and contact center routing. Delivers reference architectures, integration patterns, and governance playbooks tuned to Blue Cross Blue Shield operating models — accelerating delivery by 30–40% by eliminating design-phase rework.",
+  value: "IBM's enterprise reusable asset library (bob.ibm.com) — a curated catalog of pre-built solution accelerators, reference architectures, code patterns, and delivery playbooks contributed by IBM Consulting practitioners worldwide. Teams build once and benefit many times: assets are vetted, version-controlled, and tagged by industry and platform so engagements can compose proven components instead of starting from scratch. For Horizon, BOB seeds delivery with payer-tested patterns for claims, enrollment, prior auth, and provider workflows — compressing design and build effort by 30–40% and standardizing quality across every release.",
   isBob: true,
 };
 
