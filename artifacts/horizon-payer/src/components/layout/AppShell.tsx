@@ -24,7 +24,10 @@ import {
   GitMerge,
   TrendingUp,
   Award,
+  DownloadIcon,
+  LoaderIcon,
 } from "lucide-react";
+import { useExportAllData } from "@/hooks/useExportAllData";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -184,6 +187,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [resetTimers]);
 
   const activeAlerts = alerts?.filter(a => a.status === "active" && a.severity === "critical") || [];
+  const { trigger: doExport, exporting } = useExportAllData();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -316,6 +320,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="w-2 h-2 rounded-full bg-status-green mr-2 animate-pulse"></div>
               Updated {lastRefreshed}s ago
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={doExport}
+              disabled={exporting}
+              className="hidden sm:flex items-center gap-1.5 h-8 px-3 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5"
+            >
+              {exporting ? (
+                <LoaderIcon className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <DownloadIcon className="w-3.5 h-3.5" />
+              )}
+              {exporting ? "Exporting…" : "Export to Excel"}
+            </Button>
 
             <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
