@@ -26,6 +26,7 @@ import {
   Activity,
   Bell,
   Target,
+  Wrench,
   Layers,
   TrendingUp,
   Zap,
@@ -131,26 +132,32 @@ function exportToXLSX(data: RoadmapInitiative[], filename: string) {
 type SectionKey = "upgrade" | "transformation" | "ticket";
 type YearFilter = 0 | 1 | 2 | 3;
 
-const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiativeType: string; color: string; accent: string; icon: React.ReactNode; desc: string }[] = [
-  {
-    key: "upgrade",
-    label: "Technical Debt Removal",
-    shortLabel: "Tech Debt",
-    initiativeType: "Upgrade",
-    color: "text-blue-700 dark:text-blue-400",
-    accent: "border-blue-500 bg-blue-50 dark:bg-blue-950/40",
-    icon: <Layers className="h-4 w-4" />,
-    desc: "Legacy upgrades, platform modernization, infrastructure refresh, security & compliance upgrades",
-  },
+type SectionTier = "STRATEGIC" | "TACTICAL";
+
+const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiativeType: string; color: string; accent: string; icon: React.ReactNode; desc: string; tier: SectionTier; tierBadge: string }[] = [
   {
     key: "transformation",
-    label: "Transformative Roadmap",
+    label: "Transformation Roadmap",
     shortLabel: "Strategic",
     initiativeType: "Transformation",
     color: "text-purple-700 dark:text-purple-400",
     accent: "border-purple-500 bg-purple-50 dark:bg-purple-950/40",
-    icon: <TrendingUp className="h-4 w-4" />,
+    icon: <Target className="h-4 w-4" />,
     desc: "AI-driven operations, intelligent automation, GenAI, platform modernization, CareOps360",
+    tier: "STRATEGIC",
+    tierBadge: "border-purple-300 bg-purple-100 text-purple-800 dark:border-purple-700 dark:bg-purple-900/60 dark:text-purple-200",
+  },
+  {
+    key: "upgrade",
+    label: "Technical Remediation",
+    shortLabel: "Tech Remediation",
+    initiativeType: "Upgrade",
+    color: "text-blue-700 dark:text-blue-400",
+    accent: "border-blue-500 bg-blue-50 dark:bg-blue-950/40",
+    icon: <Wrench className="h-4 w-4" />,
+    desc: "Legacy upgrades, platform modernization, infrastructure refresh, security & compliance upgrades",
+    tier: "TACTICAL",
+    tierBadge: "border-blue-300 bg-blue-100 text-blue-800 dark:border-blue-700 dark:bg-blue-900/60 dark:text-blue-200",
   },
   {
     key: "ticket",
@@ -161,6 +168,8 @@ const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiative
     accent: "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40",
     icon: <Zap className="h-4 w-4" />,
     desc: "Incident reduction, automation of repetitive work, shift-left strategies, self-service enablement",
+    tier: "TACTICAL",
+    tierBadge: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200",
   },
 ];
 
@@ -1416,7 +1425,7 @@ function SectionView({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function DigitalRoadmap() {
-  const [activeSection, setActiveSection] = useState<SectionKey>("upgrade");
+  const [activeSection, setActiveSection] = useState<SectionKey>("transformation");
   const [selectedInitiative, setSelectedInitiative] = useState<RoadmapInitiative | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<number>>(new Set());
 
@@ -1546,10 +1555,19 @@ export default function DigitalRoadmap() {
             <span className={cn("mt-0.5 flex-shrink-0", activeSection === sec.key ? sec.color : "text-muted-foreground")}>
               {sec.icon}
             </span>
-            <div className="min-w-0">
-              <p className={cn("text-sm font-semibold leading-snug", activeSection === sec.key ? sec.color : "text-foreground")}>
-                {sec.label}
-              </p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className={cn("text-sm font-semibold leading-snug", activeSection === sec.key ? sec.color : "text-foreground")}>
+                  {sec.label}
+                </p>
+                <span className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase leading-none",
+                  sec.tierBadge
+                )}>
+                  {sec.tier === "STRATEGIC" ? <Target className="h-2.5 w-2.5" /> : <Wrench className="h-2.5 w-2.5" />}
+                  {sec.tier}
+                </span>
+              </div>
               <p className="text-xs text-muted-foreground leading-snug mt-0.5 hidden sm:block line-clamp-2">{sec.desc}</p>
             </div>
           </button>
