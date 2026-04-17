@@ -90,6 +90,183 @@ type Invoice = {
   exceptionNote?: string | null;
 };
 
+// ── Export to Excel: full database snapshot across multiple sheets ───────────
+function exportVendorInvoicesToExcel(invoices: Invoice[]) {
+  if (invoices.length === 0) return;
+
+  const wb = XLSX.utils.book_new();
+  const today = new Date().toISOString().slice(0, 10);
+
+  // ── Sheet 1: Executive Summary ─────────────────────────────────────────────
+  const totalAmount = invoices.reduce((s, i) => s + (i.amount || 0), 0);
+  const processed = invoices.filter((i) => i.status === "Processed");
+  const pending = invoices.filter((i) => i.status === "Pending");
+  const onHold = invoices.filter((i) => i.status === "On Hold");
+  const paid = invoices.filter((i) => i.paymentStatus === "Paid");
+  const unpaid = invoices.filter((i) => i.paymentStatus !== "Paid");
+  const exceptions = invoices.filter((i) => i.hasException === 1);
+  const withCycle = invoices.filter((i) => i.cycleTimeDays != null);
+  const avgCycle = withCycle.length > 0
+    ? withCycle.reduce((s, i) => s + (i.cycleTimeDays ?? 0), 0) / withCycle.length
+    : 0;
+
+  const summary = [
+    { Metric: "Report Date", Value: today },
+    { Metric: "Vendor", Value: "IBM" },
+    { Metric: "Total Invoices", Value: invoices.length },
+    { Metric: "Total Value (USD)", Value: Math.round(totalAmount * 100) / 100 },
+    { Metric: "Processed", Value: processed.length },
+    { Metric: "Processed Value (USD)", Value: Math.round(processed.reduce((s, i) => s + i.amount, 0) * 100) / 100 },
+    { Metric: "Pending", Value: pending.length },
+    { Metric: "Pending Value (USD)", Value: Math.round(pending.reduce((s, i) => s + i.amount, 0) * 100) / 100 },
+    { Metric: "On Hold", Value: onHold.length },
+    { Metric: "On Hold Value (USD)", Value: Math.round(onHold.reduce((s, i) => s + i.amount, 0) * 100) / 100 },
+    { Metric: "Paid", Value: paid.length },
+    { Metric: "Unpaid", Value: unpaid.length },
+    { Metric: "With Exceptions", Value: exceptions.length },
+    { Metric: "Avg Cycle Time (days)", Value: Math.round(avgCycle * 10) / 10 },
+  ];
+  const wsSum = XLSX.utils.json_to_sheet(summary);
+  wsSum["!cols"] = [{ wch: 28 }, { wch: 22 }];
+  // Format Total Value, Processed Value, etc. as currency
+  ["B5", "B7", "B9", "B11"].forEach((ref) => {
+    if (wsSum[ref]) wsSum[ref].z = '"$"#,##0.00';
+  });
+  XLSX.utils.book_append_sheet(wb, wsSum, "Summary");
+
+  // ── Sheet 2: All Invoices (full DB dump) ──────────────────────────────────
+  const allRows = invoices.map((inv) => ({
+    "Invoice ID": inv.id,
+    Vendor: inv.vendor,
+    "Work Order": inv.workNumber,
+    "Service Category": inv.serviceCategory,
+    "Invoice Date": inv.invoiceDate,
+    "Amount (USD)": inv.amount,
+    Status: inv.status,
+    "Payment Status": inv.paymentStatus,
+    "Age (days)": inv.ageDays,
+    "Cycle Time (days)": inv.cycleTimeDays ?? "",
+    "Has Exception": inv.hasException ? "Yes" : "No",
+    "Exception Note": inv.exceptionNote ?? "",
+  }));
+  const wsAll = XLSX.utils.json_to_sheet(allRows);
+  wsAll["!cols"] = [
+    { wch: 14 }, { wch: 10 }, { wch: 16 }, { wch: 24 }, { wch: 12 },
+    { wch: 14 }, { wch: 12 }, { wch: 14 }, { wch: 10 }, { wch: 14 },
+    { wch: 14 }, { wch: 40 },
+  ];
+  // Currency format on Amount column (F)
+  const allRange = XLSX.utils.decode_range(wsAll["!ref"] || "A1");
+  for (let r = 1; r <= allRange.e.r; r++) {
+    const cellRef = XLSX.utils.encode_cell({ r, c: 5 });
+    if (wsAll[cellRef]) wsAll[cellRef].z = '"$"#,##0.00';
+  }
+  XLSX.utils.book_append_sheet(wb, wsAll, "All Invoices");
+
+  // ── Sheet 3: By Service Category ─────────────────────────────────────────
+  const categories = [...new Set(invoices.map((i) => i.serviceCategory))].sort();
+  const byCat = categories.map((cat) => {
+    const catInvoices = invoices.filter((i) => i.serviceCategory === cat);
+    return {
+      "Service Category": cat,
+      "Invoice Count": catInvoices.length,
+      "Total Value (USD)": Math.round(catInvoices.reduce((s, i) => s + i.amount, 0) * 100) / 100,
+      Processed: catInvoices.filter((i) => i.status === "Processed").length,
+      Pending: catInvoices.filter((i) => i.status === "Pending").length,
+      "On Hold": catInvoices.filter((i) => i.status === "On Hold").length,
+      "With Exceptions": catInvoices.filter((i) => i.hasException === 1).length,
+    };
+  });
+  const wsCat = XLSX.utils.json_to_sheet(byCat);
+  wsCat["!cols"] = [{ wch: 26 }, { wch: 14 }, { wch: 18 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 16 }];
+  const catRange = XLSX.utils.decode_range(wsCat["!ref"] || "A1");
+  for (let r = 1; r <= catRange.e.r; r++) {
+    const cellRef = XLSX.utils.encode_cell({ r, c: 2 });
+    if (wsCat[cellRef]) wsCat[cellRef].z = '"$"#,##0.00';
+  }
+  XLSX.utils.book_append_sheet(wb, wsCat, "By Category");
+
+  // ── Sheet 4: By Work Order ────────────────────────────────────────────────
+  const workOrders = [...new Set(invoices.map((i) => i.workNumber))].sort();
+  const byWork = workOrders.map((wo) => {
+    const woInvoices = invoices.filter((i) => i.workNumber === wo);
+    return {
+      "Work Order": wo,
+      "Service Category": woInvoices[0]?.serviceCategory ?? "",
+      "Invoice Count": woInvoices.length,
+      "Total Value (USD)": Math.round(woInvoices.reduce((s, i) => s + i.amount, 0) * 100) / 100,
+      Processed: woInvoices.filter((i) => i.status === "Processed").length,
+      "Pending/On Hold": woInvoices.filter((i) => i.status !== "Processed").length,
+    };
+  });
+  const wsWo = XLSX.utils.json_to_sheet(byWork);
+  wsWo["!cols"] = [{ wch: 16 }, { wch: 26 }, { wch: 14 }, { wch: 18 }, { wch: 12 }, { wch: 16 }];
+  const woRange = XLSX.utils.decode_range(wsWo["!ref"] || "A1");
+  for (let r = 1; r <= woRange.e.r; r++) {
+    const cellRef = XLSX.utils.encode_cell({ r, c: 3 });
+    if (wsWo[cellRef]) wsWo[cellRef].z = '"$"#,##0.00';
+  }
+  XLSX.utils.book_append_sheet(wb, wsWo, "By Work Order");
+
+  // ── Sheet 5: Aging Analysis ───────────────────────────────────────────────
+  const aging = [
+    {
+      "Age Bucket": "0–30 days",
+      "Invoice Count": invoices.filter((i) => i.ageDays <= 30).length,
+      "Total Value (USD)": Math.round(invoices.filter((i) => i.ageDays <= 30).reduce((s, i) => s + i.amount, 0) * 100) / 100,
+    },
+    {
+      "Age Bucket": "31–60 days",
+      "Invoice Count": invoices.filter((i) => i.ageDays > 30 && i.ageDays <= 60).length,
+      "Total Value (USD)": Math.round(invoices.filter((i) => i.ageDays > 30 && i.ageDays <= 60).reduce((s, i) => s + i.amount, 0) * 100) / 100,
+    },
+    {
+      "Age Bucket": "61–90 days",
+      "Invoice Count": invoices.filter((i) => i.ageDays > 60 && i.ageDays <= 90).length,
+      "Total Value (USD)": Math.round(invoices.filter((i) => i.ageDays > 60 && i.ageDays <= 90).reduce((s, i) => s + i.amount, 0) * 100) / 100,
+    },
+    {
+      "Age Bucket": "90+ days",
+      "Invoice Count": invoices.filter((i) => i.ageDays > 90).length,
+      "Total Value (USD)": Math.round(invoices.filter((i) => i.ageDays > 90).reduce((s, i) => s + i.amount, 0) * 100) / 100,
+    },
+  ];
+  const wsAging = XLSX.utils.json_to_sheet(aging);
+  wsAging["!cols"] = [{ wch: 16 }, { wch: 14 }, { wch: 18 }];
+  for (let r = 1; r <= 4; r++) {
+    const cellRef = XLSX.utils.encode_cell({ r, c: 2 });
+    if (wsAging[cellRef]) wsAging[cellRef].z = '"$"#,##0.00';
+  }
+  XLSX.utils.book_append_sheet(wb, wsAging, "Aging");
+
+  // ── Sheet 6: Exceptions (only invoices flagged) ──────────────────────────
+  const exceptionRows = exceptions.map((inv) => ({
+    "Invoice ID": inv.id,
+    "Work Order": inv.workNumber,
+    "Service Category": inv.serviceCategory,
+    "Invoice Date": inv.invoiceDate,
+    "Amount (USD)": inv.amount,
+    Status: inv.status,
+    "Age (days)": inv.ageDays,
+    "Exception Note": inv.exceptionNote ?? "",
+  }));
+  if (exceptionRows.length > 0) {
+    const wsEx = XLSX.utils.json_to_sheet(exceptionRows);
+    wsEx["!cols"] = [
+      { wch: 14 }, { wch: 16 }, { wch: 24 }, { wch: 12 },
+      { wch: 14 }, { wch: 12 }, { wch: 10 }, { wch: 40 },
+    ];
+    const exRange = XLSX.utils.decode_range(wsEx["!ref"] || "A1");
+    for (let r = 1; r <= exRange.e.r; r++) {
+      const cellRef = XLSX.utils.encode_cell({ r, c: 4 });
+      if (wsEx[cellRef]) wsEx[cellRef].z = '"$"#,##0.00';
+    }
+    XLSX.utils.book_append_sheet(wb, wsEx, "Exceptions");
+  }
+
+  XLSX.writeFile(wb, `IBM_Vendor_Invoices_${today}.xlsx`);
+}
+
 function useUpdateStatus() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -668,49 +845,15 @@ export default function VendorInvoices() {
       {activeView === "overview" && (
         <div className="space-y-4">
           {/* Export button */}
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-2">
+            <span className="text-[11px] text-muted-foreground">
+              Exports all {allInvoices.length} invoices from the database
+            </span>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                const rows = displayInvoices.map((inv) => ({
-                  "Invoice ID": inv.id,
-                  Vendor: inv.vendor,
-                  "Work Order": inv.workNumber,
-                  "Service Category": inv.serviceCategory,
-                  "Invoice Date": inv.invoiceDate,
-                  "Amount (USD)": inv.amount,
-                  Status: inv.status,
-                  "Payment Status": inv.paymentStatus,
-                  "Age (days)": inv.ageDays,
-                  "Cycle Time (days)": inv.cycleTimeDays ?? "",
-                  "Has Exception": inv.hasException ? "Yes" : "No",
-                  "Exception Note": inv.exceptionNote ?? "",
-                }));
-                const totalAmount = displayInvoices.reduce((s, i) => s + (i.amount || 0), 0);
-                const summary = [
-                  { Metric: "Total Invoices", Value: displayInvoices.length },
-                  { Metric: "Total Amount (USD)", Value: totalAmount },
-                  { Metric: "Processed", Value: displayInvoices.filter((i) => i.status === "Processed").length },
-                  { Metric: "Pending", Value: displayInvoices.filter((i) => i.status === "Pending").length },
-                  { Metric: "On Hold", Value: displayInvoices.filter((i) => i.status === "On Hold").length },
-                  { Metric: "With Exceptions", Value: displayInvoices.filter((i) => i.hasException).length },
-                  { Metric: "Filter: Category", Value: selectedCategory ?? "All" },
-                  { Metric: "Filter: Status", Value: selectedStatus ?? "All" },
-                  { Metric: "Filter: Date From", Value: dateFrom || "—" },
-                  { Metric: "Filter: Date To", Value: dateTo || "—" },
-                  { Metric: "Export Date", Value: new Date().toISOString().slice(0, 10) },
-                ];
-                const wb = XLSX.utils.book_new();
-                const wsSum = XLSX.utils.json_to_sheet(summary);
-                wsSum["!cols"] = [{ wch: 24 }, { wch: 24 }];
-                XLSX.utils.book_append_sheet(wb, wsSum, "Summary");
-                const wsInv = XLSX.utils.json_to_sheet(rows);
-                wsInv["!cols"] = Object.keys(rows[0] ?? {}).map((k) => ({ wch: Math.max(k.length + 2, 16) }));
-                XLSX.utils.book_append_sheet(wb, wsInv, "IBM Invoices");
-                XLSX.writeFile(wb, `IBM_Vendor_Invoices_${new Date().toISOString().slice(0, 10)}.xlsx`);
-              }}
-              disabled={displayInvoices.length === 0}
+              onClick={() => exportVendorInvoicesToExcel(allInvoices as Invoice[])}
+              disabled={allInvoices.length === 0}
               className="flex items-center gap-1.5 h-8 px-3 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5 flex-shrink-0"
             >
               <DownloadIcon className="w-3.5 h-3.5" />
