@@ -42,12 +42,6 @@ type NavItem = { name: string; path: string; icon: React.ElementType };
 type NavGroup = { label: string; items: NavItem[] };
 
 const EXPORT_ENABLED_PATHS = new Set<string>([
-  "/dashboard",
-  "/dashboard/claims",
-  "/dashboard/prior-auth",
-  "/dashboard/enrollment-intelligence",
-  "/dashboard/app-health",
-  "/dashboard/ibm-ams",
   "/dashboard/digital-roadmap",
   "/dashboard/vendor-invoices",
   "/dashboard/providers",
