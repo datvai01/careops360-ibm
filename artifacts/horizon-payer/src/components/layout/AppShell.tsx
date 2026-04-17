@@ -41,6 +41,18 @@ import { SessionTimeoutModal } from "./SessionTimeoutModal";
 type NavItem = { name: string; path: string; icon: React.ElementType };
 type NavGroup = { label: string; items: NavItem[] };
 
+const EXPORT_ENABLED_PATHS = new Set<string>([
+  "/dashboard",
+  "/dashboard/claims",
+  "/dashboard/prior-auth",
+  "/dashboard/enrollment-intelligence",
+  "/dashboard/app-health",
+  "/dashboard/ibm-ams",
+  "/dashboard/digital-roadmap",
+  "/dashboard/vendor-invoices",
+  "/dashboard/providers",
+]);
+
 const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
@@ -321,20 +333,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               Updated {lastRefreshed}s ago
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={doExport}
-              disabled={exporting}
-              className="hidden sm:flex items-center gap-1.5 h-8 px-3 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5"
-            >
-              {exporting ? (
-                <LoaderIcon className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <DownloadIcon className="w-3.5 h-3.5" />
-              )}
-              {exporting ? "Exporting…" : "Export to Excel"}
-            </Button>
+            {EXPORT_ENABLED_PATHS.has(location) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={doExport}
+                disabled={exporting}
+                className="hidden sm:flex items-center gap-1.5 h-8 px-3 text-xs font-semibold border-primary/30 text-primary hover:bg-primary/5"
+              >
+                {exporting ? (
+                  <LoaderIcon className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <DownloadIcon className="w-3.5 h-3.5" />
+                )}
+                {exporting ? "Exporting…" : "Export to Excel"}
+              </Button>
+            )}
 
             <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
