@@ -806,10 +806,10 @@ function InitiativeFormModal({
 type IbmAsset = { name: string; tag: string; tagColor: string; value: string; isBob?: boolean };
 
 const IBM_BOB: IbmAsset = {
-  name: "IBM BOB — Build Once, Benefit",
-  tag: "Reusable Asset Library",
+  name: "IBM BOB (Project Bob)",
+  tag: "AI Pair Developer",
   tagColor: "bg-[#0f62fe] text-white",
-  value: "IBM's enterprise reusable asset library (bob.ibm.com) — a curated catalog of pre-built solution accelerators, reference architectures, code patterns, and delivery playbooks contributed by IBM Consulting practitioners worldwide. Teams build once and benefit many times: assets are vetted, version-controlled, and tagged by industry and platform so engagements can compose proven components instead of starting from scratch. For Horizon, BOB seeds delivery with payer-tested patterns for claims, enrollment, prior auth, and provider workflows — compressing design and build effort by 30–40% and standardizing quality across every release.",
+  value: "IBM BOB (Project Bob) is an AI-powered software development and modernization platform that acts like an intelligent \u201Cpair developer\u201D embedded directly within the IDE, helping teams design, build, refactor, secure, and document code faster. It understands developer intent, the underlying codebase, and enterprise standards, enabling it to assist across the full software development lifecycle\u2014from planning and coding to automated code reviews, vulnerability detection, and large-scale application modernization (e.g., legacy to modern stacks). Beyond just a coding assistant, BOB brings agentic workflows, built-in security, and enterprise compliance guardrails into everyday development, making it particularly valuable for complex, regulated environments and modernization programs.",
   isBob: true,
 };
 
