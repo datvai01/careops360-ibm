@@ -13,6 +13,7 @@ import {
   ArrowUpIcon, ArrowDownIcon, MinusIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { KpiMetric } from "@workspace/api-client-react";
@@ -381,6 +382,24 @@ export default function IbmAms() {
         </div>
       </div>
 
+      <Tabs defaultValue="performance" className="space-y-6">
+        <TabsList className="grid grid-cols-3 w-full max-w-2xl">
+          <TabsTrigger value="performance" className="text-xs sm:text-sm">
+            <ZapIcon className="w-3.5 h-3.5 mr-1.5" />
+            Performance &amp; Cost
+          </TabsTrigger>
+          <TabsTrigger value="automation" className="text-xs sm:text-sm">
+            <CpuIcon className="w-3.5 h-3.5 mr-1.5" />
+            Automation &amp; Insights
+          </TabsTrigger>
+          <TabsTrigger value="kpis" className="text-xs sm:text-sm">
+            <ShieldCheckIcon className="w-3.5 h-3.5 mr-1.5" />
+            Service Levels &amp; KPIs
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ── Tab 1: Performance & Cost ────────────────────────────────────── */}
+        <TabsContent value="performance" className="space-y-6 mt-0">
       {/* KPI row — all 4 with methodology info buttons */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <KpiCardIbm
@@ -499,7 +518,10 @@ export default function IbmAms() {
           </div>
         </Card>
       </div>
+        </TabsContent>
 
+        {/* ── Tab 2: Automation & Insights ─────────────────────────────────── */}
+        <TabsContent value="automation" className="space-y-6 mt-0">
       {/* Runbooks + Insights row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 shadow-md">
@@ -586,8 +608,13 @@ export default function IbmAms() {
         </Card>
       </div>
 
-      {/* ── Critical Service Levels (CSL) & Business KPIs ─────────────────── */}
-      <ServiceLevelAndKpiPanel />
+        </TabsContent>
+
+        {/* ── Tab 3: Service Levels & Business KPIs ────────────────────────── */}
+        <TabsContent value="kpis" className="mt-0">
+          <ServiceLevelAndKpiPanel />
+        </TabsContent>
+      </Tabs>
 
       {showMethodology && (
         <MethodologyModal topic={showMethodology} onClose={() => setShowMethodology(null)} />
