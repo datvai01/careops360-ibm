@@ -59,25 +59,40 @@ const KPI_BY_PERIOD: Record<string, (cl: string) => object> = {
     knowledgeArticles:     mkKpi(24630,  "24,630 used",    7.9,  "green", "up",   cl),
     changeVelocity:        mkKpi(72,     "72 / 21d",       9.2,  "green", "up",   cl),
   }),
+  "30d": (cl) => ({
+    ticketsResolved:       mkKpi(3914,   "3,914 / 30d",    5.2,  "green", "up",   cl),
+    slaCompliance:         mkKpi(96.4,   "96.4%",          0.9,  "green", "up",   cl),
+    shiftLeftRate:         mkKpi(41.2,   "41.2%",          7.8,  "green", "up",   cl),
+    selfHealEvents:        mkKpi(627,    "627 / 30d",     24.6,  "green", "up",   cl),
+    productivityGain:      mkKpi(30.1,   "30.1%",          4.6,  "green", "up",   cl),
+    costReduction:         mkKpi(17.8,   "17.8%",          3.2,  "green", "up",   cl),
+    defectLeakage:         mkKpi(2.6,    "2.6%",         -14.2,  "green", "down", cl),
+    repeatIncidentReduction: mkKpi(65.9, "65.9%",          7.3,  "green", "up",   cl),
+    automationRunbooks:    mkKpi(2410,   "2,410 / 30d",   18.7,  "green", "up",   cl),
+    costAvoidance:         mkKpi(8400000,"$8.4M YTD",     31.2,  "green", "up",   cl),
+    knowledgeArticles:     mkKpi(35180,  "35,180 used",   10.4,  "green", "up",   cl),
+    changeVelocity:        mkKpi(103,    "103 / 30d",     12.1,  "green", "up",   cl),
+  }),
 };
 
 const COMPARE_LABEL: Record<string, string> = {
   "7d":  "vs 7 days ago",
   "14d": "vs 14 days ago",
   "21d": "vs 21 days ago",
+  "30d": "vs prior 30 days",
 };
 
 router.get("/ibmams/kpis", async (req, res): Promise<void> => {
-  const period = (req.query.period as string) ?? "7d";
-  const cl = COMPARE_LABEL[period] ?? COMPARE_LABEL["7d"];
-  const builder = KPI_BY_PERIOD[period] ?? KPI_BY_PERIOD["7d"];
+  const period = (req.query.period as string) ?? "30d";
+  const cl = COMPARE_LABEL[period] ?? COMPARE_LABEL["30d"];
+  const builder = KPI_BY_PERIOD[period] ?? KPI_BY_PERIOD["30d"];
   res.json(builder(cl));
 });
 
 router.get("/ibmams/ticket-trends", async (req, res): Promise<void> => {
   const period = req.query.period;
   const rows = await db.select().from(ibmamsTicketTrendsTable).orderBy(asc(ibmamsTicketTrendsTable.id));
-  const limit = period === "21d" ? 3 : period === "14d" ? 2 : 1;
+  const limit = period === "30d" ? 4 : period === "21d" ? 3 : period === "14d" ? 2 : 1;
   const slice = rows.slice(-limit);
   res.json(slice.map((r) => ({
     week: r.weekLabel,
