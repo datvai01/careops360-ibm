@@ -331,9 +331,9 @@ export default function IbmAms() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <CpuIcon className="text-primary w-6 h-6" />
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">IBM AIOps Value</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Going Beyond Traditional IT Service Levels</h1>
           </div>
-          <p className="text-sm text-muted-foreground">AIOps-Driven Operations Performance &amp; Value Summary · CY2026 · Horizon BCBS</p>
+          <p className="text-sm text-muted-foreground">IBM commits to Horizon&rsquo;s business KPIs alongside critical service levels &middot; CY2026 &middot; Horizon BCBS</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-shrink-0">
@@ -586,9 +586,156 @@ export default function IbmAms() {
         </Card>
       </div>
 
+      {/* ── Critical Service Levels (CSL) & Business KPIs ─────────────────── */}
+      <ServiceLevelAndKpiPanel />
+
       {showMethodology && (
         <MethodologyModal topic={showMethodology} onClose={() => setShowMethodology(null)} />
       )}
     </div>
+  );
+}
+
+// ─── Critical Service Levels & Business KPIs ──────────────────────────────────
+// Modeled on IBM's "Going Beyond Traditional IT Service Levels" framework.
+// CSLs are the technical/delivery commitments; KPIs are the business outcomes
+// that IBM commits to deliver alongside Horizon's operations teams.
+
+type ServiceMetric = {
+  name: string;
+  target: string;
+  actual: string;
+  status: "green" | "amber" | "red";
+};
+
+const CRITICAL_SERVICE_LEVELS: ServiceMetric[] = [
+  { name: "Incident Response (P1)",        target: "≤ 15 min",  actual: "11 min",   status: "green" },
+  { name: "Incident Resolution (P1)",      target: "≤ 4 hrs",   actual: "3.2 hrs",  status: "green" },
+  { name: "Problem Resolution",            target: "≤ 30 days", actual: "22 days",  status: "green" },
+  { name: "Application Availability",      target: "≥ 99.7%",   actual: "99.84%",   status: "green" },
+  { name: "Quality Delivery to Production",target: "≥ 98%",     actual: "98.6%",    status: "green" },
+  { name: "Quality Delivery to UAT",       target: "≥ 95%",     actual: "96.2%",    status: "green" },
+  { name: "Service Request Completion",    target: "≥ 96%",     actual: "97.4%",    status: "green" },
+  { name: "Testing Coverage Ratio",        target: "≥ 85%",     actual: "82%",      status: "amber" },
+  { name: "Story Test Automation",         target: "≥ 80%",     actual: "84%",      status: "green" },
+  { name: "Unit Test Automation",          target: "≥ 75%",     actual: "78%",      status: "green" },
+  { name: "DevOps Deployments / Month",    target: "≥ 120",     actual: "147",      status: "green" },
+  { name: "Deployment w/o Known Defects",  target: "≥ 97%",     actual: "98.1%",    status: "green" },
+  { name: "Change Mgmt Effectiveness",     target: "≥ 96%",     actual: "97.5%",    status: "green" },
+  { name: "Root Cause Analysis & Reporting", target: "100%",    actual: "100%",     status: "green" },
+  { name: "On-Budget Delivery",            target: "≥ 95%",     actual: "96.8%",    status: "green" },
+  { name: "IT Customer Satisfaction (CSAT)", target: "≥ 4.3/5", actual: "4.5/5",    status: "green" },
+  { name: "Retention of Key Personnel",    target: "≥ 90%",     actual: "92%",      status: "green" },
+  { name: "Staffing Attrition (annualized)", target: "≤ 12%",   actual: "9.4%",     status: "green" },
+];
+
+const BUSINESS_KPIS: ServiceMetric[] = [
+  { name: "Timely Claims Payment",          target: "≥ 98%",   actual: "98.6%", status: "green" },
+  { name: "Timely Claims Submission",       target: "≥ 97%",   actual: "97.8%", status: "green" },
+  { name: "Letters Generation On-Time",     target: "≥ 95%",   actual: "96.1%", status: "green" },
+  { name: "ID Cards Generation",            target: "≤ 5 days",actual: "3.8 days", status: "green" },
+  { name: "On-Time Enrollments",            target: "≥ 98%",   actual: "98.4%", status: "green" },
+  { name: "Timely Bills Generation",        target: "≥ 99%",   actual: "99.2%", status: "green" },
+  { name: "ASO Billing Compliance",         target: "100%",    actual: "99.7%", status: "amber" },
+  { name: "Successful Small-Group Conversion", target: "≥ 95%", actual: "96.3%", status: "green" },
+  { name: "Rates Loading On-Time",          target: "≥ 98%",   actual: "98.9%", status: "green" },
+  { name: "Same-Day eFax to Care Radius",   target: "≥ 95%",   actual: "94.2%", status: "amber" },
+  { name: "Timely HIPAA Forms Processing",  target: "≥ 99%",   actual: "99.4%", status: "green" },
+  { name: "Patient Logs to RightFax",       target: "≥ 98%",   actual: "98.7%", status: "green" },
+];
+
+function StatusDot({ status }: { status: ServiceMetric["status"] }) {
+  const cls =
+    status === "green" ? "bg-status-green" :
+    status === "amber" ? "bg-status-yellow" :
+    "bg-status-red";
+  return <span className={cn("w-2 h-2 rounded-full flex-shrink-0", cls)} />;
+}
+
+function MetricTile({ metric, accent }: { metric: ServiceMetric; accent: "blue" | "teal" }) {
+  const ring = accent === "blue"
+    ? "border-[#0f62fe]/20 bg-[#0f62fe]/[0.04] hover:border-[#0f62fe]/40"
+    : "border-emerald-500/20 bg-emerald-500/[0.04] hover:border-emerald-500/40";
+  return (
+    <div className={cn(
+      "rounded-md border px-3 py-2.5 transition-colors flex flex-col gap-1.5",
+      ring,
+    )}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="text-[11px] font-semibold leading-tight text-foreground">{metric.name}</div>
+        <StatusDot status={metric.status} />
+      </div>
+      <div className="flex items-baseline justify-between gap-2 text-[10.5px]">
+        <span className="text-muted-foreground">Target: <span className="font-medium text-foreground/80">{metric.target}</span></span>
+        <span className="font-bold text-foreground">{metric.actual}</span>
+      </div>
+    </div>
+  );
+}
+
+function ServiceLevelAndKpiPanel() {
+  const cslGreen = CRITICAL_SERVICE_LEVELS.filter(m => m.status === "green").length;
+  const kpiGreen = BUSINESS_KPIS.filter(m => m.status === "green").length;
+  return (
+    <Card className="shadow-md">
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+          <div>
+            <CardTitle>Service Levels &amp; Business KPI Commitments</CardTitle>
+            <CardDescription>
+              Critical Service Levels (CSL) measure delivery quality; Business KPIs measure operational outcomes for Horizon members and providers. Sample list — to be reviewed with Horizon during transition and baselining.
+            </CardDescription>
+          </div>
+          <div className="flex gap-4 text-[11px] text-muted-foreground">
+            <div><span className="font-bold text-foreground">{cslGreen}/{CRITICAL_SERVICE_LEVELS.length}</span> CSLs on target</div>
+            <div><span className="font-bold text-foreground">{kpiGreen}/{BUSINESS_KPIS.length}</span> KPIs on target</div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left — Critical Service Levels (technical / delivery) */}
+          <section className="rounded-lg border border-[#0f62fe]/30 bg-card overflow-hidden">
+            <header className="bg-[#0f62fe]/[0.08] border-b border-[#0f62fe]/20 px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-[#0f62fe] rounded-sm" />
+                <h3 className="text-sm font-bold text-[#0f62fe]">Critical Service Levels (CSL) &middot; Technical Metrics</h3>
+              </div>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Delivery &amp; Quality</span>
+            </header>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+              {CRITICAL_SERVICE_LEVELS.map((m) => (
+                <MetricTile key={m.name} metric={m} accent="blue" />
+              ))}
+            </div>
+          </section>
+
+          {/* Right — Business KPIs */}
+          <section className="rounded-lg border border-emerald-500/30 bg-card overflow-hidden">
+            <header className="bg-emerald-500/[0.08] border-b border-emerald-500/20 px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-emerald-500 rounded-sm" />
+                <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Key Performance Indicators (KPI) &middot; Business Outcomes</h3>
+              </div>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Member &amp; Operations</span>
+            </header>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+              {BUSINESS_KPIS.map((m) => (
+                <MetricTile key={m.name} metric={m} accent="teal" />
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between text-[10.5px] text-muted-foreground">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-green" /> On Target</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-yellow" /> At Risk</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-red" /> Below Target</span>
+          </div>
+          <span className="italic">Sample list — to be reviewed with Horizon during transition &amp; baselining</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
