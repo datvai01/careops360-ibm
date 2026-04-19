@@ -23,10 +23,12 @@ const IBM_BLUE = "#0f62fe";
 const TEAL     = "#009d9a";
 const GREEN    = "#24a148";
 
-type IbmPeriod = "30d";
+type IbmPeriod = "7d" | "14d" | "21d";
 
 const IBM_PERIOD_OPTIONS = [
-  { value: "30d" as IbmPeriod, label: "Last 30 Days (Monthly)", shortLabel: "30D" },
+  { value: "7d"  as IbmPeriod, label: "Last 7 Days",  shortLabel: "7D"  },
+  { value: "14d" as IbmPeriod, label: "Last 14 Days", shortLabel: "14D" },
+  { value: "21d" as IbmPeriod, label: "Last 21 Days", shortLabel: "21D" },
 ];
 
 const AUTOMATION_PCT  = 2100000 / 3200000;
@@ -337,10 +339,23 @@ export default function IbmAms() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-shrink-0">
-          {/* Reporting period — fixed at monthly cadence */}
-          <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/30 rounded-lg px-3 py-1.5" title="Reporting period: Last 30 Days">
-            <span className="text-[10px] uppercase tracking-wide font-bold text-primary/70">Period</span>
-            <span className="text-xs font-bold text-primary">Last 30 Days &middot; Monthly</span>
+          {/* Period selector */}
+          <div className="flex items-center gap-1 bg-muted/60 border border-border rounded-lg p-0.5">
+            {IBM_PERIOD_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setIbmPeriod(opt.value)}
+                className={cn(
+                  "px-3 py-1 rounded-md text-xs font-semibold transition-all",
+                  ibmPeriod === opt.value
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                )}
+                title={opt.label}
+              >
+                {opt.shortLabel}
+              </button>
+            ))}
           </div>
 
           {/* YTD totals */}
