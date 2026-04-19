@@ -1463,9 +1463,6 @@ export default function EnrollmentIntelligence() {
             {copilotOpen ? "Hide Copilot" : "Operations Copilot"}
           </Button>
           <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9">
-            <Download size={14} /> Export
-          </Button>
-          <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9">
             <RefreshCw size={14} /> Refresh
           </Button>
         </div>
