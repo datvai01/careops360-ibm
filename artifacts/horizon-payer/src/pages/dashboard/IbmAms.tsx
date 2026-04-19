@@ -634,42 +634,164 @@ type ServiceMetric = {
   target: string;
   actual: string;
   status: "green" | "amber" | "red";
+  description: string;
+  measurement: string;
 };
 
 const CRITICAL_SERVICE_LEVELS: ServiceMetric[] = [
-  { name: "Incident Response (P1)",        target: "≤ 15 min",  actual: "11 min",   status: "green" },
-  { name: "Incident Resolution (P1)",      target: "≤ 4 hrs",   actual: "3.2 hrs",  status: "green" },
-  { name: "Problem Resolution",            target: "≤ 30 days", actual: "22 days",  status: "green" },
-  { name: "Application Availability",      target: "≥ 99.7%",   actual: "99.84%",   status: "green" },
-  { name: "Quality Delivery to Production",target: "≥ 98%",     actual: "98.6%",    status: "green" },
-  { name: "Quality Delivery to UAT",       target: "≥ 95%",     actual: "96.2%",    status: "green" },
-  { name: "Service Request Completion",    target: "≥ 96%",     actual: "97.4%",    status: "green" },
-  { name: "Testing Coverage Ratio",        target: "≥ 85%",     actual: "82%",      status: "amber" },
-  { name: "Story Test Automation",         target: "≥ 80%",     actual: "84%",      status: "green" },
-  { name: "Unit Test Automation",          target: "≥ 75%",     actual: "78%",      status: "green" },
-  { name: "DevOps Deployments / Month",    target: "≥ 120",     actual: "147",      status: "green" },
-  { name: "Deployment w/o Known Defects",  target: "≥ 97%",     actual: "98.1%",    status: "green" },
-  { name: "Change Mgmt Effectiveness",     target: "≥ 96%",     actual: "97.5%",    status: "green" },
-  { name: "Root Cause Analysis & Reporting", target: "100%",    actual: "100%",     status: "green" },
-  { name: "On-Budget Delivery",            target: "≥ 95%",     actual: "96.8%",    status: "green" },
-  { name: "IT Customer Satisfaction (CSAT)", target: "≥ 4.3/5", actual: "4.5/5",    status: "green" },
-  { name: "Retention of Key Personnel",    target: "≥ 90%",     actual: "92%",      status: "green" },
-  { name: "Staffing Attrition (annualized)", target: "≤ 12%",   actual: "9.4%",     status: "green" },
+  {
+    name: "Incident Response (P1)", target: "≤ 15 min", actual: "11 min", status: "green",
+    description: "Time from a Severity-1 incident being raised to an IBM responder acknowledging and beginning triage. Drives perception of operational discipline for member-impacting outages.",
+    measurement: "Mean acknowledgement time across all P1 tickets in the reporting period (ServiceNow + IBM AIOps event log).",
+  },
+  {
+    name: "Incident Resolution (P1)", target: "≤ 4 hrs", actual: "3.2 hrs", status: "green",
+    description: "End-to-end clock from P1 incident creation to verified service restoration. Direct measure of how fast IBM restores claims, enrollment, and provider-facing services.",
+    measurement: "Mean time-to-restore (MTTR) for P1 tickets resolved in the period.",
+  },
+  {
+    name: "Problem Resolution", target: "≤ 30 days", actual: "22 days", status: "green",
+    description: "Time to permanently eliminate the underlying root cause behind a recurring incident — preventing repeat occurrences and reducing future ticket volume.",
+    measurement: "Average elapsed days from problem-record open to closed-with-permanent-fix.",
+  },
+  {
+    name: "Application Availability", target: "≥ 99.7%", actual: "99.84%", status: "green",
+    description: "Composite uptime across Tier-1 payer applications (FACETS, claims portals, member self-service, provider portal). The single most-watched metric for member trust.",
+    measurement: "Monthly weighted average of synthetic + real-user monitoring across Tier-1 apps, excluding planned maintenance.",
+  },
+  {
+    name: "Quality Delivery to Production", target: "≥ 98%", actual: "98.6%", status: "green",
+    description: "Percentage of production releases that ship without a Severity-1 or Severity-2 defect surfacing within 30 days. Validates IBM's shift-left quality engineering rigor.",
+    measurement: "(Releases without S1/S2 defect in 30-day window) ÷ (total production releases).",
+  },
+  {
+    name: "Quality Delivery to UAT", target: "≥ 95%", actual: "96.2%", status: "green",
+    description: "First-time UAT pass rate on builds promoted by IBM. A leading indicator that prevents downstream production defects and rework.",
+    measurement: "UAT cycles passed on first submission ÷ total UAT cycles in the period.",
+  },
+  {
+    name: "Service Request Completion", target: "≥ 96%", actual: "97.4%", status: "green",
+    description: "Standard service requests (access, configuration, reports) fulfilled within their committed turnaround time. Reflects day-to-day responsiveness for Horizon staff.",
+    measurement: "(SRs closed within SLA) ÷ (total SRs closed in the period).",
+  },
+  {
+    name: "Testing Coverage Ratio", target: "≥ 85%", actual: "82%", status: "amber",
+    description: "Share of code paths and business scenarios covered by automated tests across the Tier-1 portfolio. Currently below target — uplift planned via the Test Automation initiative.",
+    measurement: "Weighted average of unit + integration coverage across covered repositories (SonarQube + IBM ADDI).",
+  },
+  {
+    name: "Story Test Automation", target: "≥ 80%", actual: "84%", status: "green",
+    description: "Percentage of agile user stories that ship with automated acceptance tests (BDD/Cucumber). Locks in feature behavior and prevents regressions.",
+    measurement: "(Stories with automated acceptance tests) ÷ (stories closed in the sprint).",
+  },
+  {
+    name: "Unit Test Automation", target: "≥ 75%", actual: "78%", status: "green",
+    description: "Code-level unit test coverage on net-new code committed in the period. Foundational to the IBM shift-left strategy.",
+    measurement: "Lines of new code covered by unit tests ÷ total new lines (SonarQube).",
+  },
+  {
+    name: "DevOps Deployments / Month", target: "≥ 120", actual: "147", status: "green",
+    description: "Total successful production deployments per month across the Horizon portfolio. A direct measure of delivery throughput and CI/CD maturity.",
+    measurement: "Count of green production pipeline runs per calendar month (Jenkins / GitHub Actions).",
+  },
+  {
+    name: "Deployment w/o Known Defects", target: "≥ 97%", actual: "98.1%", status: "green",
+    description: "Percentage of releases promoted to production with zero open Severity-1/2 defects. Enforces the no-known-defects gate at the release boundary.",
+    measurement: "(Releases with zero open S1/S2 at promotion) ÷ (total releases).",
+  },
+  {
+    name: "Change Mgmt Effectiveness", target: "≥ 96%", actual: "97.5%", status: "green",
+    description: "Successful changes implemented without rollback, emergency, or post-implementation incident. Reflects Change Advisory Board (CAB) discipline.",
+    measurement: "(Successful changes) ÷ (total changes), excluding standard pre-approved changes.",
+  },
+  {
+    name: "Root Cause Analysis & Reporting", target: "100%", actual: "100%", status: "green",
+    description: "All P1/P2 incidents receive a documented RCA within 5 business days, reviewed jointly with Horizon leadership. Builds an institutional knowledge loop.",
+    measurement: "RCAs delivered on time ÷ RCAs required for P1/P2 incidents in the period.",
+  },
+  {
+    name: "On-Budget Delivery", target: "≥ 95%", actual: "96.8%", status: "green",
+    description: "Programs and projects delivered within ±5% of their approved budget envelope. Protects Horizon's planned IT spend and prevents surprise overruns.",
+    measurement: "(Projects closed within ±5% budget) ÷ (total projects closed in the period).",
+  },
+  {
+    name: "IT Customer Satisfaction (CSAT)", target: "≥ 4.3/5", actual: "4.5/5", status: "green",
+    description: "Quarterly business-stakeholder satisfaction score on IBM's delivery, support, and partnership across the AMS engagement.",
+    measurement: "Average of stakeholder survey scores (1–5 scale) collected at end of quarter.",
+  },
+  {
+    name: "Retention of Key Personnel", target: "≥ 90%", actual: "92%", status: "green",
+    description: "Retention of IBM team members designated as Key Personnel under the contract — protects continuity, deep platform knowledge, and Horizon-specific institutional context.",
+    measurement: "(Key Personnel still on engagement at period end) ÷ (Key Personnel at period start), rolling 12-month.",
+  },
+  {
+    name: "Staffing Attrition (annualized)", target: "≤ 12%", actual: "9.4%", status: "green",
+    description: "Annualized voluntary attrition across the entire IBM delivery team. Lower attrition correlates directly with delivery velocity and quality.",
+    measurement: "(Voluntary departures in trailing 12 months ÷ average headcount) annualized.",
+  },
 ];
 
 const BUSINESS_KPIS: ServiceMetric[] = [
-  { name: "Timely Claims Payment",          target: "≥ 98%",   actual: "98.6%", status: "green" },
-  { name: "Timely Claims Submission",       target: "≥ 97%",   actual: "97.8%", status: "green" },
-  { name: "Letters Generation On-Time",     target: "≥ 95%",   actual: "96.1%", status: "green" },
-  { name: "ID Cards Generation",            target: "≤ 5 days",actual: "3.8 days", status: "green" },
-  { name: "On-Time Enrollments",            target: "≥ 98%",   actual: "98.4%", status: "green" },
-  { name: "Timely Bills Generation",        target: "≥ 99%",   actual: "99.2%", status: "green" },
-  { name: "ASO Billing Compliance",         target: "100%",    actual: "99.7%", status: "amber" },
-  { name: "Successful Small-Group Conversion", target: "≥ 95%", actual: "96.3%", status: "green" },
-  { name: "Rates Loading On-Time",          target: "≥ 98%",   actual: "98.9%", status: "green" },
-  { name: "Same-Day eFax to Care Radius",   target: "≥ 95%",   actual: "94.2%", status: "amber" },
-  { name: "Timely HIPAA Forms Processing",  target: "≥ 99%",   actual: "99.4%", status: "green" },
-  { name: "Patient Logs to RightFax",       target: "≥ 98%",   actual: "98.7%", status: "green" },
+  {
+    name: "Timely Claims Payment", target: "≥ 98%", actual: "98.6%", status: "green",
+    description: "Provider claims paid within the regulatory turnaround time required by NJ DOBI and CMS. Direct driver of provider satisfaction and audit posture.",
+    measurement: "(Claims paid within mandated TAT) ÷ (total claims paid in the period).",
+  },
+  {
+    name: "Timely Claims Submission", target: "≥ 97%", actual: "97.8%", status: "green",
+    description: "Outbound encounter and 837 submissions transmitted to CMS, BCBSA, and downstream payers within their submission windows. Prevents revenue leakage and rework.",
+    measurement: "(Submissions on time) ÷ (total submissions due in the period).",
+  },
+  {
+    name: "Letters Generation On-Time", target: "≥ 95%", actual: "96.1%", status: "green",
+    description: "Member-facing correspondence (EOBs, denial letters, appeals notices) generated and dispatched within regulatory and SLA windows.",
+    measurement: "(Letters dispatched on time) ÷ (total letters required in the period).",
+  },
+  {
+    name: "ID Cards Generation", target: "≤ 5 days", actual: "3.8 days", status: "green",
+    description: "End-to-end turnaround from enrollment confirmation to physical ID card mailed. Critical first-impression KPI for new members.",
+    measurement: "Mean elapsed days from enrollment-effective to ID card produced and mailed.",
+  },
+  {
+    name: "On-Time Enrollments", target: "≥ 98%", actual: "98.4%", status: "green",
+    description: "Member enrollment transactions fully processed and effective by the requested coverage start date. Drives member experience and revenue accuracy.",
+    measurement: "(Enrollments active by requested effective date) ÷ (total enrollments processed).",
+  },
+  {
+    name: "Timely Bills Generation", target: "≥ 99%", actual: "99.2%", status: "green",
+    description: "Premium bills generated and sent to subscribers / groups in line with the billing calendar — preserves cash flow and downstream collections.",
+    measurement: "(Bills generated on schedule) ÷ (total bills due in the period).",
+  },
+  {
+    name: "ASO Billing Compliance", target: "100%", actual: "99.7%", status: "amber",
+    description: "Administrative Services Only (self-funded) groups billed in strict accordance with their contract terms — high-stakes accuracy KPI under audit.",
+    measurement: "(ASO bills meeting contract terms) ÷ (total ASO bills issued).",
+  },
+  {
+    name: "Successful Small-Group Conversion", target: "≥ 95%", actual: "96.3%", status: "green",
+    description: "Small-group renewals and plan changes completed without member or broker escalation. Reflects clean handoff between Sales, Underwriting, and Operations.",
+    measurement: "(Small-group conversions closed without escalation) ÷ (total small-group conversions).",
+  },
+  {
+    name: "Rates Loading On-Time", target: "≥ 98%", actual: "98.9%", status: "green",
+    description: "Annual and off-cycle rate sheets loaded into core systems before their effective date — prevents incorrect billing and benefit calculation.",
+    measurement: "(Rate loads completed before effective date) ÷ (total rate loads scheduled).",
+  },
+  {
+    name: "Same-Day eFax to Care Radius", target: "≥ 95%", actual: "94.2%", status: "amber",
+    description: "Inbound clinical eFaxes (auths, clinical docs) delivered to Care Radius the same business day. Below target — being remediated via the AIOps document-routing automation.",
+    measurement: "(eFaxes delivered to Care Radius same business day) ÷ (total inbound clinical eFaxes).",
+  },
+  {
+    name: "Timely HIPAA Forms Processing", target: "≥ 99%", actual: "99.4%", status: "green",
+    description: "HIPAA authorization, disclosure, and request forms processed within mandated regulatory windows. Compliance-critical privacy KPI.",
+    measurement: "(HIPAA forms processed within mandated TAT) ÷ (total HIPAA forms received).",
+  },
+  {
+    name: "Patient Logs to RightFax", target: "≥ 98%", actual: "98.7%", status: "green",
+    description: "Patient interaction logs successfully transmitted from clinical workflow systems to the RightFax archive — ensures complete care documentation and audit trail.",
+    measurement: "(Logs successfully delivered to RightFax) ÷ (total logs queued for transmission).",
+  },
 ];
 
 function StatusDot({ status }: { status: ServiceMetric["status"] }) {
@@ -682,22 +804,62 @@ function StatusDot({ status }: { status: ServiceMetric["status"] }) {
 
 function MetricTile({ metric, accent }: { metric: ServiceMetric; accent: "blue" | "teal" }) {
   const ring = accent === "blue"
-    ? "border-[#0f62fe]/20 bg-[#0f62fe]/[0.04] hover:border-[#0f62fe]/40"
-    : "border-emerald-500/20 bg-emerald-500/[0.04] hover:border-emerald-500/40";
+    ? "border-[#0f62fe]/20 bg-[#0f62fe]/[0.04] hover:border-[#0f62fe]/60 hover:shadow-md hover:shadow-[#0f62fe]/10"
+    : "border-emerald-500/20 bg-emerald-500/[0.04] hover:border-emerald-500/60 hover:shadow-md hover:shadow-emerald-500/10";
+  const accentText = accent === "blue" ? "text-[#0f62fe]" : "text-emerald-700 dark:text-emerald-400";
+  const statusLabel =
+    metric.status === "green" ? "On Target" :
+    metric.status === "amber" ? "At Risk"   :
+    "Below Target";
   return (
-    <div className={cn(
-      "rounded-md border px-3 py-2.5 transition-colors flex flex-col gap-1.5",
-      ring,
-    )}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="text-[11px] font-semibold leading-tight text-foreground">{metric.name}</div>
-        <StatusDot status={metric.status} />
-      </div>
-      <div className="flex items-baseline justify-between gap-2 text-[10.5px]">
-        <span className="text-muted-foreground">Target: <span className="font-medium text-foreground/80">{metric.target}</span></span>
-        <span className="font-bold text-foreground">{metric.actual}</span>
-      </div>
-    </div>
+    <UiTooltip delayDuration={150}>
+      <TooltipTrigger asChild>
+        <div className={cn(
+          "rounded-md border px-3 py-2.5 transition-all cursor-help flex flex-col gap-1.5",
+          ring,
+        )}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[11px] font-semibold leading-tight text-foreground">{metric.name}</div>
+            <StatusDot status={metric.status} />
+          </div>
+          <div className="flex items-baseline justify-between gap-2 text-[10.5px]">
+            <span className="text-muted-foreground">Target: <span className="font-medium text-foreground/80">{metric.target}</span></span>
+            <span className="font-bold text-foreground">{metric.actual}</span>
+          </div>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-sm p-0 overflow-hidden border-0 shadow-xl">
+        <div className="bg-card border border-border rounded-md">
+          <div className={cn("px-3 py-2 border-b border-border flex items-center justify-between gap-3 bg-muted/40")}>
+            <div className={cn("text-xs font-bold leading-tight", accentText)}>{metric.name}</div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <StatusDot status={metric.status} />
+              <span className="text-[10px] uppercase font-bold tracking-wide text-muted-foreground">{statusLabel}</span>
+            </div>
+          </div>
+          <div className="p-3 space-y-2.5">
+            <div className="flex items-baseline justify-between gap-3 pb-2 border-b border-border/60">
+              <div>
+                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground">Target</div>
+                <div className="text-xs font-semibold text-foreground">{metric.target}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground">Actual</div>
+                <div className="text-sm font-bold text-foreground">{metric.actual}</div>
+              </div>
+            </div>
+            <div>
+              <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground mb-0.5">What it measures</div>
+              <p className="text-[11px] leading-snug text-foreground/85">{metric.description}</p>
+            </div>
+            <div>
+              <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground mb-0.5">Calculation</div>
+              <p className="text-[11px] leading-snug text-muted-foreground italic">{metric.measurement}</p>
+            </div>
+          </div>
+        </div>
+      </TooltipContent>
+    </UiTooltip>
   );
 }
 
@@ -705,6 +867,7 @@ function ServiceLevelAndKpiPanel() {
   const cslGreen = CRITICAL_SERVICE_LEVELS.filter(m => m.status === "green").length;
   const kpiGreen = BUSINESS_KPIS.filter(m => m.status === "green").length;
   return (
+    <TooltipProvider delayDuration={150}>
     <Card className="shadow-md">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
@@ -765,5 +928,6 @@ function ServiceLevelAndKpiPanel() {
         </div>
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }
