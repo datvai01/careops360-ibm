@@ -35,7 +35,7 @@ router.get("/executive/kpis", async (req, res): Promise<void> => {
     activeMembers:          mkKpi(4287341,    "4.29M",           0.3,   "green",  "up",   period),
     newEnrollmentsToday:    mkKpi(1842 * mult, (1842 * mult).toLocaleString(), 12.4,  "green",  "up",   period),
     claimsReceivedToday:    mkKpi(87432 * mult, `${(87432 * mult / 1000).toFixed(0)}K`, -2.1,  "yellow", "down", period),
-    claimsSettledAmount:    mkKpi(241800000 * mult, `$${(241.8 * mult).toFixed(0)}M`, 5.2,   "green",  "up",   period),
+    claimsSettledAmount:    mkKpi(127500000 * mult, `$${(127.5 * mult).toFixed(0)}M`, 5.2,   "green",  "up",   period),
     priorAuthRequests:      mkKpi(3241 * mult, (3241 * mult).toLocaleString(), 18.7,  "red",    "up",   period),
     openProviderTickets:    mkKpi(412,         "412",             -8.3,  "green",  "down", period),
     callCenterASA:          mkKpi(47,          "47 sec",          15.2,  "yellow", "up",   period),
