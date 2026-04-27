@@ -665,43 +665,53 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                         <TooltipContent
                           side="top"
                           align="center"
-                          className="text-xs max-w-sm p-3 leading-relaxed"
+                          className="text-xs max-w-sm p-0 leading-relaxed bg-white text-slate-900 border border-slate-200 shadow-lg rounded-md overflow-hidden"
                         >
-                          <div className="font-semibold mb-1">
-                            {row.product} · {c.area}
-                          </div>
-                          <div className="text-[11px] mb-2">
-                            {c.filled} of {c.total} planned ({Math.round(c.pct * 100)}%)
-                          </div>
-                          {showDrillDown ? (
-                            <>
-                              <div
-                                className="text-[10px] uppercase tracking-wide font-semibold mb-1"
-                                style={{ color: col.bg }}
-                              >
-                                Not yet trained ({c.untrained.length})
-                              </div>
-                              <ul className="space-y-0.5 text-[11px]">
-                                {visible.map(r => (
-                                  <li key={r.serial} className="flex items-baseline gap-1.5">
-                                    <span className="font-medium">{r.name}</span>
-                                    <span className="text-muted-foreground">
-                                      · {r.role} · {r.location}
-                                    </span>
-                                  </li>
-                                ))}
-                              </ul>
-                              {overflow > 0 && (
-                                <div className="text-[10px] text-muted-foreground mt-1">
-                                  +{overflow} more — see Resource Detail Table
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            <div className="text-[11px] text-muted-foreground">
-                              All resources have a plan for this area.
+                          <div
+                            className="px-3 py-2 border-b border-slate-200"
+                            style={{ background: "#f4f6fa" }}
+                          >
+                            <div className="font-semibold text-slate-900">
+                              {row.product} <span className="text-slate-400">·</span> {c.area}
                             </div>
-                          )}
+                            <div className="text-[11px] text-slate-600 mt-0.5">
+                              {c.filled} of {c.total} planned ({Math.round(c.pct * 100)}%)
+                            </div>
+                          </div>
+                          <div className="px-3 py-2">
+                            {showDrillDown ? (
+                              <>
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                  <span
+                                    className="inline-block w-2 h-2 rounded-full"
+                                    style={{ background: col.bg }}
+                                  />
+                                  <span className="text-[10px] uppercase tracking-wide font-semibold text-slate-700">
+                                    Not yet trained ({c.untrained.length})
+                                  </span>
+                                </div>
+                                <ul className="space-y-0.5 text-[11px] text-slate-800">
+                                  {visible.map(r => (
+                                    <li key={r.serial} className="flex items-baseline gap-1.5">
+                                      <span className="font-medium">{r.name}</span>
+                                      <span className="text-slate-500">
+                                        · {r.role} · {r.location}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
+                                {overflow > 0 && (
+                                  <div className="text-[10px] text-slate-500 mt-1.5">
+                                    +{overflow} more — see Resource Detail Table
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-[11px] text-slate-600">
+                                All resources have a plan for this area.
+                              </div>
+                            )}
+                          </div>
                         </TooltipContent>
                       </Tooltip></TooltipProvider>
                     </td>
