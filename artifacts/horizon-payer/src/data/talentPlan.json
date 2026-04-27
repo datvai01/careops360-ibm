@@ -45,7 +45,7 @@
         "industry": "Indusrance Industry JumpStart",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Consulting Gen & Agentic AI , IBM WatsonX Essential",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -74,7 +74,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Certified Scrum Master",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -132,7 +132,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -161,7 +161,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -219,7 +219,7 @@
         "industry": "",
         "agile": "IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -393,7 +393,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "AHM",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -451,7 +451,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze), Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "Salesforce Certified AI Associate",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "Salesforce Certified AI Associate"
       },
       "plan": {
@@ -480,7 +480,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Agile Basics",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -625,7 +625,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -683,7 +683,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -741,7 +741,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -770,7 +770,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -799,7 +799,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -828,7 +828,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -857,7 +857,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -886,7 +886,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1060,7 +1060,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Developer",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1089,7 +1089,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1147,7 +1147,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1263,7 +1263,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1437,7 +1437,7 @@
         "industry": "",
         "agile": "IBM Agile Explorer",
         "agentic": "watsonx.ai Generative AI Models Sales Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1495,7 +1495,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1553,7 +1553,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Developer",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1582,7 +1582,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1611,7 +1611,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1669,7 +1669,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1698,7 +1698,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1727,7 +1727,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1814,7 +1814,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1843,7 +1843,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1872,7 +1872,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -1901,7 +1901,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -1959,7 +1959,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -2046,7 +2046,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2075,7 +2075,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2104,7 +2104,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2133,7 +2133,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2191,7 +2191,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2220,7 +2220,7 @@
         "industry": "Professional, Academy for Health Care Management - AHM 250\r\nHealthcare Insights and Solutions (Silver)\r\nHealthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Consultant/Business Analyst\r\nIBM Generative & Agentic AI Foundation\r\nAWS AI Badges",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2278,7 +2278,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2307,7 +2307,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)\r\nHealthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2365,7 +2365,7 @@
         "industry": "",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2394,7 +2394,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nWatson Discovery Foundations",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2423,7 +2423,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2452,7 +2452,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2481,7 +2481,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nWatson Discovery Foundations",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2539,7 +2539,7 @@
         "industry": "Professional, Academy for Health Care Management - AHM 250\r\nHealthcare Insights and Solutions (Silver)\r\nHealthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2568,7 +2568,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nIBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2655,7 +2655,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nIBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2771,7 +2771,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "watsonx: Technical Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2800,7 +2800,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)\r\nHealthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2887,7 +2887,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)\r\nHealthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nIBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -2945,7 +2945,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM AIOps training\r\nand badge"
       },
       "plan": {
@@ -3032,7 +3032,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM AIOps training\r\nand badge"
       },
       "plan": {
@@ -3061,7 +3061,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM AIOps training\r\nand badge"
       },
       "plan": {
@@ -3090,7 +3090,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM AIOps training\r\nand badge"
       },
       "plan": {
@@ -3119,7 +3119,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM AIOps training and badge"
       },
       "plan": {
@@ -3177,7 +3177,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM AIOps training and badge"
       },
       "plan": {
@@ -3206,7 +3206,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)",
         "agile": "IBM Agile Advocate",
         "agentic": "Oracle 2025 Certified AI Foundations Associate, watsonx Assistant Technical Sales Intermediate, IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "Oracle 2025 Certified AI Foundations Associate, watsonx Assistant Technical Sales Intermediate, IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -3235,7 +3235,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Agile Basics",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -3264,7 +3264,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3293,7 +3293,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials, IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -3322,7 +3322,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3351,7 +3351,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3380,7 +3380,7 @@
         "industry": "",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3467,7 +3467,7 @@
         "industry": "",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3525,7 +3525,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3583,7 +3583,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "AWS Partner: Generative AI Essentials - Training Badge",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3612,7 +3612,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -3670,7 +3670,7 @@
         "industry": "",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3699,7 +3699,7 @@
         "industry": "",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -3757,7 +3757,7 @@
         "industry": "",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation, AWS Partner: Generative AI Essentials - Training Badge, Certified Entry-Level Python Programmer",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -3873,7 +3873,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)",
         "agile": "Horizon Specific Agile Training, Agile Explorer",
         "agentic": "IBM Watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4018,7 +4018,7 @@
         "industry": "",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4076,7 +4076,7 @@
         "industry": "",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4105,7 +4105,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4192,7 +4192,7 @@
         "industry": "Healthcare Industry Bronze",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4221,7 +4221,7 @@
         "industry": "Healthcare Industry Bronze",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4250,7 +4250,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4279,7 +4279,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4337,7 +4337,7 @@
         "industry": "Healthcare Industry Bronze",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4395,7 +4395,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4424,7 +4424,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Watson Machine Learning Essentials, Watson Discovery Foundations",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4511,7 +4511,7 @@
         "industry": "",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4540,7 +4540,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4598,7 +4598,7 @@
         "industry": "",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4685,7 +4685,7 @@
         "industry": "Healthcare Insights and Solutions (Silver), FHIR",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Generative & Agentic AI Foundation, IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4714,7 +4714,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM WatsonX essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4743,7 +4743,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Horizon Mandatory training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4772,7 +4772,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "Trustworthy AI and AI Ethics, IBM Generative & Agentic AI Foundation, IBM watsonx Essentials, Python for Data Science, Applied Data Science with Python - Level 2",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4801,7 +4801,7 @@
         "industry": "Healthcare Industry Jumpstart, FHIR",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4859,7 +4859,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4888,7 +4888,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -4917,7 +4917,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -4946,7 +4946,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5033,7 +5033,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5091,7 +5091,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5207,7 +5207,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5236,7 +5236,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5294,7 +5294,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5323,7 +5323,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5352,7 +5352,7 @@
         "industry": "",
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5410,7 +5410,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5439,7 +5439,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5468,7 +5468,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5497,7 +5497,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5555,7 +5555,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5584,7 +5584,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -5642,7 +5642,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5700,7 +5700,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5758,7 +5758,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5816,7 +5816,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5874,7 +5874,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5903,7 +5903,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -5961,7 +5961,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -5990,7 +5990,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6019,7 +6019,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6135,7 +6135,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6193,7 +6193,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6222,7 +6222,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)\r\nHealthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6280,7 +6280,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6309,7 +6309,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "Salesforce Certified AI Associate",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "Salesforce Certified AI Associate"
       },
       "plan": {
@@ -6338,7 +6338,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6454,7 +6454,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "AIOps"
       },
       "plan": {
@@ -6512,7 +6512,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6541,7 +6541,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "AIOps"
       },
       "plan": {
@@ -6570,7 +6570,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6657,7 +6657,7 @@
         "industry": "Government Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6744,7 +6744,7 @@
         "industry": "",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "AIOps"
       },
       "plan": {
@@ -6802,7 +6802,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6831,7 +6831,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6889,7 +6889,7 @@
         "industry": "",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -6947,7 +6947,7 @@
         "industry": "",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7005,7 +7005,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7034,7 +7034,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7063,7 +7063,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7092,7 +7092,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7121,7 +7121,7 @@
         "industry": "Healthcare Insights and Solutions (Silver)",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7150,7 +7150,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7208,7 +7208,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "AIOps"
       },
       "plan": {
@@ -7846,7 +7846,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7904,7 +7904,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -7962,7 +7962,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8020,7 +8020,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8223,7 +8223,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "Generative AI for Code with watsonx Code Assistant Sales Foundation, IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8252,7 +8252,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8339,7 +8339,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8368,7 +8368,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8397,7 +8397,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8426,7 +8426,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8455,7 +8455,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8484,7 +8484,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8513,7 +8513,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8542,7 +8542,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8571,7 +8571,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8600,7 +8600,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -8658,7 +8658,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8716,7 +8716,7 @@
         "industry": "Healthcare Jumpstart\r\nHealthcare Insights and Solutions (Bronze)",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8745,7 +8745,7 @@
         "industry": "Healthcare Jumpstart\r\nHealthcare Insights and Solutions (Bronze)",
         "agile": "Horizon Specific Training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8774,7 +8774,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -8803,7 +8803,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -8977,7 +8977,7 @@
         "industry": "HealthCare Industry Jumpstart",
         "agile": "Horizon Mandatory Training",
         "agentic": "IBM WatsonX essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9006,7 +9006,7 @@
         "industry": "Healthcare Industry Jumpstart, Healthcare Insights and Solutions (Bronze)",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "watsonx: Technical Essentials, IBM watsonx Orchestrate: Getting Started with Automation Builder, IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -9064,7 +9064,7 @@
         "industry": "",
         "agile": "Certified SAFe Practitioner",
         "agentic": "IBM WatsonX essential",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9151,7 +9151,7 @@
         "industry": "",
         "agile": "Horizon Mandatory Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9180,7 +9180,7 @@
         "industry": "HealthCare Industry - JumpStart",
         "agile": "Horizon Mandatory Training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9209,7 +9209,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9238,7 +9238,7 @@
         "industry": "",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -9267,7 +9267,7 @@
         "industry": "",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "IBM watsonx Orchestrate Build an AI Assistant, IBM Generative & Agentic AI Foundation, IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -9296,7 +9296,7 @@
         "industry": "HealthCare Industry - JumpStart",
         "agile": "Horizon Mandatory Training",
         "agentic": "IBM WatsonX essential",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9325,7 +9325,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9354,7 +9354,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials, GEN AI/Agentic AI foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -9441,7 +9441,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation, IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "IBM Generative & Agentic AI Foundation"
       },
       "plan": {
@@ -9470,7 +9470,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "Horizon Mandatory training, Agile Explorer",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9586,7 +9586,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "Agile Basics",
         "agentic": "watsonx Orchestrate Practitioner Advanced",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9673,7 +9673,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9702,7 +9702,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9731,7 +9731,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9760,7 +9760,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9789,7 +9789,7 @@
         "industry": "Healthcare Insights and Solutions (Bronze)",
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9818,7 +9818,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9905,7 +9905,7 @@
         "industry": "",
         "agile": "Certified Scrum Master",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -9934,7 +9934,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "NA",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -9963,7 +9963,7 @@
         "industry": "Healthcare Industry Jumpstart",
         "agile": "DASSM, IBM Agile Advocate",
         "agentic": "IBM Consulting Gen & Agentic AI",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": "NA"
       },
       "plan": {
@@ -10079,7 +10079,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM watsonx Essentials",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -10108,7 +10108,7 @@
         "industry": "Healthcare Jumpstart",
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
-        "devsecops": "",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -10166,7 +10166,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -10195,7 +10195,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -10224,7 +10224,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -10311,7 +10311,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
@@ -11326,7 +11326,7 @@
         "industry": "",
         "agile": "Agile Basics",
         "agentic": "",
-        "devsecops": "NA",
+        "devsecops": "DevSecOps Essentials",
         "aiops": ""
       },
       "plan": {
