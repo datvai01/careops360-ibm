@@ -163,71 +163,360 @@ function ExecNarrative() {
   );
 }
 
-/* ─────────────────────── PRODUCT TREEMAP ─────────────────────── */
+/* ─────────────────────── PRODUCT TREEMAP (Interactive Drill-Down) ───────────────────────
+ *
+ * Levels: Domain (0) → Portfolio (1) → Product (2) → Application Area (3) → Resources (4)
+ * Click any tile to drill in. Click a breadcrumb to go back. Hover for rich details.
+ * "Apply as filter" pushes the current path into the page filter state.
+ */
 
-function ProductTreemap({ filtered }: { filtered: Resource[] }) {
-  const data = useMemo(() => {
-    const byDomain: Record<string, Record<string, Record<string, number>>> = {};
-    for (const r of filtered) {
-      const d = r.domain || "Unspecified";
-      const p = r.portfolio || "—";
-      const pr = r.product || "—";
-      byDomain[d] ??= {};
-      byDomain[d][p] ??= {};
-      byDomain[d][p][pr] = (byDomain[d][p][pr] || 0) + 1;
-    }
-    const colors = [C.blue, C.teal, C.purple, C.orange, C.green, C.yellow, C.red, C.gray, "#1192e8", "#005d5d", "#9f1853"];
-    let i = 0;
-    return Object.entries(byDomain).map(([domain, ports]) => ({
-      name: domain,
-      fill: colors[i++ % colors.length],
-      children: Object.entries(ports).map(([port, prods]) => ({
-        name: port,
-        children: Object.entries(prods).map(([prod, count]) => ({ name: prod, size: count })),
-      })),
-    }));
-  }, [filtered]);
+const LEVELS = ["domain", "portfolio", "product", "applicationArea"] as const;
+const LEVEL_LABELS = ["Domain", "Portfolio", "Product", "Application Area"];
+const LEVEL_FILTER_KEYS: (keyof FilterState)[] = ["domain", "portfolio", "product", "applicationArea"];
+const PALETTE = [C.blue, C.teal, C.purple, C.orange, C.green, C.yellow, "#1192e8", "#005d5d", "#9f1853", C.red, C.gray, "#a56eff", "#ee5396"];
+
+type DrillNode = { key: string; label: string; count: number; resources: Resource[]; color: string };
+
+function buildLevel(resources: Resource[], path: string[]): DrillNode[] {
+  const level = path.length;
+  if (level >= LEVELS.length) return [];
+  const field = LEVELS[level];
+  const groups: Record<string, Resource[]> = {};
+  for (const r of resources) {
+    const k = (r[field] as string) || "Unspecified";
+    (groups[k] ??= []).push(r);
+  }
+  return Object.entries(groups)
+    .map(([k, rs], i) => ({ key: k, label: k, count: rs.length, resources: rs, color: PALETTE[i % PALETTE.length] }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function ProductTreemap({
+  filtered, filters, setFilters,
+}: { filtered: Resource[]; filters: FilterState; setFilters: (f: FilterState) => void }) {
+  const [path, setPath] = useState<string[]>([]);
+  const [hover, setHover] = useState<DrillNode | null>(null);
+
+  // Apply existing filters as drill path on mount (but no auto-sync after)
+  // Filter resources by current drill path
+  const scoped = useMemo(() => {
+    return filtered.filter(r =>
+      path.every((p, i) => (r[LEVELS[i]] as string) === p),
+    );
+  }, [filtered, path]);
+
+  const nodes = useMemo(() => buildLevel(filtered, path), [filtered, path]);
+
+  // Resources at the deepest reached level — used when drilled all the way in
+  const atLeaf = path.length >= LEVELS.length;
+
+  function drillInto(node: DrillNode) {
+    if (path.length >= LEVELS.length - 1) return; // stop at applicationArea
+    setPath([...path, node.key]);
+    setHover(null);
+  }
+  function jumpTo(idx: number) {
+    setPath(path.slice(0, idx));
+    setHover(null);
+  }
+  function applyFilter() {
+    const next = { ...filters };
+    LEVEL_FILTER_KEYS.forEach((k, i) => { next[k] = path[i] ?? ""; });
+    setFilters(next);
+  }
+  function resetDrill() {
+    setPath([]);
+    setHover(null);
+  }
+
+  const focused = hover ?? (path.length > 0
+    ? { key: path[path.length - 1], label: path[path.length - 1], count: scoped.length, resources: scoped, color: C.blue }
+    : null);
 
   return (
     <Card className="p-5">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div>
-          <h3 className="text-base font-bold flex items-center gap-2"><Package size={16} style={{ color: C.blue }} /> Product-Based Talent View</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Domain &rarr; Portfolio &rarr; Product &mdash; sized by resource count</p>
+          <h3 className="text-base font-bold flex items-center gap-2">
+            <Package size={16} style={{ color: C.blue }} /> Product-Based Talent View
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Click any tile to drill: Domain &rarr; Portfolio &rarr; Product &rarr; Application Area &mdash; sized by headcount
+          </p>
         </div>
-        <Badge variant="outline" className="text-xs">{filtered.length} resources</Badge>
+        <div className="flex items-center gap-2">
+          {path.length > 0 && (
+            <Button onClick={applyFilter} size="sm" variant="outline" className="h-7 text-xs gap-1.5">
+              <Target size={11} /> Apply as Page Filter
+            </Button>
+          )}
+          {path.length > 0 && (
+            <Button onClick={resetDrill} size="sm" variant="ghost" className="h-7 text-xs gap-1.5">
+              Reset
+            </Button>
+          )}
+          <Badge variant="outline" className="text-xs">{scoped.length} of {filtered.length}</Badge>
+        </div>
       </div>
-      <div className="h-[420px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <Treemap
-            data={data}
-            dataKey="size"
-            stroke="#fff"
-            fill={C.blue}
-            content={<TreemapNode />}
-          />
-        </ResponsiveContainer>
+
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-1.5 text-xs mb-3 flex-wrap">
+        <button onClick={resetDrill} className={cn("px-2 py-1 rounded font-semibold transition-colors", path.length === 0 ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground")}>
+          All Domains
+        </button>
+        {path.map((p, i) => (
+          <span key={i} className="flex items-center gap-1.5">
+            <ChevronRight size={11} className="text-muted-foreground" />
+            <button
+              onClick={() => jumpTo(i + 1)}
+              className={cn("px-2 py-1 rounded font-semibold transition-colors", i === path.length - 1 ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground")}
+              title={`Go back to ${LEVEL_LABELS[i]} level`}
+            >
+              {p}
+            </button>
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70">{LEVEL_LABELS[i]}</span>
+          </span>
+        ))}
+        {path.length < LEVELS.length && (
+          <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground/70">
+            Showing {nodes.length} {LEVEL_LABELS[path.length]}{nodes.length === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
+
+      {/* Treemap + side panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Treemap area */}
+        <div className="lg:col-span-2 h-[440px]">
+          {atLeaf ? (
+            <ResourceList resources={scoped} />
+          ) : nodes.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground border rounded-md">
+              No resources match the current selection.
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <Treemap
+                data={nodes.map(n => ({ name: n.label, size: n.count, color: n.color, node: n }))}
+                dataKey="size"
+                stroke="#fff"
+                isAnimationActive
+                content={
+                  <InteractiveTile
+                    onClick={(n: DrillNode) => drillInto(n)}
+                    onHover={(n: DrillNode | null) => setHover(n)}
+                  />
+                }
+              />
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Detail side panel */}
+        <DrillDetailPanel focused={focused} level={path.length} canDrill={!atLeaf && hover !== null} />
       </div>
     </Card>
   );
 }
 
-function TreemapNode(props: any) {
-  const { x, y, width, height, depth, name, fill } = props;
-  if (depth > 2) return null;
-  const colors = [C.blue, C.teal, C.purple, C.orange, C.green, C.yellow, "#1192e8", "#005d5d", "#9f1853", C.red, C.gray];
-  const colorIdx = (props.index ?? 0) % colors.length;
-  const bg = depth === 1 ? (fill ?? colors[colorIdx]) : colors[colorIdx];
-  const opacity = depth === 1 ? 0.95 : 0.6;
+/* Custom interactive treemap tile */
+function InteractiveTile(props: any) {
+  const { x, y, width, height, depth, payload, onClick, onHover, name, color } = props;
+  const node: DrillNode | undefined = payload?.node;
+  const fill = color || node?.color || C.blue;
+  if (depth === 0) {
+    return <g>{props.children}</g>;
+  }
+  if (depth > 1) return null;
+
+  const showLabel = width > 70 && height > 28;
+  const showCount = width > 70 && height > 44;
+
   return (
-    <g>
-      <rect x={x} y={y} width={width} height={height} fill={bg} fillOpacity={opacity} stroke="#fff" strokeWidth={depth === 1 ? 2 : 1} />
-      {width > 60 && height > 22 && (
-        <text x={x + 6} y={y + 16} fill="#fff" fontSize={11} fontWeight={600} style={{ pointerEvents: "none" }}>
-          {name}
+    <g
+      style={{ cursor: node ? "pointer" : "default" }}
+      onMouseEnter={() => node && onHover?.(node)}
+      onMouseLeave={() => onHover?.(null)}
+      onClick={() => node && onClick?.(node)}
+    >
+      <rect
+        x={x} y={y} width={width} height={height}
+        fill={fill}
+        fillOpacity={0.88}
+        stroke="#fff"
+        strokeWidth={2}
+      />
+      {/* Inner highlight on hover */}
+      <rect
+        x={x + 2} y={y + 2} width={Math.max(0, width - 4)} height={Math.max(0, height - 4)}
+        fill="transparent"
+        stroke={fill}
+        strokeOpacity={0.0}
+        className="hover:stroke-white"
+      />
+      {showLabel && (
+        <text x={x + 8} y={y + 18} fill="#fff" fontSize={12} fontWeight={700} style={{ pointerEvents: "none" }}>
+          {String(name).length > Math.floor(width / 7) ? String(name).slice(0, Math.floor(width / 7) - 1) + "…" : name}
         </text>
       )}
+      {showCount && node && (
+        <>
+          <text x={x + 8} y={y + 34} fill="#fff" fontSize={10} fontWeight={500} fillOpacity={0.85} style={{ pointerEvents: "none" }}>
+            {node.count} resource{node.count === 1 ? "" : "s"}
+          </text>
+        </>
+      )}
     </g>
+  );
+}
+
+/* Side panel describing the focused/hovered node */
+function DrillDetailPanel({ focused, level, canDrill }: { focused: DrillNode | null; level: number; canDrill: boolean }) {
+  if (!focused) {
+    return (
+      <div className="rounded-lg border bg-muted/20 p-4 h-[440px] flex flex-col items-center justify-center text-center">
+        <Package size={32} className="text-muted-foreground/40 mb-2" />
+        <div className="text-sm font-semibold text-muted-foreground">Hover or click any tile</div>
+        <div className="text-xs text-muted-foreground/70 mt-1">Drill into the talent map to see role mix, locations, and skill coverage at every level.</div>
+      </div>
+    );
+  }
+  const rs = focused.resources;
+  const off = rs.filter(r => r.location === "Offshore").length;
+  const on  = rs.filter(r => r.location === "Onshore").length;
+  const roleCounts: Record<string, number> = {};
+  for (const r of rs) roleCounts[r.role] = (roleCounts[r.role] || 0) + 1;
+  const roles = Object.entries(roleCounts).sort((a, b) => b[1] - a[1]);
+  const workCounts: Record<string, number> = {};
+  for (const r of rs) workCounts[r.typeOfWork] = (workCounts[r.typeOfWork] || 0) + 1;
+
+  // Skill plan coverage at this scope
+  const totalRs = rs.length || 1;
+  const skillPct = (field: keyof Resource["plan"]) => {
+    const filled = rs.filter(r => {
+      const v = r.plan[field] as string;
+      return v && v.trim() && v.toLowerCase() !== "na";
+    }).length;
+    return Math.round((filled / totalRs) * 100);
+  };
+  const skills = [
+    { label: "Industry",     pct: skillPct("industry") },
+    { label: "Agile",        pct: skillPct("agile") },
+    { label: "Agentic AI",   pct: skillPct("agentic") },
+    { label: "DevSecOps",    pct: skillPct("devops") },
+    { label: "AIOps",        pct: skillPct("aiops") },
+    { label: "Future Stack", pct: skillPct("futureTech") },
+  ];
+
+  return (
+    <div className="rounded-lg border bg-card p-4 h-[440px] overflow-auto">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="min-w-0">
+          <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">{LEVEL_LABELS[level] ?? "Selection"}</div>
+          <div className="text-base font-bold truncate flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded" style={{ background: focused.color }} />
+            {focused.label}
+          </div>
+        </div>
+        <Badge style={{ background: focused.color, color: "#fff" }} className="text-xs">{focused.count}</Badge>
+      </div>
+
+      {canDrill && (
+        <div className="text-[10px] text-primary mb-3 flex items-center gap-1">
+          <ArrowRight size={10} /> Click tile to drill into {LEVEL_LABELS[level + 1] ?? "next"}
+        </div>
+      )}
+
+      {/* Location split */}
+      <div className="mb-3">
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">Location</div>
+        <div className="flex h-5 rounded overflow-hidden border">
+          <div className="flex items-center justify-center text-[10px] font-bold text-white" style={{ background: C.teal, width: `${(off/totalRs)*100}%` }} title={`${off} offshore`}>
+            {off > 0 && (off/totalRs > 0.12 ? `${off} Off` : "")}
+          </div>
+          <div className="flex items-center justify-center text-[10px] font-bold text-white" style={{ background: C.purple, width: `${(on/totalRs)*100}%` }} title={`${on} onshore`}>
+            {on > 0 && (on/totalRs > 0.12 ? `${on} On` : "")}
+          </div>
+        </div>
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+          <span>{off} offshore ({Math.round((off/totalRs)*100)}%)</span>
+          <span>{on} onshore ({Math.round((on/totalRs)*100)}%)</span>
+        </div>
+      </div>
+
+      {/* Roles */}
+      <div className="mb-3">
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">Roles ({roles.length})</div>
+        <div className="space-y-1">
+          {roles.slice(0, 6).map(([role, count]) => (
+            <div key={role} className="flex items-center gap-2 text-[11px]">
+              <div className="w-28 truncate text-muted-foreground" title={role}>{role}</div>
+              <div className="flex-1 h-2 rounded bg-muted overflow-hidden">
+                <div className="h-full rounded" style={{ width: `${(count/totalRs)*100}%`, background: focused.color, opacity: 0.85 }} />
+              </div>
+              <div className="w-6 text-right font-semibold tabular-nums">{count}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Type of work */}
+      <div className="mb-3">
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">Type of Work</div>
+        <div className="flex flex-wrap gap-1">
+          {Object.entries(workCounts).sort((a,b)=>b[1]-a[1]).map(([w, c]) => (
+            <Badge key={w} variant="outline" className="text-[10px] font-normal">{w} &middot; {c}</Badge>
+          ))}
+        </div>
+      </div>
+
+      {/* Skill plan coverage */}
+      <div>
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">6-Month Plan Coverage</div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {skills.map(s => {
+            const tone = s.pct >= 70 ? C.green : s.pct >= 30 ? C.yellow : C.red;
+            return (
+              <div key={s.label} className="flex items-center gap-1.5 text-[11px]">
+                <div className="w-20 truncate text-muted-foreground">{s.label}</div>
+                <div className="flex-1 h-1.5 rounded bg-muted overflow-hidden">
+                  <div className="h-full rounded" style={{ width: `${s.pct}%`, background: tone }} />
+                </div>
+                <div className="w-7 text-right font-bold tabular-nums" style={{ color: tone }}>{s.pct}%</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Resource list shown when fully drilled into Application Area */
+function ResourceList({ resources }: { resources: Resource[] }) {
+  return (
+    <div className="h-full overflow-auto rounded-md border">
+      <table className="w-full text-xs">
+        <thead className="bg-muted/40 sticky top-0">
+          <tr>
+            <th className="text-left py-2 px-3 font-semibold">Resource</th>
+            <th className="text-left py-2 px-3 font-semibold">Role</th>
+            <th className="text-left py-2 px-3 font-semibold">Location</th>
+            <th className="text-left py-2 px-3 font-semibold">Type of Work</th>
+          </tr>
+        </thead>
+        <tbody>
+          {resources.map(r => (
+            <tr key={r.serial} className="border-t hover:bg-muted/20">
+              <td className="py-1.5 px-3 font-medium">{r.name}</td>
+              <td className="py-1.5 px-3">{r.role}</td>
+              <td className="py-1.5 px-3"><Badge variant="outline" className="text-[10px] font-normal">{r.location}</Badge></td>
+              <td className="py-1.5 px-3 text-muted-foreground">{r.typeOfWork}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -816,7 +1105,7 @@ export default function TalentPlan() {
       <FiltersBar filters={filters} setFilters={setFilters} />
 
       {/* Product treemap */}
-      <ProductTreemap filtered={filtered} />
+      <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
 
       {/* Role transformation */}
       <RoleTransformation filtered={filtered} />
