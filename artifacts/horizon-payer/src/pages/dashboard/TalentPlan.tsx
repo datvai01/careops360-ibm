@@ -96,12 +96,13 @@ const ROLE_TRANSFORMATION: Record<string, { future: string; color: string; desc:
 };
 
 const SKILL_AREAS = [
+  { key: "techStack", label: "Tech Stack", field: "techStack",  currentField: "techStack", desc: "Current production tech stack expertise" },
+  { key: "future",    label: "Future Stack", field: "futureTech", currentField: "futureTech", desc: "Future technology stack readiness" },
   { key: "industry",  label: "Industry",   field: "industry",   currentField: "industry",  desc: "Healthcare / Insurance domain training" },
   { key: "agile",     label: "Agile",      field: "agile",      currentField: "agile",     desc: "Agile Explorer / CSM / DASSM" },
   { key: "agentic",   label: "Agentic AI", field: "agentic",    currentField: "agentic",   desc: "GenAI, watsonx, prompt engineering" },
   { key: "devsecops", label: "DevSecOps",  field: "devops",     currentField: "devsecops", desc: "DevSecOps essentials & advanced" },
   { key: "aiops",     label: "AIOps",      field: "aiops",      currentField: "aiops",     desc: "AIOps overview & badges" },
-  { key: "future",    label: "Future Stack", field: "futureTech", currentField: "futureTech", desc: "Future technology stack readiness" },
 ] as const;
 
 function readinessScore(p: { future: string; industry: string; agile: string; agentic: string; devops: string; aiops: string }) {
