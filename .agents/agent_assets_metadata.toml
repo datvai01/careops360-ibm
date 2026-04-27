@@ -30,3 +30,9 @@ id = "yDxSzaRXxvi26qfIMH256"
 uri = "file://Horizon_Talent_Transformation_Plan.pptx"
 type = "slides"
 title = "Horizon Operations Talent Transformation Plan (8 slides)"
+
+[[outputs]]
+id = "0DKgphIzbUFOHzmSFhwGv"
+uri = "file://TALENT_PLAN_UPLOAD_GUIDE.md"
+type = "text"
+title = "Talent Plan Upload Guide"
