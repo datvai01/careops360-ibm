@@ -591,18 +591,20 @@ function RoleTransformation({ filtered }: { filtered: Resource[] }) {
 /* ─────────────────────── SKILL HEATMAP ─────────────────────── */
 
 function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
+  const [view, setView] = useState<"current" | "planned">("current");
+
   const productsList = useMemo(() => uniq(filtered.map(r => r.product)).filter(Boolean).sort(), [filtered]);
   const matrix = useMemo(() => {
+    const isCovered = (r: Resource, area: typeof SKILL_AREAS[number]) => {
+      const key = view === "current" ? area.currentField : area.field;
+      const bucket = view === "current" ? r.current : r.plan;
+      const v = (bucket as any)[key] as string | undefined;
+      return !!(v && v.trim() && v.toLowerCase() !== "na");
+    };
     return productsList.map(prod => {
       const rs = filtered.filter(r => r.product === prod);
       const cells = SKILL_AREAS.map(area => {
-        const hasValue = (v: string | undefined) => !!(v && v.trim());
-        const isPlanned = (r: Resource) => {
-          const planVal = (r.plan as any)[area.field] as string | undefined;
-          const currentVal = (r.current as any)[area.currentField] as string | undefined;
-          return hasValue(planVal) || hasValue(currentVal);
-        };
-        const untrained = rs.filter(r => !isPlanned(r));
+        const untrained = rs.filter(r => !isCovered(r, area));
         const filled = rs.length - untrained.length;
         const pct = rs.length > 0 ? filled / rs.length : 0;
         return {
@@ -616,7 +618,7 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
       });
       return { product: prod, headcount: rs.length, cells };
     });
-  }, [productsList, filtered]);
+  }, [productsList, filtered, view]);
 
   const cellColor = (pct: number) => {
     if (pct >= 0.7) return { bg: C.green, fg: "#fff", level: "green" as const };
@@ -625,12 +627,40 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
   };
 
   const MAX_NAMES = 12;
+  const verbCovered = view === "current" ? "have today" : "have a plan for";
+  const verbUntrained = view === "current" ? "Missing today" : "No plan yet";
+  const noun = view === "current" ? "current skill" : "planned training";
 
   return (
     <Card className="p-5">
-      <div className="mb-3">
-        <h3 className="text-base font-bold flex items-center gap-2"><Target size={16} style={{ color: C.green }} /> Skill Readiness Heatmap</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">% of resources with planned coverage in each skill area, by Product. Hover red or yellow cells to see who is not yet trained.</p>
+      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-bold flex items-center gap-2"><Target size={16} style={{ color: C.green }} /> Skill Readiness Heatmap</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {view === "current"
+              ? "% of resources who already have a current skill in each area today, by Product."
+              : "% of resources with a future training plan in each area, by Product."}
+            {" "}Hover red or yellow cells to see who is missing.
+          </p>
+        </div>
+        <div className="inline-flex rounded-md border border-slate-200 overflow-hidden text-[11px] shrink-0" role="group" aria-label="Heatmap view">
+          <button
+            type="button"
+            onClick={() => setView("current")}
+            className={`px-3 py-1.5 font-semibold transition ${view === "current" ? "text-white" : "text-slate-700 bg-white hover:bg-slate-50"}`}
+            style={view === "current" ? { background: C.blue } : undefined}
+          >
+            Current State
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("planned")}
+            className={`px-3 py-1.5 font-semibold transition border-l border-slate-200 ${view === "planned" ? "text-white" : "text-slate-700 bg-white hover:bg-slate-50"}`}
+            style={view === "planned" ? { background: C.blue } : undefined}
+          >
+            Future Plan
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
@@ -677,14 +707,14 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                               {row.product} <span className="text-slate-400">·</span> {c.area}
                             </div>
                             <div className="text-[11px] text-slate-600 mt-0.5">
-                              {c.filled} of {c.total} covered ({Math.round(c.pct * 100)}%)
+                              {c.filled} of {c.total} {verbCovered} {c.area} ({Math.round(c.pct * 100)}%)
                             </div>
                             <div className="text-[10px] text-slate-500 mt-1 leading-snug">
                               <span className="font-mono">
                                 {Math.round(c.pct * 100)}% = {c.filled} ÷ {c.total} × 100
                               </span>
                               <div className="mt-0.5">
-                                A resource counts as <strong>covered</strong> when <em>either</em> their current {c.area} skill <em>or</em> their planned {c.area} training has any non-blank entry. "NA" is treated as a deliberate, reviewed entry and counts as covered.
+                                <strong>{view === "current" ? "Current State view" : "Future Plan view"}:</strong> a resource counts when their {view === "current" ? "current" : "planned"} {c.area} {noun} field has a real value. Blank or "NA" means a gap.
                               </div>
                             </div>
                           </div>
@@ -697,7 +727,7 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                                     style={{ background: col.bg }}
                                   />
                                   <span className="text-[10px] uppercase tracking-wide font-semibold text-slate-700">
-                                    Not yet trained ({c.untrained.length})
+                                    {verbUntrained} ({c.untrained.length})
                                   </span>
                                 </div>
                                 <ul className="space-y-0.5 text-[11px] text-slate-800">
