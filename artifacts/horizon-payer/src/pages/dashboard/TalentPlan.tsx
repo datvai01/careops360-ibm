@@ -677,6 +677,14 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                             <div className="text-[11px] text-slate-600 mt-0.5">
                               {c.filled} of {c.total} planned ({Math.round(c.pct * 100)}%)
                             </div>
+                            <div className="text-[10px] text-slate-500 mt-1 leading-snug">
+                              <span className="font-mono">
+                                {Math.round(c.pct * 100)}% = {c.filled} ÷ {c.total} × 100
+                              </span>
+                              <div className="mt-0.5">
+                                A resource counts as <strong>planned</strong> when their {c.area} plan field is filled in and not "NA".
+                              </div>
+                            </div>
                           </div>
                           <div className="px-3 py-2">
                             {showDrillDown ? (
