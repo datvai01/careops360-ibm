@@ -1096,7 +1096,7 @@ function fmtDateTime(iso: string): string {
   }
 }
 
-function RefreshDataTab() {
+export function RefreshDataTab() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -1480,22 +1480,7 @@ export default function TalentPlan() {
         </TabsContent>
 
         <TabsContent value="resources" className="mt-4">
-          <Tabs defaultValue="table" className="w-full">
-            <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/30 p-1">
-              <TabsTrigger value="table" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-                Resource Detail Table
-              </TabsTrigger>
-              <TabsTrigger value="admin" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-                Refresh Data (Admin)
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="table" className="mt-3">
-              <ResourceTable filtered={filtered} />
-            </TabsContent>
-            <TabsContent value="admin" className="mt-3">
-              <RefreshDataTab />
-            </TabsContent>
-          </Tabs>
+          <ResourceTable filtered={filtered} />
         </TabsContent>
 
         <TabsContent value="readiness" className="mt-4">

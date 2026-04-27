@@ -26,6 +26,7 @@ import {
   Award,
   DownloadIcon,
   LoaderIcon,
+  Settings,
 } from "lucide-react";
 import { useExportAllData } from "@/hooks/useExportAllData";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Resources",
     items: [
       { name: "Help & Walkthrough", path: "/dashboard/help", icon: HelpCircleIcon },
+    ],
+  },
+  {
+    label: "Administration",
+    items: [
+      { name: "Administration", path: "/dashboard/administration", icon: Settings },
     ],
   },
 ];

@@ -22,6 +22,7 @@ import DigitalFrontDoorRoadmap from "@/pages/dashboard/DigitalFrontDoorRoadmap";
 import Help from "@/pages/dashboard/Help";
 import CapabilityUplift from "@/pages/dashboard/CapabilityUplift";
 import MemberServices from "@/pages/dashboard/MemberServices";
+import Administration from "@/pages/dashboard/Administration";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -55,6 +56,7 @@ function DashboardRouter() {
         <Route path="/dashboard/digital-front-door-roadmap" component={DigitalFrontDoorRoadmap} />
         <Route path="/dashboard/help" component={Help} />
         <Route path="/dashboard/capability-uplift" component={CapabilityUplift} />
+        <Route path="/dashboard/administration" component={Administration} />
         <Route component={NotFound} />
       </Switch>
     </AppShell>
