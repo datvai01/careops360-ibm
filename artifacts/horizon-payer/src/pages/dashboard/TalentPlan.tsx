@@ -141,29 +141,6 @@ function KpiTile({ t }: { t: typeof KPI_TILES[number] }) {
   );
 }
 
-/* ─────────────────────── EXEC NARRATIVE ─────────────────────── */
-
-function ExecNarrative() {
-  return (
-    <Card className="p-6 border-l-4" style={{ borderLeftColor: C.blue }}>
-      <div className="flex items-start gap-4">
-        <div className="rounded-lg p-2.5 flex-shrink-0" style={{ background: `${C.blue}15` }}>
-          <Sparkles size={20} style={{ color: C.blue }} />
-        </div>
-        <div className="space-y-2">
-          <h3 className="text-base font-bold">Executive Summary</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            IBM is proposing a structured, product-aligned talent transformation plan to evolve Horizon&rsquo;s current operations team into an
-            <span className="font-semibold text-foreground"> AI-enabled product operations model</span>. The plan maps each of the 391 resources to their current
-            product, application area, role, location, and skill baseline, then defines a 6-month upskilling path across <span className="font-semibold text-foreground">healthcare industry knowledge, agile delivery,
-            Agentic AI, DevSecOps, and AIOps</span>. Outcomes: faster product flow, reduced MTTR, automated remediation, and a workforce ready for AI-led operations transformation.
-          </p>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 /* ─────────────────────── PRODUCT TREEMAP (Interactive Drill-Down) ───────────────────────
  *
  * Levels: Domain (0) → Portfolio (1) → Product (2) → Application Area (3) → Resources (4)
