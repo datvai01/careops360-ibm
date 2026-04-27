@@ -526,8 +526,8 @@ function ResourceList({ resources }: { resources: Resource[] }) {
           </tr>
         </thead>
         <tbody>
-          {resources.map(r => (
-            <tr key={r.serial} className="border-t hover:bg-muted/20">
+          {resources.map((r, i) => (
+            <tr key={`${r.serial}-${i}`} className="border-t hover:bg-muted/20">
               <td className="py-1.5 px-3 font-medium">{r.name}</td>
               <td className="py-1.5 px-3">{r.role}</td>
               <td className="py-1.5 px-3"><Badge variant="outline" className="text-[10px] font-normal">{r.location}</Badge></td>
@@ -907,9 +907,12 @@ function ResourceTable({ filtered }: { filtered: Resource[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(r => (
-                <Row key={r.serial} r={r} expanded={expanded === r.serial} onToggle={() => setExpanded(expanded === r.serial ? null : r.serial)} />
-              ))}
+              {rows.map((r, i) => {
+                const rowKey = `${r.serial}-${i}`;
+                return (
+                  <Row key={rowKey} r={r} expanded={expanded === rowKey} onToggle={() => setExpanded(expanded === rowKey ? null : rowKey)} />
+                );
+              })}
             </TableBody>
           </Table>
         </div>
@@ -1458,9 +1461,6 @@ export default function TalentPlan() {
           <TabsTrigger value="readiness" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Product Readiness Cards
           </TabsTrigger>
-          <TabsTrigger value="admin" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Refresh Data (Admin)
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="product" className="mt-4">
@@ -1480,15 +1480,26 @@ export default function TalentPlan() {
         </TabsContent>
 
         <TabsContent value="resources" className="mt-4">
-          <ResourceTable filtered={filtered} />
+          <Tabs defaultValue="table" className="w-full">
+            <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/30 p-1">
+              <TabsTrigger value="table" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+                Resource Detail Table
+              </TabsTrigger>
+              <TabsTrigger value="admin" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+                Refresh Data (Admin)
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="table" className="mt-3">
+              <ResourceTable filtered={filtered} />
+            </TabsContent>
+            <TabsContent value="admin" className="mt-3">
+              <RefreshDataTab />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
         <TabsContent value="readiness" className="mt-4">
           <ProductReadinessCards filtered={filtered} />
-        </TabsContent>
-
-        <TabsContent value="admin" className="mt-4">
-          <RefreshDataTab />
         </TabsContent>
       </Tabs>
 
