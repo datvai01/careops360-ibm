@@ -596,8 +596,7 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
     return productsList.map(prod => {
       const rs = filtered.filter(r => r.product === prod);
       const cells = SKILL_AREAS.map(area => {
-        const hasValue = (v: string | undefined) =>
-          !!(v && v.trim() && v.toLowerCase() !== "na");
+        const hasValue = (v: string | undefined) => !!(v && v.trim());
         const isPlanned = (r: Resource) => {
           const planVal = (r.plan as any)[area.field] as string | undefined;
           const currentVal = (r.current as any)[area.currentField] as string | undefined;
@@ -685,7 +684,7 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                                 {Math.round(c.pct * 100)}% = {c.filled} ÷ {c.total} × 100
                               </span>
                               <div className="mt-0.5">
-                                A resource counts as <strong>covered</strong> when <em>either</em> their current {c.area} skill <em>or</em> their planned {c.area} training has a value (not blank, not "NA").
+                                A resource counts as <strong>covered</strong> when <em>either</em> their current {c.area} skill <em>or</em> their planned {c.area} training has any non-blank entry. "NA" is treated as a deliberate, reviewed entry and counts as covered.
                               </div>
                             </div>
                           </div>
