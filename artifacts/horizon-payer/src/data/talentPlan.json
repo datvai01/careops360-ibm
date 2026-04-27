@@ -46,7 +46,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Consulting Gen & Agentic AI , IBM WatsonX Essential",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Microservices, SQL-19 , Angular, .Net Core , Splunk, OCP",
@@ -75,7 +75,7 @@
         "agile": "Certified Scrum Master",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Microservices, SQL-19 , Angular, .Net Core , Splunk, OCP",
@@ -162,7 +162,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -365,7 +365,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "NA",
-        "aiops": "IBM Generative & Agentic AI Foundation"
+        "aiops": ""
       },
       "plan": {
         "techStack": "NA",
@@ -568,7 +568,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Developer",
         "devsecops": "",
-        "aiops": "IBM Generative & Agentic AI Developer"
+        "aiops": ""
       },
       "plan": {
         "techStack": "NA",
@@ -626,7 +626,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -742,7 +742,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -771,7 +771,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -829,7 +829,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -858,7 +858,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -887,7 +887,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -1061,7 +1061,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Developer",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1090,7 +1090,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1148,7 +1148,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1264,7 +1264,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java Fullstack, Microservices, AWS, OCP",
@@ -1380,7 +1380,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "Microsoft Certified: DevOps Engineer Expert",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java Fullstack, Microservices, AWS, OCP, Splunk",
@@ -1438,7 +1438,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "watsonx.ai Generative AI Models Sales Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1554,7 +1554,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Developer",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1583,7 +1583,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1612,7 +1612,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1670,7 +1670,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1699,7 +1699,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1728,7 +1728,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1815,7 +1815,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1844,7 +1844,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -1873,7 +1873,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -1902,7 +1902,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -1960,7 +1960,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "DB2, VSAM",
@@ -2047,7 +2047,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2105,7 +2105,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2134,7 +2134,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2192,7 +2192,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2221,7 +2221,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Consultant/Business Analyst\r\nIBM Generative & Agentic AI Foundation\r\nAWS AI Badges",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2279,7 +2279,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2366,7 +2366,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2395,7 +2395,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nWatson Discovery Foundations",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2424,7 +2424,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2453,7 +2453,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2482,7 +2482,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nWatson Discovery Foundations",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2569,7 +2569,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nIBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2656,7 +2656,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nIBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2772,7 +2772,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "watsonx: Technical Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2801,7 +2801,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2888,7 +2888,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation \r\nIBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -2917,7 +2917,7 @@
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
         "devsecops": "NA",
-        "aiops": "IBM AIOps training\r\nand badge"
+        "aiops": ""
       },
       "plan": {
         "techStack": "NA",
@@ -2975,7 +2975,7 @@
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
         "devsecops": "NA",
-        "aiops": "IBM AIOps training\r\nand badge"
+        "aiops": ""
       },
       "plan": {
         "techStack": "NA",
@@ -3004,7 +3004,7 @@
         "agile": "Horizon Specific\r\nTraining",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
         "devsecops": "NA",
-        "aiops": "IBM AIOps training\r\nand badge"
+        "aiops": ""
       },
       "plan": {
         "techStack": "NA",
@@ -3149,7 +3149,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Consulting Generative & Agentic AI\r\n Foundation Learning Plan",
         "devsecops": "NA",
-        "aiops": "IBM AIOps training and badge"
+        "aiops": ""
       },
       "plan": {
         "techStack": "JCL, DB2, SQL, COBOL, Omegamon, DBT admin tool, Endevor, QMF, SOFTECH",
@@ -3265,7 +3265,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -3323,7 +3323,7 @@
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "SpringBoot, Angular, OCP, Kafka",
@@ -3352,7 +3352,7 @@
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -3526,7 +3526,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Python, AWS, OCP, Kafka",
@@ -3613,7 +3613,7 @@
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
         "devsecops": "",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -3671,7 +3671,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -3700,7 +3700,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -3758,7 +3758,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation, AWS Partner: Generative AI Essentials - Training Badge, Certified Entry-Level Python Programmer",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java, SpringBoot, Angular, Python, AWS, OCP, Kafka",
@@ -3874,7 +3874,7 @@
         "agile": "Horizon Specific Agile Training, Agile Explorer",
         "agentic": "IBM Watsonx Essentials",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -4019,7 +4019,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -4077,7 +4077,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -4106,7 +4106,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Python, OCP, SQL Server, Postgres, MongoDB",
@@ -4193,7 +4193,7 @@
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -4222,7 +4222,7 @@
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -4251,7 +4251,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "C# .NET, IIS, MS SQL Server, XSLT, SOAP, XML, ElasticSearch DB, Kibana, OCP, Splunk",
@@ -4280,7 +4280,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Python, AWS, OCP, Kafka",
@@ -4338,7 +4338,7 @@
         "agile": "IBM Agile Explorer & Horizon Specific Training,",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -4396,7 +4396,7 @@
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, OCP, Kafka",
@@ -4425,7 +4425,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Watson Machine Learning Essentials, Watson Discovery Foundations",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -4512,7 +4512,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -4541,7 +4541,7 @@
         "agile": "Horizon Mandatory training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Springboot, OCP",
@@ -4599,7 +4599,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "C# .NET",
@@ -4686,7 +4686,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Generative & Agentic AI Foundation, IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Python",
@@ -4715,7 +4715,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM WatsonX essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "C# .NET",
@@ -4744,7 +4744,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java, Springboot, MongoDB, Postgres, ElasticSearch DB, RabbitMQ, Splunk, Kibana, AWS, OCP, Apigee Edge",
@@ -4773,7 +4773,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "Trustworthy AI and AI Ethics, IBM Generative & Agentic AI Foundation, IBM watsonx Essentials, Python for Data Science, Applied Data Science with Python - Level 2",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java, SpringBoot, Angular, Python, AWS, OCP, Kafka",
@@ -4802,7 +4802,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Python, AWS, OCP",
@@ -4860,7 +4860,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Python, AWS, OCP, Kafka",
@@ -4889,7 +4889,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Python",
@@ -4918,7 +4918,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Microservices, SQL-19 , ASP.NET, .Net framework 4.8, SSIS SSRS",
@@ -4947,7 +4947,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java 17, PL/SQL , Splunk, AWS OCP, Java Script/Angular 7/Jquery",
@@ -5034,7 +5034,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Lotus Notes 8.5,VB Script, Database Administration",
@@ -5208,7 +5208,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java 17, PL/SQL , Splunk, AWS OCP, Java Script/Angular 7/Jquery",
@@ -5237,7 +5237,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Microservices, SQL-19 , ASP.NET, .Net framework 4.8, SSIS SSRS",
@@ -5295,7 +5295,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java, Microservices, Splunk, /Java 17 J2EE/Java Full Stack,SQL 16 Java Script/Angular/Jquery , Tablue, Mongo DB",
@@ -5324,7 +5324,7 @@
         "agile": "Agile Basics",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Java, Microservices, Splunk, /Java 17 J2EE/Java Full Stack,SQL 16 Java Script/Angular/Jquery , Tablue, Mongo DB",
@@ -5411,7 +5411,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5440,7 +5440,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5469,7 +5469,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5498,7 +5498,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5556,7 +5556,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5585,7 +5585,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -5643,7 +5643,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5759,7 +5759,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5817,7 +5817,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5875,7 +5875,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5904,7 +5904,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5962,7 +5962,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -5991,7 +5991,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -6020,7 +6020,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -6136,7 +6136,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -6194,7 +6194,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -6281,7 +6281,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -6571,7 +6571,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -6658,7 +6658,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -6890,7 +6890,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -7035,7 +7035,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -7064,7 +7064,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -7093,7 +7093,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -7151,7 +7151,7 @@
         "agile": "Horizon Specific Training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "None",
@@ -7905,7 +7905,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Basic in OCP",
@@ -7963,7 +7963,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Basic in OCP",
@@ -8021,7 +8021,7 @@
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Basic in OCP",
@@ -8224,7 +8224,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "Generative AI for Code with watsonx Code Assistant Sales Foundation, IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8253,7 +8253,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8369,7 +8369,7 @@
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8398,7 +8398,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8427,7 +8427,7 @@
         "agile": "Horizon Mandatory Agile training, IBM Agile Explorer",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8456,7 +8456,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8485,7 +8485,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8514,7 +8514,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8543,7 +8543,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8572,7 +8572,7 @@
         "agile": "Horizon Mandatory Agile training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8717,7 +8717,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -8775,7 +8775,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -9065,7 +9065,7 @@
         "agile": "Certified SAFe Practitioner",
         "agentic": "IBM WatsonX essential",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": ".Net Core, Angular, SQL Server 2019, Smart Communication, Windows, OCP, Splunk",
@@ -9152,7 +9152,7 @@
         "agile": "Horizon Mandatory Training",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "Angular, Java, SQL Server, Splunk, AWS",
@@ -9326,7 +9326,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -9587,7 +9587,7 @@
         "agile": "Agile Basics",
         "agentic": "watsonx Orchestrate Practitioner Advanced",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -9674,7 +9674,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "WorkDay Finance",
@@ -9703,7 +9703,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "WorkDay Adaptive",
@@ -9732,7 +9732,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "WorkDay Finance",
@@ -9790,7 +9790,7 @@
         "agile": "IBM Agile Explorer",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "WorkDay Finance",
@@ -9819,7 +9819,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "WorkDay HCM",
@@ -9906,7 +9906,7 @@
         "agile": "Certified Scrum Master",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "WorkDay HCM",
@@ -9964,7 +9964,7 @@
         "agile": "DASSM, IBM Agile Advocate",
         "agentic": "IBM Consulting Gen & Agentic AI",
         "devsecops": "DevSecOps Essentials",
-        "aiops": "NA"
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "ClearQuest",
@@ -10080,7 +10080,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM watsonx Essentials",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -10109,7 +10109,7 @@
         "agile": "Horizon Specific Training",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "",
@@ -10167,7 +10167,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -10225,7 +10225,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -10312,7 +10312,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
@@ -10370,7 +10370,7 @@
         "agile": "Agile expert",
         "agentic": "IBM Generative & Agentic AI Foundation",
         "devsecops": "",
-        "aiops": "AIOPs Foundational"
+        "aiops": ""
       },
       "plan": {
         "techStack": "",
@@ -10428,7 +10428,7 @@
         "agile": "Agile expert",
         "agentic": "IBM Generative & Agentic AI Experienced",
         "devsecops": "",
-        "aiops": "AIOps Advanced"
+        "aiops": ""
       },
       "plan": {
         "techStack": "",
@@ -10457,7 +10457,7 @@
         "agile": "Agile expert",
         "agentic": "IBM Generative & Agentic AI Experienced",
         "devsecops": "",
-        "aiops": "AIOps Advanced"
+        "aiops": ""
       },
       "plan": {
         "techStack": "",
@@ -10486,7 +10486,7 @@
         "agile": "Agile expert",
         "agentic": "IBM Generative & Agentic AI Experienced",
         "devsecops": "",
-        "aiops": "AIOps Advanced"
+        "aiops": ""
       },
       "plan": {
         "techStack": "",
@@ -10950,7 +10950,7 @@
         "agile": "Horizon Mandatory training",
         "agentic": "IBM Generative & Agentic AI Foundation\r\nIBM Generative & Agentic AI Developer",
         "devsecops": "",
-        "aiops": "IBM Consulting AIOps Overview"
+        "aiops": ""
       },
       "plan": {
         "techStack": ".NET,SQL Server",
@@ -11327,7 +11327,7 @@
         "agile": "Agile Basics",
         "agentic": "",
         "devsecops": "DevSecOps Essentials",
-        "aiops": ""
+        "aiops": "AIOps Overview"
       },
       "plan": {
         "techStack": "NA",
