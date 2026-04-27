@@ -1,0 +1,209 @@
+Build a polished, interactive IBM + Horizon talent transformation web page using the attached Excel file: “Talent Plan 0422a.xlsx”.
+
+Objective:
+Create a product-based talent plan dashboard for Horizon that explains:
+1. Current role of each resource
+2. Current product/application alignment
+3. Current skill level across Technology, Industry, Agile, Agentic AI, DevSecOps, and AIOps
+4. 6-month upskilling plan for each resource
+5. Future readiness for AI-led operations transformation
+
+Use these Excel tabs:
+- “Resource Level - Talent Plan” as the main resource-level dataset
+- “Product Level - Required Skills” as the product/skill reference dataset
+
+Main data columns:
+Resource Level - Talent Plan:
+- Serial#
+- Resource Name
+- Domain
+- Portfolio
+- Product
+- Application Area
+- Type of Work
+- Role
+- Location
+- Current Level: Current Tech Stack, Future Tech Stack, Industry Knowledge, Agile, Agentic, DevSecOps, AIOps
+- Talent Plan (6 Months): Current Tech Stack, Future Tech Stack, Industry Knowledge, Agile, Agentic, DevOps, AIOps
+
+Product Level - Required Skills:
+- Domain
+- Portfolio
+- Product
+- Application Areas
+- Current Tech Stack
+- Future Tech Stack
+- Industry Knowledge
+- Agile
+- Agentic
+- DevSecOps
+- AIOps
+
+Create a modern executive-facing single-page web app with the title:
+
+“Horizon Operations Talent Transformation Plan”
+
+Design style:
+- IBM consulting / enterprise transformation look
+- Clean white background
+- Blue accent color
+- Executive dashboard style
+- Responsive layout
+- Use cards, filters, interactive charts, and expandable resource details
+
+Top KPI cards:
+- Total Resources: 391
+- Offshore Resources: 322
+- Onshore Resources: 69
+- Operations Support Resources: 196
+- Project Resources: 136
+- Shared Resources: 59
+- Developers: 160
+- Operations Engineers: 104
+- Technical Leads: 49
+- Project Managers: 37
+
+Create these interactive sections:
+
+1. Executive Summary
+Show a short narrative:
+“IBM is proposing a structured, product-aligned talent transformation plan to evolve Horizon’s current operations team into an AI-enabled product operations model. The plan maps each resource to their current product, application area, role, location, and skill baseline, then defines a 6-month upskilling path across healthcare industry knowledge, agile delivery, Agentic AI, DevSecOps, and AIOps.”
+
+2. Product-Based Talent View
+Create an interactive sunburst or treemap:
+Domain → Portfolio → Product → Application Area → Resources
+
+Use filters for:
+- Domain
+- Portfolio
+- Product
+- Application Area
+- Role
+- Location
+- Type of Work
+
+3. Role Transformation View
+Create a Sankey chart or grouped bar chart showing:
+Current Role → Future Transformation Focus
+
+Suggested future transformation focus logic:
+- Operations Engineer → AI-enabled Operations / AIOps Engineer
+- Developer → AI-assisted Product Engineer
+- Technical Lead → Product Technical Lead / AI Delivery Lead
+- Project Manager → Product Delivery Lead
+- BSA → Product Analyst / AI Business Analyst
+- DBA → Data Reliability / Platform Operations Engineer
+- Solution Architect → AI Transformation Architect
+
+4. Skill Readiness Heatmap
+Create a heatmap by Product and Skill Area:
+- Healthcare / Industry Knowledge
+- Agile
+- Agentic AI
+- DevSecOps
+- AIOps
+- Future Tech Stack
+
+Color code:
+- Green = planned skill available
+- Yellow = partial / basic skill
+- Red = blank or NA
+
+5. Six-Month Upskilling Roadmap
+Create a timeline view with three phases:
+
+Phase 1: Foundation – Months 0–2
+- Horizon mandatory training
+- Healthcare industry badge / Healthcare Jumpstart
+- Agile basics / IBM Agile Explorer
+- Product and application familiarization
+
+Phase 2: AI + Automation Enablement – Months 2–4
+- IBM Generative & Agentic AI Foundation
+- Watsonx Essentials
+- Prompt Engineering
+- DevSecOps Essentials
+- AIOps Overview
+
+Phase 3: Product Operations Readiness – Months 4–6
+- Apply AIOps to incident / ticket analysis
+- Use GenAI for documentation, knowledge search, and root cause analysis
+- Build product-level knowledge maps
+- Identify automation opportunities by application area
+- Prepare resources for AI-enabled product operations model
+
+6. Resource Detail Table
+Create an interactive searchable table with:
+- Resource Name
+- Domain
+- Portfolio
+- Product
+- Application Area
+- Type of Work
+- Role
+- Location
+- Current Tech Stack
+- Future Tech Stack
+- Current AI / Agentic Training
+- Planned AI / Agentic Training
+- Planned DevOps / DevSecOps
+- Planned AIOps
+
+Allow sorting, filtering, and export to CSV.
+
+7. Product Readiness Cards
+For each Product, show:
+- Number of resources
+- Primary roles
+- Offshore/onshore mix
+- Key current technologies
+- Future technology direction
+- AI/AIOps upskilling coverage
+- Transformation readiness score
+
+Readiness score logic:
+- Start at 0
+- Add 20 points if Future Tech Stack is populated
+- Add 20 points if Industry Knowledge is populated
+- Add 20 points if Agile is populated
+- Add 20 points if Agentic AI is populated
+- Add 10 points if DevSecOps/DevOps is populated
+- Add 10 points if AIOps is populated
+Display score as Low, Medium, High.
+
+8. Recommended Target Operating Model
+Add a section titled:
+“Future Product-Based AI Operations Model”
+
+Show 5 capability pillars:
+- Product-aligned squads
+- AI-assisted engineering
+- AIOps-led operations
+- DevSecOps automation
+- Healthcare domain fluency
+
+Add this summary:
+“The proposed model moves Horizon from role-based operations support toward product-based ownership, where teams understand the business process, application landscape, technology stack, and AI-enabled operations capabilities required to improve speed, quality, and resiliency.”
+
+Technical requirements:
+- Use React
+- Use Tailwind CSS
+- Use Recharts or D3 for charts
+- Use SheetJS / xlsx library to parse the Excel file
+- Build as a single-page app
+- Include sample fallback data if the Excel file is not loaded
+- Add upload capability so user can upload the Excel file directly
+- Make the dashboard fully interactive and executive-ready
+
+Final output:
+Create a working web page with:
+- Upload Excel button
+- Interactive filters
+- KPI cards
+- Product treemap/sunburst
+- Role transformation chart
+- Skill readiness heatmap
+- Six-month roadmap
+- Searchable resource table
+- Product readiness cards
+- Executive narrative suitable for Horizon leadership

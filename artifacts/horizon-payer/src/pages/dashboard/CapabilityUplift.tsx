@@ -62,6 +62,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import TalentPlan from "./TalentPlan";
 
 const C = {
   blue: "#0f62fe",
@@ -867,12 +868,13 @@ export default function CapabilityUplift() {
         <p className="text-muted-foreground mt-1">IBM capability evolution and structured learning directly enabling Horizon transformation outcomes</p>
       </div>
 
-      {/* Three-tab layout */}
+      {/* Tab layout */}
       <Tabs defaultValue="exec-summary">
         <TabsList className="h-9">
           <TabsTrigger value="exec-summary" className="text-xs px-4">Executive Summary</TabsTrigger>
           <TabsTrigger value="maturity" className="text-xs px-4">Capability Maturity</TabsTrigger>
           <TabsTrigger value="bootcamps" className="text-xs px-4">Bootcamp Calendar</TabsTrigger>
+          <TabsTrigger value="talent-plan" className="text-xs px-4">Talent Plan</TabsTrigger>
         </TabsList>
 
         <TabsContent value="exec-summary" className="mt-6 space-y-10">
@@ -887,6 +889,10 @@ export default function CapabilityUplift() {
 
         <TabsContent value="bootcamps" className="mt-6">
           <TrainingCalendar />
+        </TabsContent>
+
+        <TabsContent value="talent-plan" className="mt-6">
+          <TalentPlan />
         </TabsContent>
       </Tabs>
     </div>
