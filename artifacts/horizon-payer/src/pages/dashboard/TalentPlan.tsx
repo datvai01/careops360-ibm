@@ -325,9 +325,10 @@ function InteractiveTile(props: any) {
   const { x, y, width, height, depth, payload, onClick, onHover, name, color } = props;
   const node: DrillNode | undefined = payload?.node;
   const fill = color || node?.color || C.blue;
-  if (depth === 0) {
-    return <g>{props.children}</g>;
-  }
+  // Recharts calls `content` for every node (root + leaves). At depth 0 the
+  // `children` prop contains data objects (not React elements), so we render
+  // an empty group and let Recharts iterate the leaves separately.
+  if (depth === 0) return <g />;
   if (depth > 1) return null;
 
   const showLabel = width > 70 && height > 28;
