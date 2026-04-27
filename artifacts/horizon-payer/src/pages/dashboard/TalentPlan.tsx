@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -1104,31 +1105,61 @@ export default function TalentPlan() {
       {/* Filters */}
       <FiltersBar filters={filters} setFilters={setFilters} />
 
-      {/* Product treemap */}
-      <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
+      {/* Tabbed views */}
+      <Tabs defaultValue="product" className="w-full">
+        <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/50 p-1">
+          <TabsTrigger value="product" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Product-Based Talent View
+          </TabsTrigger>
+          <TabsTrigger value="role" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Role Transformation View
+          </TabsTrigger>
+          <TabsTrigger value="skill" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Skill Readiness Heatmap
+          </TabsTrigger>
+          <TabsTrigger value="roadmap" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Six-Month Upskilling Roadmap
+          </TabsTrigger>
+          <TabsTrigger value="resources" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Resource Detail Table
+          </TabsTrigger>
+          <TabsTrigger value="readiness" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Product Readiness Cards
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Role transformation */}
-      <RoleTransformation filtered={filtered} />
+        <TabsContent value="product" className="mt-4">
+          <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
+        </TabsContent>
 
-      {/* Skill heatmap */}
-      <SkillHeatmap filtered={filtered} />
+        <TabsContent value="role" className="mt-4">
+          <RoleTransformation filtered={filtered} />
+        </TabsContent>
 
-      {/* Six-month roadmap */}
-      <SixMonthRoadmap />
+        <TabsContent value="skill" className="mt-4">
+          <SkillHeatmap filtered={filtered} />
+        </TabsContent>
 
-      {/* Resource table */}
-      <ResourceTable filtered={filtered} />
+        <TabsContent value="roadmap" className="mt-4">
+          <SixMonthRoadmap />
+        </TabsContent>
 
-      {/* Product readiness cards */}
-      <ProductReadinessCards filtered={filtered} />
+        <TabsContent value="resources" className="mt-4">
+          <ResourceTable filtered={filtered} />
+        </TabsContent>
 
-      {/* Target operating model */}
+        <TabsContent value="readiness" className="mt-4">
+          <ProductReadinessCards filtered={filtered} />
+        </TabsContent>
+      </Tabs>
+
+      {/* Target operating model — program-level, always visible below tabs */}
       <TargetOperatingModel />
 
       {/* Footnote */}
       <div className="text-[10px] text-muted-foreground text-center pt-4">
         <AlertCircle size={10} className="inline mr-1" />
-        Filters apply to the Treemap, Role Transformation, Skill Heatmap, Resource Table, and Product Readiness Cards. The 6-Month Roadmap and Target Operating Model are program-level and not filtered.
+        Filters apply to the Treemap, Role Transformation, Skill Heatmap, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Target Operating Model are program-level and not filtered.
       </div>
     </div>
   );
