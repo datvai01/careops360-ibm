@@ -96,12 +96,12 @@ const ROLE_TRANSFORMATION: Record<string, { future: string; color: string; desc:
 };
 
 const SKILL_AREAS = [
-  { key: "industry",  label: "Industry",   field: "industry",  desc: "Healthcare / Insurance domain training" },
-  { key: "agile",     label: "Agile",      field: "agile",     desc: "Agile Explorer / CSM / DASSM" },
-  { key: "agentic",   label: "Agentic AI", field: "agentic",   desc: "GenAI, watsonx, prompt engineering" },
-  { key: "devsecops", label: "DevSecOps",  field: "devops",    desc: "DevSecOps essentials & advanced" },
-  { key: "aiops",     label: "AIOps",      field: "aiops",     desc: "AIOps overview & badges" },
-  { key: "future",    label: "Future Stack", field: "futureTech", desc: "Future technology stack readiness" },
+  { key: "industry",  label: "Industry",   field: "industry",   currentField: "industry",  desc: "Healthcare / Insurance domain training" },
+  { key: "agile",     label: "Agile",      field: "agile",      currentField: "agile",     desc: "Agile Explorer / CSM / DASSM" },
+  { key: "agentic",   label: "Agentic AI", field: "agentic",    currentField: "agentic",   desc: "GenAI, watsonx, prompt engineering" },
+  { key: "devsecops", label: "DevSecOps",  field: "devops",     currentField: "devsecops", desc: "DevSecOps essentials & advanced" },
+  { key: "aiops",     label: "AIOps",      field: "aiops",      currentField: "aiops",     desc: "AIOps overview & badges" },
+  { key: "future",    label: "Future Stack", field: "futureTech", currentField: "futureTech", desc: "Future technology stack readiness" },
 ] as const;
 
 function readinessScore(p: { future: string; industry: string; agile: string; agentic: string; devops: string; aiops: string }) {
@@ -596,9 +596,12 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
     return productsList.map(prod => {
       const rs = filtered.filter(r => r.product === prod);
       const cells = SKILL_AREAS.map(area => {
+        const hasValue = (v: string | undefined) =>
+          !!(v && v.trim() && v.toLowerCase() !== "na");
         const isPlanned = (r: Resource) => {
-          const v = (r.plan as any)[area.field] as string | undefined;
-          return !!(v && v.trim() && v.toLowerCase() !== "na");
+          const planVal = (r.plan as any)[area.field] as string | undefined;
+          const currentVal = (r.current as any)[area.currentField] as string | undefined;
+          return hasValue(planVal) || hasValue(currentVal);
         };
         const untrained = rs.filter(r => !isPlanned(r));
         const filled = rs.length - untrained.length;
@@ -675,14 +678,14 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                               {row.product} <span className="text-slate-400">·</span> {c.area}
                             </div>
                             <div className="text-[11px] text-slate-600 mt-0.5">
-                              {c.filled} of {c.total} planned ({Math.round(c.pct * 100)}%)
+                              {c.filled} of {c.total} covered ({Math.round(c.pct * 100)}%)
                             </div>
                             <div className="text-[10px] text-slate-500 mt-1 leading-snug">
                               <span className="font-mono">
                                 {Math.round(c.pct * 100)}% = {c.filled} ÷ {c.total} × 100
                               </span>
                               <div className="mt-0.5">
-                                A resource counts as <strong>planned</strong> when their {c.area} plan field is filled in and not "NA".
+                                A resource counts as <strong>covered</strong> when <em>either</em> their current {c.area} skill <em>or</em> their planned {c.area} training has a value (not blank, not "NA").
                               </div>
                             </div>
                           </div>
