@@ -596,28 +596,39 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
     return productsList.map(prod => {
       const rs = filtered.filter(r => r.product === prod);
       const cells = SKILL_AREAS.map(area => {
-        const filled = rs.filter(r => {
-          const v = (r.plan as any)[area.field] as string;
-          return v && v.trim() && v.toLowerCase() !== "na";
-        }).length;
+        const isPlanned = (r: Resource) => {
+          const v = (r.plan as any)[area.field] as string | undefined;
+          return !!(v && v.trim() && v.toLowerCase() !== "na");
+        };
+        const untrained = rs.filter(r => !isPlanned(r));
+        const filled = rs.length - untrained.length;
         const pct = rs.length > 0 ? filled / rs.length : 0;
-        return { area: area.label, pct, filled, total: rs.length };
+        return {
+          area: area.label,
+          field: area.field,
+          pct,
+          filled,
+          total: rs.length,
+          untrained,
+        };
       });
       return { product: prod, headcount: rs.length, cells };
     });
   }, [productsList, filtered]);
 
   const cellColor = (pct: number) => {
-    if (pct >= 0.7) return { bg: C.green, fg: "#fff" };
-    if (pct >= 0.3) return { bg: C.yellow, fg: "#1f1f1f" };
-    return { bg: C.red, fg: "#fff" };
+    if (pct >= 0.7) return { bg: C.green, fg: "#fff", level: "green" as const };
+    if (pct >= 0.3) return { bg: C.yellow, fg: "#1f1f1f", level: "yellow" as const };
+    return { bg: C.red, fg: "#fff", level: "red" as const };
   };
+
+  const MAX_NAMES = 12;
 
   return (
     <Card className="p-5">
       <div className="mb-3">
         <h3 className="text-base font-bold flex items-center gap-2"><Target size={16} style={{ color: C.green }} /> Skill Readiness Heatmap</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">% of resources with planned coverage in each skill area, by Product</p>
+        <p className="text-xs text-muted-foreground mt-0.5">% of resources with planned coverage in each skill area, by Product. Hover red or yellow cells to see who is not yet trained.</p>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
@@ -637,9 +648,12 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                 <td className="text-center text-muted-foreground">{row.headcount}</td>
                 {row.cells.map((c, i) => {
                   const col = cellColor(c.pct);
+                  const showDrillDown = col.level !== "green" && c.untrained.length > 0;
+                  const visible = c.untrained.slice(0, MAX_NAMES);
+                  const overflow = c.untrained.length - visible.length;
                   return (
                     <td key={i} className="px-1 py-1">
-                      <TooltipProvider><Tooltip>
+                      <TooltipProvider delayDuration={150}><Tooltip>
                         <TooltipTrigger asChild>
                           <div
                             className="rounded text-[10px] font-bold flex items-center justify-center cursor-default"
@@ -648,8 +662,46 @@ function SkillHeatmap({ filtered }: { filtered: Resource[] }) {
                             {Math.round(c.pct * 100)}%
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent className="text-xs">
-                          {c.filled} of {c.total} planned for <strong>{c.area}</strong>
+                        <TooltipContent
+                          side="top"
+                          align="center"
+                          className="text-xs max-w-sm p-3 leading-relaxed"
+                        >
+                          <div className="font-semibold mb-1">
+                            {row.product} · {c.area}
+                          </div>
+                          <div className="text-[11px] mb-2">
+                            {c.filled} of {c.total} planned ({Math.round(c.pct * 100)}%)
+                          </div>
+                          {showDrillDown ? (
+                            <>
+                              <div
+                                className="text-[10px] uppercase tracking-wide font-semibold mb-1"
+                                style={{ color: col.bg }}
+                              >
+                                Not yet trained ({c.untrained.length})
+                              </div>
+                              <ul className="space-y-0.5 text-[11px]">
+                                {visible.map(r => (
+                                  <li key={r.serial} className="flex items-baseline gap-1.5">
+                                    <span className="font-medium">{r.name}</span>
+                                    <span className="text-muted-foreground">
+                                      · {r.role} · {r.location}
+                                    </span>
+                                  </li>
+                                ))}
+                              </ul>
+                              {overflow > 0 && (
+                                <div className="text-[10px] text-muted-foreground mt-1">
+                                  +{overflow} more — see Resource Detail Table
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="text-[11px] text-muted-foreground">
+                              All resources have a plan for this area.
+                            </div>
+                          )}
                         </TooltipContent>
                       </Tooltip></TooltipProvider>
                     </td>
