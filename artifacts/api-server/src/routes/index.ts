@@ -12,6 +12,7 @@ import applicationsRouter from "./applications";
 import ibmamsRouter from "./ibmams";
 import roadmapRouter from "./roadmap";
 import downloadsRouter from "./downloads";
+import talentPlanRouter from "./talentPlan";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use(applicationsRouter);
 router.use(ibmamsRouter);
 router.use(roadmapRouter);
 router.use(downloadsRouter);
+router.use(talentPlanRouter);
 
 export default router;

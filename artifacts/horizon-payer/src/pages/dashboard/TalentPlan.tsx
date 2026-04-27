@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, createContext, useContext, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import {
   Target, Zap, BookOpen, ChevronDown, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import talentJson from "@/data/talentPlan.json";
 
 const C = {
@@ -62,8 +64,23 @@ type Product = {
   agile: string; agentic: string; devsecops: string; aiops: string;
 };
 
-const RESOURCES: Resource[] = (talentJson as { resources: Resource[] }).resources;
-const PRODUCTS: Product[] = (talentJson as { products: Product[] }).products;
+const SEED_RESOURCES: Resource[] = (talentJson as { resources: Resource[] }).resources;
+const SEED_PRODUCTS: Product[] = (talentJson as { products: Product[] }).products;
+
+interface TalentPlanMeta {
+  uploadedAt: string;
+  uploadedBy: string;
+  sourceFilename: string;
+  resourceCount: number;
+  productCount: number;
+  version: number;
+}
+
+const TalentDataContext = createContext<{ resources: Resource[]; products: Product[] }>({
+  resources: SEED_RESOURCES,
+  products: SEED_PRODUCTS,
+});
+const useTalentData = () => useContext(TalentDataContext);
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 
@@ -104,26 +121,50 @@ function readinessTier(s: number): { label: "High" | "Medium" | "Low"; color: st
 }
 
 function uniq<T>(arr: T[]): T[] { return [...new Set(arr)]; }
-function distinct(field: keyof Resource): string[] {
-  return uniq(RESOURCES.map(r => r[field] as string).filter(Boolean)).sort();
+function distinct(resources: Resource[], field: keyof Resource): string[] {
+  return uniq(resources.map(r => r[field] as string).filter(Boolean)).sort();
 }
 
 /* ─────────────────────── KPI TILES ─────────────────────── */
 
-const KPI_TILES = [
-  { label: "Total Resources",       value: 391, icon: Users,         color: C.blue,   sub: "Active Horizon delivery team" },
-  { label: "Offshore Resources",    value: 322, icon: MapPin,        color: C.teal,   sub: "82% of total workforce" },
-  { label: "Onshore Resources",     value: 69,  icon: Building2,     color: C.purple, sub: "18% of total workforce" },
-  { label: "Operations Support",    value: 196, icon: Activity,      color: C.orange, sub: "Run-the-business resources" },
-  { label: "Project Resources",     value: 136, icon: Briefcase,     color: C.blue,   sub: "Change-the-business resources" },
-  { label: "Shared Resources",      value: 59,  icon: Layers,        color: C.green,  sub: "Cross-product enablement" },
-  { label: "Developers",            value: 160, icon: Code2,         color: C.blue,   sub: "Largest role pool" },
-  { label: "Operations Engineers",  value: 104, icon: Wrench,        color: C.teal,   sub: "AIOps reskill candidates" },
-  { label: "Technical Leads",       value: 49,  icon: Brain,         color: C.purple, sub: "Product squad lead pool" },
-  { label: "Project Managers",      value: 37,  icon: ShieldCheck,   color: C.orange, sub: "Product delivery lead pool" },
-];
+type KpiTileData = {
+  label: string;
+  value: number;
+  icon: typeof Users;
+  color: string;
+  sub: string;
+};
 
-function KpiTile({ t }: { t: typeof KPI_TILES[number] }) {
+function buildKpiTiles(resources: Resource[]): KpiTileData[] {
+  const total = resources.length || 1;
+  const countBy = (pred: (r: Resource) => boolean) => resources.filter(pred).length;
+  const pct = (n: number) => `${Math.round((n / total) * 100)}% of total workforce`;
+
+  const offshore = countBy(r => r.location === "Offshore");
+  const onshore  = countBy(r => r.location === "Onshore");
+  const ops      = countBy(r => r.typeOfWork === "Operations Support");
+  const project  = countBy(r => r.typeOfWork === "Projects");
+  const shared   = countBy(r => r.typeOfWork === "Shared");
+  const devs     = countBy(r => r.role === "Developer");
+  const opsEng   = countBy(r => r.role === "Operations Engineer");
+  const techLead = countBy(r => r.role === "Technical Lead");
+  const pm       = countBy(r => r.role === "Project Manager");
+
+  return [
+    { label: "Total Resources",       value: resources.length, icon: Users,       color: C.blue,   sub: "Active Horizon delivery team" },
+    { label: "Offshore Resources",    value: offshore,         icon: MapPin,      color: C.teal,   sub: pct(offshore) },
+    { label: "Onshore Resources",     value: onshore,          icon: Building2,   color: C.purple, sub: pct(onshore) },
+    { label: "Operations Support",    value: ops,              icon: Activity,    color: C.orange, sub: "Run-the-business resources" },
+    { label: "Project Resources",     value: project,          icon: Briefcase,   color: C.blue,   sub: "Change-the-business resources" },
+    { label: "Shared Resources",      value: shared,           icon: Layers,      color: C.green,  sub: "Cross-product enablement" },
+    { label: "Developers",            value: devs,             icon: Code2,       color: C.blue,   sub: "Largest role pool" },
+    { label: "Operations Engineers",  value: opsEng,           icon: Wrench,      color: C.teal,   sub: "AIOps reskill candidates" },
+    { label: "Technical Leads",       value: techLead,         icon: Brain,       color: C.purple, sub: "Product squad lead pool" },
+    { label: "Project Managers",      value: pm,               icon: ShieldCheck, color: C.orange, sub: "Product delivery lead pool" },
+  ];
+}
+
+function KpiTile({ t }: { t: KpiTileData }) {
   const Icon = t.icon;
   return (
     <Card className="p-3 hover:shadow-md transition-shadow">
@@ -768,6 +809,7 @@ function ProductReadinessCards({ filtered }: { filtered: Resource[] }) {
 /* ─────────────────────── RESOURCE TABLE ─────────────────────── */
 
 function ResourceTable({ filtered }: { filtered: Resource[] }) {
+  const { resources: RESOURCES } = useTalentData();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
@@ -988,15 +1030,16 @@ type FilterState = {
 const ALL = "__all__";
 
 function FiltersBar({ filters, setFilters }: { filters: FilterState; setFilters: (f: FilterState) => void }) {
+  const { resources } = useTalentData();
   const opts = useMemo(() => ({
-    domain:          ["", ...distinct("domain")],
-    portfolio:       ["", ...distinct("portfolio")],
-    product:         ["", ...distinct("product")],
-    applicationArea: ["", ...distinct("applicationArea")],
-    role:            ["", ...distinct("role")],
-    location:        ["", ...distinct("location")],
-    typeOfWork:      ["", ...distinct("typeOfWork")],
-  }), []);
+    domain:          ["", ...distinct(resources, "domain")],
+    portfolio:       ["", ...distinct(resources, "portfolio")],
+    product:         ["", ...distinct(resources, "product")],
+    applicationArea: ["", ...distinct(resources, "applicationArea")],
+    role:            ["", ...distinct(resources, "role")],
+    location:        ["", ...distinct(resources, "location")],
+    typeOfWork:      ["", ...distinct(resources, "typeOfWork")],
+  }), [resources]);
 
   const reset = () => setFilters({ domain: "", portfolio: "", product: "", applicationArea: "", role: "", location: "", typeOfWork: "" });
   const dirty = Object.values(filters).some(Boolean);
@@ -1036,9 +1079,322 @@ function FiltersBar({ filters, setFilters }: { filters: FilterState; setFilters:
   );
 }
 
+/* ─────────────────────── ADMIN / REFRESH DATA TAB ─────────────────────── */
+
+function fmtDateTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "2-digit",
+      hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function RefreshDataTab() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [lastResult, setLastResult] = useState<{
+    ok: boolean;
+    message: string;
+    warnings?: string[];
+    meta?: TalentPlanMeta;
+  } | null>(null);
+
+  const meta = useQuery<TalentPlanMeta>({
+    queryKey: ["talent-plan", "metadata"],
+    queryFn: async () => {
+      const res = await fetch("/api/talent-plan/metadata");
+      if (!res.ok) throw new Error("Failed to load metadata");
+      return res.json();
+    },
+    staleTime: 5_000,
+  });
+
+  async function uploadFile(file: File) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".xlsx")) {
+      setLastResult({
+        ok: false,
+        message: "Please upload a .xlsx workbook (Excel 2007+).",
+      });
+      return;
+    }
+    setUploading(true);
+    setLastResult(null);
+    try {
+      const buf = await file.arrayBuffer();
+      const res = await fetch("/api/talent-plan/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "X-Filename": file.name,
+          "X-Uploader":
+            (typeof window !== "undefined" &&
+              (localStorage.getItem("horizon_user") || "Horizon Admin")) ||
+            "Horizon Admin",
+        },
+        body: buf,
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        setLastResult({
+          ok: false,
+          message: json.error || "Upload failed.",
+          warnings: json.warnings,
+        });
+        toast({
+          title: "Upload failed",
+          description: json.error || "Please verify the workbook format.",
+          variant: "destructive",
+        });
+      } else {
+        setLastResult({
+          ok: true,
+          message: `Talent plan refreshed — ${json.meta.resourceCount} resources, ${json.meta.productCount} products loaded.`,
+          warnings: json.warnings,
+          meta: json.meta,
+        });
+        toast({
+          title: "Talent plan refreshed",
+          description: `${json.meta.resourceCount} resources · ${json.meta.productCount} products · v${json.meta.version}`,
+        });
+        // Refresh both the data and the metadata everywhere on the page
+        await queryClient.invalidateQueries({ queryKey: ["talent-plan"] });
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Network error";
+      setLastResult({ ok: false, message });
+      toast({ title: "Upload failed", description: message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
+
+  function downloadTemplate() {
+    window.location.href = "/api/talent-plan/template";
+  }
+
+  return (
+    <div className="space-y-5">
+      <Card className="p-5 border-l-4" style={{ borderLeftColor: C.blue }}>
+        <div className="flex items-start gap-4">
+          <div className="rounded-lg p-2.5 flex-shrink-0" style={{ background: `${C.blue}15` }}>
+            <Sparkles size={20} style={{ color: C.blue }} />
+          </div>
+          <div>
+            <h3 className="text-base font-bold">Weekly Talent Plan Refresh</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground mt-1">
+              Download the standard template, fill in the latest resource roster and product skill matrix,
+              then upload here to instantly refresh every KPI, treemap, roadmap, and report on this page.
+              The file format must match the template exactly.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {/* Last refresh status + Download template */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle2 size={16} style={{ color: C.green }} />
+            <h4 className="text-sm font-bold">Last Refresh</h4>
+          </div>
+          {meta.isLoading ? (
+            <div className="text-xs text-muted-foreground">Loading…</div>
+          ) : meta.error || !meta.data ? (
+            <div className="text-xs text-red-600">Could not load refresh status.</div>
+          ) : (
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Refreshed at</span>
+                <span className="font-semibold">{fmtDateTime(meta.data.uploadedAt)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Refreshed by</span>
+                <span className="font-semibold">{meta.data.uploadedBy}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Source file</span>
+                <span className="font-semibold truncate ml-2 max-w-[240px]">{meta.data.sourceFilename}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Resources</span>
+                <span className="font-semibold">{meta.data.resourceCount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Products</span>
+                <span className="font-semibold">{meta.data.productCount.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Dataset version</span>
+                <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
+                  v{meta.data.version}
+                </Badge>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Download size={16} style={{ color: C.blue }} />
+            <h4 className="text-sm font-bold">Step 1 — Download Template</h4>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Pre-formatted Excel workbook with the four sheets the system expects.
+            Includes one sample row in each data sheet so the team can see the structure.
+          </p>
+          <ul className="text-[11px] text-muted-foreground space-y-1 mb-4 list-disc list-inside">
+            <li><span className="font-semibold text-foreground">Product Level - Required Skills</span> — one row per product</li>
+            <li><span className="font-semibold text-foreground">Resource Level - Talent Plan</span> — one row per resource</li>
+            <li><span className="font-semibold text-foreground">References</span> — Role / Type of Work / Location lookups</li>
+            <li><span className="font-semibold text-foreground">Instructions</span> — quick-start guide</li>
+          </ul>
+          <Button onClick={downloadTemplate} className="w-full" style={{ background: C.blue }}>
+            <Download size={14} className="mr-2" />
+            Download Talent_Plan_Template.xlsx
+          </Button>
+        </Card>
+      </div>
+
+      {/* Upload card */}
+      <Card className="p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Workflow size={16} style={{ color: C.blue }} />
+          <h4 className="text-sm font-bold">Step 2 — Upload Refreshed Workbook</h4>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">
+          Drop the completed .xlsx file below or browse for it. The system will parse, validate, and
+          immediately replace the current dataset across all tabs of this page.
+        </p>
+
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const f = e.dataTransfer.files?.[0];
+            if (f) uploadFile(f);
+          }}
+          className={cn(
+            "border-2 border-dashed rounded-lg p-10 text-center transition-colors",
+            dragOver ? "bg-blue-50 border-[#0F62FE]" : "border-muted-foreground/25",
+            uploading && "opacity-60 pointer-events-none",
+          )}
+        >
+          <Download
+            size={28}
+            className="mx-auto mb-2 rotate-180 text-muted-foreground/60"
+          />
+          <div className="text-sm font-semibold mb-1">
+            {uploading ? "Uploading and parsing…" : "Drop the .xlsx file here"}
+          </div>
+          <div className="text-xs text-muted-foreground mb-4">or</div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) uploadFile(f);
+            }}
+          />
+          <Button
+            variant="outline"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+          >
+            <Search size={14} className="mr-2" />
+            Browse for file
+          </Button>
+          <div className="text-[10px] text-muted-foreground mt-3">
+            Maximum file size: 20 MB · Format: .xlsx
+          </div>
+        </div>
+
+        {lastResult && (
+          <div
+            className={cn(
+              "mt-4 rounded-md border p-3 text-xs flex items-start gap-2",
+              lastResult.ok
+                ? "border-green-200 bg-green-50 text-green-900"
+                : "border-red-200 bg-red-50 text-red-900",
+            )}
+          >
+            {lastResult.ok ? (
+              <CheckCircle2 size={14} className="mt-0.5 flex-shrink-0" style={{ color: C.green }} />
+            ) : (
+              <AlertCircle size={14} className="mt-0.5 flex-shrink-0" style={{ color: C.red }} />
+            )}
+            <div className="space-y-1">
+              <div className="font-semibold">{lastResult.message}</div>
+              {lastResult.warnings && lastResult.warnings.length > 0 && (
+                <ul className="list-disc list-inside text-[11px] opacity-80">
+                  {lastResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      {/* What gets refreshed */}
+      <Card className="p-5">
+        <h4 className="text-sm font-bold mb-3 flex items-center gap-2">
+          <Zap size={14} style={{ color: C.blue }} />
+          What gets refreshed
+        </h4>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+          {[
+            "10 KPI tiles",
+            "Filter dropdowns",
+            "Product treemap drill-down",
+            "Role transformation view",
+            "Skill readiness heatmap",
+            "Six-month roadmap counts",
+            "Resource detail table",
+            "Product readiness cards",
+            "CSV export",
+          ].map(x => (
+            <div key={x} className="flex items-center gap-1.5 text-muted-foreground">
+              <CheckCircle2 size={12} style={{ color: C.green }} />
+              <span>{x}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 /* ─────────────────────── MAIN ─────────────────────── */
 
 export default function TalentPlan() {
+  const dataQ = useQuery<{ resources: Resource[]; products: Product[] }>({
+    queryKey: ["talent-plan", "data"],
+    queryFn: async () => {
+      const res = await fetch("/api/talent-plan");
+      if (!res.ok) throw new Error("Failed to load talent plan");
+      return res.json();
+    },
+    initialData: { resources: SEED_RESOURCES, products: SEED_PRODUCTS },
+    staleTime: 5_000,
+  });
+
+  const RESOURCES = dataQ.data?.resources ?? SEED_RESOURCES;
+  const PRODUCTS = dataQ.data?.products ?? SEED_PRODUCTS;
+
+  const kpiTiles = useMemo(() => buildKpiTiles(RESOURCES), [RESOURCES]);
+
   const [filters, setFilters] = useState<FilterState>({
     domain: "", portfolio: "", product: "", applicationArea: "",
     role: "", location: "", typeOfWork: "",
@@ -1054,31 +1410,29 @@ export default function TalentPlan() {
       (!filters.location        || r.location        === filters.location) &&
       (!filters.typeOfWork      || r.typeOfWork      === filters.typeOfWork),
     );
-  }, [filters]);
+  }, [filters, RESOURCES]);
 
   return (
+    <TalentDataContext.Provider value={{ resources: RESOURCES, products: PRODUCTS }}>
     <div className="space-y-5">
       {/* Title block */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-xl font-bold tracking-tight">Horizon Operations Talent Transformation Plan</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Product-aligned 6-month upskilling roadmap evolving 391 resources into an AI-led product operations workforce
+            Product-aligned 6-month upskilling roadmap evolving {RESOURCES.length} resources into an AI-led product operations workforce
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-[10px]">Source: Talent Plan 0422a.xlsx</Badge>
+          <Badge variant="outline" className="text-[10px]">{RESOURCES.length} resources</Badge>
           <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>{PRODUCTS.length} products mapped</Badge>
         </div>
       </div>
 
       {/* KPI tiles — 5 columns x 2 rows */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {KPI_TILES.map(t => <KpiTile key={t.label} t={t} />)}
+        {kpiTiles.map(t => <KpiTile key={t.label} t={t} />)}
       </div>
-
-      {/* Exec narrative */}
-      <ExecNarrative />
 
       {/* Filters */}
       <FiltersBar filters={filters} setFilters={setFilters} />
@@ -1103,6 +1457,9 @@ export default function TalentPlan() {
           </TabsTrigger>
           <TabsTrigger value="readiness" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Product Readiness Cards
+          </TabsTrigger>
+          <TabsTrigger value="admin" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Refresh Data (Admin)
           </TabsTrigger>
         </TabsList>
 
@@ -1129,6 +1486,10 @@ export default function TalentPlan() {
         <TabsContent value="readiness" className="mt-4">
           <ProductReadinessCards filtered={filtered} />
         </TabsContent>
+
+        <TabsContent value="admin" className="mt-4">
+          <RefreshDataTab />
+        </TabsContent>
       </Tabs>
 
       {/* Target operating model — program-level, always visible below tabs */}
@@ -1140,5 +1501,6 @@ export default function TalentPlan() {
         Filters apply to the Treemap, Role Transformation, Skill Heatmap, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Target Operating Model are program-level and not filtered.
       </div>
     </div>
+    </TalentDataContext.Provider>
   );
 }
