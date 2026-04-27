@@ -1,0 +1,219 @@
+Build a script (Node.js or Python) that generates an executive-grade PowerPoint presentation for Horizon using the data from “Talent Plan 0422a.xlsx” and screenshots from an existing web dashboard.
+
+Objective:
+Create an 8-slide polished, consulting-grade PowerPoint (IBM style) that clearly communicates:
+- IBM’s structured talent transformation plan
+- Current state of Horizon operations team
+- Product-based alignment
+- AI-led upskilling roadmap
+- Future-ready operating model
+
+Use a professional design:
+- Clean white background
+- IBM blue accents
+- Minimal text, strong headlines
+- Visual storytelling (charts, icons, screenshots)
+- Executive tone (CIO / COO audience)
+
+
+
+-----------------------------------
+SLIDE STRUCTURE (8 SLIDES)
+-----------------------------------
+
+Slide 1: Title Slide
+Title:
+“Horizon Operations Talent Transformation Plan”
+
+Subtitle:
+“Product-Based Talent Strategy for AI-Led Operations”
+
+Include:
+- IBM logo (top left)
+- Horizon logo (top right)
+- Date
+
+Add a section:
+“Portal Access for Reference”
+- URL: [insert your web app URL]
+- Username: [placeholder]
+- Password: [placeholder]
+
+-----------------------------------
+
+Slide 2: Executive Summary
+Title:
+“IBM’s Talent Transformation Strategy”
+
+Content (3–4 bullets):
+- Transition from role-based support to product-aligned teams
+- Embed AI, AIOps, and automation into operations model
+- Upskill 391 resources across technology + healthcare + AI
+- Enable faster delivery, improved resiliency, and cost efficiency
+
+Add a clean icon-based layout if possible
+
+-----------------------------------
+
+Slide 3: Current Workforce Overview
+Title:
+“Current Workforce Composition”
+
+Show KPIs:
+- Total Resources: 391
+- Offshore: 322 | Onshore: 69
+- Developers: 160
+- Operations Engineers: 104
+- Technical Leads: 49
+- Project Managers: 37
+
+Add:
+- Pie chart (Onshore vs Offshore)
+- Bar chart (Role distribution)
+
+-----------------------------------
+
+Slide 4: Product-Based Talent Alignment
+Title:
+“Shift to Product-Centric Operating Model”
+
+Content:
+- Explain Domain → Portfolio → Product → Application mapping
+- Emphasize ownership and accountability
+
+Add:
+- Screenshot from web app (treemap / sunburst view)
+- Caption:
+“Each resource aligned to a product and application area to enable end-to-end ownership”
+
+-----------------------------------
+
+Slide 5: Role Transformation Strategy
+Title:
+“Evolving Roles for AI-Led Operations”
+
+Show transformation mapping:
+- Operations Engineer → AIOps Engineer
+- Developer → AI-Assisted Product Engineer
+- Technical Lead → AI Delivery Lead
+- Project Manager → Product Delivery Lead
+
+Add:
+- Sankey-style visual or arrows
+- Screenshot from web app (role transformation view)
+
+-----------------------------------
+
+Slide 6: Skill Readiness & Gaps
+Title:
+“Current Skill Baseline and Gaps”
+
+Content:
+- Highlight gaps in:
+  - Agentic AI
+  - AIOps
+  - DevSecOps
+  - Healthcare domain knowledge
+
+Add:
+- Heatmap (Product vs Skills)
+- Screenshot from web app
+
+Key message:
+“Structured upskilling required to unlock AI-driven operations”
+
+-----------------------------------
+
+Slide 7: 6-Month Upskilling Roadmap
+Title:
+“Structured Upskilling Plan”
+
+Timeline format:
+
+Phase 1 (0–2 Months):
+- Healthcare training
+- Agile foundations
+- Product familiarization
+
+Phase 2 (2–4 Months):
+- GenAI + Watsonx
+- Prompt engineering
+- DevSecOps basics
+
+Phase 3 (4–6 Months):
+- AIOps implementation
+- Automation use cases
+- AI-enabled operations workflows
+
+Add:
+- Timeline visual
+- Optional icons for each phase
+
+-----------------------------------
+
+Slide 8: Future Operating Model & Impact
+Title:
+“AI-Enabled Product Operations Model”
+
+Show 4–5 pillars:
+- Product-aligned teams
+- AI-assisted delivery
+- AIOps-driven operations
+- DevSecOps automation
+- Healthcare domain expertise
+
+Add closing statement:
+“IBM’s approach ensures Horizon’s workforce is future-ready, scalable, and aligned to deliver measurable business outcomes in an AI-first operating model.”
+
+-----------------------------------
+
+FUNCTIONAL REQUIREMENTS
+-----------------------------------
+
+1. Load data from Excel:
+- Parse “Resource Level - Talent Plan”
+- Parse “Product Level - Required Skills”
+
+2. Generate charts:
+- Role distribution
+- Onshore vs offshore
+- Skill readiness (heatmap or simplified table)
+
+3. Accept screenshots:
+- Allow user to input file paths for:
+  - Product view screenshot
+  - Role transformation screenshot
+  - Skill heatmap screenshot
+- Embed these images into slides
+
+4. Styling:
+- Use consistent fonts (Calibri / Arial)
+- Use bold slide titles
+- Use spacing and alignment like consulting decks
+- Avoid clutter
+
+5. Output:
+- Save file as:
+“Horizon_Talent_Transformation_Plan.pptx”
+
+-----------------------------------
+
+EXTRA (OPTIONAL BUT PREFERRED)
+-----------------------------------
+
+- Add subtle slide transitions
+- Add footer:
+“IBM Confidential”
+- Add slide numbers
+- Use consistent color palette
+
+-----------------------------------
+
+GOAL
+-----------------------------------
+
+The final PowerPoint should feel like:
+- IBM Consulting executive presentation
+- Boardroom-ready
+- Clear, structured, and visually compelling
+- Strong narrative: “IBM has a clear, executable plan to transform Horizon’s workforce for AI-driven operations”
