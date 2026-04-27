@@ -210,6 +210,12 @@ function buildLevel(resources: Resource[], path: string[]): DrillNode[] {
     .sort((a, b) => b.count - a.count);
 }
 
+type TreemapHandlers = {
+  onTileClick: (n: DrillNode) => void;
+  onTileHover: (n: DrillNode | null) => void;
+};
+const TreemapHandlersContext = createContext<TreemapHandlers | null>(null);
+
 function ProductTreemap({
   filtered, filters, setFilters,
 }: { filtered: Resource[]; filters: FilterState; setFilters: (f: FilterState) => void }) {
@@ -314,20 +320,22 @@ function ProductTreemap({
               No resources match the current selection.
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <Treemap
-                data={nodes.map(n => ({ name: n.label, size: n.count, color: n.color, node: n }))}
-                dataKey="size"
-                stroke="#fff"
-                isAnimationActive
-                content={
-                  <InteractiveTile
-                    onClick={(n: DrillNode) => drillInto(n)}
-                    onHover={(n: DrillNode | null) => setHover(n)}
-                  />
-                }
-              />
-            </ResponsiveContainer>
+            <TreemapHandlersContext.Provider
+              value={{
+                onTileClick: (n: DrillNode) => drillInto(n),
+                onTileHover: (n: DrillNode | null) => setHover(n),
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <Treemap
+                  data={nodes.map(n => ({ name: n.label, size: n.count, color: n.color, node: n }))}
+                  dataKey="size"
+                  stroke="#fff"
+                  isAnimationActive={false}
+                  content={<InteractiveTile />}
+                />
+              </ResponsiveContainer>
+            </TreemapHandlersContext.Provider>
           )}
         </div>
 
@@ -338,41 +346,39 @@ function ProductTreemap({
   );
 }
 
-/* Custom interactive treemap tile */
+/* Custom interactive treemap tile — pulls handlers from React context to dodge Recharts prop merging */
 function InteractiveTile(props: any) {
-  const { x, y, width, height, depth, payload, onClick, onHover, name, color } = props;
-  const node: DrillNode | undefined = payload?.node;
+  const { x, y, width, height, depth, payload, name, color } = props;
+  // Recharts spreads each data row's fields directly onto the cloned content
+  // element, so the `node` we attached at data time arrives on props.node.
+  // Older versions exposed it via `payload.node` — try both.
+  const node: DrillNode | undefined = props.node ?? payload?.node;
   const fill = color || node?.color || C.blue;
+  const handlers = useContext(TreemapHandlersContext);
   // Recharts calls `content` for every node (root + leaves). At depth 0 the
-  // `children` prop contains data objects (not React elements), so we render
-  // an empty group and let Recharts iterate the leaves separately.
+  // root spans the full chart area; rendering a clickable rect there would
+  // block clicks on the leaves below it, so we draw nothing.
   if (depth === 0) return <g />;
   if (depth > 1) return null;
 
   const showLabel = width > 70 && height > 28;
   const showCount = width > 70 && height > 44;
+  const handleEnter = () => { if (node && handlers) handlers.onTileHover(node); };
+  const handleLeave = () => { if (handlers) handlers.onTileHover(null); };
+  const handleClick = () => { if (node && handlers) handlers.onTileClick(node); };
 
   return (
-    <g
-      style={{ cursor: node ? "pointer" : "default" }}
-      onMouseEnter={() => node && onHover?.(node)}
-      onMouseLeave={() => onHover?.(null)}
-      onClick={() => node && onClick?.(node)}
-    >
+    <g style={{ cursor: node ? "pointer" : "default", pointerEvents: "all" }}>
       <rect
         x={x} y={y} width={width} height={height}
         fill={fill}
         fillOpacity={0.88}
         stroke="#fff"
         strokeWidth={2}
-      />
-      {/* Inner highlight on hover */}
-      <rect
-        x={x + 2} y={y + 2} width={Math.max(0, width - 4)} height={Math.max(0, height - 4)}
-        fill="transparent"
-        stroke={fill}
-        strokeOpacity={0.0}
-        className="hover:stroke-white"
+        style={{ pointerEvents: "all", cursor: node ? "pointer" : "default" }}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        onClick={handleClick}
       />
       {showLabel && (
         <text x={x + 8} y={y + 18} fill="#fff" fontSize={12} fontWeight={700} style={{ pointerEvents: "none" }}>
@@ -380,11 +386,9 @@ function InteractiveTile(props: any) {
         </text>
       )}
       {showCount && node && (
-        <>
-          <text x={x + 8} y={y + 34} fill="#fff" fontSize={10} fontWeight={500} fillOpacity={0.85} style={{ pointerEvents: "none" }}>
-            {node.count} resource{node.count === 1 ? "" : "s"}
-          </text>
-        </>
+        <text x={x + 8} y={y + 34} fill="#fff" fontSize={10} fontWeight={500} fillOpacity={0.85} style={{ pointerEvents: "none" }}>
+          {node.count} resource{node.count === 1 ? "" : "s"}
+        </text>
       )}
     </g>
   );
@@ -1441,19 +1445,22 @@ export default function TalentPlan() {
       <FiltersBar filters={filters} setFilters={setFilters} />
 
       {/* Tabbed views */}
-      <Tabs defaultValue="product" className="w-full">
+      <Tabs defaultValue="skill" className="w-full">
         <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/50 p-1">
-          <TabsTrigger value="product" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Product-Based Talent View
-          </TabsTrigger>
-          <TabsTrigger value="role" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Role Transformation View
-          </TabsTrigger>
           <TabsTrigger value="skill" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Skill Readiness Heatmap
           </TabsTrigger>
           <TabsTrigger value="roadmap" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Six-Month Upskilling Roadmap
+          </TabsTrigger>
+          <TabsTrigger value="tom" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Future Product-Based AI Operations Model
+          </TabsTrigger>
+          <TabsTrigger value="product" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Product-Based Talent View
+          </TabsTrigger>
+          <TabsTrigger value="role" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Role Transformation View
           </TabsTrigger>
           <TabsTrigger value="resources" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Resource Detail Table
@@ -1463,20 +1470,24 @@ export default function TalentPlan() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="product" className="mt-4">
-          <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
-        </TabsContent>
-
-        <TabsContent value="role" className="mt-4">
-          <RoleTransformation filtered={filtered} />
-        </TabsContent>
-
         <TabsContent value="skill" className="mt-4">
           <SkillHeatmap filtered={filtered} />
         </TabsContent>
 
         <TabsContent value="roadmap" className="mt-4">
           <SixMonthRoadmap />
+        </TabsContent>
+
+        <TabsContent value="tom" className="mt-4">
+          <TargetOperatingModel />
+        </TabsContent>
+
+        <TabsContent value="product" className="mt-4">
+          <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
+        </TabsContent>
+
+        <TabsContent value="role" className="mt-4">
+          <RoleTransformation filtered={filtered} />
         </TabsContent>
 
         <TabsContent value="resources" className="mt-4">
@@ -1488,13 +1499,10 @@ export default function TalentPlan() {
         </TabsContent>
       </Tabs>
 
-      {/* Target operating model — program-level, always visible below tabs */}
-      <TargetOperatingModel />
-
       {/* Footnote */}
       <div className="text-[10px] text-muted-foreground text-center pt-4">
         <AlertCircle size={10} className="inline mr-1" />
-        Filters apply to the Treemap, Role Transformation, Skill Heatmap, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Target Operating Model are program-level and not filtered.
+        Filters apply to the Skill Heatmap, Treemap, Role Transformation, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Future Operating Model are program-level and not filtered.
       </div>
     </div>
     </TalentDataContext.Provider>
