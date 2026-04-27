@@ -1450,12 +1450,6 @@ export default function TalentPlan() {
           <TabsTrigger value="skill" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Skill Readiness Heatmap
           </TabsTrigger>
-          <TabsTrigger value="roadmap" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Six-Month Upskilling Roadmap
-          </TabsTrigger>
-          <TabsTrigger value="tom" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Future Product-Based AI Operations Model
-          </TabsTrigger>
           <TabsTrigger value="product" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Product-Based Talent View
           </TabsTrigger>
@@ -1470,15 +1464,9 @@ export default function TalentPlan() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="skill" className="mt-4">
+        <TabsContent value="skill" className="mt-4 space-y-6">
           <SkillHeatmap filtered={filtered} />
-        </TabsContent>
-
-        <TabsContent value="roadmap" className="mt-4">
           <SixMonthRoadmap />
-        </TabsContent>
-
-        <TabsContent value="tom" className="mt-4">
           <TargetOperatingModel />
         </TabsContent>
 
