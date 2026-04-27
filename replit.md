@@ -58,6 +58,7 @@
 - `pnpm --filter @workspace/horizon-payer run dev` — run frontend locally
 - `pnpm --filter @workspace/db run push` — push Drizzle schema to PostgreSQL
 - `pnpm --filter @workspace/db run seed` — seed the database with realistic demo data
+- `node scripts/generate-talent-pptx.mjs` — generate `Horizon_Talent_Transformation_Plan.pptx` (8-slide IBM-style executive deck) from `artifacts/api-server/data/talentPlan.json` plus live screenshots of the Capability Uplift → Talent Plan tabs (Skill Heatmap, Product Treemap, Role Transformation). Pass `--skip-shots` to reuse cached images in `screenshots/talent-deck/`.
 
 ## Database
 

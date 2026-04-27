@@ -24,3 +24,9 @@ id = "sUjtZjA8q5wd4DmJDi-BT"
 uri = "file://attached_assets/IBM_Horizon_AMS_Executive_Summary_April2026.docx"
 type = "word_document"
 title = "IBM × Horizon — AMS Executive Summary (10-Page C-Suite Edition)"
+
+[[outputs]]
+id = "yDxSzaRXxvi26qfIMH256"
+uri = "file://Horizon_Talent_Transformation_Plan.pptx"
+type = "slides"
+title = "Horizon Operations Talent Transformation Plan (8 slides)"
