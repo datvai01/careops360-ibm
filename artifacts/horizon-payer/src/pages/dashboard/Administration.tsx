@@ -2,7 +2,6 @@ import { useState, useRef, useMemo } from "react";
 import { Link } from "wouter";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGetCurrentUser } from "@workspace/api-client-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -514,12 +513,19 @@ function DatasetRepository() {
         </Card>
       </div>
 
-      {/* Right pane: selected dataset detail */}
+      {/* Right pane: selected dataset detail.
+          Talent Plan uses the live workflow UI (RefreshDataTab) which writes
+          directly to the talent_plan_* DB tables; all other datasets use the
+          generic schema-driven template + upload UI. */}
       <div>
-        <DatasetDetail
-          ds={selected}
-          onUploaded={() => qc.invalidateQueries({ queryKey: ["admin", "datasets"] }).then(() => refetch())}
-        />
+        {selected.key === "talent-plan" ? (
+          <RefreshDataTab />
+        ) : (
+          <DatasetDetail
+            ds={selected}
+            onUploaded={() => qc.invalidateQueries({ queryKey: ["admin", "datasets"] }).then(() => refetch())}
+          />
+        )}
       </div>
     </div>
   );
@@ -592,31 +598,8 @@ export default function Administration() {
         </div>
       </Card>
 
-      {/* Admin tabs */}
-      <Tabs defaultValue="datasets" className="w-full">
-        <TabsList className="w-full flex flex-wrap h-auto justify-start gap-1 bg-muted/50 p-1">
-          <TabsTrigger
-            value="datasets"
-            className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm gap-1.5"
-          >
-            <Database size={12} /> Page Datasets
-          </TabsTrigger>
-          <TabsTrigger
-            value="talent-plan"
-            className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm gap-1.5"
-          >
-            <Users size={12} /> Talent Plan (live workflow)
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="datasets" className="mt-4">
-          <DatasetRepository />
-        </TabsContent>
-
-        <TabsContent value="talent-plan" className="mt-4">
-          <RefreshDataTab />
-        </TabsContent>
-      </Tabs>
+      {/* Page Datasets — Talent Plan is rendered inline via the live workflow */}
+      <DatasetRepository />
     </div>
   );
 }
