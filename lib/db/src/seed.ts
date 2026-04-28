@@ -333,6 +333,7 @@ async function seed() {
   await db.insert(usersTable).values([
     { id: "1", username: "exec@horizon.com", passwordHash: "Horizon&IBM2026", name: "Sarah Mitchell", role: "executive", email: "exec@horizon.com", avatar: "SM", title: "Chief Executive Officer" },
     { id: "4", username: "ibm@horizon.com", passwordHash: "Horizon&IBM2026", name: "David Kumar", role: "ibm_delivery", email: "ibm@horizon.com", avatar: "DK", title: "IBM AMS Delivery Manager" },
+    { id: "admin1", username: "admin@horizon.com", passwordHash: "Horizon&IBM2026", name: "Alexandra Reed", role: "admin", email: "admin@horizon.com", avatar: "AR", title: "Platform Administrator" },
   ]);
   console.log("  users seeded");
 

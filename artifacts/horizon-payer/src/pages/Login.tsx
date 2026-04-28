@@ -174,6 +174,12 @@ export default function Login() {
                 <span className="font-semibold text-foreground">IBM–Horizon BCBS RFP Response</span>.
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
+                Three role-based accounts are available:
+                {" "}<span className="font-semibold text-foreground">exec@horizon.com</span> (executive view),
+                {" "}<span className="font-semibold text-foreground">ibm@horizon.com</span> (IBM delivery view),
+                and {" "}<span className="font-semibold text-foreground">admin@horizon.com</span> (platform administrator — adds the Administration tab for refreshing data on every page).
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 If you have not received credentials or require assistance, please contact your{" "}
                 <span className="font-semibold text-foreground">IBM delivery team</span>.
               </p>

@@ -12,6 +12,13 @@ interface SessionData {
 
 const sessions = new Map<string, SessionData>();
 
+export function getSessionUser(authHeader: string | undefined): SessionData["user"] | null {
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.split(" ")[1];
+  const session = sessions.get(token);
+  return session?.user ?? null;
+}
+
 async function ensureSessionLogsTable() {
   try {
     await pool.query(`

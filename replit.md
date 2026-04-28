@@ -82,4 +82,6 @@ PostgreSQL via Replit's built-in database (DATABASE_URL env var). Drizzle ORM is
 - Auth uses localStorage JWT pattern with Bearer token
 - API routes serve realistic mock data (no DB needed for demo)
 - Auto-refresh via React Query's refetchInterval (30 seconds)
-- Role-based views (executive/operations/it/ibm_delivery)
+- Role-based views (executive / ibm_delivery / admin)
+- **Admin role**: `admin@horizon.com` (pwd `Horizon&IBM2026`) is the platform administrator. Sees the Administration nav group; non-admins do not. Administration page is double-gated (nav hidden + page-level role check that renders an Access Denied card for non-admins).
+- **Admin dataset uploads**: `/api/admin/datasets` lists 12 page-backed datasets (Talent Plan, Members, Claims, Prior Auth, Providers, Contact Center, Vendor Invoices, App Health, IBM AIOps, Roadmap, Executive Overview, Capability Uplift). `/api/admin/datasets/:key/upload` (multipart) saves the file to `data/admin-uploads/` and updates `_metadata.json` with uploader, source filename, size, version, and timestamp. `/api/admin/datasets/:key/download` returns the latest stored file. Talent Plan has both the generic card and a dedicated tab with the full template-driven workflow.

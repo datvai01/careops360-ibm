@@ -38,10 +38,9 @@ const CHAPTERS = [
 ];
 
 const DEMO_ACCOUNTS = [
-  { email: "exec@horizon.com", role: "Executive", access: "Full read access — all 11 sections" },
-  { email: "ops@horizon.com", role: "Operations", access: "Operational dashboards — Claims, PA, Providers" },
-  { email: "it@horizon.com", role: "IT / Engineering", access: "App Health, Vendor Invoices, IBM AIOps" },
-  { email: "ibm@horizon.com", role: "IBM Delivery", access: "IBM AIOps Value, Vendor Invoices, Roadmap" },
+  { email: "exec@horizon.com",  role: "Executive",            access: "Full read access — all dashboard sections" },
+  { email: "ibm@horizon.com",   role: "IBM Delivery",         access: "IBM AIOps Value, Vendor Invoices, Roadmap" },
+  { email: "admin@horizon.com", role: "Platform Administrator", access: "All sections + Administration tab (data refresh for every page)" },
 ];
 
 const TIPS = [

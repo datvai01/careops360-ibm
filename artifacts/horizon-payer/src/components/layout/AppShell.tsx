@@ -92,6 +92,7 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: "Administration",
+    adminOnly: true,
     items: [
       { name: "Administration", path: "/dashboard/administration", icon: Settings },
     ],
@@ -237,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         
         <div className="flex-1 overflow-y-auto py-2">
           <nav className="px-2 space-y-1">
-            {NAV_GROUPS.map((group, gi) => (
+            {NAV_GROUPS.filter((g) => !(g as { adminOnly?: boolean }).adminOnly || user?.role === "admin").map((group, gi) => (
               <div key={group.label}>
                 {sidebarOpen && (
                   <div className={cn("px-3 mb-0.5", gi > 0 && "pt-1.5")}>
