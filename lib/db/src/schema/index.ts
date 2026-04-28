@@ -9,3 +9,6 @@ export * from "./finance";
 export * from "./applications";
 export * from "./ibmams";
 export * from "./roadmap";
+export * from "./talent";
+export * from "./pageKpis";
+export * from "./capability";

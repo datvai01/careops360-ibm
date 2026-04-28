@@ -5,15 +5,15 @@ import {
   getTalentPlanMeta,
   saveTalentPlan,
   parseTalentPlanWorkbook,
-  buildTemplateWorkbook,
+  buildTalentPlanTemplate,
 } from "../lib/talentPlan";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-router.get("/talent-plan", (_req, res) => {
+router.get("/talent-plan", async (_req, res) => {
   try {
-    const data = getTalentPlan();
+    const data = await getTalentPlan();
     res.setHeader("Cache-Control", "no-store");
     res.json(data);
   } catch (err) {
@@ -22,9 +22,9 @@ router.get("/talent-plan", (_req, res) => {
   }
 });
 
-router.get("/talent-plan/metadata", (_req, res) => {
+router.get("/talent-plan/metadata", async (_req, res) => {
   try {
-    const meta = getTalentPlanMeta();
+    const meta = await getTalentPlanMeta();
     res.setHeader("Cache-Control", "no-store");
     res.json(meta);
   } catch (err) {
@@ -33,9 +33,9 @@ router.get("/talent-plan/metadata", (_req, res) => {
   }
 });
 
-router.get("/talent-plan/template", (_req, res) => {
+router.get("/talent-plan/template", async (_req, res) => {
   try {
-    const buf = buildTemplateWorkbook();
+    const buf = await buildTalentPlanTemplate();
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -58,7 +58,7 @@ router.post(
     type: () => true,
     limit: "20mb",
   }),
-  (req, res) => {
+  async (req, res) => {
     try {
       const buf: Buffer | undefined = req.body;
       if (!buf || !Buffer.isBuffer(buf) || buf.length === 0) {
@@ -83,7 +83,7 @@ router.post(
         });
       }
 
-      const meta = saveTalentPlan(data, uploader, filename);
+      const meta = await saveTalentPlan(data, uploader, filename);
       logger.info(
         { uploader, filename, version: meta.version, resources: meta.resourceCount },
         "talent-plan: refreshed",

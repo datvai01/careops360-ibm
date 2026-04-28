@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,43 +73,28 @@ const C = {
   red: "#da1e28",
 };
 
-/* ─────────────────────── DATA ─────────────────────── */
+/* ─────────────────────── DATA TYPES ─────────────────────── */
 
-const KPI_TILES = [
-  { label: "Total Certified Resources", value: "382", sub: "Distinct employees with active certifications", icon: Award, color: C.blue, delta: "4,599 total certifications" },
-  { label: "Planned Certifications", value: "450+", sub: "Target headcount, next 6–12 months", icon: Target, color: C.purple, delta: "Directional growth target" },
-  { label: "Workforce AI-Enabled", value: "41%", sub: "Of total delivery team", icon: Brain, color: C.teal, delta: "→ 78% target by Month 12" },
-  { label: "Automation Coverage", value: "63%", sub: "Processes with automation", icon: Zap, color: C.orange, delta: "→ 91% target by Month 12" },
-  { label: "FTE Productivity Gain", value: "~70%", sub: "Manual work eliminated", icon: TrendingUp, color: C.green, delta: "124 FTEs redeployed" },
-  { label: "Auto-Remediation Ready", value: "95%", sub: "Target capability milestone", icon: Shield, color: "#8a3ffc", delta: "Achieved at Month 6" },
-];
+type ApiKpi = {
+  key: string;
+  label: string;
+  value: number;
+  formatted: string;
+  sub: string;
+  iconKey: string;
+  colorKey: string;
+  delta: string;
+};
 
-const MATURITY_STAGES = [
-  {
-    id: "traditional",
-    label: "Traditional Ops",
-    desc: "Reactive, manual operations with ticket-driven support models. High FTE dependency.",
-    position: 0,
-  },
-  {
-    id: "automation",
-    label: "Automation-Led Ops",
-    desc: "Runbook automation and scripted remediation reduce manual triage. Shift-left begins.",
-    position: 1,
-  },
-  {
-    id: "ai-augmented",
-    label: "AI-Augmented Ops",
-    desc: "AIOps and ML models drive proactive alerting, anomaly detection, and co-pilot assistance.",
-    position: 2,
-  },
-  {
-    id: "autonomous",
-    label: "Autonomous Ops",
-    desc: "Self-healing systems, generative AI orchestration, and 95%+ auto-remediation. Minimal human intervention.",
-    position: 3,
-  },
-];
+type ApiStage = {
+  id: string;
+  label: string;
+  desc: string;
+  currentMaturity: number;
+  targetMaturity: number;
+  status: string;
+  position: number;
+};
 
 type CapRow = {
   area: string;
@@ -120,61 +105,13 @@ type CapRow = {
   impact: string;
 };
 
-// Certified headcounts sourced from Certifications_list_13-Apr-2026 (Distinct Count of EmployeeId per category)
-const CAPABILITY_TABLE: CapRow[] = [
-  { area: "AI / ML & Data Science",          sub: "GenAI, ML Ops, AIOps, Data Science",       current: 307, planned: 390, priority: "Critical", impact: "Auto-remediation, predictive ops, AI Copilot" },
-  { area: "IBM Products & Technologies",      sub: "IBM Platform, Tooling & Enablement",       current: 338, planned: 390, priority: "High",     impact: "Platform capability, delivery quality" },
-  { area: "Industry-Specific (Healthcare)",   sub: "Healthcare, Compliance & Regulatory",      current: 342, planned: 380, priority: "High",     impact: "Audit-readiness, domain accuracy" },
-  { area: "IBM Consulting & Professional",    sub: "Consulting Methods, Profession Certs",     current: 227, planned: 270, priority: "High",     impact: "Delivery methodology, advisory quality" },
-  { area: "Agile & Project Management",       sub: "Agile, Scrum, SAFe, PMI",                 current: 176, planned: 210, priority: "Medium",   impact: "Delivery velocity, programme governance" },
-  { area: "Cloud Platforms",                  sub: "AWS, Azure, OpenShift, Cloud Native",      current: 250, planned: 300, priority: "High",     impact: "Scale, resilience, cloud cost optimisation" },
-  { area: "Automation & RPA",                 sub: "Automation, RPA, Self-Heal, AIOps",       current: 91,  planned: 135, priority: "Critical", impact: "Manual effort reduction across ops workflows" },
-  { area: "Programming & Development",        sub: "Software Engineering & Development",       current: 79,  planned: 105, priority: "Medium",   impact: "Build velocity, code quality" },
-  { area: "DevOps & Infrastructure",          sub: "CI/CD, GitOps, SRE, Observability",       current: 41,  planned: 68,  priority: "High",     impact: "Release cadence, MTTR reduction" },
-  { area: "Big Data & Analytics",             sub: "Data Engineering, Streaming, Analytics",  current: 53,  planned: 85,  priority: "Critical", impact: "Real-time validation pipeline" },
-  { area: "Integration & APIs",               sub: "REST, FHIR, EDI, Event-Driven Arch",      current: 33,  planned: 55,  priority: "High",     impact: "Partner onboarding, 1-day activation" },
-  { area: "Security & Compliance",            sub: "HIPAA, Security, Compliance",             current: 26,  planned: 45,  priority: "High",     impact: "Risk reduction, regulatory adherence" },
-  { area: "Database & Data Management",       sub: "MDM, Data Quality, Mastering, DB Admin",  current: 18,  planned: 35,  priority: "High",     impact: "Single source of truth, data integrity" },
-  { area: "Red Hat Technologies",             sub: "Red Hat OpenShift & Portfolio",            current: 5,   planned: 18,  priority: "Medium",   impact: "Container platform, hybrid cloud" },
-];
-
-
-const AI_CERTS = [
-  { label: "LLM / Foundation Models", current: 6, planned: 18, use: "AI Copilot, root cause, GenAI summarisation" },
-  { label: "RAG / Vector Embeddings", current: 4, planned: 14, use: "Knowledge retrieval, ops assistant" },
-  { label: "ML Ops / Model Lifecycle", current: 8, planned: 22, use: "Auto-remediation models, drift detection" },
-  { label: "AIOps / Observability AI", current: 12, planned: 28, use: "Predictive alerting, self-healing" },
-  { label: "NLP / Text Analytics", current: 8, planned: 22, use: "Ticket classification, Copilot" },
-  { label: "Computer Vision / OCR", current: 3, planned: 10, use: "Document processing, forms intake" },
-];
-
-const RADAR_DATA = [
-  { axis: "AI / GenAI",    current: 38, planned: 82 },
-  { axis: "Automation",    current: 63, planned: 91 },
-  { axis: "Data Eng",      current: 52, planned: 85 },
-  { axis: "Integration",   current: 68, planned: 90 },
-  { axis: "Cloud / Infra", current: 74, planned: 92 },
-  { axis: "Domain",        current: 71, planned: 88 },
-];
-
-const VALUE_IMPACT = [
-  { cap: "AI / GenAI",    metric: "95% Auto-Remediation",       value: "$2M+",    color: C.purple },
-  { cap: "Data Skills",   metric: "Real-Time Processing",        value: "$3.2M",   color: C.teal },
-  { cap: "AIOps",         metric: "13.5 hrs → 5 min resolution", value: "$1.8M",   color: C.blue },
-  { cap: "Integration",   metric: "Partner Onboarding Speed",    value: "$2.1M",   color: C.orange },
-  { cap: "Domain Skills", metric: "Compliance & Accuracy",       value: "$0.8M",   color: C.green },
-  { cap: "Automation",    metric: "70% Manual Work Eliminated",  value: "$9.7M",   color: "#da1e28" },
-];
-
-/* ─────────────────────── TRAINING CALENDAR DATA ─────────────────────── */
-
-type TrainingEvent = {
+type ApiTrainingEvent = {
   id: string;
   title: string;
   vendor: string;
   track: string;
-  date: string;          // ISO yyyy-mm-dd
-  endDate: string;       // ISO yyyy-mm-dd
+  date: string;
+  endDate: string;
   format: "Virtual" | "In-Person" | "Hybrid";
   seats: number;
   enrolled: number;
@@ -184,252 +121,38 @@ type TrainingEvent = {
   certificationEarned: string;
 };
 
-const TRAINING_EVENTS: TrainingEvent[] = [
-  {
-    id: "t01",
-    title: "IBM AIOps Bootcamp",
-    vendor: "IBM",
-    track: "AIOps",
-    date: "2026-05-05",
-    endDate: "2026-05-07",
-    format: "Virtual",
-    seats: 40,
-    enrolled: 34,
-    level: "Essentials",
-    color: "#0f62fe",
-    description: "Foundational training on IBM Watson AIOps — event correlation, alert deduplication, and AI-driven incident management for ops teams.",
-    certificationEarned: "IBM AIOps Foundations Badge",
-  },
-  {
-    id: "t02",
-    title: "AWS Gen AI Lunch & Learn",
-    vendor: "AWS",
-    track: "AI / GenAI",
-    date: "2026-05-19",
-    endDate: "2026-05-21",
-    format: "Virtual",
-    seats: 50,
-    enrolled: 47,
-    level: "Essentials",
-    color: "#ff9900",
-    description: "AWS Gen AI Practitioner certification prep — large language models, prompt engineering, Amazon Bedrock, and responsible AI practices.",
-    certificationEarned: "AWS Certified AI Practitioner (AIF-C01)",
-  },
-  {
-    id: "t03",
-    title: "IBM BOB — Build on Bedrock",
-    vendor: "IBM BOB",
-    track: "AI / GenAI",
-    date: "2026-06-02",
-    endDate: "2026-06-04",
-    format: "In-Person",
-    seats: 30,
-    enrolled: 28,
-    level: "Associate",
-    color: "#8a3ffc",
-    description: "IBM Build on Bedrock (bob.ibm.com) — 3-day hands-on programme covering IBM's curated GenAI toolchain built on Amazon Bedrock: foundation model selection, RAG implementation, IBM watsonx integration, and enterprise-grade GenAI application patterns for regulated industries.",
-    certificationEarned: "IBM BOB Practitioner Badge",
-  },
-  {
-    id: "t04",
-    title: "Databricks Data Engineering Bootcamp",
-    vendor: "Databricks",
-    track: "Data & Analytics",
-    date: "2026-06-16",
-    endDate: "2026-06-18",
-    format: "Virtual",
-    seats: 35,
-    enrolled: 29,
-    level: "Associate",
-    color: "#ff3621",
-    description: "Databricks Certified Associate Developer — Delta Lake, Apache Spark, streaming pipelines, Unity Catalog, and medallion architecture for healthcare data.",
-    certificationEarned: "Databricks Certified Data Engineer Associate",
-  },
-  {
-    id: "t05",
-    title: "Snowflake Core Bootcamp",
-    vendor: "Snowflake",
-    track: "Data & Analytics",
-    date: "2026-07-07",
-    endDate: "2026-07-09",
-    format: "Virtual",
-    seats: 30,
-    enrolled: 22,
-    level: "Associate",
-    color: "#29b5e8",
-    description: "SnowPro Core certification prep — Snowflake architecture, virtual warehouses, data sharing, performance tuning, and security for enterprise workloads.",
-    certificationEarned: "Snowflake SnowPro Core Certification",
-  },
-  {
-    id: "t06",
-    title: "COBOL to Java & .NET AI Bootcamp",
-    vendor: "IBM",
-    track: "Application Modernization",
-    date: "2026-07-21",
-    endDate: "2026-07-23",
-    format: "Hybrid",
-    seats: 25,
-    enrolled: 19,
-    level: "Professional",
-    color: "#0f62fe",
-    description: "AI-assisted COBOL to Java & .NET modernization — IBM watsonx Code Assistant for Z, automated code translation, test generation, and refactoring strategies for legacy healthcare payer systems. Covers COBOL analysis, AI-driven code conversion, regression testing, and phased migration planning.",
-    certificationEarned: "IBM watsonx Code Assistant Specialist Badge",
-  },
-  {
-    id: "t07",
-    title: "Mosaic AI Bootcamp",
-    vendor: "Databricks",
-    track: "AI / GenAI",
-    date: "2026-08-11",
-    endDate: "2026-08-13",
-    format: "Virtual",
-    seats: 25,
-    enrolled: 18,
-    level: "Professional",
-    color: "#ff3621",
-    description: "ML engineering on Databricks — MLflow, Feature Store, model serving, model monitoring, and AutoML for healthcare prediction workloads.",
-    certificationEarned: "Databricks Certified ML Professional",
-  },
-  {
-    id: "t08",
-    title: "AWS Bedrock Deep Dive Bootcamp",
-    vendor: "AWS",
-    track: "AI / GenAI",
-    date: "2026-09-01",
-    endDate: "2026-09-03",
-    format: "Virtual",
-    seats: 20,
-    enrolled: 16,
-    level: "Professional",
-    color: "#ff9900",
-    description: "Advanced Amazon Bedrock — fine-tuning foundation models, knowledge bases, agents, guardrails, and enterprise GenAI application patterns.",
-    certificationEarned: "AWS Generative AI Engineer Badge",
-  },
-  {
-    id: "t09",
-    title: "Snowflake Cortex Bootcamp",
-    vendor: "Snowflake",
-    track: "Data & Analytics",
-    date: "2026-09-22",
-    endDate: "2026-09-23",
-    format: "Virtual",
-    seats: 20,
-    enrolled: 11,
-    level: "Expert",
-    color: "#29b5e8",
-    description: "SnowPro Advanced specialisation — data engineering patterns, Snowpark, dynamic tables, Cortex AI functions, and Horizon governance at scale.",
-    certificationEarned: "Snowflake SnowPro Advanced: Data Engineer",
-  },
-  {
-    id: "t10",
-    title: "IBM Self-Healing Ops Bootcamp",
-    vendor: "IBM",
-    track: "AIOps",
-    date: "2026-10-13",
-    endDate: "2026-10-15",
-    format: "In-Person",
-    seats: 20,
-    enrolled: 14,
-    level: "Expert",
-    color: "#0f62fe",
-    description: "Expert-level self-healing operations design — runbook automation at scale, AI-driven root-cause analysis, and autonomous remediation architecture for enterprise environments.",
-    certificationEarned: "IBM Certified Expert – Autonomous Ops",
-  },
-  {
-    id: "t11",
-    title: "Databricks GenAI Bootcamp",
-    vendor: "Databricks",
-    track: "AI / GenAI",
-    date: "2026-11-03",
-    endDate: "2026-11-05",
-    format: "Virtual",
-    seats: 30,
-    enrolled: 20,
-    level: "Professional",
-    color: "#ff3621",
-    description: "GenAI application engineering on Databricks — LLM fine-tuning with Mosaic AI, RAG pipelines with Vector Search, compound AI systems, and production deployment.",
-    certificationEarned: "Databricks Certified GenAI Engineer",
-  },
-  {
-    id: "t12",
-    title: "IBM BOB Advanced — Enterprise GenAI",
-    vendor: "IBM BOB",
-    track: "AI / GenAI",
-    date: "2026-11-17",
-    endDate: "2026-11-19",
-    format: "Hybrid",
-    seats: 25,
-    enrolled: 17,
-    level: "Expert",
-    color: "#8a3ffc",
-    description: "Advanced IBM Build on Bedrock (bob.ibm.com) — multi-agent orchestration, enterprise GenAI governance, cross-cloud LLM deployment, and IBM-specific responsible AI frameworks for HIPAA-regulated environments.",
-    certificationEarned: "IBM BOB Advanced Architect Certificate",
-  },
-  {
-    id: "t13",
-    title: "Tosca Foundations Lunch & Learn",
-    vendor: "Tricentis",
-    track: "Quality Engineering",
-    date: "2026-06-09",
-    endDate: "2026-06-10",
-    format: "Virtual",
-    seats: 30,
-    enrolled: 24,
-    level: "Essentials",
-    color: "#00b388",
-    description: "Tricentis Tosca Fundamentals — model-based test automation, test case design, linear execution lists, and test data management for enterprise applications and claims processing systems.",
-    certificationEarned: "Tricentis Tosca AS1 Certification",
-  },
-  {
-    id: "t14",
-    title: "Tosca Test Architect Bootcamp",
-    vendor: "Tricentis",
-    track: "Quality Engineering",
-    date: "2026-08-18",
-    endDate: "2026-08-20",
-    format: "Virtual",
-    seats: 20,
-    enrolled: 14,
-    level: "Professional",
-    color: "#00b388",
-    description: "Tricentis Tosca Test Architect — advanced test design patterns, API test automation, Tosca Commander configurations, distributed execution, and CI/CD pipeline integration with Jenkins and Azure DevOps.",
-    certificationEarned: "Tricentis Tosca Test Architect Certification",
-  },
-  {
-    id: "t15",
-    title: "Tosca AI Testing Bootcamp",
-    vendor: "Tricentis",
-    track: "Quality Engineering",
-    date: "2026-10-20",
-    endDate: "2026-10-21",
-    format: "Hybrid",
-    seats: 20,
-    enrolled: 11,
-    level: "Expert",
-    color: "#00b388",
-    description: "Tricentis Tosca AI-Assisted Testing — AI-powered test case generation, self-healing test automation, vision AI for UI testing, and intelligent test impact analysis across the healthcare payer application portfolio.",
-    certificationEarned: "Tricentis AI Testing Specialist Badge",
-  },
-];
-
-const VENDOR_COLORS: Record<string, string> = {
-  IBM:        "#0f62fe",
-  "IBM BOB":  "#8a3ffc",
-  AWS:        "#ff9900",
-  Databricks: "#ff3621",
-  Snowflake:  "#29b5e8",
-  Tricentis:  "#00b388",
+const ICON_MAP: Record<string, React.ElementType> = {
+  award: Award, target: Target, brain: Brain, zap: Zap,
+  trendingUp: TrendingUp, shield: Shield, users: Users, cpu: Cpu,
 };
 
-const MONTHS_2026 = [
-  { key: "2026-05", label: "May",  full: "May 2026" },
-  { key: "2026-06", label: "Jun",  full: "Jun 2026" },
-  { key: "2026-07", label: "Jul",  full: "Jul 2026" },
-  { key: "2026-08", label: "Aug",  full: "Aug 2026" },
-  { key: "2026-09", label: "Sep",  full: "Sep 2026" },
-  { key: "2026-10", label: "Oct",  full: "Oct 2026" },
-  { key: "2026-11", label: "Nov",  full: "Nov 2026" },
-];
+function colorFor(key: string): string {
+  switch (key) {
+    case "blue":   return C.blue;
+    case "green":  return C.green;
+    case "teal":   return C.teal;
+    case "purple": return C.purple;
+    case "orange": return C.orange;
+    case "red":    return C.red;
+    case "violet": return "#8a3ffc";
+    default:       return C.blue;
+  }
+}
+
+function useApi<T>(url: string, fallback: T): T {
+  const [data, setData] = useState<T>(fallback);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(url, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.statusText)))
+      .then((j) => { if (!cancelled) setData(j as T); })
+      .catch((e) => { console.warn(`[capability] fetch ${url} failed:`, e); });
+    return () => { cancelled = true; };
+  }, [url]);
+  return data;
+}
+
+// Certified headcounts sourced from Certifications_list_13-Apr-2026 (Distinct Count of EmployeeId per category)
 
 /* ─────────────────────── HELPERS ─────────────────────── */
 
@@ -448,7 +171,7 @@ function StrengthBar({ value, max = 100, color }: { value: number; max?: number;
 }
 
 function GrowthPill({ current, planned }: { current: number; planned: number }) {
-  const pct = Math.round(((planned - current) / current) * 100);
+  const pct = Math.round(((planned - current) / Math.max(current, 1)) * 100);
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
       style={{ background: `${C.green}15`, color: C.green }}>
@@ -488,31 +211,52 @@ function SectionHeader({ icon: Icon, title, sub, color = C.blue }: { icon: React
 }
 
 function ExecSummary() {
+  const tiles = useApi<ApiKpi[]>("/api/capability/kpis", []);
   return (
     <div className="space-y-4">
       <SectionHeader icon={Target} title="Executive Summary" sub="IBM delivery capability evolution — current state to AI-autonomous operations" />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {KPI_TILES.map((t) => (
-          <div key={t.label} className="rounded-xl border p-4 space-y-2 hover:shadow-sm transition-shadow">
-            <div className="flex items-center justify-between">
-              <t.icon size={16} style={{ color: t.color }} />
-              <span className="text-xs text-muted-foreground">{t.delta}</span>
+        {tiles.map((t) => {
+          const Icon = ICON_MAP[t.iconKey] ?? Award;
+          const color = colorFor(t.colorKey);
+          return (
+            <div key={t.key} className="rounded-xl border p-4 space-y-2 hover:shadow-sm transition-shadow">
+              <div className="flex items-center justify-between">
+                <Icon size={16} style={{ color }} />
+                <span className="text-xs text-muted-foreground">{t.delta}</span>
+              </div>
+              <div className="text-2xl font-black tracking-tight" style={{ color }}>{t.formatted}</div>
+              <div>
+                <div className="text-sm font-semibold">{t.label}</div>
+                <div className="text-xs text-muted-foreground">{t.sub}</div>
+              </div>
             </div>
-            <div className="text-2xl font-black tracking-tight" style={{ color: t.color }}>{t.value}</div>
-            <div>
-              <div className="text-sm font-semibold">{t.label}</div>
-              <div className="text-xs text-muted-foreground">{t.sub}</div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
 function MaturityProgression() {
-  const current = 1;
-  const target  = 3;
+  const stages = useApi<ApiStage[]>("/api/capability/stages", []);
+
+  // Derive current/target stage indices from API data:
+  //   current = first stage with status === "on-track" (the active stage)
+  //   target  = last stage with targetMaturity > 50 (the 12-mo goal)
+  const current = useMemo(() => {
+    const idx = stages.findIndex((s) => s.status === "on-track");
+    return idx >= 0 ? idx : 0;
+  }, [stages]);
+  const target = useMemo(() => {
+    let idx = -1;
+    for (let i = 0; i < stages.length; i++) {
+      if (stages[i].targetMaturity >= 50) idx = i;
+    }
+    return idx >= 0 ? idx : Math.max(0, stages.length - 1);
+  }, [stages]);
+  const currentStage = stages[current];
+  const targetStage = stages[target];
 
   return (
     <div className="space-y-4">
@@ -520,7 +264,7 @@ function MaturityProgression() {
       <div className="relative">
         {/* track */}
         <div className="flex items-center relative z-0">
-          {MATURITY_STAGES.map((s, i) => (
+          {stages.map((s, i) => (
             <div key={s.id} className="flex items-center flex-1 last:flex-none">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -550,7 +294,7 @@ function MaturityProgression() {
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-xs text-xs">{s.desc}</TooltipContent>
               </Tooltip>
-              {i < MATURITY_STAGES.length - 1 && (
+              {i < stages.length - 1 && (
                 <div className="flex-1 h-1 mx-2 rounded-full"
                   style={{ background: i < current ? `linear-gradient(90deg,${C.blue},${C.blue}60)` : i < target ? `linear-gradient(90deg,${C.blue}30,${C.purple}30)` : "#e5e7eb" }} />
               )}
@@ -562,16 +306,24 @@ function MaturityProgression() {
             style={{ borderColor: `${C.blue}30`, background: `${C.blue}06` }}>
             <div className="w-3 h-3 rounded-full" style={{ background: C.blue }} />
             <div>
-              <div className="text-xs font-bold" style={{ color: C.blue }}>Current State — Automation-Led Ops</div>
-              <div className="text-xs text-muted-foreground">Runbook automation live; AIOps pilots running; shift-left at 63%</div>
+              <div className="text-xs font-bold" style={{ color: C.blue }}>
+                Current State{currentStage ? ` — ${currentStage.label}` : ""}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {currentStage?.desc ?? ""}
+              </div>
             </div>
           </div>
           <div className="rounded-lg border p-3 flex items-center gap-3"
             style={{ borderColor: `${C.purple}30`, background: `${C.purple}06` }}>
             <div className="w-3 h-3 rounded-full" style={{ background: C.purple }} />
             <div>
-              <div className="text-xs font-bold" style={{ color: C.purple }}>12-Month Target — Autonomous Ops</div>
-              <div className="text-xs text-muted-foreground">95% auto-remediation, GenAI Copilot, self-healing systems</div>
+              <div className="text-xs font-bold" style={{ color: C.purple }}>
+                12-Month Target{targetStage ? ` — ${targetStage.label}` : ""}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {targetStage?.desc ?? ""}
+              </div>
             </div>
           </div>
         </div>
@@ -581,21 +333,25 @@ function MaturityProgression() {
 }
 
 function CapabilityTable() {
+  const rows = useApi<CapRow[]>("/api/capability/areas", []);
   const [search, setSearch] = useState("");
   const [area, setArea]     = useState("all");
   const [priority, setPri]  = useState("all");
   const [sort, setSort]     = useState<"growth" | "current" | "planned">("current");
 
-  const areas = ["all", ...Array.from(new Set(CAPABILITY_TABLE.map(r => r.area)))];
+  const areas = useMemo(
+    () => ["all", ...Array.from(new Set(rows.map(r => r.area)))],
+    [rows],
+  );
 
-  const filtered = CAPABILITY_TABLE
+  const filtered = rows
     .filter(r =>
       (area === "all" || r.area === area) &&
       (priority === "all" || r.priority === priority) &&
       (r.area.toLowerCase().includes(search.toLowerCase()) || r.sub.toLowerCase().includes(search.toLowerCase()) || r.impact.toLowerCase().includes(search.toLowerCase()))
     )
     .sort((a, b) => {
-      if (sort === "growth") return ((b.planned - b.current) / b.current) - ((a.planned - a.current) / a.current);
+      if (sort === "growth") return ((b.planned - b.current) / Math.max(b.current,1)) - ((a.planned - a.current) / Math.max(a.current,1));
       if (sort === "current") return b.current - a.current;
       return b.planned - a.planned;
     });
@@ -666,7 +422,13 @@ function CapabilityTable() {
 
 
 
+type WorkforceBullet = { side: "current" | "target"; bullet: string };
+
 function WorkforceTransformation() {
+  const rows = useApi<WorkforceBullet[]>("/api/capability/workforce-transformation", []);
+  const currentBullets = rows.filter((r) => r.side === "current").map((r) => r.bullet);
+  const targetBullets = rows.filter((r) => r.side === "target").map((r) => r.bullet);
+
   return (
     <div className="space-y-4">
       <SectionHeader icon={Users} title="Workforce Transformation" sub="From reactive, manual operations to AI-assisted and autonomous delivery" color={C.teal} />
@@ -677,7 +439,7 @@ function WorkforceTransformation() {
             <div className="w-2.5 h-2.5 rounded-full" style={{ background: C.red }} />
             <span className="text-sm font-bold text-muted-foreground">Current Model</span>
           </div>
-          {["Manual ticket triage and escalation", "Reactive incident response", "High FTE dependency on L1/L2 ops", "Siloed tools, context-switching overhead", "Days to resolve member enrollment errors"].map(x => (
+          {currentBullets.map(x => (
             <div key={x} className="flex items-start gap-2 text-sm">
               <AlertCircle size={13} className="text-muted-foreground mt-0.5 flex-shrink-0" />
               <span className="text-muted-foreground">{x}</span>
@@ -690,7 +452,7 @@ function WorkforceTransformation() {
             <div className="w-2.5 h-2.5 rounded-full" style={{ background: C.green }} />
             <span className="text-sm font-bold" style={{ color: C.green }}>Target Model (Month 12)</span>
           </div>
-          {["AI-assisted triage with 95% auto-remediation", "Proactive anomaly detection — issues resolved before impact", "124 FTEs redeployed to strategic advisory roles", "Unified Command Center with GenAI Copilot", "5-minute mean time to resolution for enrollment errors"].map(x => (
+          {targetBullets.map(x => (
             <div key={x} className="flex items-start gap-2 text-sm">
               <CheckCircle2 size={13} style={{ color: C.green }} className="mt-0.5 flex-shrink-0" />
               <span>{x}</span>
@@ -711,19 +473,62 @@ function fmtDate(iso: string) {
 }
 
 function TrainingCalendar() {
+  const events = useApi<ApiTrainingEvent[]>("/api/capability/training", []);
   const [filterVendor, setFilterVendor] = useState("all");
   const [filterTrack, setFilterTrack]   = useState("all");
 
-  const vendors = ["all", ...Array.from(new Set(TRAINING_EVENTS.map(e => e.vendor)))];
-  const tracks  = ["all", ...Array.from(new Set(TRAINING_EVENTS.map(e => e.track)))];
+  const vendors = useMemo(
+    () => ["all", ...Array.from(new Set(events.map(e => e.vendor).filter(Boolean)))],
+    [events],
+  );
+  const tracks = useMemo(
+    () => ["all", ...Array.from(new Set(events.map(e => e.track).filter(Boolean)))],
+    [events],
+  );
 
-  const filtered = TRAINING_EVENTS.filter(e =>
+  const filtered = events.filter(e =>
     (filterVendor === "all" || e.vendor === filterVendor) &&
     (filterTrack  === "all" || e.track  === filterTrack)
   );
 
-  const totalSeats = TRAINING_EVENTS.reduce((s, e) => s + e.seats, 0);
-  const certCount  = TRAINING_EVENTS.length;
+  const totalSeats = events.reduce((s, e) => s + e.seats, 0);
+  const certCount  = events.length;
+
+  // Derive delivery mode summary from training rows (no hardcoded copy)
+  const deliveryMode = useMemo(() => {
+    if (events.length === 0) return "—";
+    const counts: Record<string, number> = {};
+    for (const e of events) counts[e.format] = (counts[e.format] ?? 0) + 1;
+    const total = events.length;
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const [topFormat, topCount] = sorted[0];
+    const pct = Math.round((topCount / total) * 100);
+    if (sorted.length === 1 || pct >= 100) return `100% ${topFormat}`;
+    return `${pct}% ${topFormat}`;
+  }, [events]);
+
+  // Build vendor color legend dynamically from events
+  const vendorColors = useMemo(() => {
+    const out: Record<string, string> = {};
+    for (const ev of events) {
+      if (ev.vendor && !out[ev.vendor]) out[ev.vendor] = ev.color;
+    }
+    return out;
+  }, [events]);
+
+  // Build month list from event dates (YYYY-MM)
+  const months = useMemo(() => {
+    const keys = Array.from(new Set(events.map(e => e.date.slice(0, 7)))).sort();
+    return keys.map(key => {
+      const [y, m] = key.split("-");
+      const d = new Date(Number(y), Number(m) - 1, 1);
+      return {
+        key,
+        label: d.toLocaleDateString("en-US", { month: "short" }),
+        full:  d.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      };
+    });
+  }, [events]);
 
   const levelColors: Record<string, string> = {
     Essentials: "#24a148", Associate: "#0f62fe", Professional: "#8a3ffc", Expert: "#da1e28",
@@ -738,7 +543,7 @@ function TrainingCalendar() {
         {[
           { label: "Programmes", value: String(certCount), color: C.blue },
           { label: "Total Seats", value: String(totalSeats), color: C.teal },
-          { label: "Delivery Mode", value: "100% Virtual", color: C.green },
+          { label: "Delivery Mode", value: deliveryMode, color: C.green },
         ].map(k => (
           <div key={k.label} className="rounded-lg border p-2.5 space-y-0.5">
             <div className="text-xl font-black tabular-nums" style={{ color: k.color }}>{k.value}</div>
@@ -762,7 +567,7 @@ function TrainingCalendar() {
           </SelectContent>
         </Select>
         <div className="flex-1" />
-        {Object.entries(VENDOR_COLORS).map(([v, col]) => (
+        {Object.entries(vendorColors).map(([v, col]) => (
           <div key={v} className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full" style={{ background: col }} />
             <span className="text-xs text-muted-foreground">{v}</span>
@@ -780,7 +585,7 @@ function TrainingCalendar() {
             </tr>
           </thead>
           <tbody>
-            {MONTHS_2026.map((month, mi) => {
+            {months.map((month, mi) => {
               const monthEvents = filtered.filter(e => e.date.startsWith(month.key));
               if (monthEvents.length === 0) return null;
               return (

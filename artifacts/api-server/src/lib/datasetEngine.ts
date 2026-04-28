@@ -1,6 +1,7 @@
 import * as XLSX from "xlsx";
 import { db } from "@workspace/db";
 import type { PgTable } from "drizzle-orm/pg-core";
+import type { SQL } from "drizzle-orm";
 
 export type ColType = "str" | "int" | "real" | "date";
 
@@ -19,6 +20,15 @@ export interface SheetDef {
   table: PgTable;
   columns: ColumnDef[];
   sampleRows: Record<string, string | number | null>[];
+  /**
+   * If set, only rows matching this predicate are deleted (and snapshotted)
+   * for shared tables (e.g. page_kpis where page = "members").
+   */
+  deleteWhere?: SQL;
+  /**
+   * Fixed fields injected into every inserted row (e.g. { page: "members" }).
+   */
+  fixedFields?: Record<string, unknown>;
 }
 
 export interface DatasetSchema {
@@ -222,12 +232,19 @@ export async function importDatasetWorkbook(
         continue;
       }
 
-      await tx.delete(sheet.table);
+      if (sheet.deleteWhere) {
+        await tx.delete(sheet.table).where(sheet.deleteWhere);
+      } else {
+        await tx.delete(sheet.table);
+      }
       let inserted = 0;
       if (records.length > 0) {
+        const enriched = sheet.fixedFields
+          ? records.map((r) => ({ ...sheet.fixedFields, ...r }))
+          : records;
         const CHUNK = 500;
-        for (let i = 0; i < records.length; i += CHUNK) {
-          const slice = records.slice(i, i + CHUNK);
+        for (let i = 0; i < enriched.length; i += CHUNK) {
+          const slice = enriched.slice(i, i + CHUNK);
           await tx.insert(sheet.table).values(slice as never);
           inserted += slice.length;
         }
@@ -249,7 +266,10 @@ export async function snapshotCurrentDataAsRows(
   const out: Record<string, Record<string, string | number | null>[]> = {};
   for (const sheet of schema.sheets) {
     try {
-      const rows = await db.select().from(sheet.table).limit(2000);
+      const q = sheet.deleteWhere
+        ? db.select().from(sheet.table).where(sheet.deleteWhere).limit(2000)
+        : db.select().from(sheet.table).limit(2000);
+      const rows = await q;
       out[sheet.sheetName] = rows.map((r) => {
         const obj: Record<string, string | number | null> = {};
         for (const col of sheet.columns) {

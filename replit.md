@@ -64,7 +64,7 @@
 
 PostgreSQL via Replit's built-in database (DATABASE_URL env var). Drizzle ORM is used for schema and queries in `lib/db`.
 
-**27 tables** spanning all dashboard domains:
+**35+ tables** spanning all dashboard domains:
 - `users` — auth/login (4 demo accounts)
 - `executive_alerts`, `daily_trends`, `ai_insights` — executive dashboard data
 - `member_enrollments`, `member_exceptions` — member operations
@@ -75,6 +75,9 @@ PostgreSQL via Replit's built-in database (DATABASE_URL env var). Drizzle ORM is
 - `finance_billing_exceptions`, `finance_premium_trend` — finance & billing
 - `applications`, `incidents`, `batch_jobs`, `interfaces`, `sla_compliance` — application health
 - `ibmams_runbooks`, `ibmams_savings_trend`, `ibmams_ticket_trends` — IBM AMS value
+- `talent_plan_resources`, `talent_plan_products`, `talent_plan_skills`, `talent_plan_role_transformation` — Talent Plan workflow (391 resources, 59 products, working `.xlsx` upload via `/api/talent-plan/upload`)
+- `capability_kpis`, `capability_stages`, `capability_areas`, `capability_radar`, `capability_value_impact`, `capability_ai_certs`, `capability_training`, `capability_governance` — Capability Uplift page (8 endpoints under `/api/capability/*`; page reads everything from DB, no hardcoded constants)
+- `page_kpis` — generic per-page KPI store powering the executive overview tiles
 
 ## Architecture
 

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, executiveAlertsTable, dailyTrendsTable } from "@workspace/db";
 import { asc } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
@@ -11,40 +12,22 @@ function parsePeriod(raw: unknown): Period {
   return "24h";
 }
 
-function periodDays(p: Period) {
-  if (p === "7d") return 7;
-  if (p === "14d") return 14;
-  return 1;
-}
-
 function compareLabel(p: Period) {
   if (p === "7d")  return "vs 7 days ago";
   if (p === "14d") return "vs 14 days ago";
   return "vs yesterday";
 }
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat", period: Period) {
-  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% ${compareLabel(period)}`, status, trend };
+function periodDays(p: Period): number {
+  if (p === "7d") return 7;
+  if (p === "14d") return 14;
+  return 1;
 }
 
 router.get("/executive/kpis", async (req, res): Promise<void> => {
   const period = parsePeriod(req.query.period);
-  const mult = periodDays(period);
-
-  res.json({
-    activeMembers:          mkKpi(4287341,    "4.29M",           0.3,   "green",  "up",   period),
-    newEnrollmentsToday:    mkKpi(1842 * mult, (1842 * mult).toLocaleString(), 12.4,  "green",  "up",   period),
-    claimsReceivedToday:    mkKpi(87432 * mult, `${(87432 * mult / 1000).toFixed(0)}K`, -2.1,  "yellow", "down", period),
-    claimsSettledAmount:    mkKpi(127500000 * mult, `$${(127.5 * mult).toFixed(0)}M`, 5.2,   "green",  "up",   period),
-    priorAuthRequests:      mkKpi(3241 * mult, (3241 * mult).toLocaleString(), 18.7,  "red",    "up",   period),
-    openProviderTickets:    mkKpi(412,         "412",             -8.3,  "green",  "down", period),
-    callCenterASA:          mkKpi(47,          "47 sec",          15.2,  "yellow", "up",   period),
-    applicationAvailability:mkKpi(99.4,        "99.4%",           -0.1,  "green",  "flat", period),
-    criticalIncidents:      mkKpi(2,           "2",               0,     "yellow", "flat", period),
-    slaAttainment:          mkKpi(96.8,        "96.8%",           1.2,   "green",  "up",   period),
-    batchSuccessRate:       mkKpi(98.2,        "98.2%",           -0.4,  "green",  "flat", period),
-    automationSavings:      mkKpi(3200000,     "$3.2M YTD",       22.1,  "green",  "up",   period),
-  });
+  const kpis = await fetchPageKpis("executive", compareLabel(period));
+  res.json(kpis);
 });
 
 router.get("/executive/alerts", async (_req, res): Promise<void> => {

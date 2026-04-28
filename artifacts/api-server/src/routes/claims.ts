@@ -7,24 +7,13 @@ import {
   claimsAgingTable,
 } from "@workspace/db";
 import { asc, count, sql } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
-  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs yesterday`, status, trend };
-}
-
 router.get("/claims/kpis", async (_req, res): Promise<void> => {
-  res.json({
-    claimsReceivedToday: mkKpi(87432, "87,432", -2.1, "yellow", "down"),
-    claimsInAdjudication: mkKpi(24187, "24,187", 8.4, "yellow", "up"),
-    claimsPending: mkKpi(18943, "18,943", 14.2, "red", "up"),
-    claimsDenied: mkKpi(4218, "4,218", 5.8, "yellow", "up"),
-    claimsSettled: mkKpi(61023, "61,023", 1.2, "green", "flat"),
-    totalDollarProcessed: mkKpi(241800000, "$241.8M", 5.2, "green", "up"),
-    autoAdjudicationRate: mkKpi(72.4, "72.4%", -14.6, "red", "down"),
-    avgTurnaroundDays: mkKpi(4.2, "4.2 days", 10.5, "yellow", "up"),
-  });
+  const kpis = await fetchPageKpis("claims");
+  res.json(kpis);
 });
 
 router.get("/claims/queue", async (req, res): Promise<void> => {

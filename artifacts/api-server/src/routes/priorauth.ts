@@ -1,24 +1,13 @@
 import { Router, type IRouter } from "express";
 import { db, priorauthAgingTable, priorauthProceduresTable, priorauthReviewersTable } from "@workspace/db";
 import { asc, desc } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
-  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs yesterday`, status, trend };
-}
-
 router.get("/priorauth/kpis", async (_req, res): Promise<void> => {
-  res.json({
-    requestsReceived: mkKpi(3241, "3,241", 18.7, "red", "up"),
-    approved: mkKpi(1842, "1,842", -8.2, "yellow", "down"),
-    denied: mkKpi(487, "487", 12.4, "yellow", "up"),
-    pended: mkKpi(892, "892", 47.3, "red", "up"),
-    avgReviewHours: mkKpi(31.4, "31.4 hrs", 24.8, "red", "up"),
-    urgentRequests: mkKpi(218, "218", 33.5, "red", "up"),
-    backlogSize: mkKpi(1247, "1,247", 28.4, "red", "up"),
-    appealsVolume: mkKpi(142, "142", 8.7, "yellow", "up"),
-  });
+  const kpis = await fetchPageKpis("priorauth");
+  res.json(kpis);
 });
 
 router.get("/priorauth/aging", async (_req, res): Promise<void> => {

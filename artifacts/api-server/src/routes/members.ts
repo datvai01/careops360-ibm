@@ -1,24 +1,13 @@
 import { Router, type IRouter } from "express";
 import { db, memberEnrollmentsTable, memberExceptionsTable } from "@workspace/db";
 import { eq, asc } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
-  return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs yesterday`, status, trend };
-}
-
 router.get("/members/kpis", async (_req, res): Promise<void> => {
-  res.json({
-    totalActiveMembers: mkKpi(4287341, "4,287,341", 0.3, "green", "up"),
-    newEnrollmentsToday: mkKpi(1842, "1,842", 12.4, "green", "up"),
-    newEnrollmentsWeek: mkKpi(9217, "9,217", 4.2, "green", "up"),
-    newEnrollmentsMonth: mkKpi(38450, "38,450", 7.8, "green", "up"),
-    terminations: mkKpi(634, "634", -5.1, "green", "down"),
-    exceptionQueueSize: mkKpi(847, "847", 22.3, "yellow", "up"),
-    idCardsPending: mkKpi(2341, "2,341", 8.7, "yellow", "up"),
-    eligibilityLatency: mkKpi(1.8, "1.8 sec", 12.5, "yellow", "up"),
-  });
+  const kpis = await fetchPageKpis("members");
+  res.json(kpis);
 });
 
 router.get("/members/enrollments", async (_req, res): Promise<void> => {

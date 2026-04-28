@@ -8,10 +8,11 @@ import {
   slaComplianceTable,
 } from "@workspace/db";
 import { eq, asc, count, and } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
-function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
+function _mkKpiUnused(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
   return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs yesterday`, status, trend };
 }
 
@@ -88,16 +89,8 @@ router.get("/applications/sla", async (_req, res): Promise<void> => {
 });
 
 router.get("/applications/kpis", async (_req, res): Promise<void> => {
-  res.json({
-    overallAvailability: mkKpi(99.4, "99.4%", -0.1, "green", "flat"),
-    openIncidents: mkKpi(2, "2", 0, "yellow", "flat"),
-    mttr: mkKpi(102, "102 min", -18.4, "green", "down"),
-    mttd: mkKpi(8.4, "8.4 min", -22.1, "green", "down"),
-    batchSuccessRate: mkKpi(98.2, "98.2%", -0.4, "green", "flat"),
-    changeSuccessRate: mkKpi(94.7, "94.7%", 2.1, "green", "up"),
-    slaCompliance: mkKpi(96.8, "96.8%", 1.2, "green", "up"),
-    interfaceHealth: mkKpi(94.7, "94.7%", -4.1, "yellow", "down"),
-  });
+  const kpis = await fetchPageKpis("applications");
+  res.json(kpis);
 });
 
 export default router;

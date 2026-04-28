@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, vendorInvoicesTable, vendorInvoiceAlertsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
@@ -9,6 +10,7 @@ function mkKpi(value: number, formatted: string, change: number, status: "green"
 }
 
 router.get("/vendor-invoices/kpis", async (_req, res): Promise<void> => {
+  // Compute totals from current vendor_invoices rows so KPIs always reflect DB.
   const rows = await db.select().from(vendorInvoicesTable);
   const total = rows.length;
   const processed = rows.filter((r) => r.status === "Processed").length;
@@ -27,6 +29,11 @@ router.get("/vendor-invoices/kpis", async (_req, res): Promise<void> => {
     avgCycleTime: mkKpi(Math.round(avgCycle * 10) / 10, `${(Math.round(avgCycle * 10) / 10)} days`, -2.1, "green", "down"),
     exceptionCount: mkKpi(exceptions, `${exceptions}`, 33.3, "yellow", "up"),
   });
+});
+
+router.get("/finance/kpis", async (_req, res): Promise<void> => {
+  const kpis = await fetchPageKpis("finance");
+  res.json(kpis);
 });
 
 router.get("/vendor-invoices/list", async (req, res): Promise<void> => {

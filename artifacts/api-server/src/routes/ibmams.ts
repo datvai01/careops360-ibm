@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, ibmamsRunbooksTable, ibmamsSavingsTrendTable, ibmamsTicketTrendsTable, aiInsightsTable } from "@workspace/db";
 import { asc, desc } from "drizzle-orm";
+import { fetchPageKpis } from "../lib/kpiHelper";
 
 const router: IRouter = Router();
 
@@ -70,8 +71,8 @@ const COMPARE_LABEL: Record<string, string> = {
 router.get("/ibmams/kpis", async (req, res): Promise<void> => {
   const period = (req.query.period as string) ?? "7d";
   const cl = COMPARE_LABEL[period] ?? COMPARE_LABEL["7d"];
-  const builder = KPI_BY_PERIOD[period] ?? KPI_BY_PERIOD["7d"];
-  res.json(builder(cl));
+  const kpis = await fetchPageKpis("ibmams", cl);
+  res.json(kpis);
 });
 
 router.get("/ibmams/ticket-trends", async (req, res): Promise<void> => {

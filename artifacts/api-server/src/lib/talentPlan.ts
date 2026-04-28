@@ -1,12 +1,11 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import fs from "node:fs";
 import * as XLSX from "xlsx";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.resolve(__dirname, "../data");
-const DATA_FILE = path.join(DATA_DIR, "talentPlan.json");
-const META_FILE = path.join(DATA_DIR, "talentPlan.meta.json");
+import {
+  db,
+  talentResourcesTable,
+  talentProductsTable,
+  talentPlanMetaTable,
+} from "@workspace/db";
+import { asc, eq } from "drizzle-orm";
 
 export interface TalentResource {
   serial: string;
@@ -66,63 +65,176 @@ export interface TalentPlanMeta {
   version: number;
 }
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+/* ─────────────────────── Storage (DB) ─────────────────────── */
+
+function rowToResource(r: typeof talentResourcesTable.$inferSelect): TalentResource {
+  return {
+    serial: r.serial,
+    name: r.name,
+    domain: r.domain,
+    portfolio: r.portfolio,
+    product: r.product,
+    applicationArea: r.applicationArea,
+    typeOfWork: r.typeOfWork,
+    role: r.role,
+    location: r.location,
+    current: {
+      techStack: r.currentTechStack,
+      futureTech: r.currentFutureTech,
+      industry: r.currentIndustry,
+      agile: r.currentAgile,
+      agentic: r.currentAgentic,
+      devsecops: r.currentDevsecops,
+      aiops: r.currentAiops,
+    },
+    plan: {
+      techStack: r.planTechStack,
+      futureTech: r.planFutureTech,
+      industry: r.planIndustry,
+      agile: r.planAgile,
+      agentic: r.planAgentic,
+      devops: r.planDevops,
+      aiops: r.planAiops,
+    },
+  };
 }
 
-function defaultMeta(data: TalentPlanData): TalentPlanMeta {
+function rowToProduct(r: typeof talentProductsTable.$inferSelect): TalentProduct {
+  return {
+    domain: r.domain,
+    portfolio: r.portfolio,
+    product: r.product,
+    applicationArea: r.applicationArea,
+    currentTech: r.currentTech,
+    futureTech: r.futureTech,
+    industry: r.industry,
+    agile: r.agile,
+    agentic: r.agentic,
+    devsecops: r.devsecops,
+    aiops: r.aiops,
+  };
+}
+
+export async function getTalentPlan(): Promise<TalentPlanData> {
+  const [resourceRows, productRows] = await Promise.all([
+    db.select().from(talentResourcesTable).orderBy(asc(talentResourcesTable.id)),
+    db.select().from(talentProductsTable).orderBy(asc(talentProductsTable.id)),
+  ]);
+  return {
+    resources: resourceRows.map(rowToResource),
+    products: productRows.map(rowToProduct),
+  };
+}
+
+export async function getTalentPlanMeta(): Promise<TalentPlanMeta> {
+  const rows = await db.select().from(talentPlanMetaTable).where(eq(talentPlanMetaTable.id, 1));
+  if (rows.length > 0) {
+    const m = rows[0];
+    return {
+      uploadedAt: m.uploadedAt,
+      uploadedBy: m.uploadedBy,
+      sourceFilename: m.sourceFilename,
+      resourceCount: m.resourceCount,
+      productCount: m.productCount,
+      version: m.version,
+    };
+  }
+  // Synthesize from current row counts
+  const data = await getTalentPlan();
   return {
     uploadedAt: new Date().toISOString(),
     uploadedBy: "system (initial seed)",
-    sourceFilename: "Talent_Plan_0422a.xlsx",
+    sourceFilename: "Talent_Plan_seed.xlsx",
     resourceCount: data.resources.length,
     productCount: data.products.length,
     version: 1,
   };
 }
 
-export function getTalentPlan(): TalentPlanData {
-  ensureDataDir();
-  if (!fs.existsSync(DATA_FILE)) {
-    return { resources: [], products: [] };
-  }
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  return JSON.parse(raw) as TalentPlanData;
-}
-
-export function getTalentPlanMeta(): TalentPlanMeta {
-  ensureDataDir();
-  if (fs.existsSync(META_FILE)) {
-    return JSON.parse(fs.readFileSync(META_FILE, "utf-8")) as TalentPlanMeta;
-  }
-  // Synthesize meta from data file if no meta file exists yet
-  const data = getTalentPlan();
-  const meta = defaultMeta(data);
-  fs.writeFileSync(META_FILE, JSON.stringify(meta, null, 2));
-  return meta;
-}
-
-export function saveTalentPlan(
+export async function saveTalentPlan(
   data: TalentPlanData,
   uploader: string,
   sourceFilename: string,
-): TalentPlanMeta {
-  ensureDataDir();
-  const prevVersion = fs.existsSync(META_FILE)
-    ? (JSON.parse(fs.readFileSync(META_FILE, "utf-8")) as TalentPlanMeta).version
-    : 0;
+): Promise<TalentPlanMeta> {
+  const prevMeta = await getTalentPlanMeta();
   const meta: TalentPlanMeta = {
     uploadedAt: new Date().toISOString(),
     uploadedBy: uploader || "unknown",
     sourceFilename: sourceFilename || "uploaded.xlsx",
     resourceCount: data.resources.length,
     productCount: data.products.length,
-    version: prevVersion + 1,
+    version: prevMeta.version + 1,
   };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data));
-  fs.writeFileSync(META_FILE, JSON.stringify(meta, null, 2));
+
+  await db.transaction(async (tx) => {
+    await tx.delete(talentResourcesTable);
+    await tx.delete(talentProductsTable);
+
+    if (data.resources.length > 0) {
+      const CHUNK = 200;
+      const rows = data.resources.map((r) => ({
+        serial: r.serial,
+        name: r.name,
+        domain: r.domain,
+        portfolio: r.portfolio,
+        product: r.product,
+        applicationArea: r.applicationArea,
+        typeOfWork: r.typeOfWork,
+        role: r.role,
+        location: r.location,
+        currentTechStack: r.current.techStack,
+        currentFutureTech: r.current.futureTech,
+        currentIndustry: r.current.industry,
+        currentAgile: r.current.agile,
+        currentAgentic: r.current.agentic,
+        currentDevsecops: r.current.devsecops,
+        currentAiops: r.current.aiops,
+        planTechStack: r.plan.techStack,
+        planFutureTech: r.plan.futureTech,
+        planIndustry: r.plan.industry,
+        planAgile: r.plan.agile,
+        planAgentic: r.plan.agentic,
+        planDevops: r.plan.devops,
+        planAiops: r.plan.aiops,
+      }));
+      for (let i = 0; i < rows.length; i += CHUNK) {
+        await tx.insert(talentResourcesTable).values(rows.slice(i, i + CHUNK));
+      }
+    }
+
+    if (data.products.length > 0) {
+      const rows = data.products.map((p) => ({
+        domain: p.domain,
+        portfolio: p.portfolio,
+        product: p.product,
+        applicationArea: p.applicationArea,
+        currentTech: p.currentTech,
+        futureTech: p.futureTech,
+        industry: p.industry,
+        agile: p.agile,
+        agentic: p.agentic,
+        devsecops: p.devsecops,
+        aiops: p.aiops,
+      }));
+      const CHUNK = 200;
+      for (let i = 0; i < rows.length; i += CHUNK) {
+        await tx.insert(talentProductsTable).values(rows.slice(i, i + CHUNK));
+      }
+    }
+
+    // Upsert meta (single-row table id=1)
+    await tx.delete(talentPlanMetaTable).where(eq(talentPlanMetaTable.id, 1));
+    await tx.insert(talentPlanMetaTable).values({
+      id: 1,
+      uploadedAt: meta.uploadedAt,
+      uploadedBy: meta.uploadedBy,
+      sourceFilename: meta.sourceFilename,
+      resourceCount: meta.resourceCount,
+      productCount: meta.productCount,
+      version: meta.version,
+    });
+  });
+
   return meta;
 }
 
@@ -200,24 +312,24 @@ export function parseTalentPlanWorkbook(buffer: Buffer): ParseResult {
     });
   }
   if (products.length === 0) {
-    warnings.push(`No product rows parsed from "${PRODUCT_SHEET}".`);
+    warnings.push(`No product rows found in "${PRODUCT_SHEET}".`);
   }
 
   /* ── Resources ── */
-  const resSheet = wb.Sheets[RESOURCE_SHEET];
-  const resRows = XLSX.utils.sheet_to_json<any[]>(resSheet, {
+  const resourceSheet = wb.Sheets[RESOURCE_SHEET];
+  const resourceRows = XLSX.utils.sheet_to_json<any[]>(resourceSheet, {
     defval: "",
     header: 1,
   });
-  const rHeaderRow = findHeaderRow(resRows, "Serial#");
+  const rHeaderRow = findHeaderRow(resourceRows, "Serial#");
   if (rHeaderRow < 0) {
     throw new Error(
       `Could not find header row starting with "Serial#" in sheet "${RESOURCE_SHEET}".`,
     );
   }
   const resources: TalentResource[] = [];
-  for (let i = rHeaderRow + 1; i < resRows.length; i++) {
-    const r = resRows[i];
+  for (let i = rHeaderRow + 1; i < resourceRows.length; i++) {
+    const r = resourceRows[i];
     if (!r) continue;
     const serial = s(r[0]);
     const name = s(r[1]);
@@ -253,7 +365,7 @@ export function parseTalentPlanWorkbook(buffer: Buffer): ParseResult {
     });
   }
   if (resources.length === 0) {
-    warnings.push(`No resource rows parsed from "${RESOURCE_SHEET}".`);
+    warnings.push(`No resource rows found in "${RESOURCE_SHEET}".`);
   }
 
   return { data: { resources, products }, warnings };
@@ -261,52 +373,35 @@ export function parseTalentPlanWorkbook(buffer: Buffer): ParseResult {
 
 /* ─────────────────────── Template generation ─────────────────────── */
 
-export function buildTemplateWorkbook(): Buffer {
+export async function buildTalentPlanTemplate(): Promise<Buffer> {
+  const current = await getTalentPlan();
   const wb = XLSX.utils.book_new();
 
-  // Always pre-populate the template with the current production data so
-  // teams download a working copy of the latest plan, edit it, and re-upload.
-  const current = getTalentPlan();
+  /* Reference sheet */
+  const refData = [
+    ["Domain", "Portfolio", "Product", "Application Area", "Type of Work", "Role", "Location"],
+    ["Specialty Business", "Specialty", "Ancillary", "PPA", "Projects", "Developer", "Onshore"],
+    ["Healthcare Operations", "Operations", "Claims", "Adjudication", "AMS", "Lead", "Offshore"],
+    ["Member Services", "Member", "Enrollment", "Eligibility", "Enhancements", "Architect", "Hybrid"],
+  ];
+  const wsRef = XLSX.utils.aoa_to_sheet(refData);
+  XLSX.utils.book_append_sheet(wb, wsRef, REFERENCE_SHEET);
 
-  /* Product Level — Required Skills */
-  const productGroupHeader = [
-    "",
-    "",
-    "",
-    "",
-    "Technical Skills",
-    "",
-    "Industry",
-    "NextGen Skills",
-    "",
-    "",
-    "",
-  ];
-  const productColumnHeader = [
-    "Domain",
-    "Portfolio",
-    "Product",
-    "Application Areas",
-    "Current Tech Stack",
-    "Future Tech Stack",
-    "Industry Knowledge",
-    "Agile",
-    "Agentic",
-    "DevSecOps",
-    "AIOps",
-  ];
-  const productExampleRow = [
-    "Horizontal Functions",
-    "Enterprise Platforms",
-    "Shared Platforms",
-    "CS",
-    "Microservices, Java, Springboot, Mongo DB, Postgres",
-    "NA",
-    "Industry badge",
-    "CSM, DASSM, Agile Explorer",
-    "GenAI/ML certs; Prompt Engineering",
-    "DevOps certifications",
-    "IBM AIOps training and badge",
+  /* Product sheet */
+  const productHeader = [
+    [
+      "Domain",
+      "Portfolio",
+      "Product",
+      "Application Area",
+      "Current Tech Stack",
+      "Future Tech Stack",
+      "Industry Knowledge",
+      "Agile",
+      "Agentic",
+      "DevSecOps",
+      "AIOps",
+    ],
   ];
   const productDataRows =
     current.products.length > 0
@@ -323,43 +418,38 @@ export function buildTemplateWorkbook(): Buffer {
           p.devsecops,
           p.aiops,
         ])
-      : [productExampleRow];
-  const productHeader = [
-    productGroupHeader,
-    productColumnHeader,
-    ...productDataRows,
-  ];
-  const wsProducts = XLSX.utils.aoa_to_sheet(productHeader);
-  wsProducts["!cols"] = [
+      : [
+          [
+            "Specialty Business",
+            "Specialty",
+            "Ancillary",
+            "PPA",
+            "Microservices, SQL, Angular, .Net Core",
+            "Microservices, SQL, Angular, .Net Core",
+            "Healthcare Industry Jumpstart",
+            "Agile Basics",
+            "IBM Consulting Gen & Agentic AI",
+            "DevSecOps Essentials",
+            "AIOps Overview",
+          ],
+        ];
+  const wsProd = XLSX.utils.aoa_to_sheet([...productHeader, ...productDataRows]);
+  wsProd["!cols"] = [
     { wch: 22 },
-    { wch: 24 },
-    { wch: 24 },
+    { wch: 18 },
+    { wch: 22 },
     { wch: 18 },
     { wch: 38 },
     { wch: 38 },
-    { wch: 24 },
     { wch: 28 },
-    { wch: 28 },
-    { wch: 24 },
-    { wch: 28 },
+    { wch: 16 },
+    { wch: 32 },
+    { wch: 22 },
+    { wch: 22 },
   ];
-  XLSX.utils.book_append_sheet(wb, wsProducts, PRODUCT_SHEET);
+  XLSX.utils.book_append_sheet(wb, wsProd, PRODUCT_SHEET);
 
-  /* References */
-  const refRows = [
-    ["Role", "Type of Work", "Location"],
-    ["Developer", "Projects", "Onshore"],
-    ["Technical Lead", "Operations Support", "Offshore"],
-    ["Operations Engineer", "Shared", ""],
-    ["Project Manager", "", ""],
-    ["Quality Engineer", "", ""],
-    ["Business Analyst", "", ""],
-  ];
-  const wsRef = XLSX.utils.aoa_to_sheet(refRows);
-  wsRef["!cols"] = [{ wch: 22 }, { wch: 22 }, { wch: 16 }];
-  XLSX.utils.book_append_sheet(wb, wsRef, REFERENCE_SHEET);
-
-  /* Resource Level — Talent Plan */
+  /* Resource sheet */
   const resourceGroupHeader = [
     "",
     "",
@@ -370,7 +460,7 @@ export function buildTemplateWorkbook(): Buffer {
     "",
     "",
     "",
-    "Current Level",
+    "Current State",
     "",
     "",
     "",
@@ -471,17 +561,16 @@ export function buildTemplateWorkbook(): Buffer {
   ];
   const wsRes = XLSX.utils.aoa_to_sheet(resourceHeader);
   const colWidths = [
-    { wch: 12 }, // Serial
-    { wch: 24 }, // Name
-    { wch: 22 }, // Domain
-    { wch: 20 }, // Portfolio
-    { wch: 22 }, // Product
-    { wch: 18 }, // App Area
-    { wch: 18 }, // Type of Work
-    { wch: 22 }, // Role
-    { wch: 12 }, // Location
+    { wch: 12 },
+    { wch: 24 },
+    { wch: 22 },
+    { wch: 20 },
+    { wch: 22 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 22 },
+    { wch: 12 },
   ];
-  // 7 current + 7 plan
   for (let i = 0; i < 14; i++) colWidths.push({ wch: 26 });
   wsRes["!cols"] = colWidths;
   XLSX.utils.book_append_sheet(wb, wsRes, RESOURCE_SHEET);
@@ -493,7 +582,7 @@ export function buildTemplateWorkbook(): Buffer {
     [""],
     [
       isSeeded
-        ? `This workbook is pre-populated with the CURRENT live talent plan: ${current.products.length} products and ${current.resources.length} resources (downloaded ${new Date().toISOString().slice(0, 10)}).`
+        ? `This workbook is pre-populated with the CURRENT live talent plan from the database: ${current.products.length} products and ${current.resources.length} resources (downloaded ${new Date().toISOString().slice(0, 10)}).`
         : "This workbook defines the format the CareOps360 admin upload expects.",
     ],
     [""],
@@ -506,9 +595,7 @@ export function buildTemplateWorkbook(): Buffer {
     [
       "  • Edit, add, or remove rows directly — every row in this file becomes the new live plan when uploaded.",
     ],
-    [
-      "  • Do not change the column headers or sheet names.",
-    ],
+    ["  • Do not change the column headers or sheet names."],
     [
       "  • Header row positions must match the template (header row 2 on Products, header row 3 on Resources).",
     ],

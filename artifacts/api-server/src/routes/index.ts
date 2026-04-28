@@ -14,6 +14,7 @@ import roadmapRouter from "./roadmap";
 import downloadsRouter from "./downloads";
 import talentPlanRouter from "./talentPlan";
 import adminDatasetsRouter from "./adminDatasets";
+import capabilityRouter from "./capability";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(roadmapRouter);
 router.use(downloadsRouter);
 router.use(talentPlanRouter);
 router.use(adminDatasetsRouter);
+router.use(capabilityRouter);
 
 export default router;
