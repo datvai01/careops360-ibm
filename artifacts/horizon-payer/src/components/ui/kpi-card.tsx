@@ -48,7 +48,7 @@ export function KpiCard({ title, metric, isLoading, icon, className, ...props }:
                     metric.status === "green" ? "text-status-green" : metric.status === "red" ? "text-status-red" : metric.status === "yellow" ? "text-status-yellow" : "text-muted-foreground"
                   )}
                 >
-                  {Math.abs(metric.change)}% {metric.changeLabel}
+                  {metric.changeLabel}
                 </span>
               </div>
             )}
