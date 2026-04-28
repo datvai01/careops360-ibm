@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Settings, Users, ShieldAlert, Upload, Download, FileSpreadsheet,
+  Settings, Users, ShieldAlert, Upload, FileSpreadsheet,
   CheckCircle2, ExternalLink, Loader2, Lock, Database, ChevronRight, AlertCircle, FileDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -167,13 +167,6 @@ function DatasetDetail({ ds, onUploaded }: { ds: DatasetRow; onUploaded: () => v
     });
   }
 
-  function downloadCurrent() {
-    if (!ds.sourceFilename) return;
-    authedDownload(`/api/admin/datasets/${ds.key}/download`, ds.sourceFilename).catch((e) => {
-      toast({ title: "Download failed", description: String(e), variant: "destructive" });
-    });
-  }
-
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -325,11 +318,6 @@ function DatasetDetail({ ds, onUploaded }: { ds: DatasetRow; onUploaded: () => v
             <div className="font-medium">{fmtBytes(ds.sizeBytes)}</div>
           </div>
         </div>
-        {hasUpload && (
-          <Button variant="outline" size="sm" className="text-xs gap-1.5 mt-3" onClick={downloadCurrent}>
-            <Download size={12} /> Download current file
-          </Button>
-        )}
       </Card>
 
       {/* Validation error panel */}

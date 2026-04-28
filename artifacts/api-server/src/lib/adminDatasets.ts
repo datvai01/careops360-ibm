@@ -234,14 +234,6 @@ export function saveDatasetUpload(
   return meta;
 }
 
-export function getDatasetFilePath(key: string): { fullPath: string; meta: DatasetMeta } | null {
-  const meta = getDatasetMeta(key);
-  if (!meta.storedFilename) return null;
-  const fullPath = path.join(ADMIN_DIR, meta.storedFilename);
-  if (!fs.existsSync(fullPath)) return null;
-  return { fullPath, meta };
-}
-
 export function hasImporter(key: string): boolean {
   return key in DATASET_SCHEMAS;
 }

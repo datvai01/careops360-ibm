@@ -7,7 +7,6 @@ import {
   getAllDatasetMeta,
   getDatasetMeta,
   saveDatasetUpload,
-  getDatasetFilePath,
   hasImporter,
   buildTemplateForKey,
   runImporterForKey,
@@ -115,15 +114,6 @@ router.get("/admin/datasets/:key/template", async (req, res) => {
     logger.error({ err }, "admin dataset template generation failed");
     res.status(500).json({ error: err instanceof Error ? err.message : "Template generation failed" });
   }
-});
-
-router.get("/admin/datasets/:key/download", (req, res) => {
-  const found = getDatasetFilePath(req.params.key);
-  if (!found) {
-    res.status(404).json({ error: "No file uploaded for this dataset yet" });
-    return;
-  }
-  res.download(found.fullPath, found.meta.sourceFilename || found.meta.storedFilename || "dataset.bin");
 });
 
 export default router;
