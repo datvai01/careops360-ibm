@@ -1,16 +1,29 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import { db, vendorInvoicesTable, vendorInvoiceAlertsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { fetchPageKpis } from "../lib/kpiHelper";
+import { getSessionUser } from "./auth";
 
 const router: IRouter = Router();
+
+function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  const user = getSessionUser(req.headers.authorization);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized", message: "No valid session" });
+    return;
+  }
+  if (user.role !== "admin") {
+    res.status(403).json({ error: "Forbidden", message: "Administrator role required" });
+    return;
+  }
+  next();
+}
 
 function mkKpi(value: number, formatted: string, change: number, status: "green" | "yellow" | "red", trend: "up" | "down" | "flat") {
   return { value, formatted, change, changeLabel: `${change > 0 ? "+" : ""}${change}% vs last period`, status, trend };
 }
 
 router.get("/vendor-invoices/kpis", async (_req, res): Promise<void> => {
-  // Compute totals from current vendor_invoices rows so KPIs always reflect DB.
   const rows = await db.select().from(vendorInvoicesTable);
   const total = rows.length;
   const processed = rows.filter((r) => r.status === "Processed").length;
@@ -69,7 +82,7 @@ router.get("/vendor-invoices/alerts", async (_req, res): Promise<void> => {
   res.json(rows);
 });
 
-router.patch("/vendor-invoices/:id/status", async (req, res): Promise<void> => {
+router.patch("/vendor-invoices/:id/status", requireAdmin, async (req, res): Promise<void> => {
   const { id } = req.params;
   const { action } = req.body as { action?: string };
 
@@ -101,7 +114,111 @@ router.patch("/vendor-invoices/:id/status", async (req, res): Promise<void> => {
   res.json(updated[0]);
 });
 
-router.post("/vendor-invoices", async (req, res): Promise<void> => {
+const ALLOWED_STATUS = ["Processed", "Pending", "On Hold"] as const;
+const ALLOWED_PAYMENT_STATUS = ["Paid", "Unpaid"] as const;
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+router.patch("/vendor-invoices/:id", requireAdmin, async (req, res): Promise<void> => {
+  const { id } = req.params;
+  const body = req.body as Partial<{
+    vendor: string;
+    workNumber: string;
+    serviceCategory: string;
+    invoiceDate: string;
+    amount: number;
+    status: "Processed" | "Pending" | "On Hold";
+    paymentStatus: "Paid" | "Unpaid";
+    exceptionNote: string | null;
+  }>;
+
+  const update: Record<string, unknown> = {};
+
+  if (body.vendor !== undefined) {
+    if (typeof body.vendor !== "string" || body.vendor.trim() === "") {
+      res.status(400).json({ error: "vendor must be a non-empty string" });
+      return;
+    }
+    update.vendor = body.vendor.trim();
+  }
+  if (body.workNumber !== undefined) {
+    if (typeof body.workNumber !== "string" || body.workNumber.trim() === "") {
+      res.status(400).json({ error: "workNumber must be a non-empty string" });
+      return;
+    }
+    update.workNumber = body.workNumber.trim();
+  }
+  if (body.serviceCategory !== undefined) {
+    if (typeof body.serviceCategory !== "string" || body.serviceCategory.trim() === "") {
+      res.status(400).json({ error: "serviceCategory must be a non-empty string" });
+      return;
+    }
+    update.serviceCategory = body.serviceCategory.trim();
+  }
+  if (body.invoiceDate !== undefined) {
+    if (typeof body.invoiceDate !== "string" || !ISO_DATE_RE.test(body.invoiceDate)) {
+      res.status(400).json({ error: "invoiceDate must be in YYYY-MM-DD format" });
+      return;
+    }
+    const ts = new Date(body.invoiceDate).getTime();
+    if (Number.isNaN(ts)) {
+      res.status(400).json({ error: "invoiceDate is not a valid date" });
+      return;
+    }
+    update.invoiceDate = body.invoiceDate;
+    const today = new Date().toISOString().split("T")[0];
+    const diffDays = Math.floor((new Date(today).getTime() - ts) / 86400000);
+    update.ageDays = Math.max(0, diffDays);
+  }
+  if (body.amount !== undefined) {
+    if (typeof body.amount !== "number" || !Number.isFinite(body.amount) || body.amount < 0) {
+      res.status(400).json({ error: "amount must be a non-negative number" });
+      return;
+    }
+    update.amount = body.amount;
+  }
+  if (body.status !== undefined) {
+    if (!ALLOWED_STATUS.includes(body.status as (typeof ALLOWED_STATUS)[number])) {
+      res.status(400).json({ error: `status must be one of: ${ALLOWED_STATUS.join(", ")}` });
+      return;
+    }
+    update.status = body.status;
+  }
+  if (body.paymentStatus !== undefined) {
+    if (!ALLOWED_PAYMENT_STATUS.includes(body.paymentStatus as (typeof ALLOWED_PAYMENT_STATUS)[number])) {
+      res.status(400).json({ error: `paymentStatus must be one of: ${ALLOWED_PAYMENT_STATUS.join(", ")}` });
+      return;
+    }
+    update.paymentStatus = body.paymentStatus;
+  }
+  if (body.exceptionNote !== undefined) {
+    if (body.exceptionNote !== null && typeof body.exceptionNote !== "string") {
+      res.status(400).json({ error: "exceptionNote must be a string or null" });
+      return;
+    }
+    const note = body.exceptionNote && body.exceptionNote.trim() !== "" ? body.exceptionNote.trim() : null;
+    update.exceptionNote = note;
+    update.hasException = note ? 1 : 0;
+  }
+
+  if (Object.keys(update).length === 0) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
+
+  const updated = await db
+    .update(vendorInvoicesTable)
+    .set(update)
+    .where(eq(vendorInvoicesTable.id, id))
+    .returning();
+
+  if (updated.length === 0) {
+    res.status(404).json({ error: "Invoice not found" });
+    return;
+  }
+  res.json(updated[0]);
+});
+
+router.post("/vendor-invoices", requireAdmin, async (req, res): Promise<void> => {
   const { vendor, workNumber, serviceCategory, invoiceDate, amount, exceptionNote } = req.body as {
     vendor?: string;
     workNumber?: string;

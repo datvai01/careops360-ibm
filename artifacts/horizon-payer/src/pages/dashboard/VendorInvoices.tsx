@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useGetVendorInvoiceList } from "@workspace/api-client-react";
+import { useGetVendorInvoiceList, useGetCurrentUser } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   FilterIcon,
   ChevronDownIcon,
   DownloadIcon,
+  PencilIcon,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 
@@ -267,16 +268,26 @@ function exportVendorInvoicesToExcel(invoices: Invoice[]) {
   XLSX.writeFile(wb, `IBM_Vendor_Invoices_${today}.xlsx`);
 }
 
+function authHeaders(): HeadersInit {
+  const t = localStorage.getItem("horizon_token");
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
 function useUpdateStatus() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, action }: { id: string; action: "release" | "hold" | "processed" }) => {
       const res = await fetch(`/api/vendor-invoices/${id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ action }),
       });
-      if (!res.ok) throw new Error("Failed to update invoice status");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string; message?: string }).message
+          ?? (err as { error?: string }).error
+          ?? "Failed to update invoice status");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -291,12 +302,37 @@ function useUploadInvoice() {
     mutationFn: async (data: Record<string, unknown>) => {
       const res = await fetch("/api/vendor-invoices", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify(data),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error((err as { error?: string }).error ?? "Failed to upload invoice");
+        throw new Error((err as { error?: string; message?: string }).message
+          ?? (err as { error?: string }).error
+          ?? "Failed to upload invoice");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/vendor-invoices/list"] });
+    },
+  });
+}
+
+function useEditInvoice() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Record<string, unknown> }) => {
+      const res = await fetch(`/api/vendor-invoices/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: string; message?: string }).message
+          ?? (err as { error?: string }).error
+          ?? "Failed to edit invoice");
       }
       return res.json();
     },
@@ -327,9 +363,10 @@ function PdfButton({ invoice }: { invoice: Invoice }) {
 }
 
 /* ── Admin action buttons ───────────────────────────────────── */
-function ActionButtons({ invoice }: { invoice: Invoice }) {
+function ActionButtons({ invoice, isAdmin }: { invoice: Invoice; isAdmin: boolean }) {
   const { toast } = useToast();
   const mutation = useUpdateStatus();
+  if (!isAdmin) return null;
 
   function act(action: "release" | "hold" | "processed", label: string) {
     mutation.mutate(
@@ -375,9 +412,11 @@ function ActionButtons({ invoice }: { invoice: Invoice }) {
 function InvoiceTable({
   invoices,
   onDrillDown,
+  isAdmin,
 }: {
   invoices: Invoice[];
   onDrillDown: (inv: Invoice) => void;
+  isAdmin: boolean;
 }) {
   if (invoices.length === 0) {
     return (
@@ -451,7 +490,7 @@ function InvoiceTable({
                 </span>
               </TableCell>
               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                <ActionButtons invoice={inv} />
+                <ActionButtons invoice={inv} isAdmin={isAdmin} />
               </TableCell>
             </TableRow>
           ))}
@@ -576,8 +615,137 @@ function UploadModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/* ── Edit invoice modal (admin only) ────────────────────────── */
+function EditModal({ invoice, onClose, onSaved }: { invoice: Invoice; onClose: () => void; onSaved: () => void }) {
+  const { toast } = useToast();
+  const editMutation = useEditInvoice();
+  const [vendor, setVendor] = useState(invoice.vendor);
+  const [workNumber, setWorkNumber] = useState(invoice.workNumber);
+  const [serviceCategory, setServiceCategory] = useState(invoice.serviceCategory);
+  const [invoiceDate, setInvoiceDate] = useState(invoice.invoiceDate);
+  const [amount, setAmount] = useState(String(invoice.amount));
+  const [status, setStatus] = useState<Invoice["status"]>(invoice.status);
+  const [paymentStatus, setPaymentStatus] = useState<Invoice["paymentStatus"]>(invoice.paymentStatus);
+  const [exceptionNote, setExceptionNote] = useState(invoice.exceptionNote ?? "");
+
+  function handleSave() {
+    const amt = Number(amount);
+    if (Number.isNaN(amt) || amt < 0) {
+      toast({ title: "Invalid amount", description: "Amount must be a non-negative number.", variant: "destructive" });
+      return;
+    }
+    editMutation.mutate(
+      {
+        id: invoice.id,
+        patch: {
+          vendor: vendor.trim(),
+          workNumber: workNumber.trim(),
+          serviceCategory: serviceCategory.trim(),
+          invoiceDate,
+          amount: amt,
+          status,
+          paymentStatus,
+          exceptionNote: exceptionNote.trim() ? exceptionNote.trim() : null,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({ title: "Invoice updated", description: `${invoice.id} saved successfully.` });
+          onSaved();
+        },
+        onError: (err: unknown) => {
+          toast({
+            title: "Save failed",
+            description: err instanceof Error ? err.message : "Unknown error",
+            variant: "destructive",
+          });
+        },
+      },
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card rounded-xl border shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div className="flex items-center gap-2">
+            <PencilIcon className="w-4 h-4 text-[#0f62fe]" />
+            <span className="text-sm font-bold">Edit Invoice <span className="font-mono">{invoice.id}</span></span>
+          </div>
+          <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
+            <XIcon className="w-4 h-4" />
+          </Button>
+        </div>
+        <div className="px-6 py-5 space-y-3 max-h-[70vh] overflow-y-auto">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Vendor</label>
+              <Input value={vendor} onChange={(e) => setVendor(e.target.value)} className="mt-1 h-9" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Work Number</label>
+              <Input value={workNumber} onChange={(e) => setWorkNumber(e.target.value)} className="mt-1 h-9" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Service Category</label>
+              <Input value={serviceCategory} onChange={(e) => setServiceCategory(e.target.value)} className="mt-1 h-9" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Invoice Date</label>
+              <Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className="mt-1 h-9" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Amount (USD)</label>
+              <Input type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 h-9" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as Invoice["status"])}
+                className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="Pending">Pending</option>
+                <option value="Processed">Processed</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Payment Status</label>
+              <select
+                value={paymentStatus}
+                onChange={(e) => setPaymentStatus(e.target.value as Invoice["paymentStatus"])}
+                className="mt-1 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="Unpaid">Unpaid</option>
+                <option value="Paid">Paid</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Exception Note (optional)</label>
+            <Input
+              value={exceptionNote}
+              onChange={(e) => setExceptionNote(e.target.value)}
+              placeholder="Leave blank to clear exception"
+              className="mt-1 h-9"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 px-6 py-4 border-t bg-muted/20">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave} disabled={editMutation.isPending} className="gap-1.5">
+            {editMutation.isPending ? "Saving…" : "Save Changes"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Invoice drill-down modal ───────────────────────────────── */
-function DrillDownModal({ invoice, onClose }: { invoice: Invoice; onClose: () => void }) {
+function DrillDownModal({ invoice, isAdmin, onClose }: { invoice: Invoice; isAdmin: boolean; onClose: () => void }) {
+  const [editOpen, setEditOpen] = useState(false);
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-card rounded-xl border shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
@@ -648,12 +816,29 @@ function DrillDownModal({ invoice, onClose }: { invoice: Invoice; onClose: () =>
             </div>
           </div>
 
-          <div className="border-t pt-4">
-            <p className="text-xs text-muted-foreground font-medium mb-2.5 uppercase tracking-wide">Admin Actions</p>
-            <ActionButtons invoice={invoice} />
-          </div>
+          {isAdmin && (
+            <div className="border-t pt-4">
+              <p className="text-xs text-muted-foreground font-medium mb-2.5 uppercase tracking-wide">Admin Actions</p>
+              <div className="flex flex-wrap gap-2 items-center">
+                <ActionButtons invoice={invoice} isAdmin={isAdmin} />
+                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setEditOpen(true)}>
+                  <PencilIcon className="w-3.5 h-3.5" /> Edit Invoice
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      {editOpen && (
+        <EditModal
+          invoice={invoice}
+          onClose={() => setEditOpen(false)}
+          onSaved={() => {
+            setEditOpen(false);
+            onClose();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -671,6 +856,9 @@ export default function VendorInvoices() {
   const [workSearch, setWorkSearch] = useState("");
   const [drillDown, setDrillDown] = useState<Invoice | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const { toast } = useToast();
+  const { data: currentUser } = useGetCurrentUser();
+  const isAdmin = (currentUser?.role as string | undefined) === "admin";
 
   const { data: invoices } = useGetVendorInvoiceList({
     status: selectedStatus ?? undefined,
@@ -744,9 +932,26 @@ export default function VendorInvoices() {
             <span className="text-muted-foreground/60 text-xs">Additional vendors can be onboarded as needed</span>
           </p>
         </div>
-        <Button className="gap-2 flex-shrink-0" onClick={() => setUploadOpen(true)}>
-          <UploadCloudIcon className="w-4 h-4" /> Upload Invoice
-        </Button>
+        {isAdmin ? (
+          <Button className="gap-2 flex-shrink-0" onClick={() => setUploadOpen(true)}>
+            <UploadCloudIcon className="w-4 h-4" /> Upload Invoice
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="gap-2 flex-shrink-0 opacity-60 cursor-not-allowed"
+            onClick={() =>
+              toast({
+                title: "Administrator access required",
+                description: "Sign in as an administrator to upload invoices.",
+                variant: "destructive",
+              })
+            }
+            title="Administrator access required"
+          >
+            <UploadCloudIcon className="w-4 h-4" /> Upload Invoice
+          </Button>
+        )}
       </div>
 
       {/* ── Tabs + Toolbar in one line ───────────────────────── */}
@@ -886,7 +1091,7 @@ export default function VendorInvoices() {
           </div>
 
           {/* Invoice table */}
-          <InvoiceTable invoices={displayInvoices} onDrillDown={setDrillDown} />
+          <InvoiceTable invoices={displayInvoices} onDrillDown={setDrillDown} isAdmin={isAdmin} />
         </div>
       )}
 
@@ -966,14 +1171,14 @@ export default function VendorInvoices() {
                   <XIcon className="w-3.5 h-3.5 mr-1" /> Clear selection
                 </Button>
               </div>
-              <InvoiceTable invoices={displayInvoices} onDrillDown={setDrillDown} />
+              <InvoiceTable invoices={displayInvoices} onDrillDown={setDrillDown} isAdmin={isAdmin} />
             </div>
           )}
         </div>
       )}
 
       {/* ── Modals ──────────────────────────────────────────── */}
-      {drillDown && <DrillDownModal invoice={drillDown} onClose={() => setDrillDown(null)} />}
+      {drillDown && <DrillDownModal invoice={drillDown} isAdmin={isAdmin} onClose={() => setDrillDown(null)} />}
       {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
     </div>
   );

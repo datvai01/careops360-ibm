@@ -12,8 +12,6 @@ import {
   providerIssuesTable,
   contactcenterCallReasonsTable,
   contactcenterHourlyTable,
-  vendorInvoicesTable,
-  vendorInvoiceAlertsTable,
   applicationsTable,
   incidentsTable,
   batchJobsTable,
@@ -294,54 +292,6 @@ export const DATASET_SCHEMAS: Record<string, DatasetSchema> = {
         sampleRows: [
           { "Hour": "08:00", "Calls": 240, "Chats": 84, "Emails": 31 },
           { "Hour": "09:00", "Calls": 410, "Chats": 142, "Emails": 56 },
-        ],
-      },
-    ],
-  },
-
-  "vendor-invoices": {
-    key: "vendor-invoices",
-    title: "Vendor Invoices — CareOps360 Upload Template",
-    introLines: [
-      "Drives the Vendor Invoices page (IBM-scoped ledger + exception alerts).",
-    ],
-    sheets: [
-      {
-        sheetName: "Invoices",
-        tableName: "vendor_invoices",
-        table: vendorInvoicesTable,
-        columns: [
-          { header: "Invoice ID", key: "id", type: "str", sample: "INV-2026-0001", required: true },
-          { header: "Vendor", key: "vendor", type: "str", sample: "IBM", required: true },
-          { header: "Work Number", key: "workNumber", type: "str", sample: "WO-12345", required: true },
-          { header: "Service Category", key: "serviceCategory", type: "str", sample: "AMS", required: true },
-          { header: "Invoice Date", key: "invoiceDate", type: "str", sample: "2026-04-15", required: true },
-          { header: "Amount (USD)", key: "amount", type: "int", sample: 240000, required: true },
-          { header: "Status", key: "status", type: "str", sample: "Approved", required: true },
-          { header: "Payment Status", key: "paymentStatus", type: "str", sample: "Paid", required: true },
-          { header: "Age (days)", key: "ageDays", type: "int", sample: 12, required: true },
-          { header: "Cycle Time (days)", key: "cycleTimeDays", type: "real", sample: 8.4, nullable: true },
-          { header: "Has Exception (0/1)", key: "hasException", type: "int", sample: 0, required: true },
-          { header: "Exception Note", key: "exceptionNote", type: "str", sample: "", nullable: true },
-        ],
-        sampleRows: [
-          { "Invoice ID": "INV-2026-0001", "Vendor": "IBM", "Work Number": "WO-12345", "Service Category": "AMS", "Invoice Date": "2026-04-15", "Amount (USD)": 240000, "Status": "Approved", "Payment Status": "Paid", "Age (days)": 12, "Cycle Time (days)": 8.4, "Has Exception (0/1)": 0, "Exception Note": "" },
-        ],
-      },
-      {
-        sheetName: "Alerts",
-        tableName: "vendor_invoice_alerts",
-        table: vendorInvoiceAlertsTable,
-        columns: [
-          { header: "Alert Type", key: "alertType", type: "str", sample: "Overdue", required: true },
-          { header: "Invoice ID", key: "invoiceId", type: "str", sample: "INV-2026-0001", nullable: true },
-          { header: "Vendor", key: "vendor", type: "str", sample: "IBM", required: true },
-          { header: "Message", key: "message", type: "str", sample: "Invoice overdue >30 days", required: true },
-          { header: "Severity", key: "severity", type: "str", sample: "High", required: true },
-          { header: "Amount (USD)", key: "amount", type: "int", sample: 240000, nullable: true },
-        ],
-        sampleRows: [
-          { "Alert Type": "Overdue", "Invoice ID": "INV-2026-0001", "Vendor": "IBM", "Message": "Invoice overdue >30 days", "Severity": "High", "Amount (USD)": 240000 },
         ],
       },
     ],

@@ -92,16 +92,6 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
     category: "Operations",
   },
   {
-    key: "vendor-invoices",
-    label: "Vendor Invoices (IBM-scoped)",
-    page: "Vendor Invoices",
-    pageRoute: "/dashboard/vendor-invoices",
-    description:
-      "IBM-scoped invoice register, PO mapping, payment status, service category. Refreshes the Vendor Invoices ledger and category rollups.",
-    acceptedFormats: ".xlsx, .csv",
-    category: "Finance",
-  },
-  {
     key: "app-health",
     label: "Application Health & ~1,000 Apps",
     page: "Application Health",
