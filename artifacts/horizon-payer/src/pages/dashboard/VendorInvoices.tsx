@@ -23,6 +23,7 @@ import {
   PencilIcon,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 const IBM_BLUE = "#0f62fe";
 
@@ -931,24 +932,17 @@ export default function VendorInvoices() {
             IBM invoicing to Horizon — 7 service categories &nbsp;·&nbsp;{" "}
             <span className="text-muted-foreground/60 text-xs">Additional vendors can be onboarded as needed</span>
           </p>
+          <div className="mt-2">
+            <HelpHint
+              title="Vendor Invoices & Billing"
+              description="Live invoice ledger. Records flow in via the Upload Invoice action (admin-only) and are persisted to the vendor_invoices table. Approvals, status, and category totals are derived from those rows."
+              tables={["vendor_invoices", "vendor_invoice_lines"]}
+              adminAction="Use the Upload Invoice button (top-right) to add a new IBM invoice. Edit an invoice from the row menu."
+            />
+          </div>
         </div>
-        {isAdmin ? (
+        {isAdmin && (
           <Button className="gap-2 flex-shrink-0" onClick={() => setUploadOpen(true)}>
-            <UploadCloudIcon className="w-4 h-4" /> Upload Invoice
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            className="gap-2 flex-shrink-0 opacity-60 cursor-not-allowed"
-            onClick={() =>
-              toast({
-                title: "Administrator access required",
-                description: "Sign in as an administrator to upload invoices.",
-                variant: "destructive",
-              })
-            }
-            title="Administrator access required"
-          >
             <UploadCloudIcon className="w-4 h-4" /> Upload Invoice
           </Button>
         )}
@@ -1102,7 +1096,14 @@ export default function VendorInvoices() {
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base">By Work Order</CardTitle>
+                  <CardTitle className="text-base flex items-center gap-2">By Work Order
+                    <HelpHint
+                      title="By Work Order"
+                      description="Aggregated invoice totals grouped by IBM work order. Computed live from the vendor_invoices table."
+                      tables={["vendor_invoices"]}
+                      adminAction="Edit individual invoices to reassign work orders. Group totals refresh automatically."
+                    />
+                  </CardTitle>
                   <CardDescription className="text-xs">Click a row to filter invoices by that work order</CardDescription>
                 </div>
                 <div className="relative w-full sm:w-60">

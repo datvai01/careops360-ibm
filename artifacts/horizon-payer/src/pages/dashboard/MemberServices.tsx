@@ -9,6 +9,8 @@ import { Headphones, Clock, XCircle, CheckCircle2, MessageSquare, Download, Refr
 import { useGetContactCenterKpis, useGetTopCallReasons, useGetHourlyCallVolume } from "@workspace/api-client-react";
 import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { cn } from "@/lib/utils";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 export default function MemberServices() {
   const { periodOption } = useTimeRange();
@@ -29,6 +31,7 @@ export default function MemberServices() {
           <p className="text-muted-foreground mt-1">
             Contact center performance, digital engagement channels, and member support operations
           </p>
+          <LastRefresh datasetKey="contact-center" variant="compact" className="mt-2" />
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Button size="sm" variant="outline" className="gap-1.5 text-xs h-9">
@@ -41,6 +44,16 @@ export default function MemberServices() {
       </div>
 
       {/* Contact Channel KPIs */}
+      <div className="flex items-center gap-2 -mb-1">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Contact Channel KPIs</h3>
+        <HelpHint
+          title="Contact Channel KPIs"
+          description="Voice operations: calls received, average speed of answer, abandonment rate, and first-call resolution. Drives staffing and AI-deflection planning."
+          tables={["contact_center_kpis"]}
+          datasetKey="contact-center"
+          adminAction="Upload the Contact Center workbook to refresh all four channel KPIs."
+        />
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { icon: Headphones,   label: "Calls Received",        metric: kpis?.callsReceived,       color: "#0f62fe" },
@@ -81,7 +94,16 @@ export default function MemberServices() {
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
-              <CardTitle className="text-base">Hourly Contact Volume</CardTitle>
+              <CardTitle className="text-base flex items-center gap-2">
+                Hourly Contact Volume
+                <HelpHint
+                  title="Hourly Contact Volume"
+                  description="Voice + chat density across the day; informs staffing waves and AI bot deflection campaigns."
+                  tables={["contact_center_hourly_volume"]}
+                  datasetKey="contact-center"
+                  adminAction="Re-upload the Contact Center workbook to refresh hourly density."
+                />
+              </CardTitle>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
                 {periodOption.shortLabel}
               </span>
@@ -119,7 +141,16 @@ export default function MemberServices() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Top Call Reasons</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              Top Call Reasons
+              <HelpHint
+                title="Top Call Reasons"
+                description="Drivers behind voice contacts. Used to prioritise self-service journeys, knowledge-base updates, and chatbot intents."
+                tables={["contact_center_call_reasons"]}
+                datasetKey="contact-center"
+                adminAction="Refresh by uploading the Contact Center workbook with the latest call-reason rollups."
+              />
+            </CardTitle>
             <CardDescription>Primary contact drivers — current period</CardDescription>
           </CardHeader>
           <CardContent className="h-72">

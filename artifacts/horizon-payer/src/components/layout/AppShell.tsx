@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link, useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGetCurrentUser, useGetAlerts, useLogout } from "@workspace/api-client-react";
 import { 
   BellIcon, 
@@ -147,6 +148,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: alerts } = useGetAlerts();
   const { theme, setTheme } = useTheme();
   const logoutMutation = useLogout();
+  const queryClient = useQueryClient();
   
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState(0);
@@ -169,8 +171,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       }
     }
     localStorage.removeItem("horizon_token");
+    queryClient.clear();
     setLocation("/");
-  }, [logoutMutation, setLocation]);
+  }, [logoutMutation, queryClient, setLocation]);
 
   const handleLogout = useCallback(() => {
     doLogout();

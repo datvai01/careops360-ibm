@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from "lucide-react";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 export default function Providers() {
   const { data: kpis, isLoading: isKpisLoading } = useGetProviderKpis();
@@ -16,9 +18,20 @@ export default function Providers() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Provider Operations</h1>
           <p className="text-muted-foreground mt-1">Provider credentialing, directories, and disputes</p>
+          <LastRefresh datasetKey="providers" variant="compact" className="mt-2" />
         </div>
       </div>
 
+      <div className="flex items-center gap-2 -mb-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Network Operations KPIs</h2>
+        <HelpHint
+          title="Provider Network KPIs"
+          description="Onboarding pipeline, credentialing backlog, dispute caseload, directory hygiene, open tickets, and contract loads."
+          tables={["provider_kpis", "providers", "provider_issues"]}
+          datasetKey="providers"
+          adminAction="Upload the Providers dataset workbook to refresh the network roster, KPIs, and issue heatmap."
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <KpiCard title="Onboarding Requests" metric={kpis?.onboardingRequests} isLoading={isKpisLoading} />
         <KpiCard title="Credentialing Pending" metric={kpis?.credentialingPending} isLoading={isKpisLoading} />
@@ -31,7 +44,16 @@ export default function Providers() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Provider Directory</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Provider Directory
+              <HelpHint
+                title="Provider Directory"
+                description="Roster of in-network providers with NPI, specialty, status, and credentialing state. Drives directory hygiene reports."
+                tables={["providers"]}
+                datasetKey="providers"
+                adminAction="Upload the Providers workbook to refresh roster, specialties, and credentialing status."
+              />
+            </CardTitle>
             <CardDescription>Recent provider updates and status</CardDescription>
           </CardHeader>
           <CardContent>
@@ -82,7 +104,16 @@ export default function Providers() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Provider Issues</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Top Provider Issues
+              <HelpHint
+                title="Top Provider Issues"
+                description="Most-frequent provider-side ticket categories with priority and trend. Used by provider services to triage call drivers."
+                tables={["provider_issues"]}
+                datasetKey="providers"
+                adminAction="Refresh by uploading the Providers workbook with the latest issue rollups."
+              />
+            </CardTitle>
             <CardDescription>Active ticket categories</CardDescription>
           </CardHeader>
           <CardContent>

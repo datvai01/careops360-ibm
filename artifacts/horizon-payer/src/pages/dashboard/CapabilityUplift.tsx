@@ -63,6 +63,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import TalentPlan from "./TalentPlan";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 const C = {
   blue: "#0f62fe",
@@ -671,6 +673,16 @@ export default function CapabilityUplift() {
         </div>
         <h1 className="text-3xl font-bold tracking-tight">Skills & Enablement</h1>
         <p className="text-muted-foreground mt-1">IBM capability evolution and structured learning directly enabling Horizon transformation outcomes</p>
+        <div className="flex items-center gap-2 mt-2">
+          <LastRefresh datasetKey="capability-uplift" variant="compact" />
+          <HelpHint
+            title="Skills & Enablement"
+            description="Capability maturity, bootcamp calendar, and the linked Talent Plan. Sourced from the Capability Uplift workbook."
+            tables={["capability_uplift", "capability_skill_matrix", "talent_plan_resources"]}
+            datasetKey="capability-uplift"
+            adminAction="Upload the Capability Uplift workbook to refresh maturity progression, bootcamps, and table view."
+          />
+        </div>
       </div>
 
       {/* Tab layout */}

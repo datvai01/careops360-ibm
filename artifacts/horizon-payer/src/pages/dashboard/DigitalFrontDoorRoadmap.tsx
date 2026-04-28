@@ -11,6 +11,8 @@ import {
   Users, BarChart2, RefreshCw, Network, Cpu, Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const C = {
@@ -646,6 +648,16 @@ export default function DigitalFrontDoorRoadmap() {
           Six sequential value layers transforming enrollment operations from fragmented intake to intelligent,
           real-time command and control — with measurable outcomes from Week 3.
         </p>
+        <div className="flex items-center gap-2 mt-3">
+          <LastRefresh datasetKey="transformation-roadmap" variant="compact" />
+          <HelpHint
+            title="Digital Front Door Roadmap"
+            description="Layer-by-layer realization plan tied to the Transformation Roadmap dataset. Each layer maps to one or more tracked initiatives."
+            tables={["roadmap_initiatives", "roadmap_summary"]}
+            datasetKey="transformation-roadmap"
+            adminAction="Upload the Transformation Roadmap workbook to refresh the underlying initiative data this view references."
+          />
+        </div>
       </div>
 
       {/* ── IBM Vision Note ── */}

@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 import { useGetContactCenterKpis, useGetTopCallReasons, useGetHourlyCallVolume, useGetMemberKpis, useGetEnrollmentTrends, useGetMembersByProduct } from "@workspace/api-client-react";
 import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { KpiCard } from "@/components/ui/kpi-card";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 // ─── COLOR PALETTE ───────────────────────────────────────────────────────────
 const C = {
@@ -1444,6 +1446,16 @@ export default function EnrollmentIntelligence() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Member & Enrollment Operations</h1>
           <p className="text-muted-foreground mt-1">Enrollment pipeline, member demographics, member services, and operations command</p>
+          <div className="flex items-center gap-2 mt-2">
+            <LastRefresh datasetKey="members" variant="compact" />
+            <HelpHint
+              title="Member & Enrollment Operations"
+              description="Combined hub for the enrollment pipeline, member demographics, queue health, and ops command. Sourced from the Members dataset and the live operations event log."
+              tables={["members", "member_kpis", "enrollment_trends", "members_by_product"]}
+              datasetKey="members"
+              adminAction="Upload the Members & Enrollment workbook to refresh the entire hub at once."
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Link href="/dashboard/digital-front-door-roadmap">

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 const COLORS = ['#0f62fe', '#24a148', '#8a3ffc', '#002d9c', '#da1e28'];
 
@@ -22,9 +24,20 @@ export default function Claims() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Claims Operations</h1>
           <p className="text-muted-foreground mt-1">Claims processing, adjudication, and settlement metrics</p>
+          <LastRefresh datasetKey="claims" variant="compact" className="mt-2" />
         </div>
       </div>
 
+      <div className="flex items-center gap-2 -mb-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Claims Throughput KPIs</h2>
+        <HelpHint
+          title="Claims Throughput KPIs"
+          description="Eight tiles aggregated from the live claims pipeline — receipts, adjudication state, denials, settlements, and auto-adjudication ratio."
+          tables={["claims_kpis", "claims"]}
+          datasetKey="claims"
+          adminAction="Replace the Claims dataset workbook to refresh all eight KPI tiles in one shot."
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard title="Claims Received Today" metric={kpis?.claimsReceivedToday} isLoading={isKpisLoading} />
         <KpiCard title="Claims In Adjudication" metric={kpis?.claimsInAdjudication} isLoading={isKpisLoading} />
@@ -40,7 +53,16 @@ export default function Claims() {
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
-              <CardTitle>Claims by Line of Business</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Claims by Line of Business
+                <HelpHint
+                  title="Claims by Line of Business"
+                  description="Stacked breakdown of received / processed / pending volumes by LOB. Sourced from the live claims feed."
+                  tables={["claims", "claims_lob_summary"]}
+                  datasetKey="claims"
+                  adminAction="Re-upload the Claims workbook with refreshed LOB rollups."
+                />
+              </CardTitle>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
                 {periodOption.shortLabel}
               </span>
@@ -69,7 +91,16 @@ export default function Claims() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Denial Reasons</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Top Denial Reasons
+              <HelpHint
+                title="Top Denial Reasons"
+                description="Aggregated denial reason codes ranked by occurrence. Drives root-cause analysis and Watsonx-assisted prevention recommendations."
+                tables={["claims_denial_reasons", "claims"]}
+                datasetKey="claims"
+                adminAction="Refresh denial reasons by uploading the latest Claims dataset workbook."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             {isDenialLoading ? (
@@ -91,7 +122,16 @@ export default function Claims() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Claims Queue</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Claims Queue
+            <HelpHint
+              title="Claims Queue"
+              description="Live worklist of in-flight claims with member, provider, dollar amount, status, and aging — sorted by oldest first to surface SLA risk."
+              tables={["claims"]}
+              datasetKey="claims"
+              adminAction="Upload an updated Claims workbook to repopulate the queue. Aging recalculates automatically."
+            />
+          </CardTitle>
           <CardDescription>Recent claims pending adjudication</CardDescription>
         </CardHeader>
         <CardContent>

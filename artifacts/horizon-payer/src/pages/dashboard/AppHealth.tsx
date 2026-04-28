@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 export default function AppHealth() {
   const { data: kpis, isLoading: isKpisLoading } = useGetApplicationKpis();
@@ -18,12 +20,23 @@ export default function AppHealth() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Application Health</h1>
           <p className="text-muted-foreground mt-1">IT operations, infrastructure, and application reliability</p>
+          <LastRefresh datasetKey="app-health" variant="compact" className="mt-2" />
         </div>
         <Badge variant="outline" className="text-sm px-3 py-1.5 border-green-500 text-green-600 dark:text-green-400 font-medium">
           ● Production
         </Badge>
       </div>
 
+      <div className="flex items-center gap-2 -mb-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Reliability KPIs</h2>
+        <HelpHint
+          title="Application Reliability KPIs"
+          description="Overall availability, open incidents, MTTR, and batch success rate. Drives the AIOps service-target dashboard."
+          tables={["app_health_kpis", "applications", "incidents", "batch_jobs"]}
+          datasetKey="app-health"
+          adminAction="Upload the Application Health workbook to refresh availability, incidents, batches, and interfaces."
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard title="Overall Availability" metric={kpis?.overallAvailability} isLoading={isKpisLoading} />
         <KpiCard title="Open Incidents" metric={kpis?.openIncidents} isLoading={isKpisLoading} />
@@ -34,7 +47,16 @@ export default function AppHealth() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Core Applications Inventory</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Core Applications Inventory
+              <HelpHint
+                title="Core Applications Inventory"
+                description="Real-time health, availability, and SLA attainment across mission-critical apps."
+                tables={["applications", "app_health_kpis"]}
+                datasetKey="app-health"
+                adminAction="Re-upload the Application Health workbook to refresh the application roster."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border max-h-[300px] overflow-auto">
@@ -84,7 +106,16 @@ export default function AppHealth() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Active Incidents</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Active Incidents
+              <HelpHint
+                title="Active Incidents"
+                description="Open severity-classified incidents with affected application and resolution status."
+                tables={["incidents"]}
+                datasetKey="app-health"
+                adminAction="Refresh by uploading the Application Health workbook with the latest incident log."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border max-h-[300px] overflow-auto">
@@ -133,7 +164,16 @@ export default function AppHealth() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Batch Processing</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Batch Processing
+              <HelpHint
+                title="Batch Processing"
+                description="Tonight's batch jobs and their success/duration. Failures escalate to AIOps for autoremediation."
+                tables={["batch_jobs"]}
+                datasetKey="app-health"
+                adminAction="Re-upload the Application Health workbook to refresh batch job statuses."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -162,7 +202,16 @@ export default function AppHealth() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Data Interfaces</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Data Interfaces
+              <HelpHint
+                title="Data Interfaces"
+                description="Source-to-target interface health for the major integration flows. Drives outbound batch SLAs."
+                tables={["interfaces"]}
+                datasetKey="app-health"
+                adminAction="Re-upload the Application Health workbook to refresh interface health."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent>
              <div className="rounded-md border max-h-[300px] overflow-auto">

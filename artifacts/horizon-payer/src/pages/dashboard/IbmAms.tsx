@@ -18,6 +18,8 @@ import { Tooltip as UiTooltip, TooltipContent, TooltipTrigger, TooltipProvider }
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { KpiMetric } from "@workspace/api-client-react";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 const IBM_BLUE = "#0f62fe";
 const TEAL     = "#009d9a";
@@ -336,6 +338,16 @@ export default function IbmAms() {
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Going Beyond Traditional IT Service Levels</h1>
           </div>
           <p className="text-sm text-muted-foreground">IBM commits to Horizon&rsquo;s business KPIs alongside critical service levels &middot; CY2026 &middot; Horizon BCBS</p>
+          <div className="flex items-center gap-2 mt-2">
+            <LastRefresh datasetKey="ibm-aiops" variant="compact" />
+            <HelpHint
+              title="IBM AMS — Watsonx AIOps Hub"
+              description="Performance, automation runbooks, cost-savings, and service-level commitments. Sourced from the AIOps telemetry pipeline."
+              tables={["ibm_ams_kpis", "ibm_ams_runbooks", "ibm_ams_savings", "ibm_ams_insights"]}
+              datasetKey="ibm-aiops"
+              adminAction="Upload the IBM AIOps workbook to refresh all KPIs, runbooks, savings, and insights."
+            />
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-shrink-0">

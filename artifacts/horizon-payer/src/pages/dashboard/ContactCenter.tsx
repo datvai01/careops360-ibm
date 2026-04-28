@@ -3,6 +3,8 @@ import { useTimeRange } from "@/contexts/TimeRangeContext";
 import { KpiCard } from "@/components/ui/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, Cell } from "recharts";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 export default function ContactCenter() {
   const { periodOption } = useTimeRange();
@@ -16,9 +18,20 @@ export default function ContactCenter() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Member Services</h1>
           <p className="text-muted-foreground mt-1">Contact center performance and digital engagement</p>
+          <LastRefresh datasetKey="contact-center" variant="compact" className="mt-2" />
         </div>
       </div>
 
+      <div className="flex items-center gap-2 -mb-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Contact Center KPIs</h2>
+        <HelpHint
+          title="Contact Center KPIs"
+          description="Voice + digital engagement metrics: ASA, abandonment, FCR, chatbot containment, complaints, and case volume."
+          tables={["contact_center_kpis", "contact_center_call_reasons"]}
+          datasetKey="contact-center"
+          adminAction="Upload the Contact Center workbook to refresh KPIs and call-reason mix."
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard title="Calls Received" metric={kpis?.callsReceived} isLoading={isKpisLoading} />
         <KpiCard title="Avg Speed of Answer" metric={kpis?.avgWaitTime} isLoading={isKpisLoading} />
@@ -34,7 +47,16 @@ export default function ContactCenter() {
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
-              <CardTitle>Hourly Contact Volume</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Hourly Contact Volume
+                <HelpHint
+                  title="Hourly Contact Volume"
+                  description="Voice + chat call density across the day. Used to right-size shift schedules and trigger AI deflection campaigns."
+                  tables={["contact_center_hourly_volume"]}
+                  datasetKey="contact-center"
+                  adminAction="Re-upload the Contact Center workbook to refresh hourly volume bands."
+                />
+              </CardTitle>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
                 {periodOption.shortLabel}
               </span>
@@ -72,7 +94,16 @@ export default function ContactCenter() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Call Reasons</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Top Call Reasons
+              <HelpHint
+                title="Top Call Reasons"
+                description="Drivers behind voice contacts. Used to prioritise self-service journeys, knowledge-base updates, and chatbot intents."
+                tables={["contact_center_call_reasons"]}
+                datasetKey="contact-center"
+                adminAction="Refresh by uploading the Contact Center workbook with the latest call-reason rollups."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             {isReasonsLoading ? (

@@ -15,6 +15,16 @@ import {
 const router: IRouter = Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
 
+function requireAuth(req: Request, res: Response, next: NextFunction): void {
+  const user = getSessionUser(req.headers.authorization);
+  if (!user) {
+    res.status(401).json({ error: "Unauthorized", message: "No valid session" });
+    return;
+  }
+  (req as Request & { sessionUser: typeof user }).sessionUser = user;
+  next();
+}
+
 function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   const user = getSessionUser(req.headers.authorization);
   if (!user) {
@@ -29,9 +39,9 @@ function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   next();
 }
 
-router.use("/admin/datasets", requireAdmin);
-
-router.get("/admin/datasets", (_req, res) => {
+// Read-only metadata endpoints — available to any authenticated user so the
+// "Last refreshed" widget can render for exec / ibm roles too.
+router.get("/admin/datasets", requireAuth, (_req, res) => {
   const meta = getAllDatasetMeta();
   const merged = DATASET_REGISTRY.map((def) => {
     const m = meta.find((x) => x.key === def.key)!;
@@ -40,7 +50,7 @@ router.get("/admin/datasets", (_req, res) => {
   res.json({ datasets: merged });
 });
 
-router.get("/admin/datasets/:key/metadata", (req, res) => {
+router.get("/admin/datasets/:key/metadata", requireAuth, (req, res) => {
   const def = DATASET_REGISTRY.find((d) => d.key === req.params.key);
   if (!def) {
     res.status(404).json({ error: "Unknown dataset" });
@@ -49,7 +59,8 @@ router.get("/admin/datasets/:key/metadata", (req, res) => {
   res.json({ ...def, ...getDatasetMeta(req.params.key) });
 });
 
-router.post("/admin/datasets/:key/upload", upload.single("file"), async (req, res) => {
+// Write & template endpoints stay admin-only.
+router.post("/admin/datasets/:key/upload", requireAdmin, upload.single("file"), async (req, res) => {
   try {
     const def = DATASET_REGISTRY.find((d) => d.key === req.params.key);
     if (!def) {

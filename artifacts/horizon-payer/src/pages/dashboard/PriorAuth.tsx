@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 const COLORS = ['#24a148', '#da1e28', '#f1c21b', '#0f62fe'];
 
@@ -28,9 +30,20 @@ export default function PriorAuth() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Prior Authorization</h1>
           <p className="text-muted-foreground mt-1">Utilization management and authorization workflows</p>
+          <LastRefresh datasetKey="prior-auth" variant="compact" className="mt-2" />
         </div>
       </div>
 
+      <div className="flex items-center gap-2 -mb-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Authorization KPIs</h2>
+        <HelpHint
+          title="Prior Authorization KPIs"
+          description="Request volume, urgent flag share, average review hours, and backlog size — drives SLA risk reporting."
+          tables={["prior_auth_kpis", "prior_auth_requests"]}
+          datasetKey="prior-auth"
+          adminAction="Upload the Prior Auth workbook to refresh KPIs, aging, and reviewer workload."
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard title="Requests Received" metric={kpis?.requestsReceived} isLoading={isKpisLoading} />
         <KpiCard title="Avg Review Hours" metric={kpis?.avgReviewHours} isLoading={isKpisLoading} />
@@ -42,7 +55,16 @@ export default function PriorAuth() {
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between gap-2">
-              <CardTitle>Authorization Status</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                Authorization Status
+                <HelpHint
+                  title="Authorization Status Mix"
+                  description="Pie of approved / denied / pended decisions for the period. Used to monitor approval-rate trends."
+                  tables={["prior_auth_kpis"]}
+                  datasetKey="prior-auth"
+                  adminAction="Refresh by uploading the Prior Auth workbook with current KPI rollups."
+                />
+              </CardTitle>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
                 {periodOption.shortLabel}
               </span>
@@ -78,7 +100,16 @@ export default function PriorAuth() {
 
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Top Procedure Categories</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Top Procedure Categories
+              <HelpHint
+                title="Top Procedure Categories"
+                description="Procedure categories ranked by request count, with approval rate and average decision days."
+                tables={["prior_auth_top_procedures"]}
+                datasetKey="prior-auth"
+                adminAction="Re-upload the Prior Auth workbook with updated procedure category rollups."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
@@ -125,7 +156,16 @@ export default function PriorAuth() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Reviewer Workload</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Reviewer Workload
+              <HelpHint
+                title="Reviewer Workload"
+                description="Per-reviewer open vs completed cases with capacity status. Used to rebalance assignments and flag burnout risk."
+                tables={["prior_auth_reviewer_workload"]}
+                datasetKey="prior-auth"
+                adminAction="Refresh by uploading the Prior Auth workbook with current reviewer rosters."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent>
              <div className="rounded-md border">
@@ -173,7 +213,16 @@ export default function PriorAuth() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Backlog Aging</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              Backlog Aging
+              <HelpHint
+                title="Backlog Aging"
+                description="Open authorisation requests bucketed by age, colour-coded for SLA breach risk."
+                tables={["prior_auth_aging"]}
+                datasetKey="prior-auth"
+                adminAction="Re-upload the Prior Auth workbook to refresh aging buckets."
+              />
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             {isAgingLoading ? (

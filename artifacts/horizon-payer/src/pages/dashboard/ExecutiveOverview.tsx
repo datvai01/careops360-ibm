@@ -5,6 +5,8 @@ import { UsersIcon, FileTextIcon, StethoscopeIcon, BuildingIcon, PhoneCallIcon, 
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from "recharts";
 import { useTimeRange, PERIOD_OPTIONS, type Period } from "@/contexts/TimeRangeContext";
 import { cn } from "@/lib/utils";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 
 function PeriodPicker() {
   const { period, setPeriod } = useTimeRange();
@@ -51,11 +53,22 @@ export default function ExecutiveOverview() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Executive Overview</h1>
           <p className="text-muted-foreground mt-1">Real-time pulse across payer operations — powered by CareOps360</p>
+          <LastRefresh datasetKey="executive-overview" variant="compact" className="mt-2" />
         </div>
         <PeriodPicker />
       </div>
 
       {/* KPI Grid */}
+      <div className="flex items-center gap-2 -mb-2">
+        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Top-Line KPIs</h2>
+        <HelpHint
+          title="Executive KPIs"
+          description="Eight headline indicators rolled up across members, claims, prior auth, contact center, and IT operations. Refreshed every 30 seconds via the executive overview pipeline."
+          tables={["executive_overview_kpis", "claims", "members", "incidents"]}
+          datasetKey="executive-overview"
+          adminAction="Upload an updated Executive Overview workbook to recalculate all eight tiles in one shot."
+        />
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           title="Active Members"

@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { LastRefresh } from "@/components/admin/LastRefresh";
+import { HelpHint } from "@/components/admin/HelpHint";
 import {
   X,
   ChevronDown,
@@ -1477,6 +1479,16 @@ export default function DigitalRoadmap() {
           <p className="text-sm text-muted-foreground mt-0.5">
             3-year IBM &amp; Horizon BCBS strategic initiative portfolio — organized by type, domain, and delivery phase
           </p>
+          <div className="flex items-center gap-2 mt-2">
+            <LastRefresh datasetKey="transformation-roadmap" variant="compact" />
+            <HelpHint
+              title="Transformation Roadmap"
+              description="Initiative portfolio across all transformation streams — type, domain, phase, status, and risk. Drives all roadmap views and the alerts feed."
+              tables={["roadmap_initiatives", "roadmap_summary", "roadmap_alerts"]}
+              datasetKey="transformation-roadmap"
+              adminAction="Upload the Transformation Roadmap workbook to refresh the entire portfolio in one shot."
+            />
+          </div>
         </div>
         <div className="flex items-center gap-3 flex-shrink-0">
           {summary && (
