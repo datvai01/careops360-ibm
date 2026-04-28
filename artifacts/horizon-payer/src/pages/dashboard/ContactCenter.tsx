@@ -22,7 +22,7 @@ export default function ContactCenter() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 -mb-2">
+      <div className="flex items-center gap-2">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Contact Center KPIs</h2>
         <HelpHint
           title="Contact Center KPIs"

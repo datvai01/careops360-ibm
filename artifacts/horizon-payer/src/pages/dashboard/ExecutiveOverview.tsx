@@ -59,7 +59,7 @@ export default function ExecutiveOverview() {
       </div>
 
       {/* KPI Grid */}
-      <div className="flex items-center gap-2 -mb-2">
+      <div className="flex items-center gap-2">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Top-Line KPIs</h2>
         <HelpHint
           title="Executive KPIs"

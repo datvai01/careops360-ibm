@@ -27,7 +27,7 @@ export default function AppHealth() {
         </Badge>
       </div>
 
-      <div className="flex items-center gap-2 -mb-2">
+      <div className="flex items-center gap-2">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Reliability KPIs</h2>
         <HelpHint
           title="Application Reliability KPIs"
