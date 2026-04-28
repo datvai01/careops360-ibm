@@ -16,7 +16,7 @@ kind = "api"
   run = "PORT=8080 NODE_ENV=production node --enable-source-maps artifacts/api-server/dist/index.mjs"
 
   [services.production.build]
-  args = ["sh", "-c", "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/horizon-payer run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run seed"]
+  args = ["sh", "-c", "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/horizon-payer run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run seed && pnpm --filter @workspace/api-server run seed"]
 
   [services.production.build.env]
   NODE_ENV = "production"

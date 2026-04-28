@@ -1,4 +1,4 @@
-modules = ["nodejs-24", "postgresql-16", "python-3.11"]
+modules = ["nodejs-24", "python-3.11", "postgresql-16"]
 
   [deployment]
   run = ["sh", "-c", "PORT=8080 NODE_ENV=production node --enable-source-maps artifacts/api-server/dist/index.mjs"]
