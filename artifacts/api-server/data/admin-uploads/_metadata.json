@@ -1,12 +1,12 @@
 {
   "claims": {
     "key": "claims",
-    "uploadedAt": "2026-04-28T15:16:52.868Z",
+    "uploadedAt": "2026-04-28T15:41:27.805Z",
     "uploadedBy": "admin@horizon.com",
-    "sourceFilename": "test-claims.csv",
-    "sizeBytes": 17,
-    "version": 1,
-    "storedFilename": "claims__v1777389412868.csv"
+    "sourceFilename": "claims.xlsx",
+    "sizeBytes": 47938,
+    "version": 3,
+    "storedFilename": "claims__v1777390887804.xlsx"
   },
   "members": {
     "key": "members",
@@ -16,5 +16,14 @@
     "sizeBytes": 17,
     "version": 1,
     "storedFilename": "members__v1777389613475.csv"
+  },
+  "providers": {
+    "key": "providers",
+    "uploadedAt": "2026-04-28T15:36:32.463Z",
+    "uploadedBy": "admin@horizon.com",
+    "sourceFilename": "prov.xlsx",
+    "sizeBytes": 26843,
+    "version": 1,
+    "storedFilename": "providers__v1777390592462.xlsx"
   }
 }

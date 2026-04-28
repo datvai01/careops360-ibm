@@ -1,5 +1,14 @@
 import fs from "fs";
 import path from "path";
+import {
+  buildDatasetTemplate,
+  buildDatasetTemplateWithLiveData,
+  importDatasetWorkbook,
+  snapshotCurrentDataAsRows,
+  DatasetImportError,
+  type ImportResult,
+} from "./datasetEngine";
+import { DATASET_SCHEMAS } from "./datasetSchemas";
 
 export interface DatasetDefinition {
   key: string;
@@ -35,8 +44,8 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
   {
     key: "members",
     label: "Members & Enrollment",
-    page: "Members",
-    pageRoute: "/dashboard/members",
+    page: "Members & Enrollment Ops",
+    pageRoute: "/dashboard/enrollment-intelligence",
     description:
       "Member roster, enrollment status, plan tier, and demographics. Refreshes the Members page tiles, segmentation, and enrollment intelligence.",
     acceptedFormats: ".xlsx, .csv",
@@ -75,8 +84,8 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
   {
     key: "contact-center",
     label: "Contact Center",
-    page: "Contact Center",
-    pageRoute: "/dashboard/contact-center",
+    page: "Member Services / Contact Center",
+    pageRoute: "/dashboard/member-services",
     description:
       "Call volume, ASA, AHT, FCR, IVR deflection, agent productivity. Refreshes the Contact Center KPI dashboard and agent rollups.",
     acceptedFormats: ".xlsx, .csv",
@@ -126,7 +135,7 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
     key: "executive-overview",
     label: "Executive Overview KPIs",
     page: "Executive Overview",
-    pageRoute: "/dashboard/executive-overview",
+    pageRoute: "/dashboard",
     description:
       "Top-line KPIs, daily trends, executive alerts. Refreshes the Executive Overview hero metrics and alert bar.",
     acceptedFormats: ".xlsx, .csv",
@@ -231,4 +240,44 @@ export function getDatasetFilePath(key: string): { fullPath: string; meta: Datas
   const fullPath = path.join(ADMIN_DIR, meta.storedFilename);
   if (!fs.existsSync(fullPath)) return null;
   return { fullPath, meta };
+}
+
+export function hasImporter(key: string): boolean {
+  return key in DATASET_SCHEMAS;
+}
+
+export async function buildTemplateForKey(key: string): Promise<Buffer | null> {
+  const schema = DATASET_SCHEMAS[key];
+  if (!schema) return null;
+  try {
+    const liveRows = await snapshotCurrentDataAsRows(schema);
+    return buildDatasetTemplateWithLiveData(schema, liveRows);
+  } catch {
+    return buildDatasetTemplate(schema);
+  }
+}
+
+export async function runImporterForKey(
+  key: string,
+  buffer: Buffer,
+): Promise<
+  | { ok: true; results: ImportResult[]; totalRows: number; warnings: string[] }
+  | { ok: false; error: string; validationErrors?: string[]; warnings?: string[] }
+> {
+  const schema = DATASET_SCHEMAS[key];
+  if (!schema) return { ok: false, error: `No importer registered for "${key}"` };
+  try {
+    const out = await importDatasetWorkbook(schema, buffer);
+    return { ok: true, ...out };
+  } catch (err) {
+    if (err instanceof DatasetImportError) {
+      return {
+        ok: false,
+        error: err.message,
+        validationErrors: err.errors,
+        warnings: err.warnings,
+      };
+    }
+    return { ok: false, error: err instanceof Error ? err.message : "Import failed" };
+  }
 }

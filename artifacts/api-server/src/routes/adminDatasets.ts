@@ -8,6 +8,9 @@ import {
   getDatasetMeta,
   saveDatasetUpload,
   getDatasetFilePath,
+  hasImporter,
+  buildTemplateForKey,
+  runImporterForKey,
 } from "../lib/adminDatasets";
 
 const router: IRouter = Router();
@@ -33,7 +36,7 @@ router.get("/admin/datasets", (_req, res) => {
   const meta = getAllDatasetMeta();
   const merged = DATASET_REGISTRY.map((def) => {
     const m = meta.find((x) => x.key === def.key)!;
-    return { ...def, ...m };
+    return { ...def, ...m, hasImporter: hasImporter(def.key), hasTemplate: hasImporter(def.key) };
   });
   res.json({ datasets: merged });
 });
@@ -47,7 +50,7 @@ router.get("/admin/datasets/:key/metadata", (req, res) => {
   res.json({ ...def, ...getDatasetMeta(req.params.key) });
 });
 
-router.post("/admin/datasets/:key/upload", upload.single("file"), (req, res) => {
+router.post("/admin/datasets/:key/upload", upload.single("file"), async (req, res) => {
   try {
     const def = DATASET_REGISTRY.find((d) => d.key === req.params.key);
     if (!def) {
@@ -60,12 +63,57 @@ router.post("/admin/datasets/:key/upload", upload.single("file"), (req, res) => 
     }
     const sessionUser = (req as Request & { sessionUser: { email: string } }).sessionUser;
     const uploader = sessionUser?.email || "unknown";
+
+    let importResults: { results?: unknown; totalRows?: number; warnings?: string[] } = {};
+    if (hasImporter(req.params.key)) {
+      const out = await runImporterForKey(req.params.key, req.file.buffer);
+      if (!out.ok) {
+        logger.warn(
+          { key: req.params.key, uploader, errors: out.validationErrors?.length, warnings: out.warnings?.length },
+          "admin dataset import rejected",
+        );
+        res.status(400).json({
+          error: out.error || "Import failed",
+          validationErrors: out.validationErrors || [],
+          warnings: out.warnings || [],
+        });
+        return;
+      }
+      importResults = { results: out.results, totalRows: out.totalRows, warnings: out.warnings };
+    }
+
     const meta = saveDatasetUpload(req.params.key, req.file.buffer, req.file.originalname, uploader);
-    logger.info({ key: req.params.key, uploader, file: req.file.originalname, version: meta.version }, "admin dataset uploaded");
-    res.json({ success: true, meta: { ...def, ...meta } });
+    logger.info(
+      { key: req.params.key, uploader, file: req.file.originalname, version: meta.version, totalRows: importResults.totalRows },
+      "admin dataset uploaded",
+    );
+    res.json({ success: true, meta: { ...def, ...meta }, ...importResults });
   } catch (err) {
     logger.error({ err }, "admin dataset upload failed");
     res.status(500).json({ error: err instanceof Error ? err.message : "Upload failed" });
+  }
+});
+
+router.get("/admin/datasets/:key/template", async (req, res) => {
+  try {
+    const def = DATASET_REGISTRY.find((d) => d.key === req.params.key);
+    if (!def) {
+      res.status(404).json({ error: "Unknown dataset" });
+      return;
+    }
+    const buf = await buildTemplateForKey(req.params.key);
+    if (!buf) {
+      res.status(404).json({ error: "No template available for this dataset yet" });
+      return;
+    }
+    const fname = `${def.label.replace(/[^a-zA-Z0-9]+/g, "_")}_Template.xlsx`;
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${fname}"`);
+    res.setHeader("Cache-Control", "no-store");
+    res.send(buf);
+  } catch (err) {
+    logger.error({ err }, "admin dataset template generation failed");
+    res.status(500).json({ error: err instanceof Error ? err.message : "Template generation failed" });
   }
 });
 
