@@ -1190,7 +1190,8 @@ function DomainGroup({
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Year</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-12">Q</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Complexity</th>
-                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3">Business Impact</th>
+                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Size</th>
+                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3">Business Impact / ROI</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Depends On</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-24">Status</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Priority</th>
@@ -1231,7 +1232,16 @@ function DomainGroup({
                   <td className="py-2 px-3 whitespace-nowrap">
                     {init.complexity ? <SmallBadge label={init.complexity} className={COMPLEXITY_STYLE[init.complexity] ?? ""} /> : "—"}
                   </td>
-                  <td className="py-2 px-3 text-muted-foreground max-w-[200px] truncate" title={init.businessImpact}>{init.businessImpact || "—"}</td>
+                  <td className="py-2 px-3 whitespace-nowrap">
+                    {init.tShirtSize
+                      ? <SmallBadge label={init.tShirtSize} className="text-violet-700 bg-violet-50 border-violet-200 dark:text-violet-300 dark:bg-violet-950 dark:border-violet-800" />
+                      : <span className="text-muted-foreground">—</span>}
+                  </td>
+                  <td className="py-2 px-3 text-muted-foreground max-w-[220px]" title={[init.businessImpact, init.roiPlan].filter(Boolean).join(" — ")}>
+                    {init.businessImpact && <p className="truncate">{init.businessImpact}</p>}
+                    {init.roiPlan && <p className="truncate text-emerald-700 dark:text-emerald-400 text-[11px] mt-0.5">ROI: {init.roiPlan}</p>}
+                    {!init.businessImpact && !init.roiPlan && "—"}
+                  </td>
                   <td className="py-2 px-3 font-mono text-muted-foreground whitespace-nowrap text-[11px]">{init.dependency || "—"}</td>
                   <td className="py-2 px-3 whitespace-nowrap">
                     <SmallBadge label={init.status} className={STATUS_STYLE[init.status] ?? ""} />

@@ -844,6 +844,35 @@ async function seed() {
   ]);
   console.log("  roadmap_initiatives seeded");
 
+  // Backfill T-shirt size, sizing rationale, and "How Horizon will get the ROI"
+  // for the 16 Transformation initiatives. These remain editable via the UI;
+  // re-seeding restores the curated baseline.
+  const transformationBackfill: { jiraId: string; tShirtSize: string; tShirtRationale: string; roiPlan: string }[] = [
+    { jiraId: "HLGN-1045", tShirtSize: "XL", tShirtRationale: "Mainframe-to-cloud re-platform spanning multiple teams (mainframe, integration, QA, vendor), parallel run, full data migration, and regression of every business flow.", roiPlan: "Eliminating mainframe MIPS and licensing saves ~$1.2M/yr; multi-user concurrency unblocks 6 downstream finance workflows; payback in ~18 months from MIPS reduction + faster issuance cycle." },
+    { jiraId: "HLGN-1046", tShirtSize: "L",  tShirtRationale: "Greenfield React/Node app, 13 dashboards, 40+ APIs, role-based access, dataset upload framework — single team, no legacy migration, but broad surface area.", roiPlan: "Executive reporting cycle drops from 3 days to real-time, freeing ~$400K/yr in analyst effort; 90% faster MBR prep; immediate value on go-live, payback inside year 1." },
+    { jiraId: "HLGN-1047", tShirtSize: "L",  tShirtRationale: "Reusable BAW platform, 3 in-scope workflows, low-code authoring, but requires HITL design and integration with claims, PA, and credentialing source systems.", roiPlan: "80% reduction in manual workflow handling = ~$2.1M/yr in operations savings; platform scales to 20+ process domains at marginal cost; ~14-month payback." },
+    { jiraId: "HLGN-1048", tShirtSize: "M",  tShirtRationale: "Replacing batch JCL with Python + Kafka pipeline; well-bounded data contract, clear happy-path + exception lane, single squad delivery.", roiPlan: "Straight-through processing on 95% of eligibility cuts cycle from 4 hrs to 20 min; ~$650K/yr ops savings plus member NPS lift from faster onboarding." },
+    { jiraId: "HLGN-1049", tShirtSize: "M",  tShirtRationale: "Java/Spring rewrite of reconciliation logic on top of reused ODM rules engine; auditable; clear acceptance criteria via reconciliation deltas.", roiPlan: "Same-day capitation remittance vs 5 days lifts provider satisfaction; ~$850K/yr ops + dispute reduction; risk reduction on capitation accuracy." },
+    { jiraId: "HLGN-1050", tShirtSize: "L",  tShirtRationale: "Migrating 300+ reports to a Cognos self-service portal; data-dictionary cleanup, user training, and phased migration waves drive the size.", roiPlan: "80% reduction in IT report tickets ≈ $1.4M/yr; ad-hoc reporting unlocks finance & ops decision speed; payback in ~14 months." },
+    { jiraId: "HLGN-1051", tShirtSize: "XL", tShirtRationale: "Mainframe batch → cloud microservices, multi-channel print/email/portal, vendor SLA renegotiation, and regulatory letter inventory across hundreds of templates.", roiPlan: "40% letter cost reduction = ~$2.6M/yr; multi-channel boosts member digital adoption; mainframe MIPS reduction; payback in ~16 months." },
+    { jiraId: "HLGN-1052", tShirtSize: "M",  tShirtRationale: "BPM workflow + provider-portal screens; depends on provider IDP; well-scoped to a single audit process.", roiPlan: "Audit cycle 30→10 days; 60% manual effort reduction = ~$480K/yr; provider satisfaction up; reduced AMS team load." },
+    { jiraId: "HLGN-1053", tShirtSize: "XL", tShirtRationale: "API-first re-platform of every trading-partner integration; 60+ interfaces; event-streaming infra (Kafka/Event Streams); breaks point-to-point dependencies.", roiPlan: "50% integration maintenance cost reduction (~$3.1M/yr); real-time partner data unlocks new SLA tiers; foundational platform for AI/ML reuse." },
+    { jiraId: "HLGN-1054", tShirtSize: "L",  tShirtRationale: "Containerize Decision Center on OpenShift, federate auth, redesign business-user UX, run parallel against on-prem until cutover.", roiPlan: "Zero IT rule-change tickets recovers ~$600K/yr capacity; rule changes in hours not weeks; cloud scale at sub-second latency for downstream apps." },
+    { jiraId: "HLGN-1055", tShirtSize: "L",  tShirtRationale: "BPM + DocGen for ERISA/ACA SBC; regulatory matrix mapping and legal sign-off cycle drive most of the timeline.", roiPlan: "100% compliance + zero manual SBC = audit-ready; avoids regulatory fines (potential >$4M exposure); ~$300K/yr ops savings from automation." },
+    { jiraId: "HLGN-1056", tShirtSize: "XL", tShirtRationale: "Quadient Inspire migration to cloud; omni-channel rendering, brand template re-author, vendor SLA renegotiation, and phased cutover across all letter streams.", roiPlan: "50% document cost reduction (~$3.4M/yr); omni-channel raises member NPS; brand consistency across all touchpoints; payback in ~18 months." },
+    { jiraId: "HLGN-1057", tShirtSize: "XL", tShirtRationale: "Migrate Cognos + Tableau → Power BI; 1,200 users, 800+ reports, embed in operational portals; full vendor exit and semantic model rebuild.", roiPlan: "40% licensing reduction (~$1.8M/yr); single-platform skills; faster self-service decision cycles; ~2-yr payback including migration cost." },
+    { jiraId: "HLGN-1058", tShirtSize: "L",  tShirtRationale: "ODM rules engine + provider portal; data normalization across 15K contracts; pharmacy SME engagement keeps it in the L band.", roiPlan: "70% manual crosswalk reduction = ~$720K/yr; faster formulary alignment; pharmacy network satisfaction lift." },
+    { jiraId: "HLGN-1059", tShirtSize: "XL", tShirtRationale: "ML model training, clinical-criteria curation, FHIR integration, clinician change management, and CMS PA-rule compliance — broad and high-risk surface.", roiPlan: "85% auto-approval cuts cycle 3 days → 4 hrs; ~$4.2M/yr admin avoidance; CMS PA compliance; member satisfaction; very high strategic value." },
+    { jiraId: "HLGN-1060", tShirtSize: "XL", tShirtRationale: "GenAI/LLM platform, omni-channel orchestration, personalization engine, member data integration, plus governance and bias-monitoring controls.", roiPlan: "25% engagement uplift, 18% care-gap closure, 30% contact-center deflection (~$3.6M/yr); +12 NPS; competitive differentiation in member experience." },
+  ];
+  for (const row of transformationBackfill) {
+    await pool.query(
+      `UPDATE roadmap_initiatives SET tshirt_size=$1, tshirt_rationale=$2, roi_plan=$3 WHERE jira_id=$4`,
+      [row.tShirtSize, row.tShirtRationale, row.roiPlan, row.jiraId],
+    );
+  }
+  console.log(`  roadmap_initiatives transformation backfill applied (${transformationBackfill.length} rows)`);
+
   console.log("\nDatabase seeding complete.");
   process.exit(0);
 }
