@@ -310,6 +310,9 @@ async function ensureSchema() {
     `ALTER TABLE roadmap_initiatives ADD COLUMN IF NOT EXISTS complexity varchar(10) NOT NULL DEFAULT 'Med'`,
     `ALTER TABLE roadmap_initiatives ADD COLUMN IF NOT EXISTS business_impact text NOT NULL DEFAULT ''`,
     `ALTER TABLE roadmap_initiatives ADD COLUMN IF NOT EXISTS dependency text NOT NULL DEFAULT ''`,
+    `ALTER TABLE roadmap_initiatives ADD COLUMN IF NOT EXISTS tshirt_size varchar(4) NOT NULL DEFAULT ''`,
+    `ALTER TABLE roadmap_initiatives ADD COLUMN IF NOT EXISTS tshirt_rationale text NOT NULL DEFAULT ''`,
+    `ALTER TABLE roadmap_initiatives ADD COLUMN IF NOT EXISTS roi_plan text NOT NULL DEFAULT ''`,
   ];
   for (const sql of alterRoadmap) {
     await pool.query(sql);

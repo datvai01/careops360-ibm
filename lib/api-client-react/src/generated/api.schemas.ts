@@ -771,6 +771,9 @@ export interface RoadmapInitiative {
   complexity?: string;
   businessImpact?: string;
   dependency?: string;
+  tShirtSize?: string;
+  tShirtRationale?: string;
+  roiPlan?: string;
 }
 
 export type CreateRoadmapInitiativeRequestInitiativeType =
@@ -823,6 +826,9 @@ export interface CreateRoadmapInitiativeRequest {
   complexity?: string;
   businessImpact?: string;
   dependency?: string;
+  tShirtSize?: string;
+  tShirtRationale?: string;
+  roiPlan?: string;
 }
 
 export interface UpdateRoadmapInitiativeBody {
@@ -847,6 +853,9 @@ export interface UpdateRoadmapInitiativeBody {
   complexity?: string;
   businessImpact?: string;
   dependency?: string;
+  tShirtSize?: string;
+  tShirtRationale?: string;
+  roiPlan?: string;
 }
 
 export interface RoadmapSummary {

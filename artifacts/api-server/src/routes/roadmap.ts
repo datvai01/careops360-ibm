@@ -163,6 +163,9 @@ router.post("/roadmap/initiatives", async (req, res): Promise<void> => {
     complexity?: string;
     businessImpact?: string;
     dependency?: string;
+    tShirtSize?: string;
+    tShirtRationale?: string;
+    roiPlan?: string;
   };
 
   const required = ["portfolio", "product", "application", "initiativeType", "description",
@@ -202,6 +205,9 @@ router.post("/roadmap/initiatives", async (req, res): Promise<void> => {
       complexity: body.complexity ?? "Med",
       businessImpact: body.businessImpact ?? "",
       dependency: body.dependency ?? "",
+      tShirtSize: body.tShirtSize ?? "",
+      tShirtRationale: body.tShirtRationale ?? "",
+      roiPlan: body.roiPlan ?? "",
     })
     .returning();
 
@@ -234,6 +240,9 @@ router.put("/roadmap/initiatives/:id", async (req, res): Promise<void> => {
     complexity?: string;
     businessImpact?: string;
     dependency?: string;
+    tShirtSize?: string;
+    tShirtRationale?: string;
+    roiPlan?: string;
   };
 
   const updateFields: Partial<typeof roadmapInitiativesTable.$inferInsert> = {};
@@ -258,6 +267,9 @@ router.put("/roadmap/initiatives/:id", async (req, res): Promise<void> => {
   if (body.complexity !== undefined) updateFields.complexity = body.complexity;
   if (body.businessImpact !== undefined) updateFields.businessImpact = body.businessImpact;
   if (body.dependency !== undefined) updateFields.dependency = body.dependency;
+  if (body.tShirtSize !== undefined) updateFields.tShirtSize = body.tShirtSize;
+  if (body.tShirtRationale !== undefined) updateFields.tShirtRationale = body.tShirtRationale;
+  if (body.roiPlan !== undefined) updateFields.roiPlan = body.roiPlan;
 
   if (Object.keys(updateFields).length === 0) {
     res.status(400).json({ error: "No fields provided to update" });

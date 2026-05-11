@@ -65,6 +65,9 @@ const EXPORT_COLUMNS: { key: keyof RoadmapInitiative; label: string }[] = [
   { key: "expectedOutcome", label: "Expected Outcome" },
   { key: "businessImpact", label: "Business Impact" },
   { key: "dependency", label: "Dependencies" },
+  { key: "tShirtSize", label: "T-Shirt Size" },
+  { key: "tShirtRationale", label: "T-Shirt Rationale" },
+  { key: "roiPlan", label: "How Horizon Gets the ROI" },
   { key: "notes", label: "Notes" },
 ];
 
@@ -511,6 +514,7 @@ const EMPTY_FORM: Omit<CreateRoadmapInitiativeRequest, "initiativeType" | "statu
   serviceCategory: "", startDate: "", endDate: "", status: "Planned", priority: "Medium",
   notes: "", domain: "Enterprise Platforms", planYear: 1, planQuarter: "Q1",
   complexity: "Med", businessImpact: "", dependency: "",
+  tShirtSize: "", tShirtRationale: "", roiPlan: "",
 };
 
 function FieldRow({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
@@ -600,6 +604,9 @@ function InitiativeFormModal({
       complexity: editTarget.complexity ?? "Med",
       businessImpact: editTarget.businessImpact ?? "",
       dependency: editTarget.dependency ?? "",
+      tShirtSize: editTarget.tShirtSize ?? "",
+      tShirtRationale: editTarget.tShirtRationale ?? "",
+      roiPlan: editTarget.roiPlan ?? "",
     } : { ...EMPTY_FORM }
   );
 
@@ -775,6 +782,26 @@ function InitiativeFormModal({
             </FieldRow>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <FieldRow label="T-Shirt Size Estimate">
+              <FormSelect value={form.tShirtSize} onChange={set("tShirtSize")} options={[
+                { value: "", label: "— Not sized —" },
+                { value: "XS", label: "XS · ≤ 1 month" },
+                { value: "S", label: "S · 1–3 months" },
+                { value: "M", label: "M · 3–6 months" },
+                { value: "L", label: "L · 6–12 months" },
+                { value: "XL", label: "XL · 12+ months / multi-team" },
+              ]} />
+            </FieldRow>
+            <FieldRow label="T-Shirt Sizing Rationale">
+              <FormTextarea value={form.tShirtRationale} onChange={set("tShirtRationale")} placeholder="Why this size — scope, complexity, dependencies, team count…" rows={2} />
+            </FieldRow>
+          </div>
+
+          <FieldRow label="How Horizon Will Get the ROI">
+            <FormTextarea value={form.roiPlan} onChange={set("roiPlan")} placeholder="Quantified value, payback period, cost levers, and the path to realize the ROI…" rows={3} />
+          </FieldRow>
+
           <FieldRow label="Notes">
             <FormTextarea value={form.notes} onChange={set("notes")} placeholder="Additional context, risks, or decisions…" rows={2} />
           </FieldRow>
@@ -938,6 +965,27 @@ function DetailPanel({ initiative, onClose }: { initiative: RoadmapInitiative; o
               </div>
             ))}
           </div>
+          {(initiative.tShirtSize || initiative.tShirtRationale) && (
+            <div className="rounded-lg bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-xs font-semibold text-violet-700 dark:text-violet-400 uppercase tracking-wide">T-Shirt Size Estimate</p>
+                {initiative.tShirtSize && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border bg-violet-100 dark:bg-violet-900/50 text-violet-800 dark:text-violet-200 border-violet-300 dark:border-violet-700">
+                    {initiative.tShirtSize}
+                  </span>
+                )}
+              </div>
+              {initiative.tShirtRationale && (
+                <p className="text-sm text-violet-900 dark:text-violet-200 leading-relaxed">{initiative.tShirtRationale}</p>
+              )}
+            </div>
+          )}
+          {initiative.roiPlan && (
+            <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-3">
+              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-1">How Horizon Will Get the ROI</p>
+              <p className="text-sm text-emerald-900 dark:text-emerald-200 leading-relaxed">{initiative.roiPlan}</p>
+            </div>
+          )}
           {initiative.notes && (
             <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
               <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-1">Notes</p>

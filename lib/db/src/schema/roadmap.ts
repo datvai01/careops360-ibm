@@ -24,4 +24,7 @@ export const roadmapInitiativesTable = pgTable("roadmap_initiatives", {
   complexity: varchar("complexity", { length: 10 }).notNull().default("Med"),
   businessImpact: text("business_impact").notNull().default(""),
   dependency: text("dependency").notNull().default(""),
+  tShirtSize: varchar("tshirt_size", { length: 4 }).notNull().default(""),
+  tShirtRationale: text("tshirt_rationale").notNull().default(""),
+  roiPlan: text("roi_plan").notNull().default(""),
 });
