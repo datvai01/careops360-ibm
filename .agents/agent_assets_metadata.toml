@@ -42,3 +42,9 @@ id = "rBqYQwSNfNRqURmMSIjiz"
 uri = "file://out/CareOps360_AWS_Architecture_Review.docx"
 type = "word_document"
 title = "CareOps360 — AWS Architecture Review (ARB Submission)"
+
+[[outputs]]
+id = "AgZRqHqvXvVDpdafuyUCr"
+uri = "file://out/CareOps360_Feature_Specifications.xlsx"
+type = "table"
+title = "CareOps360 — Functional Specifications (Excel)"
