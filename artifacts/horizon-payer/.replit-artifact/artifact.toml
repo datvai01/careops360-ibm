@@ -20,3 +20,19 @@ run = "pnpm --filter @workspace/horizon-payer run dev"
 [services.env]
 PORT = "24856"
 BASE_PATH = "/"
+
+[services.production]
+serve = "static"
+publicDir = "artifacts/horizon-payer/dist/public"
+
+[services.production.build]
+args = ["pnpm", "--filter", "@workspace/horizon-payer", "run", "build"]
+
+[services.production.build.env]
+NODE_ENV = "production"
+BASE_PATH = "/"
+PORT = "3000"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
