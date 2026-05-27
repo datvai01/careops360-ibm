@@ -18,6 +18,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { cn } from "@/lib/utils";
 import { LastRefresh } from "@/components/admin/LastRefresh";
 import { HelpHint } from "@/components/admin/HelpHint";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import {
   X,
   ChevronDown,
@@ -512,13 +513,59 @@ type TPDecisionPoint = { label: string; pct: number };
 const MILESTONE_NOTE_RE = /^[ \t]*Milestone:\s*(.+?)\s*@\s*(\d{4}-\d{2}-\d{2})\s*$/gim;
 const JIRA_REF_RE = /\b[A-Z][A-Z0-9]+-\d+\b/g;
 
-function dateToPct(d: string): number {
-  const t = new Date(d).getTime();
-  if (Number.isNaN(t)) return -1;
-  return ((t - TL_START) / TL_MS) * 100;
+// Status → bar fill hex (matches STATUS_STYLE semantics: blue/emerald/red/slate)
+const STATUS_HEX: Record<string, string> = {
+  Active: "#3b82f6",
+  Completed: "#10b981",
+  "At Risk": "#ef4444",
+  Planned: "#94a3b8",
+};
+
+function statusBarHex(status: string): string {
+  return STATUS_HEX[status] ?? "#64748b";
 }
 
-function deriveTransitionPlan(init: RoadmapInitiative): {
+// Build a planning horizon that respects the year filter.
+function buildHorizon(yearFilter: 0 | 1 | 2 | 3) {
+  const startYear = yearFilter === 0 ? 2026 : 2025 + yearFilter;
+  const endYear = yearFilter === 0 ? 2029 : 2026 + yearFilter; // exclusive
+  const start = new Date(`${startYear}-01-01`).getTime();
+  const end = new Date(`${endYear}-01-01`).getTime();
+  const ms = end - start;
+  const years = endYear - startYear;
+  const quarters: { label: string; pct: number; yearStart: boolean }[] = [];
+  for (let i = 0; i < years * 4; i++) {
+    const yr = startYear + Math.floor(i / 4);
+    const mo = (i % 4) * 3;
+    const t = new Date(yr, mo, 1).getTime();
+    quarters.push({
+      label: `Q${(i % 4) + 1}`,
+      pct: ((t - start) / ms) * 100,
+      yearStart: i % 4 === 0,
+    });
+  }
+  const todayPct = Math.min(100, Math.max(0, ((Date.now() - start) / ms) * 100));
+  return { start, end, ms, startYear, years, quarters, todayPct };
+}
+
+type Horizon = ReturnType<typeof buildHorizon>;
+
+function barStyleFor(startDate: string, endDate: string, h: Horizon): { left: string; width: string; visible: boolean } {
+  const s = Math.max(new Date(startDate).getTime(), h.start);
+  const e = Math.min(new Date(endDate + "T23:59:59").getTime(), h.end);
+  if (s >= h.end || e <= h.start) return { left: "0%", width: "0%", visible: false };
+  const left = ((s - h.start) / h.ms) * 100;
+  const width = Math.max(((e - s) / h.ms) * 100, 0.8);
+  return { left: `${left.toFixed(2)}%`, width: `${width.toFixed(2)}%`, visible: true };
+}
+
+function dateToPctIn(d: string, h: Horizon): number {
+  const t = new Date(d).getTime();
+  if (Number.isNaN(t)) return -1;
+  return ((t - h.start) / h.ms) * 100;
+}
+
+function deriveTransitionPlan(init: RoadmapInitiative, h: Horizon): {
   owner: string;
   milestones: TPMilestone[];
   decisionPoints: TPDecisionPoint[];
@@ -529,24 +576,24 @@ function deriveTransitionPlan(init: RoadmapInitiative): {
   const end = new Date(init.endDate + "T23:59:59").getTime();
 
   const milestones: TPMilestone[] = [];
-  const kickoffPct = dateToPct(init.startDate);
-  if (kickoffPct >= 0) milestones.push({ label: "Kickoff", date: init.startDate, pct: kickoffPct, kind: "kickoff" });
+  const kickoffPct = dateToPctIn(init.startDate, h);
+  if (kickoffPct >= 0 && kickoffPct <= 100) milestones.push({ label: "Kickoff", date: init.startDate, pct: kickoffPct, kind: "kickoff" });
   if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
     const mid = new Date(start + (end - start) / 2);
     if (!Number.isNaN(mid.getTime())) {
       const midISO = mid.toISOString().slice(0, 10);
-      const midPct = dateToPct(midISO);
-      if (midPct >= 0) milestones.push({ label: "Mid-Point", date: midISO, pct: midPct, kind: "mid" });
+      const midPct = dateToPctIn(midISO, h);
+      if (midPct >= 0 && midPct <= 100) milestones.push({ label: "Mid-Point", date: midISO, pct: midPct, kind: "mid" });
     }
   }
-  const golivePct = dateToPct(init.endDate);
-  if (golivePct >= 0) milestones.push({ label: "Go-Live", date: init.endDate, pct: golivePct, kind: "golive" });
+  const golivePct = dateToPctIn(init.endDate, h);
+  if (golivePct >= 0 && golivePct <= 100) milestones.push({ label: "Go-Live", date: init.endDate, pct: golivePct, kind: "golive" });
 
   if (init.notes) {
     MILESTONE_NOTE_RE.lastIndex = 0;
     let m: RegExpExecArray | null;
     while ((m = MILESTONE_NOTE_RE.exec(init.notes)) !== null) {
-      const pct = dateToPct(m[2]);
+      const pct = dateToPctIn(m[2], h);
       if (pct >= 0 && pct <= 100) {
         milestones.push({ label: m[1].trim(), date: m[2], pct, kind: "custom" });
       }
@@ -555,11 +602,13 @@ function deriveTransitionPlan(init: RoadmapInitiative): {
 
   const decisionPoints: TPDecisionPoint[] = [];
   const statusLc = (init.status ?? "").toLowerCase();
+  const kpc = dateToPctIn(init.startDate, h);
+  const kpClamped = Math.max(0, Math.min(100, kpc));
   if (statusLc.includes("decision") || statusLc.includes("approval")) {
-    decisionPoints.push({ label: init.status, pct: dateToPct(init.startDate) });
+    decisionPoints.push({ label: init.status, pct: kpClamped });
   }
-  if ((init.priority as string) === "Critical" || (init.priority as string) === "High") {
-    decisionPoints.push({ label: "Critical priority — exec sign-off", pct: dateToPct(init.startDate) });
+  if ((init.priority as string) === "Critical") {
+    decisionPoints.push({ label: "Critical priority — exec sign-off", pct: kpClamped });
   }
 
   return { owner, milestones, decisionPoints };
@@ -614,96 +663,121 @@ function resolveDependencyEdges(
 // ─── Transition Plan View ─────────────────────────────────────────────────────
 
 const TP_ROW_H = 40;
-const TP_HEADER_H = 28;
-const TP_LABEL_W = 224; // w-56
+const TP_DOMAIN_H = 30;
+const TP_PORTFOLIO_H = 24;
+const TP_LABEL_W = 248;
+
+type TPGroup = {
+  domain: string;
+  portfolios: { portfolio: string; items: RoadmapInitiative[] }[];
+};
 
 function TransitionPlanView({
   initiatives,
+  yearFilter,
   onSelect,
+  onEdit,
 }: {
   initiatives: RoadmapInitiative[];
+  yearFilter: 0 | 1 | 2 | 3;
   onSelect: (i: RoadmapInitiative) => void;
+  onEdit: (i: RoadmapInitiative) => void;
 }) {
+  const horizon = useMemo(() => buildHorizon(yearFilter), [yearFilter]);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, RoadmapInitiative[]>();
+  // Domain (collapsible) → Portfolio (sub-grouping) → Initiatives
+  const grouped: TPGroup[] = useMemo(() => {
+    const domainOrder = [...DOMAINS, "Enterprise Platforms", "Unassigned"];
+    const byDomain = new Map<string, RoadmapInitiative[]>();
     for (const i of initiatives) {
-      const key = i.portfolio || "Unassigned";
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(i);
+      const d = (i.domain && (DOMAINS as readonly string[]).includes(i.domain)) ? i.domain : "Enterprise Platforms";
+      if (!byDomain.has(d)) byDomain.set(d, []);
+      byDomain.get(d)!.push(i);
     }
-    return Array.from(map.entries())
-      .map(([portfolio, items]) => ({
-        portfolio,
-        items: items.slice().sort((a, b) => a.startDate.localeCompare(b.startDate)),
-      }))
-      .sort((a, b) => a.portfolio.localeCompare(b.portfolio));
+    const out: TPGroup[] = [];
+    for (const dom of domainOrder) {
+      const items = byDomain.get(dom);
+      if (!items || items.length === 0) continue;
+      const byPort = new Map<string, RoadmapInitiative[]>();
+      for (const it of items) {
+        const p = it.portfolio || "Unassigned";
+        if (!byPort.has(p)) byPort.set(p, []);
+        byPort.get(p)!.push(it);
+      }
+      const portfolios = Array.from(byPort.entries())
+        .map(([portfolio, list]) => ({
+          portfolio,
+          items: list.slice().sort((a, b) => a.startDate.localeCompare(b.startDate)),
+        }))
+        .sort((a, b) => a.portfolio.localeCompare(b.portfolio));
+      out.push({ domain: dom, portfolios });
+    }
+    return out;
   }, [initiatives]);
 
-  // Compute vertical layout: y position (within the bar area) for each initiative,
-  // and y for each collapsed portfolio header.
+  // Vertical layout: domain header → (per portfolio: portfolio header + rows)
   const layout = useMemo(() => {
     const initY = new Map<number, number>();
-    const portfolioY = new Map<string, number>();
+    const domainY = new Map<string, number>();
     let y = 0;
-    for (const { portfolio, items } of grouped) {
-      portfolioY.set(portfolio, y + TP_HEADER_H / 2);
-      y += TP_HEADER_H;
-      if (!collapsed.has(portfolio)) {
-        for (const it of items) {
+    for (const g of grouped) {
+      domainY.set(g.domain, y + TP_DOMAIN_H / 2);
+      y += TP_DOMAIN_H;
+      if (collapsed.has(g.domain)) continue;
+      for (const p of g.portfolios) {
+        y += TP_PORTFOLIO_H;
+        for (const it of p.items) {
           initY.set(it.id, y + TP_ROW_H / 2);
           y += TP_ROW_H;
         }
       }
     }
-    return { initY, portfolioY, totalH: y };
+    return { initY, domainY, totalH: Math.max(y, 60) };
   }, [grouped, collapsed]);
 
   const edges = useMemo(() => resolveDependencyEdges(initiatives), [initiatives]);
 
   const derived = useMemo(() => {
     const m = new Map<number, ReturnType<typeof deriveTransitionPlan>>();
-    for (const i of initiatives) m.set(i.id, deriveTransitionPlan(i));
+    for (const i of initiatives) m.set(i.id, deriveTransitionPlan(i, horizon));
     return m;
-  }, [initiatives]);
+  }, [initiatives, horizon]);
 
   if (initiatives.length === 0) {
     return <Card className="p-8 text-center"><p className="text-sm text-muted-foreground">No initiatives match the current filters.</p></Card>;
   }
 
-  // Resolve arrow endpoints for the SVG overlay
   type Arrow = { x1: number; y1: number; x2: number; y2: number; kind: "hard" | "soft" };
   const arrows: Arrow[] = [];
   for (const e of edges) {
     const src = initiatives.find(i => i.id === e.fromId);
     const tgt = initiatives.find(i => i.id === e.toId);
     if (!src || !tgt) continue;
-
-    const srcVisible = layout.initY.has(src.id);
-    const tgtVisible = layout.initY.has(tgt.id);
-    const srcY = srcVisible ? layout.initY.get(src.id)! : layout.portfolioY.get(src.portfolio || "Unassigned");
-    const tgtY = tgtVisible ? layout.initY.get(tgt.id)! : layout.portfolioY.get(tgt.portfolio || "Unassigned");
+    const srcDom = (src.domain && (DOMAINS as readonly string[]).includes(src.domain)) ? src.domain : "Enterprise Platforms";
+    const tgtDom = (tgt.domain && (DOMAINS as readonly string[]).includes(tgt.domain)) ? tgt.domain : "Enterprise Platforms";
+    const srcY = layout.initY.get(src.id) ?? layout.domainY.get(srcDom);
+    const tgtY = layout.initY.get(tgt.id) ?? layout.domainY.get(tgtDom);
     if (srcY == null || tgtY == null) continue;
-
-    const srcBar = tlBarStyle(src.startDate, src.endDate);
-    const tgtBar = tlBarStyle(tgt.startDate, tgt.endDate);
-    const x1 = parseFloat(srcBar.left) + parseFloat(srcBar.width); // Go-Live edge
-    const x2 = parseFloat(tgtBar.left); // Kickoff edge
+    const srcBar = barStyleFor(src.startDate, src.endDate, horizon);
+    const tgtBar = barStyleFor(tgt.startDate, tgt.endDate, horizon);
+    if (!srcBar.visible || !tgtBar.visible) continue;
+    const x1 = parseFloat(srcBar.left) + parseFloat(srcBar.width);
+    const x2 = parseFloat(tgtBar.left);
     arrows.push({ x1, y1: srcY, x2, y2: tgtY, kind: e.kind });
   }
 
   return (
     <Card className="overflow-hidden">
-      {/* Legend */}
+      {/* Legend (top-right) */}
       <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-border bg-muted/10 flex-wrap">
         <p className="text-xs font-semibold text-foreground">Transition Plan — milestones, owners, decision gates & dependencies</p>
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
-          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#3b82f6cc" }} />Active</span>
-          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#10b981cc" }} />Completed</span>
-          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#ef4444cc" }} />At Risk</span>
-          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#94a3b8cc" }} />Planned</span>
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap ml-auto">
+          <span className="font-semibold text-foreground/80">Status:</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: STATUS_HEX.Active }} />Active</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: STATUS_HEX.Completed }} />Completed</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: STATUS_HEX["At Risk"] }} />At Risk</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: STATUS_HEX.Planned }} />Planned</span>
           <span className="flex items-center gap-1 pl-2 border-l border-border"><span className="w-2 h-2 rounded-full bg-white border border-foreground" />Milestone</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rotate-45 bg-amber-500" />Decision gate</span>
           <span className="flex items-center gap-1 pl-2 border-l border-border"><svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#475569" strokeWidth="1.5" /></svg>Hard dep</span>
@@ -713,12 +787,12 @@ function TransitionPlanView({
 
       <div className="overflow-x-auto">
         <div style={{ minWidth: 900 }}>
-          {/* Year band headers */}
+          {/* Year band headers (dynamic, based on horizon) */}
           <div className="flex border-b border-border bg-background sticky top-0 z-10">
             <div className="flex-shrink-0 border-r border-border bg-background" style={{ width: TP_LABEL_W }} />
-            {[0, 1, 2].map(yi => (
+            {Array.from({ length: horizon.years }, (_, yi) => (
               <div key={yi} className={cn("flex-1 text-center py-2 border-r border-border last:border-r-0", yi % 2 === 1 && "bg-muted/10")}>
-                <p className="text-xs font-semibold text-foreground leading-tight">Year {yi + 1} · {2026 + yi}</p>
+                <p className="text-xs font-semibold text-foreground leading-tight">Year {horizon.startYear - 2025 + yi} · {horizon.startYear + yi}</p>
               </div>
             ))}
           </div>
@@ -727,7 +801,7 @@ function TransitionPlanView({
             <div className="flex-shrink-0 border-r border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground" style={{ width: TP_LABEL_W }}>Initiative · Owner</div>
             <div className="flex-1 relative">
               <div className="flex h-full">
-                {TL_QUARTERS.map((q, i) => (
+                {horizon.quarters.map((q, i) => (
                   <div
                     key={i}
                     className={cn("flex-1 text-center text-[10px] font-medium text-muted-foreground py-1.5 border-r border-border/50 last:border-r-0",
@@ -744,46 +818,59 @@ function TransitionPlanView({
           <div className="flex relative">
             {/* Label column */}
             <div className="flex-shrink-0 border-r border-border" style={{ width: TP_LABEL_W }}>
-              {grouped.map(({ portfolio, items }) => {
-                const isCollapsed = collapsed.has(portfolio);
+              {grouped.map(g => {
+                const isCollapsed = collapsed.has(g.domain);
+                const domStyle = DOMAIN_STYLE[g.domain] ?? DOMAIN_STYLE["Enterprise Platforms"];
+                const total = g.portfolios.reduce((a, b) => a + b.items.length, 0);
                 return (
-                  <div key={portfolio}>
+                  <div key={g.domain}>
+                    {/* Domain header (collapsible) */}
                     <button
                       type="button"
                       onClick={() => setCollapsed(s => {
                         const n = new Set(s);
-                        n.has(portfolio) ? n.delete(portfolio) : n.add(portfolio);
+                        n.has(g.domain) ? n.delete(g.domain) : n.add(g.domain);
                         return n;
                       })}
-                      className="w-full flex items-center gap-1.5 px-2 bg-muted/40 hover:bg-muted/60 border-b border-border/50 transition-colors"
-                      style={{ height: TP_HEADER_H }}
+                      className={cn("w-full flex items-center gap-1.5 px-2 border-b border-border transition-colors", domStyle.bg, "hover:brightness-95")}
+                      style={{ height: TP_DOMAIN_H }}
                     >
                       {isCollapsed ? <ChevronRight className="h-3 w-3 flex-shrink-0" /> : <ChevronDown className="h-3 w-3 flex-shrink-0" />}
-                      <span className="text-[11px] font-semibold text-foreground truncate">{portfolio}</span>
-                      <span className="text-[10px] text-muted-foreground ml-auto flex-shrink-0">({items.length})</span>
+                      <span className={cn("w-2 h-2 rounded-full flex-shrink-0", domStyle.dot)} />
+                      <span className={cn("text-[12px] font-semibold truncate", domStyle.header)}>{g.domain}</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto flex-shrink-0">({total})</span>
                     </button>
-                    {!isCollapsed && items.map(init => {
-                      const d = derived.get(init.id)!;
-                      return (
-                        <div
-                          key={init.id}
-                          className="px-2 py-1 border-b border-border/30 flex flex-col justify-center cursor-pointer hover:bg-muted/30"
-                          style={{ height: TP_ROW_H }}
-                          onClick={() => onSelect(init)}
-                        >
-                          <div className="flex items-center gap-1 min-w-0">
-                            <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">{init.jiraId}</span>
-                            <span className="text-[11px] font-medium truncate">{init.application}</span>
-                          </div>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <span className="inline-flex items-center gap-1 text-[9px] px-1 py-0 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate max-w-full">
-                              <Circle className="h-1.5 w-1.5 fill-current flex-shrink-0" />
-                              <span className="truncate">{d.owner}</span>
-                            </span>
-                          </div>
+                    {!isCollapsed && g.portfolios.map(p => (
+                      <div key={p.portfolio}>
+                        {/* Portfolio sub-header */}
+                        <div className="px-2 flex items-center bg-muted/30 border-b border-border/40" style={{ height: TP_PORTFOLIO_H }}>
+                          <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground truncate">{p.portfolio}</span>
+                          <span className="text-[10px] text-muted-foreground/70 ml-auto">{p.items.length}</span>
                         </div>
-                      );
-                    })}
+                        {p.items.map(init => {
+                          const d = derived.get(init.id)!;
+                          return (
+                            <div
+                              key={init.id}
+                              className="px-2 py-1 border-b border-border/30 flex flex-col justify-center cursor-pointer hover:bg-muted/30"
+                              style={{ height: TP_ROW_H }}
+                              onClick={() => onEdit(init)}
+                            >
+                              <div className="flex items-center gap-1 min-w-0">
+                                <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">{init.jiraId}</span>
+                                <span className="text-[11px] font-medium truncate">{init.application}</span>
+                              </div>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="inline-flex items-center gap-1 text-[9px] px-1 py-0 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate max-w-full">
+                                  <Circle className="h-1.5 w-1.5 fill-current flex-shrink-0" />
+                                  <span className="truncate">{d.owner}</span>
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
                   </div>
                 );
               })}
@@ -792,15 +879,15 @@ function TransitionPlanView({
             {/* Bars + SVG overlay */}
             <div className="flex-1 relative" style={{ height: layout.totalH }}>
               {/* Year band backgrounds */}
-              {[0, 1, 2].map(yi => (
-                <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+              {Array.from({ length: horizon.years }, (_, yi) => (
+                <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / horizon.years) * 100}%`, width: `${100 / horizon.years}%` }} />
               ))}
               {/* Quarter gridlines */}
-              {TL_QUARTERS.map((q, i) => (
+              {horizon.quarters.map((q, i) => (
                 <div key={i} className={cn("absolute top-0 bottom-0 border-l pointer-events-none", q.yearStart ? "border-border/40" : "border-border/20")} style={{ left: `${q.pct}%` }} />
               ))}
               {/* Today marker */}
-              <div className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-10" style={{ left: `${TL_TODAY_PCT}%` }}>
+              <div className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-10" style={{ left: `${horizon.todayPct}%` }}>
                 <div className="absolute top-0.5 left-0.5 text-[8px] text-red-500 font-medium whitespace-nowrap">Today</div>
               </div>
 
@@ -808,54 +895,100 @@ function TransitionPlanView({
               {(() => {
                 let y = 0;
                 const nodes: React.ReactNode[] = [];
-                for (const { portfolio, items } of grouped) {
-                  const isCollapsed = collapsed.has(portfolio);
-                  // Header row stripe
+                for (const g of grouped) {
+                  const isCollapsed = collapsed.has(g.domain);
+                  const domStyle = DOMAIN_STYLE[g.domain] ?? DOMAIN_STYLE["Enterprise Platforms"];
                   nodes.push(
-                    <div key={`h-${portfolio}`} className="absolute left-0 right-0 bg-muted/40 border-b border-border/50" style={{ top: y, height: TP_HEADER_H }} />
+                    <div key={`dh-${g.domain}`} className={cn("absolute left-0 right-0 border-b border-border", domStyle.bg)} style={{ top: y, height: TP_DOMAIN_H }} />
                   );
-                  y += TP_HEADER_H;
-                  if (!isCollapsed) {
-                    for (const init of items) {
-                      const bar = tlBarStyle(init.startDate, init.endDate);
+                  y += TP_DOMAIN_H;
+                  if (isCollapsed) continue;
+                  for (const p of g.portfolios) {
+                    nodes.push(
+                      <div key={`ph-${g.domain}-${p.portfolio}`} className="absolute left-0 right-0 bg-muted/30 border-b border-border/40" style={{ top: y, height: TP_PORTFOLIO_H }} />
+                    );
+                    y += TP_PORTFOLIO_H;
+                    for (const init of p.items) {
+                      const bar = barStyleFor(init.startDate, init.endDate, horizon);
                       const d = derived.get(init.id)!;
-                      const hex = DOMAIN_HEX[init.domain ?? ""] ?? "#64748b";
-                      const isHovered = hoveredId === init.id;
+                      const hex = statusBarHex(init.status);
                       const isCompleted = init.status === "Completed";
                       const isAtRisk = init.status === "At Risk";
                       const rowTop = y;
                       nodes.push(
                         <div
                           key={init.id}
-                          className="absolute left-0 right-0 border-b border-border/20"
+                          className="absolute left-0 right-0 border-b border-border/20 hover:bg-muted/20 transition-colors"
                           style={{ top: rowTop, height: TP_ROW_H }}
-                          onMouseEnter={() => setHoveredId(init.id)}
-                          onMouseLeave={() => setHoveredId(null)}
-                          onClick={() => onSelect(init)}
                         >
-                          {/* Gantt bar */}
-                          <div
-                            className={cn(
-                              "absolute top-1/2 -translate-y-1/2 h-5 rounded cursor-pointer flex items-center px-1.5 overflow-hidden transition-all",
-                              isCompleted && "opacity-50",
-                              isAtRisk && "ring-1 ring-red-400",
-                              isHovered && "ring-2 ring-foreground/40 z-20"
-                            )}
-                            style={{
-                              left: bar.left,
-                              width: bar.width,
-                              backgroundColor: hex + (isHovered ? "ee" : "bb"),
-                            }}
-                          >
-                            <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.jiraId}</span>
-                          </div>
+                          {bar.visible && (
+                            <HoverCard openDelay={120} closeDelay={60}>
+                              <HoverCardTrigger asChild>
+                                <div
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => onEdit(init)}
+                                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onEdit(init); } }}
+                                  className={cn(
+                                    "absolute top-1/2 -translate-y-1/2 h-5 rounded cursor-pointer flex items-center px-1.5 overflow-hidden transition-all hover:ring-2 hover:ring-foreground/40 hover:z-20",
+                                    isCompleted && "opacity-60",
+                                    isAtRisk && "ring-1 ring-red-400",
+                                  )}
+                                  style={{ left: bar.left, width: bar.width, backgroundColor: hex }}
+                                  title={`${init.jiraId} — ${init.application}`}
+                                >
+                                  <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.jiraId}</span>
+                                </div>
+                              </HoverCardTrigger>
+                              <HoverCardContent side="top" align="start" className="w-96 p-3">
+                                <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+                                  <span className="font-mono text-[10px] text-muted-foreground">{init.jiraId}</span>
+                                  <SmallBadge label={init.status} className={STATUS_STYLE[init.status] ?? ""} />
+                                  <SmallBadge label={`Priority: ${init.priority}`} className={PRIORITY_STYLE[init.priority] ?? ""} />
+                                  {init.complexity && <SmallBadge label={init.complexity} className={COMPLEXITY_STYLE[init.complexity] ?? ""} />}
+                                </div>
+                                <p className="text-sm font-semibold mb-1 leading-snug">{init.application}</p>
+                                <p className="text-[10px] text-muted-foreground mb-2">Owner: <span className="text-foreground font-medium">{d.owner}</span> · {init.startDate} → {init.endDate}</p>
+                                {init.description && (
+                                  <p className="text-[11px] text-foreground/90 mb-1.5 leading-snug">{init.description.slice(0, 220)}{init.description.length > 220 ? "…" : ""}</p>
+                                )}
+                                {init.businessImpact && (
+                                  <p className="text-[11px] text-blue-700 dark:text-blue-400 mb-1 leading-snug"><span className="font-semibold">Impact:</span> {init.businessImpact.slice(0, 140)}{init.businessImpact.length > 140 ? "…" : ""}</p>
+                                )}
+                                {init.expectedOutcome && (
+                                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mb-1 leading-snug"><span className="font-semibold">Outcome:</span> {init.expectedOutcome.slice(0, 140)}{init.expectedOutcome.length > 140 ? "…" : ""}</p>
+                                )}
+                                {init.dependency && (
+                                  <p className="text-[10px] text-muted-foreground leading-snug mt-1"><span className="font-semibold text-foreground/80">Depends on:</span> {init.dependency.slice(0, 120)}</p>
+                                )}
+                                {init.roiPlan && (
+                                  <p className="text-[10px] text-muted-foreground leading-snug mt-1"><span className="font-semibold text-foreground/80">ROI:</span> {init.roiPlan.slice(0, 120)}</p>
+                                )}
+                                <div className="mt-2 pt-1.5 border-t border-border/50 text-[10px] text-muted-foreground">
+                                  <span className="font-semibold text-foreground/80">Milestones:</span>{" "}
+                                  {d.milestones.map((ms, mi) => (
+                                    <span key={mi}>{ms.label}={ms.date}{mi < d.milestones.length - 1 ? ", " : ""}</span>
+                                  ))}
+                                </div>
+                                {d.decisionPoints.length > 0 && (
+                                  <div className="mt-1 text-[10px] text-amber-700 dark:text-amber-400">
+                                    <span className="font-semibold">Decision gates:</span>{" "}
+                                    {d.decisionPoints.map((dp, di) => (
+                                      <span key={di}>{dp.label}{di < d.decisionPoints.length - 1 ? "; " : ""}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                <p className="text-[9px] text-muted-foreground mt-2 italic">Click bar to edit</p>
+                              </HoverCardContent>
+                            </HoverCard>
+                          )}
                           {/* Milestone markers */}
                           {d.milestones.map((ms, mi) => {
                             if (ms.pct < 0 || ms.pct > 100) return null;
                             return (
                               <div
                                 key={`m-${mi}`}
-                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white border border-foreground/80 z-10"
+                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white border border-foreground/80 z-10 pointer-events-none"
                                 style={{ left: `${ms.pct}%` }}
                                 title={`${ms.label} — ${ms.date}`}
                               />
@@ -865,43 +998,11 @@ function TransitionPlanView({
                           {d.decisionPoints.map((dp, di) => (
                             <div
                               key={`d-${di}`}
-                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-amber-500 border border-amber-700 z-10"
-                              style={{ left: `${Math.max(0, Math.min(100, dp.pct))}%` }}
+                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-amber-500 border border-amber-700 z-10 pointer-events-none"
+                              style={{ left: `${dp.pct}%` }}
                               title={`Decision gate — ${dp.label}`}
                             />
                           ))}
-                          {/* Hover tooltip */}
-                          {isHovered && (
-                            <div className="absolute z-40 pointer-events-none" style={{ left: bar.left, top: TP_ROW_H + 2 }}>
-                              <div className="bg-popover border border-border rounded-lg shadow-2xl p-3 w-80">
-                                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                  <span className="font-mono text-[10px] text-muted-foreground">{init.jiraId}</span>
-                                  <SmallBadge label={init.status} className={STATUS_STYLE[init.status] ?? ""} />
-                                  <SmallBadge label={`Priority: ${init.priority}`} className={PRIORITY_STYLE[init.priority] ?? ""} />
-                                </div>
-                                <p className="text-xs font-semibold mb-1 leading-snug">{init.application}</p>
-                                <p className="text-[10px] text-muted-foreground mb-1.5">Owner: <span className="text-foreground font-medium">{d.owner}</span></p>
-                                {init.businessImpact && (
-                                  <p className="text-[11px] text-blue-700 dark:text-blue-400 mb-1 leading-snug">{init.businessImpact.slice(0, 120)}{(init.businessImpact?.length ?? 0) > 120 ? "…" : ""}</p>
-                                )}
-                                {init.expectedOutcome && (
-                                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mb-1 leading-snug">Outcome: {init.expectedOutcome.slice(0, 100)}{(init.expectedOutcome?.length ?? 0) > 100 ? "…" : ""}</p>
-                                )}
-                                {init.dependency && (
-                                  <p className="text-[10px] text-muted-foreground leading-snug mt-1">Depends on: <span className="text-foreground">{init.dependency.slice(0, 80)}</span></p>
-                                )}
-                                {init.roiPlan && (
-                                  <p className="text-[10px] text-muted-foreground leading-snug mt-1">ROI: <span className="text-foreground">{init.roiPlan.slice(0, 80)}</span></p>
-                                )}
-                                <div className="mt-2 pt-1.5 border-t border-border/50 flex items-center gap-1 text-[10px] text-muted-foreground flex-wrap">
-                                  <span>Milestones:</span>
-                                  {d.milestones.map((ms, mi) => (
-                                    <span key={mi} className="text-foreground">{ms.label}={ms.date}{mi < d.milestones.length - 1 ? "," : ""}</span>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       );
                       y += TP_ROW_H;
@@ -931,7 +1032,6 @@ function TransitionPlanView({
                   const stroke = a.kind === "hard" ? "#475569" : "#94a3b8";
                   const dash = a.kind === "soft" ? "1.5,1" : undefined;
                   const markerId = a.kind === "hard" ? "url(#tp-arrow-hard)" : "url(#tp-arrow-soft)";
-                  // Curved path: out from source's right, into target's left
                   const midX = (a.x1 + a.x2) / 2;
                   return (
                     <path
@@ -1894,7 +1994,7 @@ function SectionView({
       ) : view === "timeline" ? (
         <TimelineView initiatives={filtered} onSelect={onSelect} onEdit={handleEdit} />
       ) : view === "transition" ? (
-        <TransitionPlanView initiatives={filtered} onSelect={onSelect} />
+        <TransitionPlanView initiatives={filtered} yearFilter={yearFilter} onSelect={onSelect} onEdit={handleEdit} />
       ) : filtered.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
