@@ -504,6 +504,457 @@ function TimelineView({ initiatives, onSelect, onEdit }: { initiatives: RoadmapI
   );
 }
 
+// ─── Transition Plan helpers ──────────────────────────────────────────────────
+
+type TPMilestone = { label: string; date: string; pct: number; kind: "kickoff" | "mid" | "golive" | "custom" };
+type TPDecisionPoint = { label: string; pct: number };
+
+const MILESTONE_NOTE_RE = /^[ \t]*Milestone:\s*(.+?)\s*@\s*(\d{4}-\d{2}-\d{2})\s*$/gim;
+const JIRA_REF_RE = /\b[A-Z][A-Z0-9]+-\d+\b/g;
+
+function dateToPct(d: string): number {
+  const t = new Date(d).getTime();
+  if (Number.isNaN(t)) return -1;
+  return ((t - TL_START) / TL_MS) * 100;
+}
+
+function deriveTransitionPlan(init: RoadmapInitiative): {
+  owner: string;
+  milestones: TPMilestone[];
+  decisionPoints: TPDecisionPoint[];
+} {
+  const owner = (init.serviceCategory && init.serviceCategory.trim()) || init.portfolio || "—";
+
+  const start = new Date(init.startDate).getTime();
+  const end = new Date(init.endDate + "T23:59:59").getTime();
+
+  const milestones: TPMilestone[] = [];
+  const kickoffPct = dateToPct(init.startDate);
+  if (kickoffPct >= 0) milestones.push({ label: "Kickoff", date: init.startDate, pct: kickoffPct, kind: "kickoff" });
+  if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
+    const mid = new Date(start + (end - start) / 2);
+    if (!Number.isNaN(mid.getTime())) {
+      const midISO = mid.toISOString().slice(0, 10);
+      const midPct = dateToPct(midISO);
+      if (midPct >= 0) milestones.push({ label: "Mid-Point", date: midISO, pct: midPct, kind: "mid" });
+    }
+  }
+  const golivePct = dateToPct(init.endDate);
+  if (golivePct >= 0) milestones.push({ label: "Go-Live", date: init.endDate, pct: golivePct, kind: "golive" });
+
+  if (init.notes) {
+    MILESTONE_NOTE_RE.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = MILESTONE_NOTE_RE.exec(init.notes)) !== null) {
+      const pct = dateToPct(m[2]);
+      if (pct >= 0 && pct <= 100) {
+        milestones.push({ label: m[1].trim(), date: m[2], pct, kind: "custom" });
+      }
+    }
+  }
+
+  const decisionPoints: TPDecisionPoint[] = [];
+  const statusLc = (init.status ?? "").toLowerCase();
+  if (statusLc.includes("decision") || statusLc.includes("approval")) {
+    decisionPoints.push({ label: init.status, pct: dateToPct(init.startDate) });
+  }
+  if ((init.priority as string) === "Critical" || (init.priority as string) === "High") {
+    decisionPoints.push({ label: "Critical priority — exec sign-off", pct: dateToPct(init.startDate) });
+  }
+
+  return { owner, milestones, decisionPoints };
+}
+
+function resolveDependencyEdges(
+  initiatives: RoadmapInitiative[],
+): { fromId: number; toId: number; kind: "hard" | "soft" }[] {
+  const byJira = new Map<string, RoadmapInitiative>();
+  for (const i of initiatives) if (i.jiraId) byJira.set(i.jiraId.toUpperCase(), i);
+
+  const edges: { fromId: number; toId: number; kind: "hard" | "soft" }[] = [];
+  const seenEdges = new Set<string>();
+  const pushEdge = (fromId: number, toId: number, kind: "hard" | "soft") => {
+    const k = `${fromId}->${toId}`;
+    if (seenEdges.has(k)) return;
+    seenEdges.add(k);
+    edges.push({ fromId, toId, kind });
+  };
+  for (const target of initiatives) {
+    const dep = (target.dependency ?? "").trim();
+    if (!dep) continue;
+
+    const matchedIds = new Set<number>();
+    const jiraMatches = dep.match(JIRA_REF_RE) ?? [];
+    for (const j of jiraMatches) {
+      const src = byJira.get(j.toUpperCase());
+      if (src && src.id !== target.id) {
+        pushEdge(src.id, target.id, "hard");
+        matchedIds.add(src.id);
+      }
+    }
+
+    if (matchedIds.size === 0) {
+      const depLc = dep.toLowerCase();
+      for (const src of initiatives) {
+        if (src.id === target.id) continue;
+        const pName = (src.product ?? "").trim().toLowerCase();
+        const aName = (src.application ?? "").trim().toLowerCase();
+        if ((pName && pName.length >= 4 && depLc.includes(pName)) ||
+            (aName && aName.length >= 4 && depLc.includes(aName))) {
+          pushEdge(src.id, target.id, "soft");
+          matchedIds.add(src.id);
+          if (matchedIds.size >= 2) break;
+        }
+      }
+    }
+  }
+  return edges;
+}
+
+// ─── Transition Plan View ─────────────────────────────────────────────────────
+
+const TP_ROW_H = 40;
+const TP_HEADER_H = 28;
+const TP_LABEL_W = 224; // w-56
+
+function TransitionPlanView({
+  initiatives,
+  onSelect,
+}: {
+  initiatives: RoadmapInitiative[];
+  onSelect: (i: RoadmapInitiative) => void;
+}) {
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, RoadmapInitiative[]>();
+    for (const i of initiatives) {
+      const key = i.portfolio || "Unassigned";
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(i);
+    }
+    return Array.from(map.entries())
+      .map(([portfolio, items]) => ({
+        portfolio,
+        items: items.slice().sort((a, b) => a.startDate.localeCompare(b.startDate)),
+      }))
+      .sort((a, b) => a.portfolio.localeCompare(b.portfolio));
+  }, [initiatives]);
+
+  // Compute vertical layout: y position (within the bar area) for each initiative,
+  // and y for each collapsed portfolio header.
+  const layout = useMemo(() => {
+    const initY = new Map<number, number>();
+    const portfolioY = new Map<string, number>();
+    let y = 0;
+    for (const { portfolio, items } of grouped) {
+      portfolioY.set(portfolio, y + TP_HEADER_H / 2);
+      y += TP_HEADER_H;
+      if (!collapsed.has(portfolio)) {
+        for (const it of items) {
+          initY.set(it.id, y + TP_ROW_H / 2);
+          y += TP_ROW_H;
+        }
+      }
+    }
+    return { initY, portfolioY, totalH: y };
+  }, [grouped, collapsed]);
+
+  const edges = useMemo(() => resolveDependencyEdges(initiatives), [initiatives]);
+
+  const derived = useMemo(() => {
+    const m = new Map<number, ReturnType<typeof deriveTransitionPlan>>();
+    for (const i of initiatives) m.set(i.id, deriveTransitionPlan(i));
+    return m;
+  }, [initiatives]);
+
+  if (initiatives.length === 0) {
+    return <Card className="p-8 text-center"><p className="text-sm text-muted-foreground">No initiatives match the current filters.</p></Card>;
+  }
+
+  // Resolve arrow endpoints for the SVG overlay
+  type Arrow = { x1: number; y1: number; x2: number; y2: number; kind: "hard" | "soft" };
+  const arrows: Arrow[] = [];
+  for (const e of edges) {
+    const src = initiatives.find(i => i.id === e.fromId);
+    const tgt = initiatives.find(i => i.id === e.toId);
+    if (!src || !tgt) continue;
+
+    const srcVisible = layout.initY.has(src.id);
+    const tgtVisible = layout.initY.has(tgt.id);
+    const srcY = srcVisible ? layout.initY.get(src.id)! : layout.portfolioY.get(src.portfolio || "Unassigned");
+    const tgtY = tgtVisible ? layout.initY.get(tgt.id)! : layout.portfolioY.get(tgt.portfolio || "Unassigned");
+    if (srcY == null || tgtY == null) continue;
+
+    const srcBar = tlBarStyle(src.startDate, src.endDate);
+    const tgtBar = tlBarStyle(tgt.startDate, tgt.endDate);
+    const x1 = parseFloat(srcBar.left) + parseFloat(srcBar.width); // Go-Live edge
+    const x2 = parseFloat(tgtBar.left); // Kickoff edge
+    arrows.push({ x1, y1: srcY, x2, y2: tgtY, kind: e.kind });
+  }
+
+  return (
+    <Card className="overflow-hidden">
+      {/* Legend */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2 border-b border-border bg-muted/10 flex-wrap">
+        <p className="text-xs font-semibold text-foreground">Transition Plan — milestones, owners, decision gates & dependencies</p>
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#3b82f6cc" }} />Active</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#10b981cc" }} />Completed</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#ef4444cc" }} />At Risk</span>
+          <span className="flex items-center gap-1"><span className="w-3.5 h-2 rounded" style={{ backgroundColor: "#94a3b8cc" }} />Planned</span>
+          <span className="flex items-center gap-1 pl-2 border-l border-border"><span className="w-2 h-2 rounded-full bg-white border border-foreground" />Milestone</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rotate-45 bg-amber-500" />Decision gate</span>
+          <span className="flex items-center gap-1 pl-2 border-l border-border"><svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#475569" strokeWidth="1.5" /></svg>Hard dep</span>
+          <span className="flex items-center gap-1"><svg width="22" height="6"><line x1="0" y1="3" x2="22" y2="3" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3,2" /></svg>Soft dep</span>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: 900 }}>
+          {/* Year band headers */}
+          <div className="flex border-b border-border bg-background sticky top-0 z-10">
+            <div className="flex-shrink-0 border-r border-border bg-background" style={{ width: TP_LABEL_W }} />
+            {[0, 1, 2].map(yi => (
+              <div key={yi} className={cn("flex-1 text-center py-2 border-r border-border last:border-r-0", yi % 2 === 1 && "bg-muted/10")}>
+                <p className="text-xs font-semibold text-foreground leading-tight">Year {yi + 1} · {2026 + yi}</p>
+              </div>
+            ))}
+          </div>
+          {/* Quarter sub-headers */}
+          <div className="flex border-b border-border bg-muted/20">
+            <div className="flex-shrink-0 border-r border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground" style={{ width: TP_LABEL_W }}>Initiative · Owner</div>
+            <div className="flex-1 relative">
+              <div className="flex h-full">
+                {TL_QUARTERS.map((q, i) => (
+                  <div
+                    key={i}
+                    className={cn("flex-1 text-center text-[10px] font-medium text-muted-foreground py-1.5 border-r border-border/50 last:border-r-0",
+                      q.yearStart && "border-l-2 border-border")}
+                  >
+                    {q.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Body: label column + bars+SVG */}
+          <div className="flex relative">
+            {/* Label column */}
+            <div className="flex-shrink-0 border-r border-border" style={{ width: TP_LABEL_W }}>
+              {grouped.map(({ portfolio, items }) => {
+                const isCollapsed = collapsed.has(portfolio);
+                return (
+                  <div key={portfolio}>
+                    <button
+                      type="button"
+                      onClick={() => setCollapsed(s => {
+                        const n = new Set(s);
+                        n.has(portfolio) ? n.delete(portfolio) : n.add(portfolio);
+                        return n;
+                      })}
+                      className="w-full flex items-center gap-1.5 px-2 bg-muted/40 hover:bg-muted/60 border-b border-border/50 transition-colors"
+                      style={{ height: TP_HEADER_H }}
+                    >
+                      {isCollapsed ? <ChevronRight className="h-3 w-3 flex-shrink-0" /> : <ChevronDown className="h-3 w-3 flex-shrink-0" />}
+                      <span className="text-[11px] font-semibold text-foreground truncate">{portfolio}</span>
+                      <span className="text-[10px] text-muted-foreground ml-auto flex-shrink-0">({items.length})</span>
+                    </button>
+                    {!isCollapsed && items.map(init => {
+                      const d = derived.get(init.id)!;
+                      return (
+                        <div
+                          key={init.id}
+                          className="px-2 py-1 border-b border-border/30 flex flex-col justify-center cursor-pointer hover:bg-muted/30"
+                          style={{ height: TP_ROW_H }}
+                          onClick={() => onSelect(init)}
+                        >
+                          <div className="flex items-center gap-1 min-w-0">
+                            <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">{init.jiraId}</span>
+                            <span className="text-[11px] font-medium truncate">{init.application}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <span className="inline-flex items-center gap-1 text-[9px] px-1 py-0 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 truncate max-w-full">
+                              <Circle className="h-1.5 w-1.5 fill-current flex-shrink-0" />
+                              <span className="truncate">{d.owner}</span>
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bars + SVG overlay */}
+            <div className="flex-1 relative" style={{ height: layout.totalH }}>
+              {/* Year band backgrounds */}
+              {[0, 1, 2].map(yi => (
+                <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+              ))}
+              {/* Quarter gridlines */}
+              {TL_QUARTERS.map((q, i) => (
+                <div key={i} className={cn("absolute top-0 bottom-0 border-l pointer-events-none", q.yearStart ? "border-border/40" : "border-border/20")} style={{ left: `${q.pct}%` }} />
+              ))}
+              {/* Today marker */}
+              <div className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-10" style={{ left: `${TL_TODAY_PCT}%` }}>
+                <div className="absolute top-0.5 left-0.5 text-[8px] text-red-500 font-medium whitespace-nowrap">Today</div>
+              </div>
+
+              {/* Per-row content */}
+              {(() => {
+                let y = 0;
+                const nodes: React.ReactNode[] = [];
+                for (const { portfolio, items } of grouped) {
+                  const isCollapsed = collapsed.has(portfolio);
+                  // Header row stripe
+                  nodes.push(
+                    <div key={`h-${portfolio}`} className="absolute left-0 right-0 bg-muted/40 border-b border-border/50" style={{ top: y, height: TP_HEADER_H }} />
+                  );
+                  y += TP_HEADER_H;
+                  if (!isCollapsed) {
+                    for (const init of items) {
+                      const bar = tlBarStyle(init.startDate, init.endDate);
+                      const d = derived.get(init.id)!;
+                      const hex = DOMAIN_HEX[init.domain ?? ""] ?? "#64748b";
+                      const isHovered = hoveredId === init.id;
+                      const isCompleted = init.status === "Completed";
+                      const isAtRisk = init.status === "At Risk";
+                      const rowTop = y;
+                      nodes.push(
+                        <div
+                          key={init.id}
+                          className="absolute left-0 right-0 border-b border-border/20"
+                          style={{ top: rowTop, height: TP_ROW_H }}
+                          onMouseEnter={() => setHoveredId(init.id)}
+                          onMouseLeave={() => setHoveredId(null)}
+                          onClick={() => onSelect(init)}
+                        >
+                          {/* Gantt bar */}
+                          <div
+                            className={cn(
+                              "absolute top-1/2 -translate-y-1/2 h-5 rounded cursor-pointer flex items-center px-1.5 overflow-hidden transition-all",
+                              isCompleted && "opacity-50",
+                              isAtRisk && "ring-1 ring-red-400",
+                              isHovered && "ring-2 ring-foreground/40 z-20"
+                            )}
+                            style={{
+                              left: bar.left,
+                              width: bar.width,
+                              backgroundColor: hex + (isHovered ? "ee" : "bb"),
+                            }}
+                          >
+                            <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.jiraId}</span>
+                          </div>
+                          {/* Milestone markers */}
+                          {d.milestones.map((ms, mi) => {
+                            if (ms.pct < 0 || ms.pct > 100) return null;
+                            return (
+                              <div
+                                key={`m-${mi}`}
+                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white border border-foreground/80 z-10"
+                                style={{ left: `${ms.pct}%` }}
+                                title={`${ms.label} — ${ms.date}`}
+                              />
+                            );
+                          })}
+                          {/* Decision-point diamonds */}
+                          {d.decisionPoints.map((dp, di) => (
+                            <div
+                              key={`d-${di}`}
+                              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-amber-500 border border-amber-700 z-10"
+                              style={{ left: `${Math.max(0, Math.min(100, dp.pct))}%` }}
+                              title={`Decision gate — ${dp.label}`}
+                            />
+                          ))}
+                          {/* Hover tooltip */}
+                          {isHovered && (
+                            <div className="absolute z-40 pointer-events-none" style={{ left: bar.left, top: TP_ROW_H + 2 }}>
+                              <div className="bg-popover border border-border rounded-lg shadow-2xl p-3 w-80">
+                                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                  <span className="font-mono text-[10px] text-muted-foreground">{init.jiraId}</span>
+                                  <SmallBadge label={init.status} className={STATUS_STYLE[init.status] ?? ""} />
+                                  <SmallBadge label={`Priority: ${init.priority}`} className={PRIORITY_STYLE[init.priority] ?? ""} />
+                                </div>
+                                <p className="text-xs font-semibold mb-1 leading-snug">{init.application}</p>
+                                <p className="text-[10px] text-muted-foreground mb-1.5">Owner: <span className="text-foreground font-medium">{d.owner}</span></p>
+                                {init.businessImpact && (
+                                  <p className="text-[11px] text-blue-700 dark:text-blue-400 mb-1 leading-snug">{init.businessImpact.slice(0, 120)}{(init.businessImpact?.length ?? 0) > 120 ? "…" : ""}</p>
+                                )}
+                                {init.expectedOutcome && (
+                                  <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mb-1 leading-snug">Outcome: {init.expectedOutcome.slice(0, 100)}{(init.expectedOutcome?.length ?? 0) > 100 ? "…" : ""}</p>
+                                )}
+                                {init.dependency && (
+                                  <p className="text-[10px] text-muted-foreground leading-snug mt-1">Depends on: <span className="text-foreground">{init.dependency.slice(0, 80)}</span></p>
+                                )}
+                                {init.roiPlan && (
+                                  <p className="text-[10px] text-muted-foreground leading-snug mt-1">ROI: <span className="text-foreground">{init.roiPlan.slice(0, 80)}</span></p>
+                                )}
+                                <div className="mt-2 pt-1.5 border-t border-border/50 flex items-center gap-1 text-[10px] text-muted-foreground flex-wrap">
+                                  <span>Milestones:</span>
+                                  {d.milestones.map((ms, mi) => (
+                                    <span key={mi} className="text-foreground">{ms.label}={ms.date}{mi < d.milestones.length - 1 ? "," : ""}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                      y += TP_ROW_H;
+                    }
+                  }
+                }
+                return nodes;
+              })()}
+
+              {/* Dependency arrows SVG overlay */}
+              <svg
+                className="absolute inset-0 pointer-events-none"
+                width="100%"
+                height={layout.totalH}
+                preserveAspectRatio="none"
+                viewBox={`0 0 100 ${layout.totalH}`}
+              >
+                <defs>
+                  <marker id="tp-arrow-hard" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569" />
+                  </marker>
+                  <marker id="tp-arrow-soft" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
+                  </marker>
+                </defs>
+                {arrows.map((a, ai) => {
+                  const stroke = a.kind === "hard" ? "#475569" : "#94a3b8";
+                  const dash = a.kind === "soft" ? "1.5,1" : undefined;
+                  const markerId = a.kind === "hard" ? "url(#tp-arrow-hard)" : "url(#tp-arrow-soft)";
+                  // Curved path: out from source's right, into target's left
+                  const midX = (a.x1 + a.x2) / 2;
+                  return (
+                    <path
+                      key={ai}
+                      d={`M ${a.x1} ${a.y1} C ${midX} ${a.y1}, ${midX} ${a.y2}, ${a.x2} ${a.y2}`}
+                      stroke={stroke}
+                      strokeWidth="0.3"
+                      fill="none"
+                      strokeDasharray={dash}
+                      markerEnd={markerId}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 // ─── Initiative Form Modal ────────────────────────────────────────────────────
 
 const EMPTY_FORM: Omit<CreateRoadmapInitiativeRequest, "initiativeType" | "status" | "priority"> & {
@@ -1298,7 +1749,7 @@ function SectionView({
 }) {
   const [yearFilter, setYearFilter] = useState<YearFilter>(0);
   const [domainFilter, setDomainFilter] = useState("All");
-  const [view, setView] = useState<"table" | "heatmap" | "timeline">("table");
+  const [view, setView] = useState<"table" | "heatmap" | "timeline" | "transition">("table");
   const [formOpen, setFormOpen] = useState(false);
   const [formTarget, setFormTarget] = useState<RoadmapInitiative | null>(null);
   const queryClient = useQueryClient();
@@ -1422,14 +1873,14 @@ function SectionView({
           ))}
         </div>
         <div className="ml-auto flex items-center gap-1 border border-border rounded-md overflow-hidden">
-          {(["table", "heatmap", "timeline"] as const).map(v => (
+          {(["table", "heatmap", "timeline", "transition"] as const).map(v => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
                 view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
             >
-              {v === "table" ? "Table" : v === "heatmap" ? "Impact Map" : "Timeline"}
+              {v === "table" ? "Table" : v === "heatmap" ? "Impact Map" : v === "timeline" ? "Timeline" : "Transition Plan"}
             </button>
           ))}
         </div>
@@ -1442,6 +1893,8 @@ function SectionView({
         </Card>
       ) : view === "timeline" ? (
         <TimelineView initiatives={filtered} onSelect={onSelect} onEdit={handleEdit} />
+      ) : view === "transition" ? (
+        <TransitionPlanView initiatives={filtered} onSelect={onSelect} />
       ) : filtered.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
