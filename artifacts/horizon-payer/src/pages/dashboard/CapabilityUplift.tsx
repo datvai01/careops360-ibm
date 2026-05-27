@@ -686,18 +686,12 @@ export default function CapabilityUplift() {
       </div>
 
       {/* Tab layout */}
-      <Tabs defaultValue="exec-summary">
+      <Tabs defaultValue="maturity">
         <TabsList className="h-9">
-          <TabsTrigger value="exec-summary" className="text-xs px-4">Executive Summary</TabsTrigger>
           <TabsTrigger value="maturity" className="text-xs px-4">Capability Maturity</TabsTrigger>
           <TabsTrigger value="bootcamps" className="text-xs px-4">Bootcamp Calendar</TabsTrigger>
           <TabsTrigger value="talent-plan" className="text-xs px-4">Talent Plan</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="exec-summary" className="mt-6 space-y-10">
-          <ExecSummary />
-          <WorkforceTransformation />
-        </TabsContent>
 
         <TabsContent value="maturity" className="mt-6 space-y-10">
           <MaturityProgression />
