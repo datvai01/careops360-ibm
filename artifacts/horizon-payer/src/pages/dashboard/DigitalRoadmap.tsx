@@ -675,12 +675,10 @@ type TPGroup = {
 function TransitionPlanView({
   initiatives,
   yearFilter,
-  onSelect,
   onEdit,
 }: {
   initiatives: RoadmapInitiative[];
   yearFilter: 0 | 1 | 2 | 3;
-  onSelect: (i: RoadmapInitiative) => void;
   onEdit: (i: RoadmapInitiative) => void;
 }) {
   const horizon = useMemo(() => buildHorizon(yearFilter), [yearFilter]);
@@ -688,7 +686,8 @@ function TransitionPlanView({
 
   // Domain (collapsible) → Portfolio (sub-grouping) → Initiatives
   const grouped: TPGroup[] = useMemo(() => {
-    const domainOrder = [...DOMAINS, "Enterprise Platforms", "Unassigned"];
+    const baseOrder = [...DOMAINS, "Enterprise Platforms", "Unassigned"];
+    const domainOrder = Array.from(new Set(baseOrder));
     const byDomain = new Map<string, RoadmapInitiative[]>();
     for (const i of initiatives) {
       const d = (i.domain && (DOMAINS as readonly string[]).includes(i.domain)) ? i.domain : "Enterprise Platforms";
@@ -1994,7 +1993,7 @@ function SectionView({
       ) : view === "timeline" ? (
         <TimelineView initiatives={filtered} onSelect={onSelect} onEdit={handleEdit} />
       ) : view === "transition" ? (
-        <TransitionPlanView initiatives={filtered} yearFilter={yearFilter} onSelect={onSelect} onEdit={handleEdit} />
+        <TransitionPlanView initiatives={filtered} yearFilter={yearFilter} onEdit={handleEdit} />
       ) : filtered.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
