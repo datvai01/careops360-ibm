@@ -1136,7 +1136,22 @@ function TargetOperatingModel() {
 /* ─────────────────────── POD MODEL TRANSFORMATION ─────────────────────── */
 
 type PodRoleSlice = { role: string; count: number; color: string; futureRole: string };
-type Pod = { id: string; name: string; product: string; portfolio: string; headcount: number; roleMix: PodRoleSlice[] };
+type PodMember = { name: string; role: string; futureRole: string; futureRoleShort: string; color: string; location: string };
+type Pod = {
+  id: string;
+  name: string;
+  domain: string;
+  portfolio: string;
+  product: string;
+  headcount: number;
+  onshore: number;
+  offshore: number;
+  roleMix: PodRoleSlice[];
+  members: PodMember[];
+  skills: string[];
+  leadOnshore: PodMember | null;
+  leadOffshore: PodMember | null;
+};
 type RoleBucket = { role: string; count: number; color: string; futureRole: string };
 
 const ROLE_ORDER = [
@@ -1150,10 +1165,30 @@ const ROLE_ORDER = [
   "Solution Architect",
 ];
 
+// Pod sizing — aligns with the slide examples (POD2 = 15, POD3 = 12) but capped at 10 by default
+const MAX_POD_SIZE = 10;
+const MIN_POD_SIZE = 3;
+const LEAD_ROLES = ["Technical Lead", "Project Manager", "Solution Architect"];
+
 function roleMeta(role: string): { color: string; future: string } {
   const m = ROLE_TRANSFORMATION[role];
   if (m) return { color: m.color, future: m.future };
   return { color: C.gray, future: "Reskilling Track" };
+}
+
+// Shorter future-role label suited for member chips (matches slide terminology)
+function shortFutureRole(role: string): string {
+  switch (role) {
+    case "Operations Engineer":   return "Support Engineer";
+    case "Developer":             return "AI Engineer";
+    case "Technical Lead":        return "Tech Lead";
+    case "Project Manager":       return "Scrum Master";
+    case "BSA":                   return "QA / Analyst";
+    case "DBA":
+    case "Platform Admin/ DBA":   return "Reliability Engineer";
+    case "Solution Architect":    return "Solution Architect";
+    default:                       return role || "Pod Member";
+  }
 }
 
 function bucketByRole(resources: Resource[]): RoleBucket[] {
@@ -1176,7 +1211,73 @@ function bucketByRole(resources: Resource[]): RoleBucket[] {
     });
 }
 
-function podFromResources(id: string, name: string, product: string, portfolio: string, rs: Resource[]): Pod {
+// Split a list into roughly-equal pods of at most maxSize (e.g. 22 → [8, 7, 7])
+function chunkResources(rs: Resource[], maxSize: number = MAX_POD_SIZE): Resource[][] {
+  if (rs.length === 0) return [];
+  if (rs.length <= maxSize) return [rs];
+  const podCount = Math.ceil(rs.length / maxSize);
+  const baseSize = Math.floor(rs.length / podCount);
+  const remainder = rs.length % podCount;
+  const chunks: Resource[][] = [];
+  let i = 0;
+  for (let p = 0; p < podCount; p++) {
+    const size = baseSize + (p < remainder ? 1 : 0);
+    chunks.push(rs.slice(i, i + size));
+    i += size;
+  }
+  return chunks;
+}
+
+function extractPodSkills(rs: Resource[]): string[] {
+  const SPLIT = /[,;|/\n]+/;
+  const seen = new Map<string, string>(); // lowercased → original casing
+  const push = (raw: string) => {
+    raw.split(SPLIT)
+      .map(s => s.trim())
+      .filter(s => s.length >= 2 && s.length <= 32 && s.toLowerCase() !== "na" && s.toLowerCase() !== "n/a")
+      .forEach(s => {
+        const k = s.toLowerCase();
+        if (!seen.has(k)) seen.set(k, s);
+      });
+  };
+  for (const r of rs) {
+    push(r.plan.futureTech);
+    push(r.plan.techStack);
+    push(r.plan.agentic);
+    push(r.plan.devops);
+    push(r.plan.aiops);
+  }
+  // Always inject the platform skill set every pod should have
+  ["Agentic AI", "DevOps", "AIOps", "Agile", "FHIR"].forEach(s => {
+    if (!seen.has(s.toLowerCase())) seen.set(s.toLowerCase(), s);
+  });
+  return Array.from(seen.values()).slice(0, 10);
+}
+
+function pickLead(rs: Resource[], location: "Onshore" | "Offshore"): PodMember | null {
+  const inLoc = rs.filter(r => r.location === location);
+  const pool = inLoc.length > 0 ? inLoc : rs;
+  // prefer LEAD_ROLES in order
+  for (const role of LEAD_ROLES) {
+    const found = pool.find(r => r.role === role);
+    if (found) return toMember(found);
+  }
+  return pool[0] ? toMember(pool[0]) : null;
+}
+
+function toMember(r: Resource): PodMember {
+  const meta = roleMeta(r.role);
+  return {
+    name: r.name,
+    role: r.role,
+    futureRole: meta.future,
+    futureRoleShort: shortFutureRole(r.role),
+    color: meta.color,
+    location: r.location || "Unknown",
+  };
+}
+
+function buildPod(id: string, name: string, domain: string, portfolio: string, product: string, rs: Resource[]): Pod {
   const slices: Record<string, PodRoleSlice> = {};
   for (const r of rs) {
     const role = r.role || "Unassigned";
@@ -1187,7 +1288,92 @@ function podFromResources(id: string, name: string, product: string, portfolio: 
     slices[role].count += 1;
   }
   const roleMix = Object.values(slices).sort((a, b) => b.count - a.count);
-  return { id, name, product, portfolio, headcount: rs.length, roleMix };
+  const onshore = rs.filter(r => r.location === "Onshore").length;
+  const offshore = rs.filter(r => r.location === "Offshore").length;
+  const members = rs.map(toMember).sort((a, b) => {
+    const ai = ROLE_ORDER.indexOf(a.role); const bi = ROLE_ORDER.indexOf(b.role);
+    if (ai === -1 && bi === -1) return a.name.localeCompare(b.name);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+  return {
+    id,
+    name,
+    domain,
+    portfolio,
+    product,
+    headcount: rs.length,
+    onshore,
+    offshore,
+    roleMix,
+    members,
+    skills: extractPodSkills(rs),
+    leadOnshore: pickLead(rs, "Onshore"),
+    leadOffshore: pickLead(rs, "Offshore"),
+  };
+}
+
+// Group resources by Domain → Portfolio → Product and build size-capped pods.
+// Small products (< MIN_POD_SIZE) within the same portfolio are merged into a Shared Pod.
+function buildDomainPods(resources: Resource[], idPrefix: string): Pod[] {
+  // domain → portfolio → product → resources
+  const tree: Record<string, Record<string, Record<string, Resource[]>>> = {};
+  for (const r of resources) {
+    const d = r.domain || "Cross-Domain";
+    const pf = r.portfolio || "Cross-Portfolio";
+    const pr = r.product || "Unassigned Product";
+    ((tree[d] ??= {})[pf] ??= {})[pr] ??= [];
+    tree[d][pf][pr].push(r);
+  }
+
+  const pods: Pod[] = [];
+  // global pod counter per portfolio for nice POD1 / POD2 numbering inside a portfolio
+  const portfolioPodIndex: Record<string, number> = {};
+  const portKey = (d: string, pf: string) => `${d}::${pf}`;
+
+  Object.entries(tree)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .forEach(([domain, portfolios]) => {
+      Object.entries(portfolios)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .forEach(([portfolio, products]) => {
+          const productEntries = Object.entries(products);
+          const large = productEntries.filter(([, rs]) => rs.length >= MIN_POD_SIZE);
+          const small = productEntries.filter(([, rs]) => rs.length < MIN_POD_SIZE);
+
+          // Large products: chunk into ≤MAX_POD_SIZE pods, numbered POD<n> per portfolio
+          large.sort((a, b) => b[1].length - a[1].length);
+          for (const [product, rs] of large) {
+            const chunks = chunkResources(rs);
+            const multiple = chunks.length > 1;
+            chunks.forEach((chunk, idx) => {
+              const key = portKey(domain, portfolio);
+              const podN = (portfolioPodIndex[key] = (portfolioPodIndex[key] ?? 0) + 1);
+              const name = multiple
+                ? `${portfolio} POD${podN}: ${product} (Group ${idx + 1})`
+                : `${portfolio} POD${podN}: ${product}`;
+              pods.push(buildPod(`${idPrefix}-${podN}-${product}-${idx}`, name, domain, portfolio, product, chunk));
+            });
+          }
+
+          // Small products: merge into one Shared Pod per portfolio (chunk if still too large)
+          const smallMembers = small.flatMap(([, rs]) => rs);
+          if (smallMembers.length > 0) {
+            const chunks = chunkResources(smallMembers);
+            const productLabel = small.length === 1 ? small[0][0] : `Shared (${small.length} products)`;
+            chunks.forEach((chunk, idx) => {
+              const key = portKey(domain, portfolio);
+              const podN = (portfolioPodIndex[key] = (portfolioPodIndex[key] ?? 0) + 1);
+              const suffix = chunks.length > 1 ? ` (Group ${idx + 1})` : "";
+              const name = `${portfolio} POD${podN}: ${productLabel}${suffix}`;
+              pods.push(buildPod(`${idPrefix}-${podN}-shared-${idx}`, name, domain, portfolio, productLabel, chunk));
+            });
+          }
+        });
+    });
+
+  return pods;
 }
 
 const DEFAULT_PILOT_COUNT = 5;
@@ -1215,37 +1401,13 @@ function buildPodStages(resources: Resource[], pilotSelection?: string[] | null)
   } else {
     pilotProductNames = new Set(productEntries.slice(0, DEFAULT_PILOT_COUNT).map(([p]) => p));
   }
-  const pilots = productEntries.filter(([p]) => pilotProductNames.has(p));
-  const sixMonthPods: Pod[] = pilots.map(([product, rs], idx) =>
-    podFromResources(`6m-${idx}`, `${product} Pilot Pod`, product, rs[0]?.portfolio || "", rs),
-  );
+  const pilotResources = resources.filter(r => pilotProductNames.has(r.product || "Unassigned Product"));
+  const sixMonthPods = buildDomainPods(pilotResources, "6m");
   const remainingResources = resources.filter(r => !pilotProductNames.has(r.product || "Unassigned Product"));
   const sixMonthRemaining = bucketByRole(remainingResources);
 
-  // ── 12-month: every product becomes a self-sufficient pod; group very small products (<3) under their portfolio
-  const SMALL_THRESHOLD = 3;
-  const largeProducts = productEntries.filter(([, rs]) => rs.length >= SMALL_THRESHOLD);
-  const smallProducts = productEntries.filter(([, rs]) => rs.length < SMALL_THRESHOLD);
-
-  const twelveMonthPods: Pod[] = largeProducts.map(([product, rs], idx) =>
-    podFromResources(`12m-p-${idx}`, `${product} Pod`, product, rs[0]?.portfolio || "", rs),
-  );
-
-  // group small products by portfolio
-  const smallByPortfolio: Record<string, Resource[]> = {};
-  for (const [, rs] of smallProducts) {
-    for (const r of rs) {
-      const key = r.portfolio || "Cross-Portfolio";
-      (smallByPortfolio[key] ??= []).push(r);
-    }
-  }
-  Object.entries(smallByPortfolio).forEach(([portfolio, rs], idx) => {
-    if (rs.length === 0) return;
-    twelveMonthPods.push(
-      podFromResources(`12m-pf-${idx}`, `${portfolio} Shared Pod`, "Multiple", portfolio, rs),
-    );
-  });
-  twelveMonthPods.sort((a, b) => b.headcount - a.headcount);
+  // ── 12-month: every resource lives in a pod (chunked by domain → portfolio → product, max 10)
+  const twelveMonthPods = buildDomainPods(resources, "12m");
 
   return {
     today,
@@ -1287,40 +1449,120 @@ function RoleBucketCard({ b, total }: { b: RoleBucket; total: number }) {
   );
 }
 
-function PodCard({ pod, totalResources, accent }: { pod: Pod; totalResources: number; accent: string }) {
-  const pct = totalResources > 0 ? Math.round((pod.headcount / totalResources) * 100) : 0;
+function PodCard({ pod, accent }: { pod: Pod; accent: string }) {
+  const overSize = pod.headcount > MAX_POD_SIZE;
   return (
-    <div className="rounded-md border bg-white p-2.5 hover:shadow-sm transition-shadow" style={{ borderLeft: `3px solid ${accent}` }}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <div className="text-xs font-bold truncate" title={pod.name}>{pod.name}</div>
-          <div className="text-[10px] text-muted-foreground truncate">{pod.headcount} members · {pct}% of workforce</div>
+    <div
+      className="rounded-md border bg-white hover:shadow-md transition-shadow overflow-hidden"
+      style={{ borderTop: `3px solid ${accent}` }}
+    >
+      {/* Header */}
+      <div className="px-3 py-2 border-b" style={{ background: `${accent}08` }}>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold truncate" title={pod.name}>{pod.name}</div>
+            <div className="text-[10px] text-muted-foreground truncate">Development &amp; Support</div>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {overSize && (
+              <Badge variant="outline" className="text-[9px] h-4 px-1" style={{ borderColor: C.orange, color: C.orange }}>
+                {pod.headcount} &gt; cap
+              </Badge>
+            )}
+            <Package size={14} style={{ color: accent }} />
+          </div>
         </div>
-        <Package size={14} className="flex-shrink-0" style={{ color: accent }} />
       </div>
-      {/* role mix bar */}
-      <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden flex">
-        {pod.roleMix.map(s => (
-          <div
-            key={s.role}
-            title={`${s.role} → ${s.futureRole} (${s.count})`}
-            style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }}
-          />
-        ))}
+
+      {/* Body: 3-column meta + members */}
+      <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-0">
+        {/* Left meta column (mimics slide's POD Size / Skills / Leads block) */}
+        <div className="p-2.5 space-y-2 sm:border-r bg-muted/20">
+          <div>
+            <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground">POD Size</div>
+            <div className="text-sm font-bold leading-tight mt-0.5">{pod.headcount}</div>
+            <div className="text-[10px] text-muted-foreground leading-tight">
+              On – {pod.onshore}; Off – {pod.offshore}
+            </div>
+          </div>
+          <div>
+            <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground">POD Skills</div>
+            <div className="flex flex-wrap gap-0.5 mt-0.5">
+              {pod.skills.slice(0, 8).map(s => (
+                <span key={s} className="text-[9px] leading-tight px-1 py-0.5 rounded bg-white border" title={s}>{s}</span>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground">POD Leads</div>
+            {pod.leadOnshore && (
+              <div className="text-[10px] leading-tight mt-0.5 truncate" title={pod.leadOnshore.name}>
+                <span style={{ color: C.teal }}>●</span>{" "}
+                <span className="font-semibold">{pod.leadOnshore.name.split(" ")[0]}</span>{" "}
+                <span className="text-muted-foreground">(on)</span>
+              </div>
+            )}
+            {pod.leadOffshore && (
+              <div className="text-[10px] leading-tight truncate" title={pod.leadOffshore.name}>
+                <span style={{ color: C.blue }}>●</span>{" "}
+                <span className="font-semibold">{pod.leadOffshore.name.split(" ")[0]}</span>{" "}
+                <span className="text-muted-foreground">(off)</span>
+              </div>
+            )}
+            {!pod.leadOnshore && !pod.leadOffshore && (
+              <div className="text-[10px] text-muted-foreground italic">TBD</div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: role-mix bar + member roster */}
+        <div className="p-2.5">
+          {/* role mix bar */}
+          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden flex">
+            {pod.roleMix.map(s => (
+              <div
+                key={s.role}
+                title={`${s.role} → ${s.futureRole} (${s.count})`}
+                style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }}
+              />
+            ))}
+          </div>
+
+          {/* members with future-role chips */}
+          <div className="mt-2 max-h-44 overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 gap-0.5">
+              {pod.members.map((m, i) => {
+                const isOn = m.location === "Onshore";
+                return (
+                  <div key={`${pod.id}-m-${i}`} className="flex items-center gap-1.5 text-[10px] py-0.5">
+                    <span
+                      className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: isOn ? C.teal : C.blue }}
+                      title={m.location}
+                    />
+                    <span className="truncate flex-1 font-medium" title={`${m.name} · ${m.location}`}>
+                      {m.name}
+                    </span>
+                    <span
+                      className="text-[9px] px-1 py-0 rounded flex-shrink-0"
+                      style={{ background: `${m.color}15`, color: m.color }}
+                      title={`${m.role} → ${m.futureRole}`}
+                    >
+                      {m.futureRoleShort}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
-      {/* role mix chips */}
-      <div className="flex flex-wrap gap-1 mt-2">
-        {pod.roleMix.map(s => (
-          <span
-            key={s.role}
-            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
-            style={{ background: `${s.color}15`, color: s.color }}
-            title={`${s.role} → ${s.futureRole}`}
-          >
-            <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
-            {s.count}× {s.role}
-          </span>
-        ))}
+
+      {/* Domain / Portfolio / Product footer */}
+      <div className="px-3 py-1.5 border-t bg-slate-700 text-white text-[9px] leading-tight">
+        <div><span className="opacity-70">Domain:</span> <span className="font-semibold">{pod.domain}</span></div>
+        <div><span className="opacity-70">Portfolio:</span> <span className="font-semibold">{pod.portfolio}</span></div>
+        <div><span className="opacity-70">Product:</span> <span className="font-semibold">{pod.product}</span></div>
       </div>
     </div>
   );
@@ -1608,7 +1850,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
           />
           <div className="space-y-1.5">
             {stages.sixMonth.pods.map(p => (
-              <PodCard key={p.id} pod={p} totalResources={total} accent={C.teal} />
+              <PodCard key={p.id} pod={p} accent={C.teal} />
             ))}
           </div>
           {stages.sixMonth.remaining.length > 0 && (
@@ -1645,10 +1887,29 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             caption={`All ${total} resources organized into ${stages.twelveMonth.pods.length} self-sufficient AI-augmented product pods. No legacy role pool remains.`}
             color={C.blue}
           />
-          <div className="space-y-1.5 max-h-[640px] overflow-y-auto pr-1">
-            {stages.twelveMonth.pods.map(p => (
-              <PodCard key={p.id} pod={p} totalResources={total} accent={C.blue} />
-            ))}
+          <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
+            {(() => {
+              const byDomain: Record<string, Pod[]> = {};
+              for (const p of stages.twelveMonth.pods) {
+                (byDomain[p.domain] ??= []).push(p);
+              }
+              return Object.entries(byDomain).map(([domain, pods]) => (
+                <div key={domain} className="space-y-1.5">
+                  <div className="flex items-center gap-2 sticky top-0 bg-white z-10 py-1">
+                    <Layers size={11} style={{ color: C.blue }} />
+                    <span className="text-[10px] uppercase tracking-wide font-bold" style={{ color: C.blue }}>
+                      Domain: {domain}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {pods.length} pod{pods.length > 1 ? "s" : ""} · {pods.reduce((s, p) => s + p.headcount, 0)} people
+                    </span>
+                  </div>
+                  {pods.map(p => (
+                    <PodCard key={p.id} pod={p} accent={C.blue} />
+                  ))}
+                </div>
+              ));
+            })()}
           </div>
         </div>
       </div>
