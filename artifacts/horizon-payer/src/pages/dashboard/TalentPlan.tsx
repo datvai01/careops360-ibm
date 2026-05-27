@@ -1,4 +1,6 @@
-import { useMemo, useState, createContext, useContext, useRef } from "react";
+import { useMemo, useState, useEffect, createContext, useContext, useRef } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -1188,7 +1190,9 @@ function podFromResources(id: string, name: string, product: string, portfolio: 
   return { id, name, product, portfolio, headcount: rs.length, roleMix };
 }
 
-function buildPodStages(resources: Resource[]): {
+const DEFAULT_PILOT_COUNT = 5;
+
+function buildPodStages(resources: Resource[], pilotSelection?: string[] | null): {
   today: RoleBucket[];
   sixMonth: { pods: Pod[]; remaining: RoleBucket[]; remainingCount: number };
   twelveMonth: { pods: Pod[] };
@@ -1196,16 +1200,22 @@ function buildPodStages(resources: Resource[]): {
 } {
   const today = bucketByRole(resources);
 
-  // ── 6-month: pilot pods for top 5 products by headcount
+  // ── 6-month: pilot pods. Default = top N products by headcount; can be overridden via pilotSelection.
   const byProduct: Record<string, Resource[]> = {};
   for (const r of resources) {
     const key = r.product || "Unassigned Product";
     (byProduct[key] ??= []).push(r);
   }
   const productEntries = Object.entries(byProduct).sort((a, b) => b[1].length - a[1].length);
-  const PILOT_COUNT = 5;
-  const pilots = productEntries.slice(0, PILOT_COUNT);
-  const pilotProductNames = new Set(pilots.map(([p]) => p));
+
+  let pilotProductNames: Set<string>;
+  if (pilotSelection && pilotSelection.length > 0) {
+    const available = new Set(productEntries.map(([p]) => p));
+    pilotProductNames = new Set(pilotSelection.filter(p => available.has(p)));
+  } else {
+    pilotProductNames = new Set(productEntries.slice(0, DEFAULT_PILOT_COUNT).map(([p]) => p));
+  }
+  const pilots = productEntries.filter(([p]) => pilotProductNames.has(p));
   const sixMonthPods: Pod[] = pilots.map(([product, rs], idx) =>
     podFromResources(`6m-${idx}`, `${product} Pilot Pod`, product, rs[0]?.portfolio || "", rs),
   );
@@ -1316,8 +1326,165 @@ function PodCard({ pod, totalResources, accent }: { pod: Pod; totalResources: nu
   );
 }
 
+const PILOT_SELECTION_STORAGE_KEY = "talent.pilotPods.v1";
+
+function usePilotSelection() {
+  const [selection, setSelectionState] = useState<string[] | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(PILOT_SELECTION_STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setSelection = (next: string[] | null) => {
+    setSelectionState(next);
+    if (typeof window === "undefined") return;
+    try {
+      if (next === null) window.localStorage.removeItem(PILOT_SELECTION_STORAGE_KEY);
+      else window.localStorage.setItem(PILOT_SELECTION_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // ignore quota/serialization errors
+    }
+  };
+
+  return [selection, setSelection] as const;
+}
+
+function PilotPodSelector({
+  productOptions,
+  selection,
+  setSelection,
+  defaultSelection,
+}: {
+  productOptions: { product: string; headcount: number }[];
+  selection: string[] | null;
+  setSelection: (next: string[] | null) => void;
+  defaultSelection: string[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const effective = selection && selection.length > 0 ? selection : defaultSelection;
+  const effectiveSet = new Set(effective);
+  const isCustom = selection !== null;
+
+  const filteredOptions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return productOptions;
+    return productOptions.filter(o => o.product.toLowerCase().includes(q));
+  }, [productOptions, query]);
+
+  const toggle = (product: string) => {
+    const next = new Set(effectiveSet);
+    if (next.has(product)) next.delete(product);
+    else next.add(product);
+    setSelection(Array.from(next));
+  };
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+            <Target size={12} />
+            Pilot pods: <span className="font-bold">{effective.length}</span>
+            <ChevronDown size={12} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0" align="end">
+          <div className="p-2 border-b">
+            <div className="text-xs font-semibold mb-1">Choose 6-month pilot pods</div>
+            <Input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search products…"
+              className="h-7 text-xs"
+            />
+          </div>
+          <div className="max-h-72 overflow-y-auto p-1">
+            {filteredOptions.length === 0 ? (
+              <div className="text-[11px] text-muted-foreground p-3 text-center">No matching products</div>
+            ) : (
+              filteredOptions.map(o => {
+                const checked = effectiveSet.has(o.product);
+                return (
+                  <label
+                    key={o.product}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggle(o.product)}
+                    />
+                    <span className="text-xs flex-1 truncate" title={o.product}>{o.product}</span>
+                    <span className="text-[10px] text-muted-foreground">{o.headcount}</span>
+                  </label>
+                );
+              })
+            )}
+          </div>
+          <div className="p-2 border-t flex items-center justify-between gap-2">
+            <span className="text-[10px] text-muted-foreground">
+              {isCustom ? "Custom selection" : `Default: top ${defaultSelection.length} by headcount`}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={() => setSelection(null)}
+                disabled={!isCustom}
+              >
+                Reset
+              </Button>
+              <Button
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={() => setOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      {isCustom && (
+        <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.orange, color: C.orange }}>
+          Custom pilots
+        </Badge>
+      )}
+    </div>
+  );
+}
+
 function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
-  const stages = useMemo(() => buildPodStages(filtered), [filtered]);
+  const [pilotSelection, setPilotSelection] = usePilotSelection();
+
+  const productOptions = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const r of filtered) {
+      const key = r.product || "Unassigned Product";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    return Object.entries(counts)
+      .map(([product, headcount]) => ({ product, headcount }))
+      .sort((a, b) => b.headcount - a.headcount);
+  }, [filtered]);
+
+  const defaultSelection = useMemo(
+    () => productOptions.slice(0, DEFAULT_PILOT_COUNT).map(o => o.product),
+    [productOptions],
+  );
+
+  const stages = useMemo(
+    () => buildPodStages(filtered, pilotSelection),
+    [filtered, pilotSelection],
+  );
   const total = stages.totals.resources || 1;
 
   const sixMonthInPods = stages.sixMonth.pods.reduce((s, p) => s + p.headcount, 0);
@@ -1372,9 +1539,17 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             How the current {total}-person team evolves from role-based silos into self-sufficient AI-augmented product pods over 12 months.
           </p>
         </div>
-        <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
-          {stages.twelveMonth.pods.length} target pods
-        </Badge>
+        <div className="flex items-center gap-2 flex-wrap">
+          <PilotPodSelector
+            productOptions={productOptions}
+            selection={pilotSelection}
+            setSelection={setPilotSelection}
+            defaultSelection={defaultSelection}
+          />
+          <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
+            {stages.twelveMonth.pods.length} target pods
+          </Badge>
+        </div>
       </div>
 
       {/* Comparative KPI strip */}
@@ -1428,7 +1603,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             phase="+6 Months"
             title="Hybrid — Pilot Pods"
             months="Months 1–6"
-            caption={`Top ${stages.sixMonth.pods.length} products move to cross-functional pilot pods. Remaining ${stages.sixMonth.remainingCount} resources stay in the role-based pool.`}
+            caption={`${stages.sixMonth.pods.length} selected products move to cross-functional pilot pods. Remaining ${stages.sixMonth.remainingCount} resources stay in the role-based pool.`}
             color={C.teal}
           />
           <div className="space-y-1.5">
@@ -1492,7 +1667,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
       </div>
 
       <div className="text-[10px] text-muted-foreground mt-3 italic">
-        Pod composition is derived from live talent data: today = role buckets, +6 months = pilot pods for the top 5 products by headcount, +12 months = one pod per product (products with &lt; 3 resources grouped by portfolio).
+        Pod composition is derived from live talent data: today = role buckets, +6 months = pilot pods (defaults to the top 5 products by headcount; customize via the "Pilot pods" picker above), +12 months = one pod per product (products with &lt; 3 resources grouped by portfolio).
       </div>
     </Card>
   );
