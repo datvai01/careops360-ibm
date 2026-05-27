@@ -1131,6 +1131,373 @@ function TargetOperatingModel() {
   );
 }
 
+/* ─────────────────────── POD MODEL TRANSFORMATION ─────────────────────── */
+
+type PodRoleSlice = { role: string; count: number; color: string; futureRole: string };
+type Pod = { id: string; name: string; product: string; portfolio: string; headcount: number; roleMix: PodRoleSlice[] };
+type RoleBucket = { role: string; count: number; color: string; futureRole: string };
+
+const ROLE_ORDER = [
+  "Developer",
+  "Operations Engineer",
+  "Technical Lead",
+  "Project Manager",
+  "BSA",
+  "DBA",
+  "Platform Admin/ DBA",
+  "Solution Architect",
+];
+
+function roleMeta(role: string): { color: string; future: string } {
+  const m = ROLE_TRANSFORMATION[role];
+  if (m) return { color: m.color, future: m.future };
+  return { color: C.gray, future: "Reskilling Track" };
+}
+
+function bucketByRole(resources: Resource[]): RoleBucket[] {
+  const counts: Record<string, number> = {};
+  for (const r of resources) {
+    const role = r.role || "Unassigned";
+    counts[role] = (counts[role] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .map(([role, count]) => {
+      const meta = roleMeta(role);
+      return { role, count, color: meta.color, futureRole: meta.future };
+    })
+    .sort((a, b) => {
+      const ai = ROLE_ORDER.indexOf(a.role); const bi = ROLE_ORDER.indexOf(b.role);
+      if (ai === -1 && bi === -1) return b.count - a.count;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+}
+
+function podFromResources(id: string, name: string, product: string, portfolio: string, rs: Resource[]): Pod {
+  const slices: Record<string, PodRoleSlice> = {};
+  for (const r of rs) {
+    const role = r.role || "Unassigned";
+    if (!slices[role]) {
+      const meta = roleMeta(role);
+      slices[role] = { role, count: 0, color: meta.color, futureRole: meta.future };
+    }
+    slices[role].count += 1;
+  }
+  const roleMix = Object.values(slices).sort((a, b) => b.count - a.count);
+  return { id, name, product, portfolio, headcount: rs.length, roleMix };
+}
+
+function buildPodStages(resources: Resource[]): {
+  today: RoleBucket[];
+  sixMonth: { pods: Pod[]; remaining: RoleBucket[]; remainingCount: number };
+  twelveMonth: { pods: Pod[] };
+  totals: { resources: number };
+} {
+  const today = bucketByRole(resources);
+
+  // ── 6-month: pilot pods for top 5 products by headcount
+  const byProduct: Record<string, Resource[]> = {};
+  for (const r of resources) {
+    const key = r.product || "Unassigned Product";
+    (byProduct[key] ??= []).push(r);
+  }
+  const productEntries = Object.entries(byProduct).sort((a, b) => b[1].length - a[1].length);
+  const PILOT_COUNT = 5;
+  const pilots = productEntries.slice(0, PILOT_COUNT);
+  const pilotProductNames = new Set(pilots.map(([p]) => p));
+  const sixMonthPods: Pod[] = pilots.map(([product, rs], idx) =>
+    podFromResources(`6m-${idx}`, `${product} Pilot Pod`, product, rs[0]?.portfolio || "", rs),
+  );
+  const remainingResources = resources.filter(r => !pilotProductNames.has(r.product || "Unassigned Product"));
+  const sixMonthRemaining = bucketByRole(remainingResources);
+
+  // ── 12-month: every product becomes a self-sufficient pod; group very small products (<3) under their portfolio
+  const SMALL_THRESHOLD = 3;
+  const largeProducts = productEntries.filter(([, rs]) => rs.length >= SMALL_THRESHOLD);
+  const smallProducts = productEntries.filter(([, rs]) => rs.length < SMALL_THRESHOLD);
+
+  const twelveMonthPods: Pod[] = largeProducts.map(([product, rs], idx) =>
+    podFromResources(`12m-p-${idx}`, `${product} Pod`, product, rs[0]?.portfolio || "", rs),
+  );
+
+  // group small products by portfolio
+  const smallByPortfolio: Record<string, Resource[]> = {};
+  for (const [, rs] of smallProducts) {
+    for (const r of rs) {
+      const key = r.portfolio || "Cross-Portfolio";
+      (smallByPortfolio[key] ??= []).push(r);
+    }
+  }
+  Object.entries(smallByPortfolio).forEach(([portfolio, rs], idx) => {
+    if (rs.length === 0) return;
+    twelveMonthPods.push(
+      podFromResources(`12m-pf-${idx}`, `${portfolio} Shared Pod`, "Multiple", portfolio, rs),
+    );
+  });
+  twelveMonthPods.sort((a, b) => b.headcount - a.headcount);
+
+  return {
+    today,
+    sixMonth: { pods: sixMonthPods, remaining: sixMonthRemaining, remainingCount: remainingResources.length },
+    twelveMonth: { pods: twelveMonthPods },
+    totals: { resources: resources.length },
+  };
+}
+
+function StageHeader({ phase, title, months, caption, color }: { phase: string; title: string; months: string; caption: string; color: string }) {
+  return (
+    <div className="rounded-lg border bg-white relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-1" style={{ background: color }} />
+      <div className="p-3">
+        <div className="text-[10px] uppercase tracking-wide font-bold" style={{ color }}>{phase}</div>
+        <div className="text-sm font-bold mt-0.5">{title}</div>
+        <div className="text-[10px] text-muted-foreground">{months}</div>
+        <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">{caption}</p>
+      </div>
+    </div>
+  );
+}
+
+function RoleBucketCard({ b, total }: { b: RoleBucket; total: number }) {
+  const pct = total > 0 ? Math.round((b.count / total) * 100) : 0;
+  return (
+    <div className="rounded-md border bg-white p-2.5 hover:shadow-sm transition-shadow">
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold truncate" title={b.role}>{b.role}</div>
+          <div className="text-[10px] text-muted-foreground">{b.count} resource{b.count > 1 ? "s" : ""} · {pct}%</div>
+        </div>
+        <div className="text-lg font-bold flex-shrink-0" style={{ color: b.color }}>{b.count}</div>
+      </div>
+      <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: b.color }} />
+      </div>
+    </div>
+  );
+}
+
+function PodCard({ pod, totalResources, accent }: { pod: Pod; totalResources: number; accent: string }) {
+  const pct = totalResources > 0 ? Math.round((pod.headcount / totalResources) * 100) : 0;
+  return (
+    <div className="rounded-md border bg-white p-2.5 hover:shadow-sm transition-shadow" style={{ borderLeft: `3px solid ${accent}` }}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-xs font-bold truncate" title={pod.name}>{pod.name}</div>
+          <div className="text-[10px] text-muted-foreground truncate">{pod.headcount} members · {pct}% of workforce</div>
+        </div>
+        <Package size={14} className="flex-shrink-0" style={{ color: accent }} />
+      </div>
+      {/* role mix bar */}
+      <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden flex">
+        {pod.roleMix.map(s => (
+          <div
+            key={s.role}
+            title={`${s.role} → ${s.futureRole} (${s.count})`}
+            style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }}
+          />
+        ))}
+      </div>
+      {/* role mix chips */}
+      <div className="flex flex-wrap gap-1 mt-2">
+        {pod.roleMix.map(s => (
+          <span
+            key={s.role}
+            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
+            style={{ background: `${s.color}15`, color: s.color }}
+            title={`${s.role} → ${s.futureRole}`}
+          >
+            <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
+            {s.count}× {s.role}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
+  const stages = useMemo(() => buildPodStages(filtered), [filtered]);
+  const total = stages.totals.resources || 1;
+
+  const sixMonthInPods = stages.sixMonth.pods.reduce((s, p) => s + p.headcount, 0);
+  const twelveMonthInPods = stages.twelveMonth.pods.reduce((s, p) => s + p.headcount, 0);
+
+  // KPI strip — comparative across stages
+  const kpis = [
+    {
+      label: "Active Pods", today: 0, sixMonth: stages.sixMonth.pods.length, twelveMonth: stages.twelveMonth.pods.length, color: C.blue,
+    },
+    {
+      label: "% Workforce in Pods",
+      today: 0,
+      sixMonth: Math.round((sixMonthInPods / total) * 100),
+      twelveMonth: Math.round((twelveMonthInPods / total) * 100),
+      color: C.teal,
+      suffix: "%",
+    },
+    {
+      label: "Legacy Role Pool",
+      today: total,
+      sixMonth: stages.sixMonth.remainingCount,
+      twelveMonth: 0,
+      color: C.orange,
+    },
+    {
+      label: "Role-Based Silos",
+      today: stages.today.length,
+      sixMonth: stages.sixMonth.remaining.length,
+      twelveMonth: 0,
+      color: C.purple,
+    },
+  ];
+
+  if (filtered.length === 0) {
+    return (
+      <Card className="p-5">
+        <div className="text-center text-sm text-muted-foreground py-10">
+          <AlertCircle size={20} className="inline mr-2" />
+          No resources match the current filters. Clear filters above to see the pod model transformation.
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-5">
+      <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h3 className="text-base font-bold flex items-center gap-2"><Package size={16} style={{ color: C.blue }} /> Pod Model Transformation</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            How the current {total}-person team evolves from role-based silos into self-sufficient AI-augmented product pods over 12 months.
+          </p>
+        </div>
+        <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
+          {stages.twelveMonth.pods.length} target pods
+        </Badge>
+      </div>
+
+      {/* Comparative KPI strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
+        {kpis.map(k => (
+          <div key={k.label} className="rounded-md border bg-muted/20 p-2.5">
+            <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">{k.label}</div>
+            <div className="grid grid-cols-3 gap-1 mt-1.5 text-center">
+              <div>
+                <div className="text-sm font-bold text-muted-foreground">{k.today}{k.suffix ?? ""}</div>
+                <div className="text-[9px] text-muted-foreground">Today</div>
+              </div>
+              <div>
+                <div className="text-sm font-bold" style={{ color: k.color }}>{k.sixMonth}{k.suffix ?? ""}</div>
+                <div className="text-[9px] text-muted-foreground">+6 mo</div>
+              </div>
+              <div>
+                <div className="text-sm font-bold" style={{ color: k.color }}>{k.twelveMonth}{k.suffix ?? ""}</div>
+                <div className="text-[9px] text-muted-foreground">+12 mo</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Three-stage timeline */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr_auto_1fr] gap-3 items-start">
+        {/* Today */}
+        <div className="space-y-2">
+          <StageHeader
+            phase="Today"
+            title="Role-Based Silos"
+            months="Current state"
+            caption="Resources organized by traditional skill role and assigned across products on a shared-services basis."
+            color={C.gray}
+          />
+          <div className="space-y-1.5">
+            {stages.today.map(b => <RoleBucketCard key={b.role} b={b} total={total} />)}
+          </div>
+        </div>
+
+        {/* Arrow */}
+        <div className="hidden lg:flex flex-col items-center pt-16">
+          <ArrowRight size={20} className="text-muted-foreground" />
+          <div className="text-[9px] uppercase tracking-wide text-muted-foreground mt-1 font-semibold">Pilot</div>
+        </div>
+
+        {/* +6 months */}
+        <div className="space-y-2">
+          <StageHeader
+            phase="+6 Months"
+            title="Hybrid — Pilot Pods"
+            months="Months 1–6"
+            caption={`Top ${stages.sixMonth.pods.length} products move to cross-functional pilot pods. Remaining ${stages.sixMonth.remainingCount} resources stay in the role-based pool.`}
+            color={C.teal}
+          />
+          <div className="space-y-1.5">
+            {stages.sixMonth.pods.map(p => (
+              <PodCard key={p.id} pod={p} totalResources={total} accent={C.teal} />
+            ))}
+          </div>
+          {stages.sixMonth.remaining.length > 0 && (
+            <div className="rounded-md border bg-muted/30 p-2.5 mt-2">
+              <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1.5">Legacy Role Pool ({stages.sixMonth.remainingCount})</div>
+              <div className="flex flex-wrap gap-1">
+                {stages.sixMonth.remaining.map(b => (
+                  <span
+                    key={b.role}
+                    className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
+                    style={{ background: `${b.color}15`, color: b.color }}
+                  >
+                    <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: b.color }} />
+                    {b.count}× {b.role}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Arrow */}
+        <div className="hidden lg:flex flex-col items-center pt-16">
+          <ArrowRight size={20} className="text-muted-foreground" />
+          <div className="text-[9px] uppercase tracking-wide text-muted-foreground mt-1 font-semibold">Scale</div>
+        </div>
+
+        {/* +12 months */}
+        <div className="space-y-2">
+          <StageHeader
+            phase="+12 Months"
+            title="Full Pod Model"
+            months="Months 7–12"
+            caption={`All ${total} resources organized into ${stages.twelveMonth.pods.length} self-sufficient AI-augmented product pods. No legacy role pool remains.`}
+            color={C.blue}
+          />
+          <div className="space-y-1.5 max-h-[640px] overflow-y-auto pr-1">
+            {stages.twelveMonth.pods.map(p => (
+              <PodCard key={p.id} pod={p} totalResources={total} accent={C.blue} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Future role legend */}
+      <div className="mt-5 pt-4 border-t">
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-2">Pod Role Color Key — Current Role → Future Role</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1.5">
+          {Object.entries(ROLE_TRANSFORMATION).map(([role, m]) => (
+            <div key={role} className="flex items-center gap-2 text-[11px]">
+              <span className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: m.color }} />
+              <span className="truncate"><span className="font-medium">{role}</span> → <span style={{ color: m.color }}>{m.future}</span></span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="text-[10px] text-muted-foreground mt-3 italic">
+        Pod composition is derived from live talent data: today = role buckets, +6 months = pilot pods for the top 5 products by headcount, +12 months = one pod per product (products with &lt; 3 resources grouped by portfolio).
+      </div>
+    </Card>
+  );
+}
+
 /* ─────────────────────── FILTERS ─────────────────────── */
 
 type FilterState = {
@@ -1559,6 +1926,9 @@ export default function TalentPlan() {
           <TabsTrigger value="role" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Role Transformation View
           </TabsTrigger>
+          <TabsTrigger value="pods" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
+            Pod Model Transformation
+          </TabsTrigger>
           <TabsTrigger value="resources" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Resource Detail Table
           </TabsTrigger>
@@ -1581,6 +1951,10 @@ export default function TalentPlan() {
           <RoleTransformation filtered={filtered} />
         </TabsContent>
 
+        <TabsContent value="pods" className="mt-4">
+          <PodModelTransformation filtered={filtered} />
+        </TabsContent>
+
         <TabsContent value="resources" className="mt-4">
           <ResourceTable filtered={filtered} />
         </TabsContent>
@@ -1593,7 +1967,7 @@ export default function TalentPlan() {
       {/* Footnote */}
       <div className="text-[10px] text-muted-foreground text-center pt-4">
         <AlertCircle size={10} className="inline mr-1" />
-        Filters apply to the Skill Heatmap, Treemap, Role Transformation, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Future Operating Model are program-level and not filtered.
+        Filters apply to the Skill Heatmap, Treemap, Role Transformation, Pod Model Transformation, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Future Operating Model are program-level and not filtered.
       </div>
     </div>
     </TalentDataContext.Provider>
