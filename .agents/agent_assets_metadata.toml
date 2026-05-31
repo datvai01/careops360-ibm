@@ -54,3 +54,15 @@ id = "9IiUnWmCJBdUcDfCOA13_"
 uri = "file://out/CareOps360_Data_Mapping_Feasibility.xlsx"
 type = "table"
 title = "CareOps360 — Data Mapping & Feasibility (Excel)"
+
+[[outputs]]
+id = "zBEDYuUZzz8DDoz4ZzSTo"
+uri = "file://.local/outputs/CareOps360-Transformation-Deck.pdf"
+type = "pdf"
+title = "CareOps360 Transformation Deck (PDF)"
+
+[[outputs]]
+id = "cqo-CVeuEj6YcSKR_i4RX"
+uri = "file://.local/outputs/CareOps360-Transformation-Deck.pptx"
+type = "slides"
+title = "CareOps360 Transformation Deck (PPTX)"
