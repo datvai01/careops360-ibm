@@ -1,0 +1,50 @@
+[
+  {
+    "id": "journey",
+    "position": 1,
+    "filepath": "src/pages/slides/Journey.tsx",
+    "title": "Journey for Architecting a Nimble Organization",
+    "description": "Horizon's operating model advances through four maturity stages toward autonomous delivery, with a 60/90/180-day transformation timeline.",
+    "speakerNotes": "Four maturity stages: Traditional Ops (100% legacy baseline, being retired), Automation-Led Ops (63% to 80% target, Platform Engineering), AI-Augmented Ops (41% to 78% target, AI Transformation Office), Autonomous Ops (12% to 95% target, Joint IBM x Horizon). 391 resources across 11 domains, 15 portfolios, 28 products."
+  },
+  {
+    "id": "cultural-change",
+    "position": 2,
+    "filepath": "src/pages/slides/CulturalChange.tsx",
+    "title": "Cultural Change",
+    "description": "Operations shift from reactive and manual to AI-assisted and proactive across five From-To pairs, with a 60/90/180-day timeline.",
+    "speakerNotes": "Five From to To shifts drawn from workforce transformation data: manual triage to 95% auto-remediation; reactive to proactive anomaly detection; high FTE dependency to 124 FTEs redeployed; siloed tools to unified Command Center with GenAI Copilot; days to 5-minute MTTR for enrollment errors. 382 certified resources, 450+ planned certifications, 41% AI-enabled."
+  },
+  {
+    "id": "pod-model",
+    "position": 3,
+    "filepath": "src/pages/slides/PodModel.tsx",
+    "title": "Pod & Product Model Evolution: CareRadius",
+    "description": "CareRadius becomes a product-aligned pod owning build, run, and AI uplift, with three real modernization initiatives and a 60/90/180-day timeline.",
+    "speakerNotes": "CareRadius Clinical Ops pod, ~30 resources. Three real initiatives: SAP BO 4.2 to 4.3 (Active Feb-May), Angular 11 to 17 (Active Mar-Jun), VB6 to .NET 8 (Planned Apr-Sep, 60% fewer legacy tickets)."
+  },
+  {
+    "id": "monthly-plan",
+    "position": 4,
+    "filepath": "src/pages/slides/MonthlyPlan.tsx",
+    "title": "First Six Months — Monthly Transformation Plan",
+    "description": "The first six months sequence quick wins, modernization, and ticket reduction across 60 initiatives in three tracks.",
+    "speakerNotes": "Jan quick wins; Feb modernization ramp; Mar AI foundations; Apr scale automation; May payments & remittance; Jun consolidate. 60 initiatives: 25 technical remediation, 16 transformation, 19 ticket reduction. This slide is itself a timeline so it carries no separate timeline band."
+  },
+  {
+    "id": "governance",
+    "position": 5,
+    "filepath": "src/pages/slides/Governance.tsx",
+    "title": "Governance & Delivery Management",
+    "description": "Governance cadences and value tracking keep the transformation on plan, against a tracked benefit pool of approximately $19.6M, with a 60/90/180-day timeline.",
+    "speakerNotes": "Five governance practices with cadence and owner. Value tracking bars sum to ~$19.6M: Automation $9.7M, Data $3.2M, Integration $2.1M, AI/GenAI $2M+, AIOps $1.8M, Domain $0.8M."
+  },
+  {
+    "id": "asks",
+    "position": 6,
+    "filepath": "src/pages/slides/Asks.tsx",
+    "title": "Asks from Horizon",
+    "description": "Six commitments from Horizon keep the six-month roadmap on track by converting at-risk dependencies into shared accountability.",
+    "speakerNotes": "Six asks tied to real roadmap dependencies: exec sponsorship; SME/product-owner access; data governance ownership (unblocks Member Data Hub MDM ~180 tickets/mo); vendor coordination (NASCO, Premium Rating, SAP ~80 tickets/mo at risk); timely approvals; certification time (450+ planned). No timeline band."
+  }
+]
