@@ -1,7 +1,7 @@
 export default function Asks() {
   return (
     <div className="w-screen h-screen overflow-hidden relative bg-bg font-body text-text">
-      <div className="h-full flex flex-col px-[6vw] pt-[4vh] pb-[2.5vh]">
+      <div className="h-full flex flex-col px-[6vw] pt-[3vh] pb-[2vh]">
         {/* Header */}
         <header>
           <div className="flex items-center gap-[1vw]">
@@ -16,6 +16,9 @@ export default function Asks() {
           <h1 className="mt-[1.4vh] text-[2.7vw] font-bold font-display leading-[1.1] tracking-tight max-w-[82vw]">
             Six commitments from Horizon keep the six-month roadmap on track
           </h1>
+          <p className="mt-[1.2vh] text-[1.6vw] text-muted leading-snug">
+            Each commitment converts an at-risk dependency into a jointly owned path to Autonomous Ops
+          </p>
         </header>
 
         {/* Asks grid */}

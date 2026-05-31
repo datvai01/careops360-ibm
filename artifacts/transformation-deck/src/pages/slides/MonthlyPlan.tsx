@@ -1,7 +1,7 @@
 export default function MonthlyPlan() {
   return (
     <div className="w-screen h-screen overflow-hidden relative bg-bg font-body text-text">
-      <div className="h-full flex flex-col px-[5vw] pt-[4vh] pb-[2.5vh]">
+      <div className="h-full flex flex-col px-[6vw] pt-[3vh] pb-[2vh]">
         {/* Header */}
         <header>
           <div className="flex items-center gap-[1vw]">
@@ -16,14 +16,17 @@ export default function MonthlyPlan() {
           <h1 className="mt-[1.4vh] text-[2.7vw] font-bold font-display leading-[1.1] tracking-tight max-w-[84vw]">
             The first six months sequence quick wins, modernization, and ticket reduction
           </h1>
+          <p className="mt-[1.2vh] text-[1.6vw] text-muted leading-snug">
+            August through January — each month layers platform upgrades, tech-debt removal, and measurable ticket reduction
+          </p>
         </header>
 
         {/* Monthly columns */}
         <div className="flex-1 grid grid-cols-6 gap-[0.9vw] py-[2.4vh]">
-          {/* January */}
+          {/* August */}
           <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
             <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
-              <div className="text-[1.6vw] font-bold font-display leading-none">January</div>
+              <div className="text-[1.6vw] font-bold font-display leading-none">August</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Quick wins</div>
             </div>
             <div className="flex-1 flex flex-col gap-[1vh] px-[0.9vw] py-[1.2vh]">
@@ -32,10 +35,10 @@ export default function MonthlyPlan() {
             </div>
           </div>
 
-          {/* February */}
+          {/* September */}
           <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
             <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
-              <div className="text-[1.6vw] font-bold font-display leading-none">February</div>
+              <div className="text-[1.6vw] font-bold font-display leading-none">September</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Modernization ramp</div>
             </div>
             <div className="flex-1 flex flex-col gap-[1vh] px-[0.9vw] py-[1.2vh]">
@@ -44,10 +47,10 @@ export default function MonthlyPlan() {
             </div>
           </div>
 
-          {/* March */}
+          {/* October */}
           <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
             <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
-              <div className="text-[1.6vw] font-bold font-display leading-none">March</div>
+              <div className="text-[1.6vw] font-bold font-display leading-none">October</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">AI foundations</div>
             </div>
             <div className="flex-1 flex flex-col gap-[1vh] px-[0.9vw] py-[1.2vh]">
@@ -56,10 +59,10 @@ export default function MonthlyPlan() {
             </div>
           </div>
 
-          {/* April */}
+          {/* November */}
           <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
             <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
-              <div className="text-[1.6vw] font-bold font-display leading-none">April</div>
+              <div className="text-[1.6vw] font-bold font-display leading-none">November</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Scale automation</div>
             </div>
             <div className="flex-1 flex flex-col gap-[1vh] px-[0.9vw] py-[1.2vh]">
@@ -68,10 +71,10 @@ export default function MonthlyPlan() {
             </div>
           </div>
 
-          {/* May */}
+          {/* December */}
           <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
             <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
-              <div className="text-[1.6vw] font-bold font-display leading-none">May</div>
+              <div className="text-[1.6vw] font-bold font-display leading-none">December</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Payments &amp; remittance</div>
             </div>
             <div className="flex-1 flex flex-col gap-[1vh] px-[0.9vw] py-[1.2vh]">
@@ -80,10 +83,10 @@ export default function MonthlyPlan() {
             </div>
           </div>
 
-          {/* June */}
+          {/* January */}
           <div className="flex flex-col rounded-lg bg-surface border-2 border-accent overflow-hidden">
             <div className="bg-accent text-white px-[0.9vw] py-[1vh]">
-              <div className="text-[1.6vw] font-bold font-display leading-none">June</div>
+              <div className="text-[1.6vw] font-bold font-display leading-none">January</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Consolidate</div>
             </div>
             <div className="flex-1 flex flex-col gap-[1vh] px-[0.9vw] py-[1.2vh]">
@@ -93,7 +96,7 @@ export default function MonthlyPlan() {
           </div>
         </div>
 
-        {/* Bottom summary strip */}
+        {/* Bottom summary strip — Outcomes */}
         <div className="rounded-lg bg-text px-[2vw] py-[1.8vh] flex items-center justify-between">
           <div className="flex items-baseline gap-[0.7vw]">
             <span className="text-[2.4vw] font-bold font-display text-white">60</span>

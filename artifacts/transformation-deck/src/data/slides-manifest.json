@@ -19,9 +19,9 @@
     "id": "pod-model",
     "position": 3,
     "filepath": "src/pages/slides/PodModel.tsx",
-    "title": "Pod & Product Model Evolution: CareRadius",
-    "description": "CareRadius becomes a product-aligned pod owning build, run, and AI uplift, with three real modernization initiatives and a 60/90/180-day timeline.",
-    "speakerNotes": "CareRadius Clinical Ops pod, ~30 resources. Three real initiatives: SAP BO 4.2 to 4.3 (Active Feb-May), Angular 11 to 17 (Active Mar-Jun), VB6 to .NET 8 (Planned Apr-Sep, 60% fewer legacy tickets)."
+    "title": "Pod & Product Model Evolution: CareOps",
+    "description": "CareOps (CareRadius) is the blueprint for evolving the organization into a product and pod model — a standing pod owning build, run, and AI uplift, with three real modernization initiatives and a 60/90/180-day timeline.",
+    "speakerNotes": "CareOps (CareRadius) is the blueprint for evolving the org into the product and pod model. CareRadius Clinical Ops pod, ~30 resources. Three real initiatives: SAP BO 4.2 to 4.3 (Active Sep-Dec), Angular 11 to 17 (Active Oct-Jan), VB6 to .NET 8 (Planned Nov-Apr, 60% fewer legacy tickets)."
   },
   {
     "id": "monthly-plan",
@@ -29,15 +29,15 @@
     "filepath": "src/pages/slides/MonthlyPlan.tsx",
     "title": "First Six Months — Monthly Transformation Plan",
     "description": "The first six months sequence quick wins, modernization, and ticket reduction across 60 initiatives in three tracks.",
-    "speakerNotes": "Jan quick wins; Feb modernization ramp; Mar AI foundations; Apr scale automation; May payments & remittance; Jun consolidate. 60 initiatives: 25 technical remediation, 16 transformation, 19 ticket reduction. This slide is itself a timeline so it carries no separate timeline band."
+    "speakerNotes": "Contract starts in August. Aug quick wins; Sep modernization ramp; Oct AI foundations; Nov scale automation; Dec payments & remittance; Jan consolidate. 60 initiatives: 25 technical remediation, 16 transformation, 19 ticket reduction. This slide is itself a timeline so it carries no separate timeline band."
   },
   {
     "id": "governance",
     "position": 5,
     "filepath": "src/pages/slides/Governance.tsx",
     "title": "Governance & Delivery Management",
-    "description": "Governance cadences and value tracking keep the transformation on plan, against a tracked benefit pool of approximately $19.6M, with a 60/90/180-day timeline.",
-    "speakerNotes": "Five governance practices with cadence and owner. Value tracking bars sum to ~$19.6M: Automation $9.7M, Data $3.2M, Integration $2.1M, AI/GenAI $2M+, AIOps $1.8M, Domain $0.8M."
+    "description": "Governance cadences keep the transformation on plan and value on track across six value-impact areas, with a 60/90/180-day timeline.",
+    "speakerNotes": "Five governance practices with cadence and owner. Six value-impact areas (no dollar figures): Automation (70% manual work eliminated), Data (real-time processing), Integration (faster partner onboarding), AI/GenAI (95% auto-remediation), AIOps (13.5 hrs to 5 min resolution), Domain (compliance & accuracy)."
   },
   {
     "id": "asks",
