@@ -1,11 +1,21 @@
 export default function MonthlyPlan() {
   return (
-    <div className="w-screen h-screen overflow-hidden relative bg-bg font-body text-text">
-      <div className="h-full flex flex-col px-[6vw] pt-[3vh] pb-[2vh]">
+    <div className="w-screen h-screen overflow-hidden relative bg-gradient-to-b from-[#f7f9fc] to-[#eaeef4] font-body text-text">
+      {/* Decorative background */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(58vw 52vh at 88% -12%, rgba(15,98,254,0.08), transparent 60%), radial-gradient(48vw 46vh at -6% 112%, rgba(14,110,110,0.08), transparent 60%)",
+        }}
+      />
+      <div className="absolute top-0 left-0 right-0 h-[0.5vh] bg-gradient-to-r from-primary via-primary to-accent" />
+
+      <div className="relative h-full flex flex-col px-[6vw] pt-[3vh] pb-[2vh]">
         {/* Header */}
         <header>
           <div className="flex items-center gap-[1vw]">
-            <span className="text-[1.5vw] font-semibold uppercase tracking-[0.18em] text-primary">
+            <span className="rounded-full bg-primary/10 text-primary px-[1.1vw] py-[0.4vh] text-[1.5vw] font-semibold uppercase tracking-[0.18em]">
               Horizon × IBM
             </span>
             <span className="w-[2.5vw] h-px bg-line" />
@@ -24,8 +34,8 @@ export default function MonthlyPlan() {
         {/* Monthly columns */}
         <div className="flex-1 grid grid-cols-6 gap-[0.9vw] py-[2.4vh]">
           {/* August */}
-          <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
-            <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
+          <div className="flex flex-col rounded-xl bg-surface border border-line shadow-[0_2px_12px_rgba(16,32,46,0.06)] overflow-hidden">
+            <div className="bg-gradient-to-br from-[#4589ff] to-primary text-white px-[0.9vw] py-[1vh]">
               <div className="text-[1.6vw] font-bold font-display leading-none">August</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Quick wins</div>
             </div>
@@ -36,8 +46,8 @@ export default function MonthlyPlan() {
           </div>
 
           {/* September */}
-          <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
-            <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
+          <div className="flex flex-col rounded-xl bg-surface border border-line shadow-[0_2px_12px_rgba(16,32,46,0.06)] overflow-hidden">
+            <div className="bg-gradient-to-br from-[#4589ff] to-primary text-white px-[0.9vw] py-[1vh]">
               <div className="text-[1.6vw] font-bold font-display leading-none">September</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Modernization ramp</div>
             </div>
@@ -48,8 +58,8 @@ export default function MonthlyPlan() {
           </div>
 
           {/* October */}
-          <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
-            <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
+          <div className="flex flex-col rounded-xl bg-surface border border-line shadow-[0_2px_12px_rgba(16,32,46,0.06)] overflow-hidden">
+            <div className="bg-gradient-to-br from-[#4589ff] to-primary text-white px-[0.9vw] py-[1vh]">
               <div className="text-[1.6vw] font-bold font-display leading-none">October</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">AI foundations</div>
             </div>
@@ -60,8 +70,8 @@ export default function MonthlyPlan() {
           </div>
 
           {/* November */}
-          <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
-            <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
+          <div className="flex flex-col rounded-xl bg-surface border border-line shadow-[0_2px_12px_rgba(16,32,46,0.06)] overflow-hidden">
+            <div className="bg-gradient-to-br from-[#4589ff] to-primary text-white px-[0.9vw] py-[1vh]">
               <div className="text-[1.6vw] font-bold font-display leading-none">November</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Scale automation</div>
             </div>
@@ -72,8 +82,8 @@ export default function MonthlyPlan() {
           </div>
 
           {/* December */}
-          <div className="flex flex-col rounded-lg bg-surface border border-line overflow-hidden">
-            <div className="bg-primary text-white px-[0.9vw] py-[1vh]">
+          <div className="flex flex-col rounded-xl bg-surface border border-line shadow-[0_2px_12px_rgba(16,32,46,0.06)] overflow-hidden">
+            <div className="bg-gradient-to-br from-[#4589ff] to-primary text-white px-[0.9vw] py-[1vh]">
               <div className="text-[1.6vw] font-bold font-display leading-none">December</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Payments &amp; remittance</div>
             </div>
@@ -84,8 +94,8 @@ export default function MonthlyPlan() {
           </div>
 
           {/* January */}
-          <div className="flex flex-col rounded-lg bg-surface border-2 border-accent overflow-hidden">
-            <div className="bg-accent text-white px-[0.9vw] py-[1vh]">
+          <div className="flex flex-col rounded-xl bg-surface border-2 border-accent shadow-[0_4px_16px_rgba(14,110,110,0.12)] overflow-hidden">
+            <div className="bg-gradient-to-br from-[#1f9b9b] to-accent text-white px-[0.9vw] py-[1vh]">
               <div className="text-[1.6vw] font-bold font-display leading-none">January</div>
               <div className="text-[1.5vw] leading-snug mt-[0.5vh] text-white/85">Consolidate</div>
             </div>
@@ -97,7 +107,7 @@ export default function MonthlyPlan() {
         </div>
 
         {/* Bottom summary strip — Outcomes */}
-        <div className="rounded-lg bg-text px-[2vw] py-[1.8vh] flex items-center justify-between">
+        <div className="rounded-xl bg-gradient-to-r from-text to-[#243349] shadow-[0_4px_18px_rgba(16,32,46,0.18)] px-[2vw] py-[1.8vh] flex items-center justify-between">
           <div className="flex items-baseline gap-[0.7vw]">
             <span className="text-[2.4vw] font-bold font-display text-white">60</span>
             <span className="text-[1.6vw] text-white/80">initiatives across three tracks</span>
@@ -120,7 +130,10 @@ export default function MonthlyPlan() {
 
         {/* Footer */}
         <div className="flex items-end justify-between mt-[2vh]">
-          <span className="text-[1.5vw] text-muted">Source: CareOps360 roadmap initiatives, as of May 2026</span>
+          <span className="flex items-center gap-[0.7vw] text-[1.5vw] text-muted">
+            <span className="w-[1vw] h-[1vw] rounded-sm bg-gradient-to-br from-primary to-accent" />
+            Source: CareOps360 roadmap initiatives, as of May 2026
+          </span>
           <span className="text-[1.5vw] text-muted font-semibold font-mono">04 / 06</span>
         </div>
       </div>

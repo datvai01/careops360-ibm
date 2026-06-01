@@ -1,1 +1,1 @@
-- [Slides artifact gotchas](slides-artifact-notes.md) — wouter catalog pin before install; 16:9 overflow is real (compress body, not shared header), text floor 1.5vw.
+- [Transformation deck constraints](transformation-deck-constraints.md) — canonical layout/timeline/no-$ rules for the slides deck; overrides any stale generic slide spec.
