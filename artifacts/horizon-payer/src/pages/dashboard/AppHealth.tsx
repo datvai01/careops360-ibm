@@ -22,9 +22,24 @@ export default function AppHealth() {
           <p className="text-muted-foreground mt-1">IT operations, infrastructure, and application reliability</p>
           <LastRefresh datasetKey="app-health" variant="compact" className="mt-2" />
         </div>
-        <Badge variant="outline" className="text-sm px-3 py-1.5 border-green-500 text-green-600 dark:text-green-400 font-medium">
-          ● Production
-        </Badge>
+        <div className="flex items-center gap-2">
+          <a
+            href="https://aiops-demo.edst.ibm.com/#/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border border-green-500 text-green-600 dark:text-green-400 font-medium hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
+          >
+            ● AIOps
+          </a>
+          <a
+            href="https://aiops-offering-dev.eu-de-poc-dev.aiops.dst.ibm.com/#/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md border border-green-500 text-green-600 dark:text-green-400 font-medium hover:bg-green-50 dark:hover:bg-green-950 transition-colors"
+          >
+            ● Agentic Operations
+          </a>
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
