@@ -1698,12 +1698,14 @@ function DomainGroup({
   onSelect,
   onEdit,
   defaultOpen = true,
+  showSize = true,
 }: {
   domain: string;
   initiatives: RoadmapInitiative[];
   onSelect: (i: RoadmapInitiative) => void;
   onEdit: (i: RoadmapInitiative) => void;
   defaultOpen?: boolean;
+  showSize?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const style = DOMAIN_STYLE[domain] ?? DOMAIN_STYLE["Enterprise Platforms"];
@@ -1740,7 +1742,7 @@ function DomainGroup({
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Year</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-12">Q</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Complexity</th>
-                <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Size</th>
+                {showSize && <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-14">Size</th>}
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3">Business Impact / ROI</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-20">Depends On</th>
                 <th className="text-left font-semibold uppercase tracking-wide text-muted-foreground py-2 px-3 w-24">Status</th>
@@ -1782,11 +1784,13 @@ function DomainGroup({
                   <td className="py-2 px-3 whitespace-nowrap">
                     {init.complexity ? <SmallBadge label={init.complexity} className={COMPLEXITY_STYLE[init.complexity] ?? ""} /> : "—"}
                   </td>
-                  <td className="py-2 px-3 whitespace-nowrap">
-                    {init.tShirtSize
-                      ? <SmallBadge label={init.tShirtSize} className="text-violet-700 bg-violet-50 border-violet-200 dark:text-violet-300 dark:bg-violet-950 dark:border-violet-800" />
-                      : <span className="text-muted-foreground">—</span>}
-                  </td>
+                  {showSize && (
+                    <td className="py-2 px-3 whitespace-nowrap">
+                      {init.tShirtSize
+                        ? <SmallBadge label={init.tShirtSize} className="text-violet-700 bg-violet-50 border-violet-200 dark:text-violet-300 dark:bg-violet-950 dark:border-violet-800" />
+                        : <span className="text-muted-foreground">—</span>}
+                    </td>
+                  )}
                   <td className="py-2 px-3 text-muted-foreground max-w-[220px]" title={[init.businessImpact, init.roiPlan].filter(Boolean).join(" — ")}>
                     {init.businessImpact && <p className="truncate">{init.businessImpact}</p>}
                     {init.roiPlan && <p className="truncate text-emerald-700 dark:text-emerald-400 text-[11px] mt-0.5">ROI: {init.roiPlan}</p>}
@@ -1848,7 +1852,7 @@ function SectionView({
 }) {
   const [yearFilter, setYearFilter] = useState<YearFilter>(0);
   const [domainFilter, setDomainFilter] = useState("All");
-  const [view, setView] = useState<"table" | "heatmap" | "timeline" | "transition">("table");
+  const [view, setView] = useState<"table" | "heatmap" | "timeline">("table");
   const [formOpen, setFormOpen] = useState(false);
   const [formTarget, setFormTarget] = useState<RoadmapInitiative | null>(null);
   const queryClient = useQueryClient();
@@ -1972,14 +1976,14 @@ function SectionView({
           ))}
         </div>
         <div className="ml-auto flex items-center gap-1 border border-border rounded-md overflow-hidden">
-          {(["table", "heatmap", "timeline", "transition"] as const).map(v => (
+          {(["table", "heatmap", "timeline"] as const).map(v => (
             <button
               key={v}
               onClick={() => setView(v)}
               className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
                 view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
             >
-              {v === "table" ? "Table" : v === "heatmap" ? "Impact Map" : v === "timeline" ? "Timeline" : "Transition Plan"}
+              {v === "table" ? "Table" : v === "heatmap" ? "Impact Map" : "Timeline"}
             </button>
           ))}
         </div>
@@ -1992,8 +1996,6 @@ function SectionView({
         </Card>
       ) : view === "timeline" ? (
         <TimelineView initiatives={filtered} onSelect={onSelect} onEdit={handleEdit} />
-      ) : view === "transition" ? (
-        <TransitionPlanView initiatives={filtered} yearFilter={yearFilter} onEdit={handleEdit} />
       ) : filtered.length === 0 ? (
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
@@ -2008,6 +2010,7 @@ function SectionView({
               onSelect={onSelect}
               onEdit={handleEdit}
               defaultOpen={idx < 3}
+              showSize={initiativeType === "Transformation"}
             />
           ))}
           {filtered.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number])).length > 0 && (
@@ -2017,6 +2020,7 @@ function SectionView({
               onSelect={onSelect}
               onEdit={handleEdit}
               defaultOpen={false}
+              showSize={initiativeType === "Transformation"}
             />
           )}
         </div>
