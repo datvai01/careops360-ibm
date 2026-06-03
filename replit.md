@@ -14,7 +14,6 @@
 - **TypeScript version**: 5.9
 - **Frontend**: React + Vite + Tailwind CSS (artifacts/horizon-payer)
 - **Backend**: Express 5 + Node.js (artifacts/api-server)
-- **Slides**: React + Vite slides deck (artifacts/transformation-deck) — exportable to PPTX/PDF
 - **API contract**: OpenAPI 3.1 → Orval codegen
 - **Routing**: Wouter
 - **Charts**: Recharts
@@ -60,19 +59,6 @@
 - `pnpm --filter @workspace/db run push` — push Drizzle schema to PostgreSQL
 - `pnpm --filter @workspace/db run seed` — seed the database with realistic demo data
 - `node scripts/generate-talent-pptx.mjs` — generate `Horizon_Talent_Transformation_Plan.pptx` (8-slide IBM-style executive deck) from `artifacts/api-server/data/talentPlan.json` plus live screenshots of the Capability Uplift → Talent Plan tabs (Skill Heatmap, Product Treemap, Role Transformation). Pass `--skip-shots` to reuse cached images in `screenshots/talent-deck/`.
-
-## Slides Deck (artifacts/transformation-deck)
-
-**CareOps360 Transformation Deck** — a 6-slide executive deck (Horizon × IBM) populated only with real DB figures (no invented numbers; sourced verbatim from `capability_*`, `talent_*`, and `roadmap_initiatives`). Exportable to PPTX/PDF via the standard slides pipeline.
-
-1. **Journey for Architecting a Nimble Organization** — four-stage operating-model evolution (Traditional → Automation-Led → AI-Augmented → Autonomous Ops)
-2. **Cultural Change** — From → To shifts; 382 certified / 450+ planned certs / 41% AI-enabled
-3. **Pod & Product Model Evolution** — CareRadius Clinical Ops pod with three real in-flight initiatives
-4. **First Six Months Monthly Plan** — Jan–Jun timeline of upgrades, tech-debt removal, ticket reduction
-5. **Governance & Delivery Management** — cadences/owners + $19.6M tracked benefit pool
-6. **Asks from Horizon** — six commitments tied to real dependencies/risks
-
-Slides 1–3 and 5 carry a 60/90/180-day timeline band; slide 4 is the timeline; slide 6 has no band. Slides are static (figures baked in at build time); each slide root is `w-screen h-screen overflow-hidden`, all text in vw units (≥1.5vw floor), shared header markup identical across slides.
 
 ## Database
 

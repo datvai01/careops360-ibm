@@ -1,1 +1,0 @@
-- [Transformation deck constraints](transformation-deck-constraints.md) — canonical layout/timeline/no-$ rules for the slides deck; overrides any stale generic slide spec.
