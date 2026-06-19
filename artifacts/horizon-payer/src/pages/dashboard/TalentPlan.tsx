@@ -1792,10 +1792,12 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   );
   const total = stages.totals.resources || 1;
 
+  const FALLBACK_DOMAINS = ["Med Dev", "ADC", "ARDx", "CoreDx", "AN/ANPD", "EPD"];
   const domains = useMemo(() => {
     const seen = new Set<string>();
     for (const r of filtered) if (r.domain) seen.add(r.domain);
-    return [...seen].sort();
+    const result = [...seen].sort();
+    return result.length > 0 ? result : FALLBACK_DOMAINS;
   }, [filtered]);
 
   const byDomainP1 = useMemo(() => groupByDomain(stages.sixMonth.pods), [stages.sixMonth.pods]);
@@ -1812,17 +1814,6 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   ];
 
   const activePhaseCfg = POD_PHASES.find(p => p.id === activePhase) ?? POD_PHASES[0];
-
-  if (filtered.length === 0) {
-    return (
-      <Card className="p-5">
-        <div className="text-center text-sm text-muted-foreground py-10">
-          <AlertCircle size={20} className="inline mr-2" />
-          No resources match the current filters. Clear filters above to see the pod model transformation.
-        </div>
-      </Card>
-    );
-  }
 
   return (
     <Card className="p-5 space-y-5">
@@ -1894,7 +1885,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             );
           })}
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground font-medium hidden sm:block">Phase 1 pilots:</span>
+            <span className="text-[10px] text-muted-foreground font-medium hidden sm:block">Phase 1 Pilot Products:</span>
             <PilotPodSelector
               productOptions={productOptions}
               selection={pilotSelection}
@@ -2002,13 +1993,14 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
                 )}
               </div>
 
-              {/* Phase 3 cell — AI-augmented */}
+              {/* Phase 3 cell — AI-augmented autonomous ops */}
               <div
                 className={cn("px-2 py-2 transition-opacity", activePhase !== 3 && "opacity-50")}
                 style={{ background: activePhase === 3 ? `${C.purple}06` : undefined }}
               >
                 {p2Pods.length > 0 ? (
                   <div className="space-y-1">
+                    <div className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: C.purple }}>Autonomous Ops</div>
                     {p2Pods.map(p => <PodChip key={p.id} pod={p} accent={C.purple} showAI />)}
                   </div>
                 ) : (
@@ -2098,7 +2090,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
                   return (
                     <div key={ph} className={cn("rounded py-0.5 transition-colors", isActive ? "bg-white dark:bg-background shadow-sm" : "")}>
                       <div className="text-sm font-bold" style={{ color: k.color }}>{val}{k.suffix ?? ""}</div>
-                      <div className="text-[9px] text-muted-foreground">Ph {ph}</div>
+                      <div className="text-[9px] text-muted-foreground">Phase {ph}</div>
                     </div>
                   );
                 })}
