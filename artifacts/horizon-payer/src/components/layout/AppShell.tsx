@@ -217,7 +217,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <div 
         className={cn(
-          "flex-shrink-0 border-r bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col",
+          "no-print flex-shrink-0 border-r bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col",
           sidebarOpen ? "w-64" : "w-16"
         )}
       >
@@ -297,7 +297,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Demo Environment Banner */}
         <div
-          className="flex-shrink-0 flex items-center gap-2 px-4 py-1.5 text-[11px] border-b"
+          className="no-print flex-shrink-0 flex items-center gap-2 px-4 py-1.5 text-[11px] border-b"
           style={{
             background: "linear-gradient(90deg, rgba(15,98,254,0.06) 0%, transparent 80%)",
             borderBottomColor: "rgba(15,98,254,0.15)",
@@ -393,7 +393,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Alert Banner */}
         {activeAlerts.length > 0 && (
-          <div className="bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between flex-shrink-0">
+          <div className="no-print bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2 text-destructive text-sm font-medium">
               <ActivityIcon className="w-4 h-4 animate-pulse" />
               <span>Critical System Alert: {activeAlerts[0].title} - {activeAlerts[0].description}</span>
@@ -411,7 +411,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* IBM Disclaimer Bar */}
         <div
-          className="flex-shrink-0 border-t px-6 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[10px] leading-relaxed"
+          className="no-print flex-shrink-0 border-t px-6 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[10px] leading-relaxed"
           style={{
             background: "linear-gradient(90deg, rgba(15,98,254,0.04) 0%, transparent 100%)",
             borderTopColor: "rgba(15,98,254,0.12)",

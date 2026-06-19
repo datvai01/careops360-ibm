@@ -36,7 +36,7 @@ import {
   Users, MapPin, Briefcase, Code2, Wrench, Brain, ShieldCheck, Activity,
   Building2, Layers, Package, GraduationCap, Sparkles, Workflow,
   CheckCircle2, AlertCircle, Search, Download, ArrowRight,
-  Target, Zap, BookOpen, ChevronDown, ChevronRight,
+  Target, Zap, BookOpen, ChevronDown, ChevronRight, Printer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -1816,7 +1816,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const activePhaseCfg = POD_PHASES.find(p => p.id === activePhase) ?? POD_PHASES[0];
 
   return (
-    <Card className="p-5 space-y-5">
+    <Card className="pod-model-card p-5 space-y-5">
 
       {/* ── Title ─────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -1828,9 +1828,28 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             How the current {total}-person team evolves from role-based silos into AI-augmented product pods across 3 phases.
           </p>
         </div>
-        <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
-          {stages.twelveMonth.pods.length} target pods
-        </Badge>
+        <div className="flex items-center gap-2 no-print">
+          <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
+            {stages.twelveMonth.pods.length} target pods
+          </Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs gap-1.5"
+            onClick={() => {
+              const cleanup = () => {
+                document.body.classList.remove("print-pod-model");
+                window.removeEventListener("afterprint", cleanup);
+              };
+              window.addEventListener("afterprint", cleanup);
+              document.body.classList.add("print-pod-model");
+              window.print();
+            }}
+          >
+            <Printer size={13} />
+            Print / Export
+          </Button>
+        </div>
       </div>
 
       {/* ── Value Stream Banner ───────────────────────────── */}
@@ -1861,7 +1880,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
       </div>
 
       {/* ── Phase Toggle + Pilot Selector ─────────────────── */}
-      <div className="space-y-2">
+      <div className="space-y-2 no-print">
         <div className="flex items-center gap-2 flex-wrap">
           {POD_PHASES.map(ph => {
             const PhIcon = ph.Icon;

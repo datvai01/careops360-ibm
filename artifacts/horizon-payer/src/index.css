@@ -122,3 +122,89 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+/* ── Print / Export styles for Pod Model ────────────────── */
+@media print {
+  @page {
+    size: A3 landscape;
+    margin: 12mm 10mm;
+  }
+
+  /* Ensure backgrounds/colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When the print-pod-model body class is present:
+     use the visibility trick — hide the entire main area,
+     then re-surface the card and all its descendants.
+     .no-print covers: sidebar div, demo banner, alert banner, disclaimer bar.
+     header targets the <header> element directly. */
+  body.print-pod-model header,
+  body.print-pod-model .no-print {
+    display: none !important;
+  }
+
+  body.print-pod-model main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Hide everything inside main via visibility (allows child override) */
+  body.print-pod-model main * {
+    visibility: hidden !important;
+  }
+
+  /* Re-show the pod model card and all its children */
+  body.print-pod-model .pod-model-card,
+  body.print-pod-model .pod-model-card * {
+    visibility: visible !important;
+  }
+
+  /* Position the card at the top-left of the print page */
+  body.print-pod-model .pod-model-card {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+    padding: 12px !important;
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  /* Show all phases at full opacity — remove the interactive dimming */
+  body.print-pod-model .pod-model-card .transition-opacity {
+    opacity: 1 !important;
+  }
+
+  /* Remove horizontal scroll on the value stream banner */
+  body.print-pod-model .pod-model-card .overflow-x-auto {
+    overflow: visible !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Pod chips and row labels — no truncation */
+  body.print-pod-model .pod-model-card .truncate {
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+
+  /* Swimlane column grid: equal-width columns */
+  body.print-pod-model .pod-model-card .grid[style*="130px"] {
+    grid-template-columns: minmax(80px, 120px) repeat(3, 1fr) !important;
+  }
+
+  /* KPI strip: always 4 columns */
+  body.print-pod-model .pod-model-card .grid-cols-2 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Role legend: 4 columns */
+  body.print-pod-model .pod-model-card .grid-cols-1 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
