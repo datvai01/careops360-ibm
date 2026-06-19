@@ -1704,8 +1704,71 @@ function PilotPodSelector({
   );
 }
 
+function groupByDomain(pods: Pod[]): Record<string, Pod[]> {
+  const result: Record<string, Pod[]> = {};
+  for (const p of pods) {
+    (result[p.domain] ??= []).push(p);
+  }
+  return result;
+}
+
+function PodChip({ pod, accent, showAI = false }: { pod: Pod; accent: string; showAI?: boolean }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className="inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[10px] font-medium hover:shadow-sm transition-shadow w-full text-left"
+          style={{ borderColor: `${accent}50`, background: `${accent}08` }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
+          <span className="truncate flex-1 min-w-0" title={pod.name}>{pod.name}</span>
+          <span className="flex-shrink-0 tabular-nums font-bold text-[9px]" style={{ color: accent }}>{pod.headcount}</span>
+          {showAI && (
+            <span className="flex-shrink-0 text-[9px] px-1 rounded font-bold" style={{ background: `${C.purple}20`, color: C.purple }}>AI</span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 p-0" align="start" side="right">
+        <PodCard pod={pod} accent={accent} />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+const POD_PHASES = [
+  {
+    id: 1, label: "Foundation", timeframe: "Months 0–6",
+    desc: "Pilot pods launched for top products; shared services remain centralized; IBM delivery model onboarded.",
+    color: C.teal, Icon: BookOpen,
+  },
+  {
+    id: 2, label: "Scale", timeframe: "Months 6–12",
+    desc: "All products moved into cross-functional pods; shared pods formalized; value stream fully operational.",
+    color: C.blue, Icon: Layers,
+  },
+  {
+    id: 3, label: "Operate", timeframe: "Months 12–18",
+    desc: "AI-augmented autonomous operations; continuous improvement cadence; steady-state pod model.",
+    color: C.purple, Icon: Sparkles,
+  },
+] as const;
+
+const VALUE_STREAM_STEPS = [
+  "Demand Mgmt", "Intake", "Backlog Refinement", "Capacity Planning",
+  "Agile Delivery", "SIT & UAT", "Deploy & Release",
+];
+
+const SHARED_POD_DEFS = [
+  { name: "KTLO & Run",             minPhase: 1 },
+  { name: "Control Tower",          minPhase: 1 },
+  { name: "Quality & Compliance",   minPhase: 2 },
+  { name: "Release Management",     minPhase: 2 },
+  { name: "Change Management",      minPhase: 2 },
+];
+
 function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const [pilotSelection, setPilotSelection] = usePilotSelection();
+  const [activePhase, setActivePhase] = useState<number>(1);
 
   const productOptions = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -1729,37 +1792,26 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   );
   const total = stages.totals.resources || 1;
 
-  const sixMonthInPods = stages.sixMonth.pods.reduce((s, p) => s + p.headcount, 0);
+  const domains = useMemo(() => {
+    const seen = new Set<string>();
+    for (const r of filtered) if (r.domain) seen.add(r.domain);
+    return [...seen].sort();
+  }, [filtered]);
+
+  const byDomainP1 = useMemo(() => groupByDomain(stages.sixMonth.pods), [stages.sixMonth.pods]);
+  const byDomainP2 = useMemo(() => groupByDomain(stages.twelveMonth.pods), [stages.twelveMonth.pods]);
+
+  const sixMonthInPods  = stages.sixMonth.pods.reduce((s, p) => s + p.headcount, 0);
   const twelveMonthInPods = stages.twelveMonth.pods.reduce((s, p) => s + p.headcount, 0);
 
-  // KPI strip — comparative across stages
   const kpis = [
-    {
-      label: "Active Pods", today: 0, sixMonth: stages.sixMonth.pods.length, twelveMonth: stages.twelveMonth.pods.length, color: C.blue,
-    },
-    {
-      label: "% Workforce in Pods",
-      today: 0,
-      sixMonth: Math.round((sixMonthInPods / total) * 100),
-      twelveMonth: Math.round((twelveMonthInPods / total) * 100),
-      color: C.teal,
-      suffix: "%",
-    },
-    {
-      label: "Legacy Role Pool",
-      today: total,
-      sixMonth: stages.sixMonth.remainingCount,
-      twelveMonth: 0,
-      color: C.orange,
-    },
-    {
-      label: "Role-Based Silos",
-      today: stages.today.length,
-      sixMonth: stages.sixMonth.remaining.length,
-      twelveMonth: 0,
-      color: C.purple,
-    },
+    { label: "Active Pods",        p1: stages.sixMonth.pods.length,                         p2: stages.twelveMonth.pods.length,                    p3: stages.twelveMonth.pods.length, color: C.blue },
+    { label: "% in Pods",          p1: Math.round((sixMonthInPods / total) * 100),           p2: Math.round((twelveMonthInPods / total) * 100),     p3: 100,                            color: C.teal,   suffix: "%" },
+    { label: "Legacy Pool",        p1: stages.sixMonth.remainingCount,                       p2: 0,                                                 p3: 0,                              color: C.orange },
+    { label: "Role Silos",         p1: stages.sixMonth.remaining.length,                     p2: 0,                                                 p3: 0,                              color: C.purple },
   ];
+
+  const activePhaseCfg = POD_PHASES.find(p => p.id === activePhase) ?? POD_PHASES[0];
 
   if (filtered.length === 0) {
     return (
@@ -1773,162 +1825,308 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   }
 
   return (
-    <Card className="p-5">
-      <div className="mb-4 flex items-start justify-between gap-3 flex-wrap">
+    <Card className="p-5 space-y-5">
+
+      {/* ── Title ─────────────────────────────────────────── */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h3 className="text-base font-bold flex items-center gap-2"><Package size={16} style={{ color: C.blue }} /> Pod Model Transformation</h3>
+          <h3 className="text-base font-bold flex items-center gap-2">
+            <Package size={16} style={{ color: C.blue }} /> Pod Model — Phased Operating Model
+          </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            How the current {total}-person team evolves from role-based silos into self-sufficient AI-augmented product pods over 12 months.
+            How the current {total}-person team evolves from role-based silos into AI-augmented product pods across 3 phases.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <PilotPodSelector
-            productOptions={productOptions}
-            selection={pilotSelection}
-            setSelection={setPilotSelection}
-            defaultSelection={defaultSelection}
-          />
-          <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
-            {stages.twelveMonth.pods.length} target pods
-          </Badge>
-        </div>
+        <Badge variant="outline" className="text-[10px]" style={{ borderColor: C.blue, color: C.blue }}>
+          {stages.twelveMonth.pods.length} target pods
+        </Badge>
       </div>
 
-      {/* Comparative KPI strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
-        {kpis.map(k => (
-          <div key={k.label} className="rounded-md border bg-muted/20 p-2.5">
-            <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">{k.label}</div>
-            <div className="grid grid-cols-3 gap-1 mt-1.5 text-center">
-              <div>
-                <div className="text-sm font-bold text-muted-foreground">{k.today}{k.suffix ?? ""}</div>
-                <div className="text-[9px] text-muted-foreground">Today</div>
+      {/* ── Value Stream Banner ───────────────────────────── */}
+      <div className="rounded-lg border border-border overflow-hidden">
+        <div className="bg-[#001141] text-white text-[9px] font-bold uppercase tracking-widest px-3 py-1.5">
+          Value &amp; Delivery Stream — Demand to Release
+        </div>
+        <div className="flex items-center overflow-x-auto bg-gradient-to-r from-[#0f62fe]/5 via-transparent to-[#8a3ffc]/5 px-2 py-2 gap-0.5 flex-nowrap">
+          {VALUE_STREAM_STEPS.map((step, i) => (
+            <div key={step} className="flex items-center flex-shrink-0 gap-0.5">
+              <div
+                className={cn(
+                  "px-2.5 py-1 text-[10px] font-semibold rounded whitespace-nowrap",
+                  i === VALUE_STREAM_STEPS.length - 1
+                    ? "text-white"
+                    : "text-foreground bg-muted/60 border border-border"
+                )}
+                style={i === VALUE_STREAM_STEPS.length - 1 ? { background: C.blue } : {}}
+              >
+                {step}
               </div>
-              <div>
-                <div className="text-sm font-bold" style={{ color: k.color }}>{k.sixMonth}{k.suffix ?? ""}</div>
-                <div className="text-[9px] text-muted-foreground">+6 mo</div>
-              </div>
-              <div>
-                <div className="text-sm font-bold" style={{ color: k.color }}>{k.twelveMonth}{k.suffix ?? ""}</div>
-                <div className="text-[9px] text-muted-foreground">+12 mo</div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Three-stage timeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr_auto_1fr] gap-3 items-start">
-        {/* Today */}
-        <div className="space-y-2">
-          <StageHeader
-            phase="Today"
-            title="Role-Based Silos"
-            months="Current state"
-            caption="Resources organized by traditional skill role and assigned across products on a shared-services basis."
-            color={C.gray}
-          />
-          <div className="space-y-1.5">
-            {stages.today.map(b => <RoleBucketCard key={b.role} b={b} total={total} />)}
-          </div>
-        </div>
-
-        {/* Arrow */}
-        <div className="hidden lg:flex flex-col items-center pt-16">
-          <ArrowRight size={20} className="text-muted-foreground" />
-          <div className="text-[9px] uppercase tracking-wide text-muted-foreground mt-1 font-semibold">Pilot</div>
-        </div>
-
-        {/* +6 months */}
-        <div className="space-y-2">
-          <StageHeader
-            phase="+6 Months"
-            title="Hybrid — Pilot Pods"
-            months="Months 1–6"
-            caption={`${stages.sixMonth.pods.length} selected products move to cross-functional pilot pods. Remaining ${stages.sixMonth.remainingCount} resources stay in the role-based pool.`}
-            color={C.teal}
-          />
-          <div className="space-y-1.5">
-            {stages.sixMonth.pods.map(p => (
-              <PodCard key={p.id} pod={p} accent={C.teal} />
-            ))}
-          </div>
-          {stages.sixMonth.remaining.length > 0 && (
-            <div className="rounded-md border bg-muted/30 p-2.5 mt-2">
-              <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1.5">Legacy Role Pool ({stages.sixMonth.remainingCount})</div>
-              <div className="flex flex-wrap gap-1">
-                {stages.sixMonth.remaining.map(b => (
-                  <span
-                    key={b.role}
-                    className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
-                    style={{ background: `${b.color}15`, color: b.color }}
-                  >
-                    <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: b.color }} />
-                    {b.count}× {b.role}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Arrow */}
-        <div className="hidden lg:flex flex-col items-center pt-16">
-          <ArrowRight size={20} className="text-muted-foreground" />
-          <div className="text-[9px] uppercase tracking-wide text-muted-foreground mt-1 font-semibold">Scale</div>
-        </div>
-
-        {/* +12 months */}
-        <div className="space-y-2">
-          <StageHeader
-            phase="+12 Months"
-            title="Full Pod Model"
-            months="Months 7–12"
-            caption={`All ${total} resources organized into ${stages.twelveMonth.pods.length} self-sufficient AI-augmented product pods. No legacy role pool remains.`}
-            color={C.blue}
-          />
-          <div className="space-y-3 max-h-[640px] overflow-y-auto pr-1">
-            {(() => {
-              const byDomain: Record<string, Pod[]> = {};
-              for (const p of stages.twelveMonth.pods) {
-                (byDomain[p.domain] ??= []).push(p);
-              }
-              return Object.entries(byDomain).map(([domain, pods]) => (
-                <div key={domain} className="space-y-1.5">
-                  <div className="flex items-center gap-2 sticky top-0 bg-white z-10 py-1">
-                    <Layers size={11} style={{ color: C.blue }} />
-                    <span className="text-[10px] uppercase tracking-wide font-bold" style={{ color: C.blue }}>
-                      Domain: {domain}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {pods.length} pod{pods.length > 1 ? "s" : ""} · {pods.reduce((s, p) => s + p.headcount, 0)} people
-                    </span>
-                  </div>
-                  {pods.map(p => (
-                    <PodCard key={p.id} pod={p} accent={C.blue} />
-                  ))}
-                </div>
-              ));
-            })()}
-          </div>
-        </div>
-      </div>
-
-      {/* Future role legend */}
-      <div className="mt-5 pt-4 border-t">
-        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-2">Pod Role Color Key — Current Role → Future Role</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1.5">
-          {Object.entries(ROLE_TRANSFORMATION).map(([role, m]) => (
-            <div key={role} className="flex items-center gap-2 text-[11px]">
-              <span className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: m.color }} />
-              <span className="truncate"><span className="font-medium">{role}</span> → <span style={{ color: m.color }}>{m.future}</span></span>
+              {i < VALUE_STREAM_STEPS.length - 1 && (
+                <ChevronRight size={12} className="text-muted-foreground flex-shrink-0" />
+              )}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="text-[10px] text-muted-foreground mt-3 italic">
-        Pod composition is derived from live talent data: today = role buckets, +6 months = pilot pods (defaults to the top 5 products by headcount; customize via the "Pilot pods" picker above), +12 months = one pod per product (products with &lt; 3 resources grouped by portfolio).
+      {/* ── Phase Toggle + Pilot Selector ─────────────────── */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {POD_PHASES.map(ph => {
+            const PhIcon = ph.Icon;
+            const isActive = activePhase === ph.id;
+            return (
+              <button
+                key={ph.id}
+                onClick={() => setActivePhase(ph.id)}
+                className={cn(
+                  "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-all",
+                  isActive ? "shadow-md" : "bg-background text-muted-foreground border-border hover:border-foreground/30 hover:text-foreground"
+                )}
+                style={isActive ? { background: ph.color, color: "#fff", borderColor: ph.color } : {}}
+              >
+                <PhIcon size={14} />
+                <div className="text-left">
+                  <div className="text-xs font-bold leading-tight">Phase {ph.id}: {ph.label}</div>
+                  <div className={cn("text-[10px] leading-tight", isActive ? "opacity-80" : "text-muted-foreground")}>{ph.timeframe}</div>
+                </div>
+              </button>
+            );
+          })}
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground font-medium hidden sm:block">Phase 1 pilots:</span>
+            <PilotPodSelector
+              productOptions={productOptions}
+              selection={pilotSelection}
+              setSelection={setPilotSelection}
+              defaultSelection={defaultSelection}
+            />
+          </div>
+        </div>
+        <div
+          className="rounded-md px-3 py-2 text-xs border"
+          style={{ background: `${activePhaseCfg.color}08`, borderColor: `${activePhaseCfg.color}30`, color: activePhaseCfg.color }}
+        >
+          <span className="font-semibold">Phase {activePhase} — {activePhaseCfg.label}:</span>{" "}
+          {activePhaseCfg.desc}
+        </div>
+      </div>
+
+      {/* ── Operating Model Swimlane ──────────────────────── */}
+      <div className="rounded-lg border border-border overflow-hidden">
+
+        {/* Column headers */}
+        <div className="grid border-b border-border" style={{ gridTemplateColumns: "130px repeat(3, 1fr)" }}>
+          <div className="px-3 py-2 bg-muted/50 border-r border-border flex items-center gap-1.5">
+            <Building2 size={11} className="text-muted-foreground" />
+            <span className="text-[10px] uppercase tracking-wide font-bold text-muted-foreground">Division / LOB</span>
+          </div>
+          {POD_PHASES.map(ph => {
+            const PhIcon = ph.Icon;
+            const isActive = activePhase === ph.id;
+            return (
+              <div
+                key={ph.id}
+                className="px-3 py-2 border-r border-border last:border-r-0 transition-colors"
+                style={{
+                  background: isActive ? `${ph.color}12` : "transparent",
+                  borderTop: `3px solid ${isActive ? ph.color : "transparent"}`,
+                }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white flex-shrink-0"
+                    style={{ background: ph.color }}
+                  >
+                    {ph.id}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold leading-tight" style={{ color: ph.color }}>{ph.label}</div>
+                    <div className="text-[9px] text-muted-foreground leading-tight">{ph.timeframe}</div>
+                  </div>
+                  {isActive && (
+                    <span
+                      className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded flex-shrink-0"
+                      style={{ background: ph.color, color: "#fff" }}
+                    >
+                      Active
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* LOB rows */}
+        {domains.map((domain, di) => {
+          const p1Pods = byDomainP1[domain] ?? [];
+          const p2Pods = byDomainP2[domain] ?? [];
+          return (
+            <div
+              key={domain}
+              className={cn("grid border-b border-border last:border-b-0", di % 2 !== 0 ? "bg-muted/10" : "")}
+              style={{ gridTemplateColumns: "130px repeat(3, 1fr)" }}
+            >
+              {/* Row label */}
+              <div className="px-3 py-2.5 border-r border-border flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C.blue }} />
+                <span className="text-xs font-semibold truncate" title={domain}>{domain}</span>
+              </div>
+
+              {/* Phase 1 cell — pilot pods */}
+              <div
+                className={cn("px-2 py-2 border-r border-border transition-opacity", activePhase !== 1 && "opacity-50")}
+                style={{ background: activePhase === 1 ? `${C.teal}06` : undefined }}
+              >
+                {p1Pods.length > 0 ? (
+                  <div className="space-y-1">
+                    {p1Pods.map(p => <PodChip key={p.id} pod={p} accent={C.teal} />)}
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-muted-foreground italic px-1 py-1">Ramping up…</div>
+                )}
+              </div>
+
+              {/* Phase 2 cell — all pods */}
+              <div
+                className={cn("px-2 py-2 border-r border-border transition-opacity", activePhase !== 2 && "opacity-50")}
+                style={{ background: activePhase === 2 ? `${C.blue}06` : undefined }}
+              >
+                {p2Pods.length > 0 ? (
+                  <div className="space-y-1">
+                    {p2Pods.map(p => <PodChip key={p.id} pod={p} accent={C.blue} />)}
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-muted-foreground italic px-1 py-1">No pods</div>
+                )}
+              </div>
+
+              {/* Phase 3 cell — AI-augmented */}
+              <div
+                className={cn("px-2 py-2 transition-opacity", activePhase !== 3 && "opacity-50")}
+                style={{ background: activePhase === 3 ? `${C.purple}06` : undefined }}
+              >
+                {p2Pods.length > 0 ? (
+                  <div className="space-y-1">
+                    {p2Pods.map(p => <PodChip key={p.id} pod={p} accent={C.purple} showAI />)}
+                  </div>
+                ) : (
+                  <div className="text-[10px] text-muted-foreground italic px-1 py-1">No pods</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Shared PODs band */}
+        <div
+          className="grid border-t-2 border-border"
+          style={{ gridTemplateColumns: "130px repeat(3, 1fr)" }}
+        >
+          <div className="px-3 py-2.5 border-r border-border flex items-center gap-2 bg-muted/20">
+            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C.orange }} />
+            <div>
+              <div className="text-[10px] font-bold text-foreground">Shared PODs</div>
+              <div className="text-[9px] text-muted-foreground">Cross-org services</div>
+            </div>
+          </div>
+          {POD_PHASES.map(ph => {
+            const active = SHARED_POD_DEFS.filter(sp => sp.minPhase <= ph.id);
+            const isActive = activePhase === ph.id;
+            return (
+              <div
+                key={ph.id}
+                className={cn("px-2 py-2.5 border-r border-border last:border-r-0 transition-opacity", !isActive && "opacity-50")}
+                style={{ background: isActive ? `${ph.color}06` : undefined }}
+              >
+                <div className="flex flex-wrap gap-1">
+                  {active.map(sp => (
+                    <span
+                      key={sp.name}
+                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium border"
+                      style={{
+                        borderColor: ph.id === 3 ? `${C.green}60` : `${ph.color}40`,
+                        background:  ph.id === 3 ? `${C.green}12` : `${ph.color}10`,
+                        color:       ph.id === 3 ? C.green : ph.color,
+                      }}
+                    >
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: ph.id === 3 ? C.green : ph.color }} />
+                      {sp.name}
+                    </span>
+                  ))}
+                  {active.length === 0 && (
+                    <span className="text-[10px] text-muted-foreground italic">Not yet active</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Cross-Functional Services Legend ─────────────── */}
+      <div className="rounded-md border border-border px-3 py-2.5 bg-muted/20">
+        <div className="text-[10px] uppercase tracking-wide font-bold text-muted-foreground mb-2">Cross-Functional Services</div>
+        <div className="flex flex-wrap gap-4 text-[10px]">
+          {[
+            { label: "Horizon",        color: C.blue,   icon: "◉" },
+            { label: "IBM AMS",        color: C.purple, icon: "◎" },
+            { label: "Horizon × IBM",  color: C.teal,   icon: "⊕" },
+            { label: "Change Agents",  color: C.orange, icon: "◈" },
+            { label: "Support",        color: C.gray,   icon: "○" },
+          ].map(item => (
+            <div key={item.label} className="flex items-center gap-1.5">
+              <span className="text-base leading-none" style={{ color: item.color }}>{item.icon}</span>
+              <span className="font-semibold" style={{ color: item.color }}>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── KPI Strip ────────────────────────────────────── */}
+      <div>
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-2">Transformation KPIs by Phase</div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {kpis.map(k => (
+            <div key={k.label} className="rounded-md border bg-muted/20 p-2.5">
+              <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">{k.label}</div>
+              <div className="grid grid-cols-3 gap-1 mt-1.5 text-center">
+                {([1, 2, 3] as const).map(ph => {
+                  const val = ph === 1 ? k.p1 : ph === 2 ? k.p2 : k.p3;
+                  const isActive = activePhase === ph;
+                  return (
+                    <div key={ph} className={cn("rounded py-0.5 transition-colors", isActive ? "bg-white dark:bg-background shadow-sm" : "")}>
+                      <div className="text-sm font-bold" style={{ color: k.color }}>{val}{k.suffix ?? ""}</div>
+                      <div className="text-[9px] text-muted-foreground">Ph {ph}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Role Color Legend ─────────────────────────────── */}
+      <div className="pt-4 border-t">
+        <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-2">Pod Role Color Key — Current Role → Future Role</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1.5">
+          {Object.entries(ROLE_TRANSFORMATION).map(([role, m]) => (
+            <div key={role} className="flex items-center gap-2 text-[11px]">
+              <span className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: m.color }} />
+              <span className="truncate">
+                <span className="font-medium">{role}</span>
+                {" → "}
+                <span style={{ color: m.color }}>{m.future}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="text-[10px] text-muted-foreground italic">
+        Pod composition is derived from live talent data. Phase 1 = pilot pods (defaults to top {DEFAULT_PILOT_COUNT} products by headcount; customize via the pilot picker above). Phase 2 = all products in cross-functional pods. Phase 3 = same structure with AI-augmented operating model. Click any pod chip to see its full roster.
       </div>
     </Card>
   );
