@@ -41,6 +41,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import talentJson from "@/data/talentPlan.json";
+import { Slider } from "@/components/ui/slider";
 
 const C = {
   blue: "#0f62fe",
@@ -1728,6 +1729,13 @@ function PodChip({ pod, accent, showAI = false }: { pod: Pod; accent: string; sh
           <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
           <span className="truncate flex-1 min-w-0" title={pod.name}>{pod.name}</span>
           <span className="flex-shrink-0 tabular-nums font-bold text-[9px]" style={{ color: accent }}>{pod.headcount}</span>
+          <span
+            className="flex-shrink-0 text-[9px] px-1 rounded font-medium tabular-nums"
+            style={{ background: `${C.purple}15`, color: C.purple }}
+            title={`${Math.max(1, Math.ceil(pod.headcount / 5))} AI agent(s)`}
+          >
+            🤖{Math.max(1, Math.ceil(pod.headcount / 5))}
+          </span>
           {showAI && (
             <span className="flex-shrink-0 text-[9px] px-1 rounded font-bold" style={{ background: `${C.purple}20`, color: C.purple }}>AI</span>
           )}
@@ -1771,6 +1779,177 @@ const SHARED_POD_DEFS = [
   { name: "Change Management",      minPhase: 2 },
 ];
 
+/* ── Standard Pod Role Template ──────────────────────────── */
+const POD_ROLE_TEMPLATE = [
+  { role: "Product Owner",               count: 1,   Icon: Target,     color: C.blue,   dotted: false, shared: false, digital: false },
+  { role: "AI Engineer",                 count: 1,   Icon: Brain,      color: C.purple, dotted: false, shared: false, digital: false },
+  { role: "QA Engineer",                 count: 1,   Icon: ShieldCheck,color: C.green,  dotted: false, shared: false, digital: false },
+  { role: "Data / Integration Engineer", count: 1,   Icon: Workflow,   color: C.teal,   dotted: false, shared: false, digital: false },
+  { role: "Operational Engineer",        count: 1,   Icon: Wrench,     color: C.orange, dotted: true,  shared: false, digital: false },
+  { role: "Scrum Master",                count: 0.5, Icon: Users,      color: C.gray,   dotted: false, shared: true,  digital: false },
+  { role: "AI Agents (Digital Labor)",   count: 2,   Icon: Sparkles,   color: C.purple, dotted: false, shared: false, digital: true  },
+];
+
+function makeScenarioResource(domain: string, idx: number): Resource {
+  return {
+    serial: `scenario-${domain}-${idx}`,
+    name: `Planned ${domain} ${idx + 1}`,
+    domain, portfolio: domain, product: domain,
+    applicationArea: "General",
+    typeOfWork: "Projects",
+    role: "Developer",
+    location: idx % 2 === 0 ? "Offshore" : "Onshore",
+    current: { techStack: "", futureTech: "", industry: "", agile: "", agentic: "", devsecops: "", aiops: "" },
+    plan:    { techStack: "", futureTech: "", industry: "", agile: "", agentic: "", devops:    "", aiops: "" },
+  };
+}
+
+function PodCompositionModelCard() {
+  return (
+    <div className="rounded-lg border border-border overflow-hidden no-print">
+      <div className="px-3 py-2 flex items-center justify-between" style={{ background: "#001141" }}>
+        <div className="flex items-center gap-2">
+          <Package size={12} className="text-white opacity-70" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-white">
+            Standard Pod Composition
+          </span>
+        </div>
+        <span className="text-[10px] text-white/50 hidden sm:block">6–8 FTE + digital labor per pod</span>
+      </div>
+      <div className="p-3 bg-muted/10">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+          {POD_ROLE_TEMPLATE.map(r => {
+            const Icon = r.Icon;
+            return (
+              <div
+                key={r.role}
+                className={cn(
+                  "flex flex-col items-center gap-1 rounded-lg p-2 text-center",
+                  r.digital ? "bg-purple-50 dark:bg-purple-950/20" : "bg-background",
+                )}
+                style={{
+                  border: `1.5px ${r.dotted ? "dashed" : "solid"} ${r.color}${r.dotted || r.shared ? "50" : "80"}`,
+                }}
+              >
+                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${r.color}12` }}>
+                  <Icon size={13} style={{ color: r.color }} />
+                </div>
+                <div className="text-[9px] font-bold leading-tight" style={{ color: r.color }}>{r.role}</div>
+                <div className="text-[9px] text-muted-foreground leading-tight">
+                  {r.digital ? `×${r.count} AI` : r.shared ? "÷ 2 pods" : r.dotted ? "dotted" : `×${r.count}`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-2 text-[9px] text-muted-foreground">
+          <span>━━ Core member</span>
+          <span>╌╌ Dotted-line (Ops Eng)</span>
+          <span>÷ 2 = Shared across 2 pods</span>
+          <span className="font-medium" style={{ color: C.purple }}>🤖 Digital Labor (AI agents)</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type ScenarioPlannerProps = {
+  domains: string[];
+  deltas: Record<string, number>;
+  setDeltas: (d: Record<string, number>) => void;
+  baselinePodCount: number;
+  scenarioPodCount: number;
+};
+
+function ScenarioPlanner({ domains, deltas, setDeltas, baselinePodCount, scenarioPodCount }: ScenarioPlannerProps) {
+  const [open, setOpen] = useState(false);
+  const hasChanges = Object.values(deltas).some(d => d > 0);
+  const delta = scenarioPodCount - baselinePodCount;
+  return (
+    <div className="rounded-lg border border-border overflow-hidden no-print">
+      <button
+        className="w-full px-3 py-2 flex items-center justify-between bg-muted/20 hover:bg-muted/40 transition-colors text-left"
+        onClick={() => setOpen(o => !o)}
+      >
+        <div className="flex items-center gap-2">
+          <Zap size={12} style={{ color: C.blue }} />
+          <span className="text-xs font-semibold">Scenario Planner</span>
+          {hasChanges && (
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: delta > 0 ? `${C.green}20` : `${C.orange}20`, color: delta > 0 ? C.green : C.orange }}
+            >
+              {delta > 0 ? `+${delta}` : delta} pods vs. baseline
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <button
+              className="text-[10px] text-muted-foreground hover:text-foreground underline"
+              onClick={e => { e.stopPropagation(); setDeltas({}); }}
+            >
+              Reset
+            </button>
+          )}
+          <ChevronDown size={13} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
+        </div>
+      </button>
+      {open && (
+        <div className="p-4 space-y-4">
+          <p className="text-[11px] text-muted-foreground">
+            Add project headcount to any domain to see pod count update in real-time. AI agents recompute at 2 per pod.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            {domains.map(domain => {
+              const current = deltas[domain] ?? 0;
+              const domainColor = DOMAIN_ACCENT_MAP[domain] ?? C.gray;
+              return (
+                <div key={domain} className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold truncate" style={{ color: domainColor }}>{domain}</span>
+                    <span className="text-[10px] font-bold tabular-nums flex-shrink-0" style={{ color: current > 0 ? C.green : C.gray }}>
+                      {current > 0 ? `+${current} FTE` : "baseline"}
+                    </span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={20}
+                    step={1}
+                    value={[current]}
+                    onValueChange={([v]) => setDeltas({ ...deltas, [domain]: v })}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[9px] text-muted-foreground">
+                    <span>+0</span>
+                    <span>+20 FTE</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {hasChanges && (
+            <div className="rounded-md border p-3 grid grid-cols-3 gap-4 text-center bg-muted/10">
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-1">Baseline Pods</div>
+                <div className="text-2xl font-bold" style={{ color: C.blue }}>{baselinePodCount}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-1">Scenario Pods</div>
+                <div className="text-2xl font-bold" style={{ color: delta > 0 ? C.green : C.orange }}>{scenarioPodCount}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-muted-foreground mb-1">AI Agents</div>
+                <div className="text-2xl font-bold" style={{ color: C.purple }}>{scenarioPodCount * 2}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const [pilotSelection, setPilotSelection] = usePilotSelection();
   const [activePhase, setActivePhase] = useState<number>(1);
@@ -1793,9 +1972,25 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
     [domainOptions],
   );
 
-  const stages = useMemo(
+  const [scenarioDeltas, setScenarioDeltas] = useState<Record<string, number>>({});
+
+  const stagesBaseline = useMemo(
     () => buildPodStages(filtered, pilotSelection),
     [filtered, pilotSelection],
+  );
+
+  const scenarioBase = useMemo(() => {
+    const extra: Resource[] = [];
+    for (const [domain, delta] of Object.entries(scenarioDeltas)) {
+      if (delta <= 0) continue;
+      for (let i = 0; i < delta; i++) extra.push(makeScenarioResource(domain, i));
+    }
+    return extra.length > 0 ? [...filtered, ...extra] : filtered;
+  }, [filtered, scenarioDeltas]);
+
+  const stages = useMemo(
+    () => buildPodStages(scenarioBase, pilotSelection),
+    [scenarioBase, pilotSelection],
   );
   const total = stages.totals.resources || 1;
   const projectTotal = stages.totals.projectResources || 1;
@@ -1928,6 +2123,8 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
           {activePhaseCfg.desc}
         </div>
       </div>
+
+      <PodCompositionModelCard />
 
       {/* ── Operating Model Swimlane ──────────────────────── */}
       <div className="rounded-lg border border-border overflow-hidden">
@@ -2153,6 +2350,14 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
           ))}
         </div>
       </div>
+
+      <ScenarioPlanner
+        domains={domainOptions.map(o => o.domain)}
+        deltas={scenarioDeltas}
+        setDeltas={setScenarioDeltas}
+        baselinePodCount={stagesBaseline.twelveMonth.pods.length}
+        scenarioPodCount={stages.twelveMonth.pods.length}
+      />
 
       {/* ── Role Color Legend ─────────────────────────────── */}
       <div className="pt-4 border-t">

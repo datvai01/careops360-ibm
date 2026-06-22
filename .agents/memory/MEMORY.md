@@ -1,0 +1,2 @@
+- [Pod Transformation page](pod-transformation-page.md) — self-contained page at /dashboard/pod-transformation; reads talentPlan.json directly, no API needed.
+- [TalentPlan scenario planner](scenario-planner.md) — synthetic resources via makeScenarioResource(); stagesBaseline kept separate from stages so swimlane reflects scenario adjustments.
