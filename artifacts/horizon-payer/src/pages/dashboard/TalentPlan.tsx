@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, createContext, useContext, useRef } from "react";
+import { useMemo, useState, useEffect, createContext, useContext, useRef, useCallback } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -36,7 +36,7 @@ import {
   Users, MapPin, Briefcase, Code2, Wrench, Brain, ShieldCheck, Activity,
   Building2, Layers, Package, GraduationCap, Sparkles, Workflow,
   CheckCircle2, AlertCircle, Search, Download, ArrowRight,
-  Target, Zap, BookOpen, ChevronDown, ChevronRight, Printer,
+  Target, Zap, BookOpen, ChevronDown, ChevronRight, Printer, Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -1141,6 +1141,7 @@ type PodMember = { name: string; role: string; futureRole: string; futureRoleSho
 type Pod = {
   id: string;
   name: string;
+  podN: number;
   domain: string;
   portfolio: string;
   product: string;
@@ -1278,7 +1279,7 @@ function toMember(r: Resource): PodMember {
   };
 }
 
-function buildPod(id: string, name: string, domain: string, portfolio: string, product: string, rs: Resource[]): Pod {
+function buildPod(id: string, name: string, domain: string, portfolio: string, product: string, rs: Resource[], podN: number): Pod {
   const slices: Record<string, PodRoleSlice> = {};
   for (const r of rs) {
     const role = r.role || "Unassigned";
@@ -1301,6 +1302,7 @@ function buildPod(id: string, name: string, domain: string, portfolio: string, p
   return {
     id,
     name,
+    podN,
     domain,
     portfolio,
     product,
@@ -1331,8 +1333,8 @@ function buildDomainPods(resources: Resource[], idPrefix: string): Pod[] {
       const chunks = chunkResources(rs);
       chunks.forEach((chunk, idx) => {
         const podN = idx + 1;
-        const name = chunks.length > 1 ? `${domain} Pod ${podN}` : `${domain} Pod`;
-        pods.push(buildPod(`${idPrefix}-${domain}-${podN}`, name, domain, domain, domain, chunk));
+        const name = getPodCreativeName(domain, podN);
+        pods.push(buildPod(`${idPrefix}-${domain}-${podN}`, name, domain, domain, domain, chunk, podN));
       });
     });
 
@@ -1354,6 +1356,23 @@ const DOMAIN_ACCENT_MAP: Record<string, string> = {
   "Market Facing":            "#dc2626",
 };
 const getDomainAccent = (domain: string) => DOMAIN_ACCENT_MAP[domain] ?? C.gray;
+
+// Creative, contextual codenames per domain — used instead of "Pod 1, Pod 2 …".
+// Names cycle if a domain has more pods than entries in its bank.
+const POD_NAME_BANK: Record<string, string[]> = {
+  "Horizontal Functions":     ["Atlas", "Vector", "Apex", "Meridian", "Zenith", "Summit", "Vertex", "Solstice", "Nexus", "Praxis"],
+  "Health and Network":       ["Pulse", "Helix", "Synapse", "Cortex", "Vitals", "Neural", "Cirrus", "Axon", "Relay", "Dendrite"],
+  "Service & Administration": ["Anchor", "Keystone", "Pillar", "Harbor", "Beacon", "Citadel", "Bastion", "Rampart"],
+  "Corporate Functions":      ["Bedrock", "Foundation", "Stratum", "Mantle", "Terra", "Granite"],
+  "Specialty Business":       ["Prism", "Spectrum", "Focus", "Vantage", "Locus"],
+  "Market Facing":            ["Vanguard", "Pioneer", "Scout", "Envoy", "Herald"],
+};
+
+function getPodCreativeName(domain: string, podN: number): string {
+  const bank = POD_NAME_BANK[domain];
+  if (bank && bank.length > 0) return bank[(podN - 1) % bank.length];
+  return `Pod ${podN}`;
+}
 
 function buildPodStages(resources: Resource[], pilotSelection?: string[] | null): {
   today: RoleBucket[];
@@ -1718,33 +1737,109 @@ function groupByDomain(pods: Pod[]): Record<string, Pod[]> {
   return result;
 }
 
+// Context that stores user-overridden pod names, backed by localStorage.
+// Key = "${domain}::${podN}", value = custom name string.
+const PodNamesContext = createContext<{
+  names: Record<string, string>;
+  setName: (key: string, name: string) => void;
+}>({ names: {}, setName: () => {} });
+
 function PodChip({ pod, accent, showAI = false }: { pod: Pod; accent: string; showAI?: boolean }) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
+  const { names, setName } = useContext(PodNamesContext);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const nameKey = `${pod.domain}::${pod.podN}`;
+  const displayName = names[nameKey] ?? pod.name;
+  const isCustom = nameKey in names;
+
+  function startEdit(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraft(displayName);
+    setEditing(true);
+  }
+
+  function commitEdit() {
+    const trimmed = draft.trim();
+    setName(nameKey, trimmed || "");
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div
+        className="inline-flex items-center rounded border w-full overflow-hidden"
+        style={{ borderColor: `${accent}80`, background: `${accent}12` }}
+      >
+        <input
+          autoFocus
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={e => {
+            if (e.key === "Enter") { e.preventDefault(); commitEdit(); }
+            if (e.key === "Escape") setEditing(false);
+          }}
+          className="flex-1 px-2 py-1 text-[10px] bg-transparent outline-none min-w-0"
+          placeholder={pod.name}
+        />
         <button
-          className="inline-flex items-center gap-1.5 rounded border px-2 py-1 text-[10px] font-medium hover:shadow-sm transition-shadow w-full text-left"
-          style={{ borderColor: `${accent}50`, background: `${accent}08` }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
-          <span className="truncate flex-1 min-w-0" title={pod.name}>{pod.name}</span>
-          <span className="flex-shrink-0 tabular-nums font-bold text-[9px]" style={{ color: accent }}>{pod.headcount}</span>
-          <span
-            className="flex-shrink-0 text-[9px] px-1 rounded font-medium tabular-nums"
-            style={{ background: `${C.purple}15`, color: C.purple }}
-            title={`${Math.max(1, Math.ceil(pod.headcount / 5))} AI agent(s)`}
+          className="flex-shrink-0 px-1.5 py-1 text-[9px] font-bold"
+          style={{ color: accent }}
+          onMouseDown={e => e.preventDefault()}
+          onClick={commitEdit}
+        >✓</button>
+        <button
+          className="flex-shrink-0 px-1 py-1 text-[9px] text-muted-foreground"
+          onMouseDown={e => e.preventDefault()}
+          onClick={() => setEditing(false)}
+        >✕</button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="group inline-flex items-center rounded border w-full overflow-hidden"
+      style={{ borderColor: `${accent}50`, background: `${accent}08` }}
+    >
+      <Popover>
+        <PopoverTrigger asChild>
+          <div
+            role="button"
+            tabIndex={0}
+            className="inline-flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium flex-1 min-w-0 text-left cursor-pointer hover:bg-black/5 transition-colors"
           >
-            🤖{Math.max(1, Math.ceil(pod.headcount / 5))}
-          </span>
-          {showAI && (
-            <span className="flex-shrink-0 text-[9px] px-1 rounded font-bold" style={{ background: `${C.purple}20`, color: C.purple }}>AI</span>
-          )}
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start" side="right">
-        <PodCard pod={pod} accent={accent} />
-      </PopoverContent>
-    </Popover>
+            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
+            <span className="truncate flex-1 min-w-0" title={displayName}>
+              {displayName}
+              {isCustom && <span className="opacity-30 ml-0.5">*</span>}
+            </span>
+            <span className="flex-shrink-0 tabular-nums font-bold text-[9px]" style={{ color: accent }}>{pod.headcount}</span>
+            <span
+              className="flex-shrink-0 text-[9px] px-1 rounded font-medium tabular-nums"
+              style={{ background: `${C.purple}15`, color: C.purple }}
+              title={`${Math.max(1, Math.ceil(pod.headcount / 5))} AI agent(s)`}
+            >
+              🤖{Math.max(1, Math.ceil(pod.headcount / 5))}
+            </span>
+            {showAI && (
+              <span className="flex-shrink-0 text-[9px] px-1 rounded font-bold" style={{ background: `${C.purple}20`, color: C.purple }}>AI</span>
+            )}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0" align="start" side="right">
+          <PodCard pod={{ ...pod, name: displayName }} accent={accent} />
+        </PopoverContent>
+      </Popover>
+      <button
+        className="flex-shrink-0 px-1.5 py-1 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity"
+        onClick={startEdit}
+        title="Rename pod"
+      >
+        <Pencil size={9} />
+      </button>
+    </div>
   );
 }
 
@@ -1974,6 +2069,21 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
 
   const [scenarioDeltas, setScenarioDeltas] = useState<Record<string, number>>({});
 
+  const [podNames, setPodNames] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem("horizon_pod_names_v1") ?? "{}") as Record<string, string>; }
+    catch { return {}; }
+  });
+
+  const setPodName = useCallback((key: string, name: string) => {
+    setPodNames(prev => {
+      const next = { ...prev };
+      if (name) next[key] = name;
+      else delete next[key];
+      localStorage.setItem("horizon_pod_names_v1", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const stagesBaseline = useMemo(
     () => buildPodStages(filtered, pilotSelection),
     [filtered, pilotSelection],
@@ -2018,6 +2128,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const activePhaseCfg = POD_PHASES.find(p => p.id === activePhase) ?? POD_PHASES[0];
 
   return (
+    <PodNamesContext.Provider value={{ names: podNames, setName: setPodName }}>
     <Card className="pod-model-card p-5 space-y-5">
 
       {/* ── Title ─────────────────────────────────────────── */}
@@ -2380,6 +2491,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
         Pod composition is derived from live talent data (Projects workforce only — Operations Support &amp; Shared roles excluded). Phase 1 = pilot pods for top {DEFAULT_PILOT_COUNT} domains by headcount (customize via the picker above). Phase 2 = all domains in cross-functional pods. Phase 3 = same structure with AI-augmented operating model. Click any pod chip to see its full roster.
       </div>
     </Card>
+    </PodNamesContext.Provider>
   );
 }
 
