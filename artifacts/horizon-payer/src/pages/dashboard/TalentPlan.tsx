@@ -3013,8 +3013,6 @@ export default function TalentPlan() {
   const RESOURCES = dataQ.data?.resources ?? SEED_RESOURCES;
   const PRODUCTS = dataQ.data?.products ?? SEED_PRODUCTS;
 
-  const kpiTiles = useMemo(() => buildKpiTiles(RESOURCES), [RESOURCES]);
-
   const [filters, setFilters] = useState<FilterState>({
     domain: "", portfolio: "", product: "", applicationArea: "",
     role: "", location: "", typeOfWork: "",
@@ -3031,6 +3029,8 @@ export default function TalentPlan() {
       (!filters.typeOfWork      || r.typeOfWork      === filters.typeOfWork),
     );
   }, [filters, RESOURCES]);
+
+  const kpiTiles = useMemo(() => buildKpiTiles(filtered), [filtered]);
 
   return (
     <TalentDataContext.Provider value={{ resources: RESOURCES, products: PRODUCTS }}>
@@ -3049,13 +3049,13 @@ export default function TalentPlan() {
         </div>
       </div>
 
-      {/* KPI tiles — 5 columns x 2 rows */}
+      {/* Filters */}
+      <FiltersBar filters={filters} setFilters={setFilters} />
+
+      {/* KPI tiles — 5 columns x 2 rows, reactive to filters */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {kpiTiles.map(t => <KpiTile key={t.label} t={t} />)}
       </div>
-
-      {/* Filters */}
-      <FiltersBar filters={filters} setFilters={setFilters} />
 
       {/* Tabbed views */}
       <Tabs defaultValue="skill" className="w-full">
