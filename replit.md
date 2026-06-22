@@ -42,6 +42,16 @@
 9. **IBM AMS Value** (`/dashboard/ibm-ams`) — Ticket trends, automation runbooks, cost savings
 10. **Ask the Dashboard** (`/dashboard/ask`) — AI assistant for operational questions
 
+## Skills & Enablement (`/dashboard/capability-uplift`) Tab Structure
+
+- **Talent Plan** — Skill Readiness Heatmap, Role Transformation View, Resource Detail Table, Product Readiness Cards
+- **POD Model Transformation** — extracted from Talent Plan; pod swimlane with phase columns, pilot selection, scenario planner, composition model
+- **Product-Based Talent View** — product treemap + drill-down; uses same data filters as Talent Plan
+- **Bootcamp Calendar** — IBM certification & learning calendar; starts from August 2026
+- **Capability Maturity** — collapsible callout above the tabs (not a standalone tab); shows maturity progression and capability table
+
+`PodModelTransformationTab` and `ProductBasedTalentViewTab` are named exports from `TalentPlan.tsx` that wrap their own data-fetching via `useTabData()` hook and provide `TalentDataContext`. "Pod Transformation" nav item removed from AppShell.
+
 ## Key Files
 
 - `lib/api-spec/openapi.yaml` — OpenAPI contract (source of truth)

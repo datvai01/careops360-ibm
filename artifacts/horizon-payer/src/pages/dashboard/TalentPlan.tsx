@@ -2942,6 +2942,62 @@ export function RefreshDataTab() {
 
 /* ─────────────────────── MAIN ─────────────────────── */
 
+/* ─────────────────────── EXPORTED TAB WRAPPERS ─────────────────────── */
+
+function useTabData() {
+  const dataQ = useQuery<{ resources: Resource[]; products: Product[] }>({
+    queryKey: ["talent-plan", "data"],
+    queryFn: async () => {
+      const res = await fetch("/api/talent-plan");
+      if (!res.ok) throw new Error("Failed to load talent plan");
+      return res.json();
+    },
+    initialData: { resources: SEED_RESOURCES, products: SEED_PRODUCTS },
+    staleTime: 5_000,
+  });
+  const RESOURCES = dataQ.data?.resources ?? SEED_RESOURCES;
+  const PRODUCTS  = dataQ.data?.products  ?? SEED_PRODUCTS;
+  const [filters, setFilters] = useState<FilterState>({
+    domain: "", portfolio: "", product: "", applicationArea: "",
+    role: "", location: "", typeOfWork: "",
+  });
+  const filtered = useMemo(() =>
+    RESOURCES.filter(r =>
+      (!filters.domain          || r.domain          === filters.domain) &&
+      (!filters.portfolio       || r.portfolio       === filters.portfolio) &&
+      (!filters.product         || r.product         === filters.product) &&
+      (!filters.applicationArea || r.applicationArea === filters.applicationArea) &&
+      (!filters.role            || r.role            === filters.role) &&
+      (!filters.location        || r.location        === filters.location) &&
+      (!filters.typeOfWork      || r.typeOfWork      === filters.typeOfWork),
+    ), [filters, RESOURCES]);
+  return { RESOURCES, PRODUCTS, filters, setFilters, filtered };
+}
+
+export function PodModelTransformationTab() {
+  const { RESOURCES, PRODUCTS, filters, setFilters, filtered } = useTabData();
+  return (
+    <TalentDataContext.Provider value={{ resources: RESOURCES, products: PRODUCTS }}>
+      <div className="space-y-4">
+        <FiltersBar filters={filters} setFilters={setFilters} />
+        <PodModelTransformation filtered={filtered} />
+      </div>
+    </TalentDataContext.Provider>
+  );
+}
+
+export function ProductBasedTalentViewTab() {
+  const { RESOURCES, PRODUCTS, filters, setFilters, filtered } = useTabData();
+  return (
+    <TalentDataContext.Provider value={{ resources: RESOURCES, products: PRODUCTS }}>
+      <div className="space-y-4">
+        <FiltersBar filters={filters} setFilters={setFilters} />
+        <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
+      </div>
+    </TalentDataContext.Provider>
+  );
+}
+
 export default function TalentPlan() {
   const dataQ = useQuery<{ resources: Resource[]; products: Product[] }>({
     queryKey: ["talent-plan", "data"],
@@ -3007,14 +3063,8 @@ export default function TalentPlan() {
           <TabsTrigger value="skill" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Skill Readiness Heatmap
           </TabsTrigger>
-          <TabsTrigger value="product" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Product-Based Talent View
-          </TabsTrigger>
           <TabsTrigger value="role" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Role Transformation View
-          </TabsTrigger>
-          <TabsTrigger value="pods" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Pod Model Transformation
           </TabsTrigger>
           <TabsTrigger value="resources" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Resource Detail Table
@@ -3030,16 +3080,8 @@ export default function TalentPlan() {
           <TargetOperatingModel />
         </TabsContent>
 
-        <TabsContent value="product" className="mt-4">
-          <ProductTreemap filtered={filtered} filters={filters} setFilters={setFilters} />
-        </TabsContent>
-
         <TabsContent value="role" className="mt-4">
           <RoleTransformation filtered={filtered} />
-        </TabsContent>
-
-        <TabsContent value="pods" className="mt-4">
-          <PodModelTransformation filtered={filtered} />
         </TabsContent>
 
         <TabsContent value="resources" className="mt-4">
@@ -3054,7 +3096,7 @@ export default function TalentPlan() {
       {/* Footnote */}
       <div className="text-[10px] text-muted-foreground text-center pt-4">
         <AlertCircle size={10} className="inline mr-1" />
-        Filters apply to the Skill Heatmap, Treemap, Role Transformation, Pod Model Transformation, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Future Operating Model are program-level and not filtered.
+        Filters apply to the Skill Heatmap, Role Transformation, Resource Table, and Product Readiness Cards tabs. The Six-Month Roadmap and Future Operating Model are program-level and not filtered.
       </div>
     </div>
     </TalentDataContext.Provider>

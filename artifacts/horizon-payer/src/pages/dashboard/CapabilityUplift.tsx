@@ -62,7 +62,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import TalentPlan from "./TalentPlan";
+import TalentPlan, { PodModelTransformationTab, ProductBasedTalentViewTab } from "./TalentPlan";
 import { LastRefresh } from "@/components/admin/LastRefresh";
 import { HelpHint } from "@/components/admin/HelpHint";
 
@@ -518,9 +518,9 @@ function TrainingCalendar() {
     return out;
   }, [events]);
 
-  // Build month list from event dates (YYYY-MM)
+  // Build month list from event dates (YYYY-MM) — show August 2026 onwards
   const months = useMemo(() => {
-    const keys = Array.from(new Set(events.map(e => e.date.slice(0, 7)))).sort();
+    const keys = Array.from(new Set(events.map(e => e.date.slice(0, 7)).filter(k => k >= "2026-08"))).sort();
     return keys.map(key => {
       const [y, m] = key.split("-");
       const d = new Date(Number(y), Number(m) - 1, 1);
@@ -538,7 +538,7 @@ function TrainingCalendar() {
 
   return (
     <div className="space-y-4">
-      <SectionHeader icon={CalendarDays} title="Bootcamp & Learning Calendar" sub="Upcoming bootcamps and lunch & learns — May through November 2026" color={C.teal} />
+      <SectionHeader icon={CalendarDays} title="Bootcamp & Learning Calendar" sub="Upcoming bootcamps and lunch & learns — August through November 2026" color={C.teal} />
 
       {/* KPI strip */}
       <div className="grid grid-cols-3 gap-3">
@@ -663,6 +663,7 @@ function TrainingCalendar() {
 /* ─────────────────────── PAGE ─────────────────────── */
 
 export default function CapabilityUplift() {
+  const [showMaturity, setShowMaturity] = useState(false);
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-20">
       {/* Page header */}
@@ -685,25 +686,52 @@ export default function CapabilityUplift() {
         </div>
       </div>
 
+      {/* Capability Maturity — collapsible callout */}
+      <div className="rounded-lg border bg-muted/20 overflow-hidden">
+        <button
+          className="flex items-center justify-between w-full px-4 py-3 text-left hover:bg-muted/40 transition-colors"
+          onClick={() => setShowMaturity(v => !v)}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <TrendingUp size={14} className="flex-shrink-0" style={{ color: C.teal }} />
+            <span className="text-sm font-semibold">Capability Maturity</span>
+            <span className="hidden sm:inline text-xs text-muted-foreground ml-1">— IBM delivery maturity progression and current vs. planned capability</span>
+          </div>
+          {showMaturity
+            ? <ChevronUp size={14} className="flex-shrink-0 text-muted-foreground" />
+            : <ChevronDown size={14} className="flex-shrink-0 text-muted-foreground" />}
+        </button>
+        {showMaturity && (
+          <div className="border-t px-4 py-6 space-y-10">
+            <MaturityProgression />
+            <CapabilityTable />
+          </div>
+        )}
+      </div>
+
       {/* Tab layout */}
-      <Tabs defaultValue="maturity">
+      <Tabs defaultValue="talent-plan">
         <TabsList className="h-9">
-          <TabsTrigger value="maturity" className="text-xs px-4">Capability Maturity</TabsTrigger>
-          <TabsTrigger value="bootcamps" className="text-xs px-4">Bootcamp Calendar</TabsTrigger>
-          <TabsTrigger value="talent-plan" className="text-xs px-4">Talent Plan</TabsTrigger>
+          <TabsTrigger value="talent-plan"    className="text-xs px-4">Talent Plan</TabsTrigger>
+          <TabsTrigger value="pod-model"      className="text-xs px-4">POD Model Transformation</TabsTrigger>
+          <TabsTrigger value="product-talent" className="text-xs px-4">Product-Based Talent View</TabsTrigger>
+          <TabsTrigger value="bootcamps"      className="text-xs px-4">Bootcamp Calendar</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="maturity" className="mt-6 space-y-10">
-          <MaturityProgression />
-          <CapabilityTable />
+        <TabsContent value="talent-plan" className="mt-6">
+          <TalentPlan />
+        </TabsContent>
+
+        <TabsContent value="pod-model" className="mt-6">
+          <PodModelTransformationTab />
+        </TabsContent>
+
+        <TabsContent value="product-talent" className="mt-6">
+          <ProductBasedTalentViewTab />
         </TabsContent>
 
         <TabsContent value="bootcamps" className="mt-6">
           <TrainingCalendar />
-        </TabsContent>
-
-        <TabsContent value="talent-plan" className="mt-6">
-          <TalentPlan />
         </TabsContent>
       </Tabs>
     </div>
