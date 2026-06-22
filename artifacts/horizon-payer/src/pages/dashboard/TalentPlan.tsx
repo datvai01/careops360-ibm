@@ -1314,63 +1314,25 @@ function buildPod(id: string, name: string, domain: string, portfolio: string, p
   };
 }
 
-// Group resources by Domain → Portfolio → Product and build size-capped pods.
-// Small products (< MIN_POD_SIZE) within the same portfolio are merged into a Shared Pod.
+// Group resources by Business Domain and build size-capped pods.
+// Each domain's project resources are chunked into ≤MAX_POD_SIZE pods named "${domain} Pod N".
 function buildDomainPods(resources: Resource[], idPrefix: string): Pod[] {
-  // domain → portfolio → product → resources
-  const tree: Record<string, Record<string, Record<string, Resource[]>>> = {};
+  const tree: Record<string, Resource[]> = {};
   for (const r of resources) {
     const d = r.domain || "Cross-Domain";
-    const pf = r.portfolio || "Cross-Portfolio";
-    const pr = r.product || "Unassigned Product";
-    ((tree[d] ??= {})[pf] ??= {})[pr] ??= [];
-    tree[d][pf][pr].push(r);
+    (tree[d] ??= []).push(r);
   }
 
   const pods: Pod[] = [];
-  // global pod counter per portfolio for nice POD1 / POD2 numbering inside a portfolio
-  const portfolioPodIndex: Record<string, number> = {};
-  const portKey = (d: string, pf: string) => `${d}::${pf}`;
-
   Object.entries(tree)
     .sort(([a], [b]) => a.localeCompare(b))
-    .forEach(([domain, portfolios]) => {
-      Object.entries(portfolios)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .forEach(([portfolio, products]) => {
-          const productEntries = Object.entries(products);
-          const large = productEntries.filter(([, rs]) => rs.length >= MIN_POD_SIZE);
-          const small = productEntries.filter(([, rs]) => rs.length < MIN_POD_SIZE);
-
-          // Large products: chunk into ≤MAX_POD_SIZE pods, numbered POD<n> per portfolio
-          large.sort((a, b) => b[1].length - a[1].length);
-          for (const [product, rs] of large) {
-            const chunks = chunkResources(rs);
-            const multiple = chunks.length > 1;
-            chunks.forEach((chunk, idx) => {
-              const key = portKey(domain, portfolio);
-              const podN = (portfolioPodIndex[key] = (portfolioPodIndex[key] ?? 0) + 1);
-              const name = multiple
-                ? `${portfolio} POD${podN}: ${product} (Group ${idx + 1})`
-                : `${portfolio} POD${podN}: ${product}`;
-              pods.push(buildPod(`${idPrefix}-${podN}-${product}-${idx}`, name, domain, portfolio, product, chunk));
-            });
-          }
-
-          // Small products: merge into one Shared Pod per portfolio (chunk if still too large)
-          const smallMembers = small.flatMap(([, rs]) => rs);
-          if (smallMembers.length > 0) {
-            const chunks = chunkResources(smallMembers);
-            const productLabel = small.length === 1 ? small[0][0] : `Shared (${small.length} products)`;
-            chunks.forEach((chunk, idx) => {
-              const key = portKey(domain, portfolio);
-              const podN = (portfolioPodIndex[key] = (portfolioPodIndex[key] ?? 0) + 1);
-              const suffix = chunks.length > 1 ? ` (Group ${idx + 1})` : "";
-              const name = `${portfolio} POD${podN}: ${productLabel}${suffix}`;
-              pods.push(buildPod(`${idPrefix}-${podN}-shared-${idx}`, name, domain, portfolio, productLabel, chunk));
-            });
-          }
-        });
+    .forEach(([domain, rs]) => {
+      const chunks = chunkResources(rs);
+      chunks.forEach((chunk, idx) => {
+        const podN = idx + 1;
+        const name = chunks.length > 1 ? `${domain} Pod ${podN}` : `${domain} Pod`;
+        pods.push(buildPod(`${idPrefix}-${domain}-${podN}`, name, domain, domain, domain, chunk));
+      });
     });
 
   return pods;
@@ -1382,38 +1344,41 @@ function buildPodStages(resources: Resource[], pilotSelection?: string[] | null)
   today: RoleBucket[];
   sixMonth: { pods: Pod[]; remaining: RoleBucket[]; remainingCount: number };
   twelveMonth: { pods: Pod[] };
-  totals: { resources: number };
+  totals: { resources: number; projectResources: number };
 } {
   const today = bucketByRole(resources);
 
-  // ── 6-month: pilot pods. Default = top N products by headcount; can be overridden via pilotSelection.
-  const byProduct: Record<string, Resource[]> = {};
-  for (const r of resources) {
-    const key = r.product || "Unassigned Product";
-    (byProduct[key] ??= []).push(r);
-  }
-  const productEntries = Object.entries(byProduct).sort((a, b) => b[1].length - a[1].length);
+  // Only "Projects" typeOfWork resources form pods — Operations Support and Shared are excluded.
+  const projectResources = resources.filter(r => r.typeOfWork === "Projects");
 
-  let pilotProductNames: Set<string>;
-  if (pilotSelection && pilotSelection.length > 0) {
-    const available = new Set(productEntries.map(([p]) => p));
-    pilotProductNames = new Set(pilotSelection.filter(p => available.has(p)));
-  } else {
-    pilotProductNames = new Set(productEntries.slice(0, DEFAULT_PILOT_COUNT).map(([p]) => p));
+  // ── 6-month: pilot pods. Default = top N domains by project headcount; override via pilotSelection.
+  const byDomain: Record<string, Resource[]> = {};
+  for (const r of projectResources) {
+    const key = r.domain || "Cross-Domain";
+    (byDomain[key] ??= []).push(r);
   }
-  const pilotResources = resources.filter(r => pilotProductNames.has(r.product || "Unassigned Product"));
+  const domainEntries = Object.entries(byDomain).sort((a, b) => b[1].length - a[1].length);
+
+  let pilotDomainNames: Set<string>;
+  if (pilotSelection && pilotSelection.length > 0) {
+    const available = new Set(domainEntries.map(([d]) => d));
+    pilotDomainNames = new Set(pilotSelection.filter(d => available.has(d)));
+  } else {
+    pilotDomainNames = new Set(domainEntries.slice(0, DEFAULT_PILOT_COUNT).map(([d]) => d));
+  }
+  const pilotResources = projectResources.filter(r => pilotDomainNames.has(r.domain || "Cross-Domain"));
   const sixMonthPods = buildDomainPods(pilotResources, "6m");
-  const remainingResources = resources.filter(r => !pilotProductNames.has(r.product || "Unassigned Product"));
+  const remainingResources = projectResources.filter(r => !pilotDomainNames.has(r.domain || "Cross-Domain"));
   const sixMonthRemaining = bucketByRole(remainingResources);
 
-  // ── 12-month: every resource lives in a pod (chunked by domain → portfolio → product, max 10)
-  const twelveMonthPods = buildDomainPods(resources, "12m");
+  // ── 12-month: all project resources in pods, grouped by domain
+  const twelveMonthPods = buildDomainPods(projectResources, "12m");
 
   return {
     today,
     sixMonth: { pods: sixMonthPods, remaining: sixMonthRemaining, remainingCount: remainingResources.length },
     twelveMonth: { pods: twelveMonthPods },
-    totals: { resources: resources.length },
+    totals: { resources: resources.length, projectResources: projectResources.length },
   };
 }
 
@@ -1558,17 +1523,16 @@ function PodCard({ pod, accent }: { pod: Pod; accent: string }) {
         </div>
       </div>
 
-      {/* Domain / Portfolio / Product footer */}
+      {/* Domain footer */}
       <div className="px-3 py-1.5 border-t bg-slate-700 text-white text-[9px] leading-tight">
         <div><span className="opacity-70">Domain:</span> <span className="font-semibold">{pod.domain}</span></div>
-        <div><span className="opacity-70">Portfolio:</span> <span className="font-semibold">{pod.portfolio}</span></div>
-        <div><span className="opacity-70">Product:</span> <span className="font-semibold">{pod.product}</span></div>
+        <div className="opacity-60 italic">Projects workforce · {pod.onshore} on · {pod.offshore} off</div>
       </div>
     </div>
   );
 }
 
-const PILOT_SELECTION_STORAGE_KEY = "talent.pilotPods.v1";
+const PILOT_SELECTION_STORAGE_KEY = "talent.pilotDomains.v2";
 
 function usePilotSelection() {
   const [selection, setSelectionState] = useState<string[] | null>(() => {
@@ -1598,12 +1562,12 @@ function usePilotSelection() {
 }
 
 function PilotPodSelector({
-  productOptions,
+  domainOptions,
   selection,
   setSelection,
   defaultSelection,
 }: {
-  productOptions: { product: string; headcount: number }[];
+  domainOptions: { domain: string; headcount: number }[];
   selection: string[] | null;
   setSelection: (next: string[] | null) => void;
   defaultSelection: string[];
@@ -1617,14 +1581,14 @@ function PilotPodSelector({
 
   const filteredOptions = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return productOptions;
-    return productOptions.filter(o => o.product.toLowerCase().includes(q));
-  }, [productOptions, query]);
+    if (!q) return domainOptions;
+    return domainOptions.filter(o => o.domain.toLowerCase().includes(q));
+  }, [domainOptions, query]);
 
-  const toggle = (product: string) => {
+  const toggle = (domain: string) => {
     const next = new Set(effectiveSet);
-    if (next.has(product)) next.delete(product);
-    else next.add(product);
+    if (next.has(domain)) next.delete(domain);
+    else next.add(domain);
     setSelection(Array.from(next));
   };
 
@@ -1634,37 +1598,37 @@ function PilotPodSelector({
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
             <Target size={12} />
-            Pilot pods: <span className="font-bold">{effective.length}</span>
+            Pilot domains: <span className="font-bold">{effective.length}</span>
             <ChevronDown size={12} />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="end">
+        <PopoverContent className="w-72 p-0" align="end">
           <div className="p-2 border-b">
-            <div className="text-xs font-semibold mb-1">Choose 6-month pilot pods</div>
+            <div className="text-xs font-semibold mb-1">Choose Phase 1 pilot domains</div>
             <Input
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search products…"
+              placeholder="Search domains…"
               className="h-7 text-xs"
             />
           </div>
-          <div className="max-h-72 overflow-y-auto p-1">
+          <div className="max-h-64 overflow-y-auto p-1">
             {filteredOptions.length === 0 ? (
-              <div className="text-[11px] text-muted-foreground p-3 text-center">No matching products</div>
+              <div className="text-[11px] text-muted-foreground p-3 text-center">No matching domains</div>
             ) : (
               filteredOptions.map(o => {
-                const checked = effectiveSet.has(o.product);
+                const checked = effectiveSet.has(o.domain);
                 return (
                   <label
-                    key={o.product}
+                    key={o.domain}
                     className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/60 cursor-pointer"
                   >
                     <Checkbox
                       checked={checked}
-                      onCheckedChange={() => toggle(o.product)}
+                      onCheckedChange={() => toggle(o.domain)}
                     />
-                    <span className="text-xs flex-1 truncate" title={o.product}>{o.product}</span>
-                    <span className="text-[10px] text-muted-foreground">{o.headcount}</span>
+                    <span className="text-xs flex-1 truncate" title={o.domain}>{o.domain}</span>
+                    <span className="text-[10px] text-muted-foreground">{o.headcount} proj</span>
                   </label>
                 );
               })
@@ -1770,20 +1734,21 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const [pilotSelection, setPilotSelection] = usePilotSelection();
   const [activePhase, setActivePhase] = useState<number>(1);
 
-  const productOptions = useMemo(() => {
+  const domainOptions = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const r of filtered) {
-      const key = r.product || "Unassigned Product";
+      if (r.typeOfWork !== "Projects") continue;
+      const key = r.domain || "Cross-Domain";
       counts[key] = (counts[key] ?? 0) + 1;
     }
     return Object.entries(counts)
-      .map(([product, headcount]) => ({ product, headcount }))
+      .map(([domain, headcount]) => ({ domain, headcount }))
       .sort((a, b) => b.headcount - a.headcount);
   }, [filtered]);
 
   const defaultSelection = useMemo(
-    () => productOptions.slice(0, DEFAULT_PILOT_COUNT).map(o => o.product),
-    [productOptions],
+    () => domainOptions.slice(0, DEFAULT_PILOT_COUNT).map(o => o.domain),
+    [domainOptions],
   );
 
   const stages = useMemo(
@@ -1791,6 +1756,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
     [filtered, pilotSelection],
   );
   const total = stages.totals.resources || 1;
+  const projectTotal = stages.totals.projectResources || 1;
 
   const FALLBACK_DOMAINS = ["Med Dev", "ADC", "ARDx", "CoreDx", "AN/ANPD", "EPD"];
   const domains = useMemo(() => {
@@ -1808,7 +1774,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
 
   const kpis = [
     { label: "Active Pods",        p1: stages.sixMonth.pods.length,                         p2: stages.twelveMonth.pods.length,                    p3: stages.twelveMonth.pods.length, color: C.blue },
-    { label: "% in Pods",          p1: Math.round((sixMonthInPods / total) * 100),           p2: Math.round((twelveMonthInPods / total) * 100),     p3: 100,                            color: C.teal,   suffix: "%" },
+    { label: "% Projects in Pods",  p1: Math.round((sixMonthInPods / projectTotal) * 100),   p2: Math.round((twelveMonthInPods / projectTotal) * 100), p3: 100,                         color: C.teal,   suffix: "%" },
     { label: "Legacy Pool",        p1: stages.sixMonth.remainingCount,                       p2: 0,                                                 p3: 0,                              color: C.orange },
     { label: "Role Silos",         p1: stages.sixMonth.remaining.length,                     p2: 0,                                                 p3: 0,                              color: C.purple },
   ];
@@ -1904,9 +1870,9 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             );
           })}
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground font-medium hidden sm:block">Phase 1 Pilot Products:</span>
+            <span className="text-[10px] text-muted-foreground font-medium hidden sm:block">Phase 1 Pilot Domains:</span>
             <PilotPodSelector
-              productOptions={productOptions}
+              domainOptions={domainOptions}
               selection={pilotSelection}
               setSelection={setPilotSelection}
               defaultSelection={defaultSelection}
