@@ -1169,7 +1169,7 @@ const ROLE_ORDER = [
 
 // Pod sizing — aligns with the slide examples (POD2 = 15, POD3 = 12) but capped at 10 by default
 const MAX_POD_SIZE = 10;
-const MIN_POD_SIZE = 3;
+const MIN_POD_SIZE = 5;
 const LEAD_ROLES = ["Technical Lead", "Project Manager", "Solution Architect"];
 
 function roleMeta(role: string): { color: string; future: string } {
@@ -1333,8 +1333,25 @@ function buildDomainPods(resources: Resource[], idPrefix: string): Pod[] {
       const chunks = chunkResources(rs);
       chunks.forEach((chunk, idx) => {
         const podN = idx + 1;
+        // Pad chunks below the minimum pod size with planned-hire placeholders
+        const padded: Resource[] = chunk.length < MIN_POD_SIZE
+          ? [
+              ...chunk,
+              ...Array.from({ length: MIN_POD_SIZE - chunk.length }, (_, i): Resource => ({
+                serial: `pad-${domain}-${podN}-${i}`,
+                name: `(Planned Hire ${i + 1})`,
+                domain, portfolio: domain, product: domain,
+                applicationArea: "General",
+                typeOfWork: "Projects",
+                role: "Developer",
+                location: i % 2 === 0 ? "Offshore" : "Onshore",
+                current: { techStack: "", futureTech: "", industry: "", agile: "", agentic: "", devsecops: "", aiops: "" },
+                plan:    { techStack: "", futureTech: "", industry: "", agile: "", agentic: "", devops:    "", aiops: "" },
+              })),
+            ]
+          : chunk;
         const name = getPodCreativeName(domain, podN);
-        pods.push(buildPod(`${idPrefix}-${domain}-${podN}`, name, domain, domain, domain, chunk, podN));
+        pods.push(buildPod(`${idPrefix}-${domain}-${podN}`, name, domain, domain, domain, padded, podN));
       });
     });
 
@@ -1867,11 +1884,12 @@ const VALUE_STREAM_STEPS = [
 ];
 
 const SHARED_POD_DEFS = [
-  { name: "KTLO & Run",             minPhase: 1 },
-  { name: "Control Tower",          minPhase: 1 },
-  { name: "Quality & Compliance",   minPhase: 2 },
-  { name: "Release Management",     minPhase: 2 },
-  { name: "Change Management",      minPhase: 2 },
+  { name: "UAT Coordination",     minPhase: 1, desc: "Manages end-to-end user acceptance test cycles for every product pod release" },
+  { name: "KTLO & Run",           minPhase: 1, desc: "Production ops: on-call incident response, SLA monitoring, environment stability" },
+  { name: "Knowledge Management", minPhase: 1, desc: "Maintains runbooks, wikis, post-mortems, onboarding guides and best-practice playbooks" },
+  { name: "Quality & Compliance", minPhase: 2, desc: "Governs quality gates, compliance audits, security reviews, and release readiness" },
+  { name: "Release Management",   minPhase: 2, desc: "Cross-pod release train: deployment pipelines, gates, and rollback coordination" },
+  { name: "Change Management",    minPhase: 2, desc: "Org change, stakeholder adoption, capability training programs for pod transitions" },
 ];
 
 /* ── Standard Pod Role Template ──────────────────────────── */
@@ -2373,16 +2391,16 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
           );
         })}
 
-        {/* Shared PODs band */}
+        {/* Operations band (formerly "Shared PODs") */}
         <div
           className="grid border-t-2 border-border"
           style={{ gridTemplateColumns: "130px repeat(3, 1fr)" }}
         >
-          <div className="px-3 py-2.5 border-r border-border flex items-center gap-2 bg-muted/20">
-            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C.orange }} />
+          <div className="px-3 py-2.5 border-r border-border flex items-start gap-2 bg-muted/20">
+            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[3px]" style={{ background: C.orange }} />
             <div>
-              <div className="text-[10px] font-bold text-foreground">Shared PODs</div>
-              <div className="text-[9px] text-muted-foreground">Cross-org services</div>
+              <div className="text-[10px] font-bold text-foreground">Operations</div>
+              <div className="text-[9px] text-muted-foreground leading-snug">Supports all pods in tandem</div>
             </div>
           </div>
           {POD_PHASES.map(ph => {
@@ -2396,18 +2414,25 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
               >
                 <div className="flex flex-wrap gap-1">
                   {active.map(sp => (
-                    <span
-                      key={sp.name}
-                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium border"
-                      style={{
-                        borderColor: ph.id === 3 ? `${C.green}60` : `${ph.color}40`,
-                        background:  ph.id === 3 ? `${C.green}12` : `${ph.color}10`,
-                        color:       ph.id === 3 ? C.green : ph.color,
-                      }}
-                    >
-                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: ph.id === 3 ? C.green : ph.color }} />
-                      {sp.name}
-                    </span>
+                    <Popover key={sp.name}>
+                      <PopoverTrigger asChild>
+                        <span
+                          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium border cursor-pointer hover:opacity-80"
+                          style={{
+                            borderColor: ph.id === 3 ? `${C.green}60` : `${ph.color}40`,
+                            background:  ph.id === 3 ? `${C.green}12` : `${ph.color}10`,
+                            color:       ph.id === 3 ? C.green : ph.color,
+                          }}
+                        >
+                          <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: ph.id === 3 ? C.green : ph.color }} />
+                          {sp.name}
+                        </span>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-64 p-3" align="start" side="top">
+                        <p className="text-[11px] font-semibold mb-1" style={{ color: C.orange }}>{sp.name}</p>
+                        <p className="text-[10px] text-muted-foreground leading-snug">{sp.desc}</p>
+                      </PopoverContent>
+                    </Popover>
                   ))}
                   {active.length === 0 && (
                     <span className="text-[10px] text-muted-foreground italic">Not yet active</span>
@@ -2416,6 +2441,29 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
               </div>
             );
           })}
+        </div>
+
+        {/* Operations support model — how Ops works in tandem with pods */}
+        <div className="border-t border-dashed border-border px-3 py-2.5" style={{ background: `${C.orange}06` }}>
+          <div className="text-[9px] uppercase tracking-wide font-bold mb-2" style={{ color: C.orange }}>
+            How Operations supports every pod — In Tandem
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1.5 text-[9px] text-muted-foreground">
+            {[
+              { icon: "🧪", label: "UAT & Regression",    body: "Coordinates acceptance test cycles alongside each pod's sprint — gates every release." },
+              { icon: "📚", label: "Knowledge Management", body: "Publishes runbooks, post-mortems, onboarding wikis, and tribal-knowledge playbooks shared by all pods." },
+              { icon: "🛡️", label: "KTLO & Incident Ops",  body: "On-call production coverage; escalation bridge between pods and Horizon SRE / NOC." },
+              { icon: "🚀", label: "Release & Change",     body: "Runs the cross-pod release train, change advisory board, and org adoption programs (Phase 2+)." },
+            ].map(item => (
+              <div key={item.label} className="flex gap-1.5">
+                <span className="flex-shrink-0 text-sm leading-none mt-0.5">{item.icon}</span>
+                <div>
+                  <div className="font-semibold text-foreground">{item.label}</div>
+                  <div className="leading-snug opacity-75">{item.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
