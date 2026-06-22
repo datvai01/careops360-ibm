@@ -1470,34 +1470,29 @@ function RoleBucketCard({ b, total }: { b: RoleBucket; total: number }) {
 
 function PodCard({ pod, accent }: { pod: Pod; accent: string }) {
   const overSize = pod.headcount > MAX_POD_SIZE;
-  const topRoles = pod.roleMix.slice(0, 3).map(r => r.futureRole || r.role).filter(Boolean);
+  const aiAgents = Math.max(1, Math.ceil(pod.headcount / 5));
+  const plannedHires = pod.members.filter(m => m.name.startsWith("(Planned")).length;
+  const confirmedFTE = pod.headcount - plannedHires;
+  const onPct = pod.headcount > 0 ? Math.round((pod.onshore / pod.headcount) * 100) : 0;
+  const sprintCapLow = Math.round(confirmedFTE * 6);
+  const sprintCapHigh = Math.round(confirmedFTE * 8);
+
   return (
-    <div
-      className="rounded-md border bg-white hover:shadow-md transition-shadow overflow-hidden"
-      style={{ borderTop: `3px solid ${accent}` }}
-    >
-      {/* Header */}
-      <div
-        className="px-3 py-2.5 border-b"
-        style={{ background: `linear-gradient(135deg, ${accent}14 0%, ${accent}06 100%)` }}
-      >
+    <div className="rounded-md overflow-hidden border bg-white" style={{ borderTop: `3px solid ${accent}` }}>
+
+      {/* ── Header ──────────────────────────────────── */}
+      <div className="px-3 py-2.5 border-b" style={{ background: `linear-gradient(135deg, ${accent}14 0%, ${accent}06 100%)` }}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold truncate leading-tight" title={pod.name}>{pod.name}</div>
-            {topRoles.length > 0 && (
-              <div className="text-[10px] text-muted-foreground truncate mt-0.5">
-                {topRoles.join(" · ")}
-              </div>
-            )}
+            <div className="text-xs font-bold leading-tight" title={pod.name}>{pod.name}</div>
+            <div className="text-[10px] text-muted-foreground mt-0.5 truncate">{pod.domain}</div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {overSize && (
-              <Badge variant="outline" className="text-[9px] h-4 px-1" style={{ borderColor: C.orange, color: C.orange }}>
-                oversized
-              </Badge>
+              <Badge variant="outline" className="text-[9px] h-4 px-1" style={{ borderColor: C.orange, color: C.orange }}>oversized</Badge>
             )}
             <div
-              className="flex items-center justify-center rounded-full text-white text-[11px] font-bold w-7 h-7 flex-shrink-0"
+              className="rounded-full text-white text-[11px] font-bold w-7 h-7 flex items-center justify-center flex-shrink-0"
               style={{ background: accent }}
               title={`${pod.headcount} members`}
             >
@@ -1505,106 +1500,153 @@ function PodCard({ pod, accent }: { pod: Pod; accent: string }) {
             </div>
           </div>
         </div>
-        {/* Mini role-mix bar in header */}
-        <div className="h-1 w-full rounded-full overflow-hidden flex mt-2 opacity-80">
+        <div className="h-1.5 w-full rounded-full overflow-hidden flex mt-2">
           {pod.roleMix.map(s => (
-            <div
-              key={s.role}
-              title={`${s.futureRole || s.role} (${s.count})`}
-              style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }}
-            />
+            <div key={s.role} title={`${s.role} → ${s.futureRole} (${s.count})`}
+              style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }} />
           ))}
         </div>
       </div>
 
-      {/* Body: 3-column meta + members */}
-      <div className="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-0">
-        {/* Left meta column (mimics slide's POD Size / Skills / Leads block) */}
-        <div className="p-2.5 space-y-2 sm:border-r bg-muted/20">
-          <div>
-            <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground">POD Size</div>
-            <div className="text-sm font-bold leading-tight mt-0.5">{pod.headcount}</div>
-            <div className="text-[10px] text-muted-foreground leading-tight">
-              On – {pod.onshore}; Off – {pod.offshore}
-            </div>
+      {/* ── 4-stat strip ─────────────────────────── */}
+      <div className="grid grid-cols-4 divide-x border-b text-center">
+        {([
+          { label: "FTE",       value: String(confirmedFTE),            color: accent  },
+          { label: "Planned",   value: plannedHires > 0 ? `+${plannedHires}` : "—",   color: plannedHires > 0 ? C.orange : C.gray },
+          { label: "AI Agents", value: `🤖 ${aiAgents}`,               color: C.purple },
+          { label: "On / Off",  value: `${onPct}/${100 - onPct}%`,     color: C.teal  },
+        ] as const).map(st => (
+          <div key={st.label} className="py-1.5">
+            <div className="text-[10px] font-bold leading-tight" style={{ color: st.color }}>{st.value}</div>
+            <div className="text-[8px] uppercase tracking-wide text-muted-foreground mt-0.5">{st.label}</div>
           </div>
-          <div>
-            <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground">POD Skills</div>
-            <div className="flex flex-wrap gap-0.5 mt-0.5">
-              {pod.skills.slice(0, 8).map(s => (
-                <span key={s} className="text-[9px] leading-tight px-1 py-0.5 rounded bg-white border" title={s}>{s}</span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground">POD Leads</div>
-            {pod.leadOnshore && (
-              <div className="text-[10px] leading-tight mt-0.5 truncate" title={pod.leadOnshore.name}>
-                <span style={{ color: C.teal }}>●</span>{" "}
-                <span className="font-semibold">{pod.leadOnshore.name.split(" ")[0]}</span>{" "}
-                <span className="text-muted-foreground">(on)</span>
+        ))}
+      </div>
+
+      {/* ── Role Transformation ───────────────────── */}
+      <div className="border-b px-3 py-2">
+        <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground mb-1.5">Role Transformation</div>
+        <div className="space-y-1">
+          {pod.roleMix.map(r => (
+            <div key={r.role} className="flex items-center gap-1.5 text-[9px]">
+              <span className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: r.color }} />
+              <span className="w-[90px] flex-shrink-0 truncate text-muted-foreground leading-tight" title={r.role}>{r.role}</span>
+              <span className="opacity-40 flex-shrink-0">→</span>
+              <span className="flex-1 truncate font-medium leading-tight" style={{ color: r.color }} title={r.futureRole}>{r.futureRole}</span>
+              <span className="flex-shrink-0 w-5 text-right tabular-nums font-bold" style={{ color: r.color }}>{r.count}</span>
+              <div className="flex-shrink-0 w-10 h-1 rounded-full overflow-hidden bg-muted">
+                <div className="h-full rounded-full" style={{ width: `${(r.count / pod.headcount) * 100}%`, background: r.color }} />
               </div>
-            )}
-            {pod.leadOffshore && (
-              <div className="text-[10px] leading-tight truncate" title={pod.leadOffshore.name}>
-                <span style={{ color: C.blue }}>●</span>{" "}
-                <span className="font-semibold">{pod.leadOffshore.name.split(" ")[0]}</span>{" "}
-                <span className="text-muted-foreground">(off)</span>
-              </div>
-            )}
-            {!pod.leadOnshore && !pod.leadOffshore && (
-              <div className="text-[10px] text-muted-foreground italic">TBD</div>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Right: role-mix bar + member roster */}
-        <div className="p-2.5">
-          {/* role mix bar */}
-          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden flex">
-            {pod.roleMix.map(s => (
-              <div
-                key={s.role}
-                title={`${s.role} → ${s.futureRole} (${s.count})`}
-                style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }}
-              />
-            ))}
+      {/* ── Onshore / Offshore split ──────────────── */}
+      <div className="border-b px-3 py-2">
+        <div className="flex items-center justify-between text-[9px] mb-1">
+          <span style={{ color: C.teal }}>Onshore — {pod.onshore} ({onPct}%)</span>
+          <span style={{ color: C.blue }}>Offshore — {pod.offshore} ({100 - onPct}%)</span>
+        </div>
+        <div className="h-2 w-full rounded-full overflow-hidden flex">
+          <div className="h-full transition-all" style={{ width: `${onPct}%`, background: C.teal }} />
+          <div className="h-full flex-1" style={{ background: C.blue }} />
+        </div>
+      </div>
+
+      {/* ── Sprint Capacity & AI ──────────────────── */}
+      <div className="border-b px-3 py-2">
+        <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground mb-1.5">Estimated Capacity</div>
+        <div className="flex items-center gap-4 text-[9px]">
+          <div>
+            <div className="font-bold text-[11px]" style={{ color: accent }}>{sprintCapLow}–{sprintCapHigh}</div>
+            <div className="text-muted-foreground">story pts / sprint</div>
           </div>
-
-          {/* members with future-role chips */}
-          <div className="mt-2 max-h-44 overflow-y-auto pr-1">
-            <div className="grid grid-cols-1 gap-0.5">
-              {pod.members.map((m, i) => {
-                const isOn = m.location === "Onshore";
-                return (
-                  <div key={`${pod.id}-m-${i}`} className="flex items-center gap-1.5 text-[10px] py-0.5">
-                    <span
-                      className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ background: isOn ? C.teal : C.blue }}
-                      title={m.location}
-                    />
-                    <span className="truncate flex-1 font-medium" title={`${m.name} · ${m.location}`}>
-                      {m.name}
-                    </span>
-                    <span
-                      className="text-[9px] px-1 py-0 rounded flex-shrink-0"
-                      style={{ background: `${m.color}15`, color: m.color }}
-                      title={`${m.role} → ${m.futureRole}`}
-                    >
-                      {m.futureRoleShort}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+          <div className="w-px h-8 bg-border flex-shrink-0" />
+          <div>
+            <div className="font-bold text-[11px]" style={{ color: C.purple }}>+{Math.round(aiAgents * 15)}–{Math.round(aiAgents * 20)}%</div>
+            <div className="text-muted-foreground">AI velocity uplift</div>
+          </div>
+          <div className="w-px h-8 bg-border flex-shrink-0" />
+          <div>
+            <div className="font-bold text-[11px]" style={{ color: C.green }}>{aiAgents} Agent{aiAgents > 1 ? "s" : ""}</div>
+            <div className="text-muted-foreground">digital workers</div>
           </div>
         </div>
       </div>
 
-      {/* Domain footer */}
-      <div className="px-3 py-1.5 border-t bg-slate-700 text-white text-[9px] leading-tight">
-        <div><span className="opacity-70">Domain:</span> <span className="font-semibold">{pod.domain}</span></div>
-        <div className="opacity-60 italic">Projects workforce · {pod.onshore} on · {pod.offshore} off</div>
+      {/* ── Pod Leads ─────────────────────────────── */}
+      {(pod.leadOnshore || pod.leadOffshore) && (
+        <div className="border-b px-3 py-2">
+          <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground mb-1">Pod Leads</div>
+          <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[10px]">
+            {pod.leadOnshore && (
+              <div className="truncate">
+                <span style={{ color: C.teal }}>●</span>{" "}
+                <span className="font-semibold">{pod.leadOnshore.name}</span>{" "}
+                <span className="text-muted-foreground">· {pod.leadOnshore.role} (onshore)</span>
+              </div>
+            )}
+            {pod.leadOffshore && (
+              <div className="truncate">
+                <span style={{ color: C.blue }}>●</span>{" "}
+                <span className="font-semibold">{pod.leadOffshore.name}</span>{" "}
+                <span className="text-muted-foreground">· {pod.leadOffshore.role} (offshore)</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Skills & Tech ────────────────────────── */}
+      {pod.skills.length > 0 && (
+        <div className="border-b px-3 py-2">
+          <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground mb-1">Skills & Tech Stack</div>
+          <div className="flex flex-wrap gap-0.5">
+            {pod.skills.slice(0, 16).map(s => (
+              <span key={s} className="text-[9px] px-1 py-0.5 rounded bg-muted border text-foreground">{s}</span>
+            ))}
+            {pod.skills.length > 16 && (
+              <span className="text-[9px] px-1 py-0.5 text-muted-foreground italic">+{pod.skills.length - 16} more</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Member Roster ─────────────────────────── */}
+      <div className="px-3 py-2">
+        <div className="text-[9px] uppercase tracking-wide font-bold text-muted-foreground mb-1">
+          Roster ({pod.members.length})
+          {plannedHires > 0 && <span className="ml-1.5 normal-case italic font-normal" style={{ color: C.orange }}>{plannedHires} planned hire{plannedHires > 1 ? "s" : ""} included</span>}
+        </div>
+        <div className="max-h-44 overflow-y-auto space-y-px pr-1">
+          {pod.members.map((m, i) => {
+            const isOn = m.location === "Onshore";
+            const isPlanned = m.name.startsWith("(Planned");
+            return (
+              <div key={`${pod.id}-m-${i}`}
+                className={cn("flex items-center gap-1.5 text-[9px] py-0.5 rounded px-0.5", isPlanned && "opacity-60 italic")}
+              >
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: isOn ? C.teal : C.blue }} title={m.location} />
+                <span className="flex-1 truncate font-medium" title={m.name}>{m.name}</span>
+                <span className="text-muted-foreground flex-shrink-0 text-[8px] hidden sm:block">{m.location === "Onshore" ? "On" : "Off"}</span>
+                <span className="flex-shrink-0 rounded px-1 text-[8px] font-medium"
+                  style={{ background: `${m.color}18`, color: m.color }}
+                  title={`${m.role} → ${m.futureRole}`}
+                >
+                  {m.futureRoleShort}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Footer ───────────────────────────────── */}
+      <div className="px-3 py-1.5 border-t text-[9px] leading-tight" style={{ background: "#0f172a", color: "white" }}>
+        <span className="opacity-60">Domain:</span>{" "}
+        <span className="font-semibold">{pod.domain}</span>
+        <span className="opacity-40 ml-2">· Projects workforce only</span>
       </div>
     </div>
   );
@@ -1845,7 +1887,7 @@ function PodChip({ pod, accent, showAI = false }: { pod: Pod; accent: string; sh
             )}
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="start" side="right">
+        <PopoverContent className="w-[420px] p-0" align="start" side="right">
           <PodCard pod={{ ...pod, name: displayName }} accent={accent} />
         </PopoverContent>
       </Popover>
