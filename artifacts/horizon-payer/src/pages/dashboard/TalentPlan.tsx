@@ -2198,7 +2198,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             <Package size={16} style={{ color: C.blue }} /> Pod Model — Phased Operating Model
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            How the current {total}-person team evolves from role-based silos into AI-augmented product pods across 3 phases.
+            How the current {projectTotal}-person projects workforce evolves from role-based silos into AI-augmented product pods across 3 phases.
           </p>
         </div>
         <div className="flex items-center gap-2 no-print">
@@ -2955,8 +2955,7 @@ function useTabData() {
     initialData: { resources: SEED_RESOURCES, products: SEED_PRODUCTS },
     staleTime: 5_000,
   });
-  const raw = dataQ.data?.resources ?? SEED_RESOURCES;
-  const RESOURCES = raw.map(r => r.typeOfWork === "Shared" ? { ...r, typeOfWork: "Projects" } : r);
+  const RESOURCES = dataQ.data?.resources ?? SEED_RESOURCES;
   const PRODUCTS  = dataQ.data?.products  ?? SEED_PRODUCTS;
   const [filters, setFilters] = useState<FilterState>({
     domain: "", portfolio: "", product: "", applicationArea: "",
