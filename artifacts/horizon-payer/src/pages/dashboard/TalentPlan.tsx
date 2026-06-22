@@ -1340,6 +1340,20 @@ function buildDomainPods(resources: Resource[], idPrefix: string): Pod[] {
 
 const DEFAULT_PILOT_COUNT = 5;
 
+// Domains that represent technical functions, not business delivery domains — excluded from pods.
+const EXCLUDED_POD_DOMAINS = new Set(["Data Area", "DataBase Administrator"]);
+
+// Domain-specific accent colors used in the swimlane and pod cards.
+const DOMAIN_ACCENT_MAP: Record<string, string> = {
+  "Horizontal Functions":     C.blue,
+  "Health and Network":       C.teal,
+  "Service & Administration": C.purple,
+  "Corporate Functions":      C.orange,
+  "Specialty Business":       "#059669",
+  "Market Facing":            "#dc2626",
+};
+const getDomainAccent = (domain: string) => DOMAIN_ACCENT_MAP[domain] ?? C.gray;
+
 function buildPodStages(resources: Resource[], pilotSelection?: string[] | null): {
   today: RoleBucket[];
   sixMonth: { pods: Pod[]; remaining: RoleBucket[]; remainingCount: number };
@@ -1348,8 +1362,11 @@ function buildPodStages(resources: Resource[], pilotSelection?: string[] | null)
 } {
   const today = bucketByRole(resources);
 
-  // Only "Projects" typeOfWork resources form pods — Operations Support and Shared are excluded.
-  const projectResources = resources.filter(r => r.typeOfWork === "Projects");
+  // Only "Projects" typeOfWork resources form pods — Operations Support, Shared, and
+  // non-business-domain technical groupings are excluded.
+  const projectResources = resources.filter(
+    r => r.typeOfWork === "Projects" && !EXCLUDED_POD_DOMAINS.has(r.domain ?? "")
+  );
 
   // ── 6-month: pilot pods. Default = top N domains by project headcount; override via pilotSelection.
   const byDomain: Record<string, Resource[]> = {};
@@ -1416,26 +1433,50 @@ function RoleBucketCard({ b, total }: { b: RoleBucket; total: number }) {
 
 function PodCard({ pod, accent }: { pod: Pod; accent: string }) {
   const overSize = pod.headcount > MAX_POD_SIZE;
+  const topRoles = pod.roleMix.slice(0, 3).map(r => r.futureRole || r.role).filter(Boolean);
   return (
     <div
       className="rounded-md border bg-white hover:shadow-md transition-shadow overflow-hidden"
       style={{ borderTop: `3px solid ${accent}` }}
     >
       {/* Header */}
-      <div className="px-3 py-2 border-b" style={{ background: `${accent}08` }}>
+      <div
+        className="px-3 py-2.5 border-b"
+        style={{ background: `linear-gradient(135deg, ${accent}14 0%, ${accent}06 100%)` }}
+      >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <div className="text-xs font-bold truncate" title={pod.name}>{pod.name}</div>
-            <div className="text-[10px] text-muted-foreground truncate">Development &amp; Support</div>
+            <div className="text-xs font-bold truncate leading-tight" title={pod.name}>{pod.name}</div>
+            {topRoles.length > 0 && (
+              <div className="text-[10px] text-muted-foreground truncate mt-0.5">
+                {topRoles.join(" · ")}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             {overSize && (
               <Badge variant="outline" className="text-[9px] h-4 px-1" style={{ borderColor: C.orange, color: C.orange }}>
-                {pod.headcount} &gt; cap
+                oversized
               </Badge>
             )}
-            <Package size={14} style={{ color: accent }} />
+            <div
+              className="flex items-center justify-center rounded-full text-white text-[11px] font-bold w-7 h-7 flex-shrink-0"
+              style={{ background: accent }}
+              title={`${pod.headcount} members`}
+            >
+              {pod.headcount}
+            </div>
           </div>
+        </div>
+        {/* Mini role-mix bar in header */}
+        <div className="h-1 w-full rounded-full overflow-hidden flex mt-2 opacity-80">
+          {pod.roleMix.map(s => (
+            <div
+              key={s.role}
+              title={`${s.futureRole || s.role} (${s.count})`}
+              style={{ width: `${(s.count / pod.headcount) * 100}%`, background: s.color }}
+            />
+          ))}
         </div>
       </div>
 
@@ -1738,6 +1779,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
     const counts: Record<string, number> = {};
     for (const r of filtered) {
       if (r.typeOfWork !== "Projects") continue;
+      if (EXCLUDED_POD_DOMAINS.has(r.domain ?? "")) continue;
       const key = r.domain || "Cross-Domain";
       counts[key] = (counts[key] ?? 0) + 1;
     }
@@ -1758,13 +1800,12 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const total = stages.totals.resources || 1;
   const projectTotal = stages.totals.projectResources || 1;
 
-  const FALLBACK_DOMAINS = ["Med Dev", "ADC", "ARDx", "CoreDx", "AN/ANPD", "EPD"];
+  // Derive domains from actual pods — so excluded domains never appear as empty swimlane rows.
   const domains = useMemo(() => {
     const seen = new Set<string>();
-    for (const r of filtered) if (r.domain) seen.add(r.domain);
-    const result = [...seen].sort();
-    return result.length > 0 ? result : FALLBACK_DOMAINS;
-  }, [filtered]);
+    for (const p of stages.twelveMonth.pods) seen.add(p.domain);
+    return [...seen].sort();
+  }, [stages.twelveMonth.pods]);
 
   const byDomainP1 = useMemo(() => groupByDomain(stages.sixMonth.pods), [stages.sixMonth.pods]);
   const byDomainP2 = useMemo(() => groupByDomain(stages.twelveMonth.pods), [stages.twelveMonth.pods]);
@@ -1938,6 +1979,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
         {domains.map((domain, di) => {
           const p1Pods = byDomainP1[domain] ?? [];
           const p2Pods = byDomainP2[domain] ?? [];
+          const dAccent = getDomainAccent(domain);
           return (
             <div
               key={domain}
@@ -1946,18 +1988,29 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
             >
               {/* Row label */}
               <div className="px-3 py-2.5 border-r border-border flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C.blue }} />
-                <span className="text-xs font-semibold truncate" title={domain}>{domain}</span>
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: dAccent, boxShadow: `0 0 4px ${dAccent}60` }}
+                />
+                <span className="text-xs font-semibold truncate" title={domain} style={{ color: dAccent }}>{domain}</span>
               </div>
 
               {/* Phase 1 cell — pilot pods */}
               <div
-                className={cn("px-2 py-2 border-r border-border transition-opacity", activePhase !== 1 && "opacity-50")}
+                className={cn("px-2 py-2 border-r border-border transition-opacity", activePhase !== 1 && "opacity-40")}
                 style={{ background: activePhase === 1 ? `${C.teal}06` : undefined }}
               >
                 {p1Pods.length > 0 ? (
                   <div className="space-y-1">
-                    {p1Pods.map(p => <PodChip key={p.id} pod={p} accent={C.teal} />)}
+                    {p1Pods.map((p, pi) => (
+                      <div
+                        key={p.id}
+                        className="animate-in fade-in slide-in-from-bottom-1 duration-300"
+                        style={{ animationDelay: `${(di * 2 + pi) * 40}ms`, animationFillMode: "both" }}
+                      >
+                        <PodChip pod={p} accent={C.teal} />
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-[10px] text-muted-foreground italic px-1 py-1">Ramping up…</div>
@@ -1966,12 +2019,20 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
 
               {/* Phase 2 cell — all pods */}
               <div
-                className={cn("px-2 py-2 border-r border-border transition-opacity", activePhase !== 2 && "opacity-50")}
+                className={cn("px-2 py-2 border-r border-border transition-opacity", activePhase !== 2 && "opacity-40")}
                 style={{ background: activePhase === 2 ? `${C.blue}06` : undefined }}
               >
                 {p2Pods.length > 0 ? (
                   <div className="space-y-1">
-                    {p2Pods.map(p => <PodChip key={p.id} pod={p} accent={C.blue} />)}
+                    {p2Pods.map((p, pi) => (
+                      <div
+                        key={p.id}
+                        className="animate-in fade-in slide-in-from-bottom-1 duration-300"
+                        style={{ animationDelay: `${(di * 2 + pi) * 40}ms`, animationFillMode: "both" }}
+                      >
+                        <PodChip pod={p} accent={C.blue} />
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-[10px] text-muted-foreground italic px-1 py-1">No pods</div>
@@ -1980,13 +2041,21 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
 
               {/* Phase 3 cell — AI-augmented autonomous ops */}
               <div
-                className={cn("px-2 py-2 transition-opacity", activePhase !== 3 && "opacity-50")}
+                className={cn("px-2 py-2 transition-opacity", activePhase !== 3 && "opacity-40")}
                 style={{ background: activePhase === 3 ? `${C.purple}06` : undefined }}
               >
                 {p2Pods.length > 0 ? (
                   <div className="space-y-1">
                     <div className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: C.purple }}>Autonomous Ops</div>
-                    {p2Pods.map(p => <PodChip key={p.id} pod={p} accent={C.purple} showAI />)}
+                    {p2Pods.map((p, pi) => (
+                      <div
+                        key={p.id}
+                        className="animate-in fade-in slide-in-from-bottom-1 duration-300"
+                        style={{ animationDelay: `${(di * 2 + pi) * 40}ms`, animationFillMode: "both" }}
+                      >
+                        <PodChip pod={p} accent={C.purple} showAI />
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-[10px] text-muted-foreground italic px-1 py-1">No pods</div>
@@ -2103,7 +2172,7 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
       </div>
 
       <div className="text-[10px] text-muted-foreground italic">
-        Pod composition is derived from live talent data. Phase 1 = pilot pods (defaults to top {DEFAULT_PILOT_COUNT} products by headcount; customize via the pilot picker above). Phase 2 = all products in cross-functional pods. Phase 3 = same structure with AI-augmented operating model. Click any pod chip to see its full roster.
+        Pod composition is derived from live talent data (Projects workforce only — Operations Support &amp; Shared roles excluded). Phase 1 = pilot pods for top {DEFAULT_PILOT_COUNT} domains by headcount (customize via the picker above). Phase 2 = all domains in cross-functional pods. Phase 3 = same structure with AI-augmented operating model. Click any pod chip to see its full roster.
       </div>
     </Card>
   );
