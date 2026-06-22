@@ -2955,7 +2955,8 @@ function useTabData() {
     initialData: { resources: SEED_RESOURCES, products: SEED_PRODUCTS },
     staleTime: 5_000,
   });
-  const RESOURCES = dataQ.data?.resources ?? SEED_RESOURCES;
+  const raw = dataQ.data?.resources ?? SEED_RESOURCES;
+  const RESOURCES = raw.map(r => r.typeOfWork === "Shared" ? { ...r, typeOfWork: "Projects" } : r);
   const PRODUCTS  = dataQ.data?.products  ?? SEED_PRODUCTS;
   const [filters, setFilters] = useState<FilterState>({
     domain: "", portfolio: "", product: "", applicationArea: "",
@@ -3010,7 +3011,8 @@ export default function TalentPlan() {
     staleTime: 5_000,
   });
 
-  const RESOURCES = dataQ.data?.resources ?? SEED_RESOURCES;
+  const raw = dataQ.data?.resources ?? SEED_RESOURCES;
+  const RESOURCES = raw.map(r => r.typeOfWork === "Shared" ? { ...r, typeOfWork: "Projects" } : r);
   const PRODUCTS = dataQ.data?.products ?? SEED_PRODUCTS;
 
   const [filters, setFilters] = useState<FilterState>({
@@ -3069,9 +3071,6 @@ export default function TalentPlan() {
           <TabsTrigger value="resources" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
             Resource Detail Table
           </TabsTrigger>
-          <TabsTrigger value="readiness" className="text-xs data-[state=active]:bg-white data-[state=active]:text-[#0F62FE] data-[state=active]:shadow-sm">
-            Product Readiness Cards
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="skill" className="mt-4 space-y-6">
@@ -3086,10 +3085,6 @@ export default function TalentPlan() {
 
         <TabsContent value="resources" className="mt-4">
           <ResourceTable filtered={filtered} />
-        </TabsContent>
-
-        <TabsContent value="readiness" className="mt-4">
-          <ProductReadinessCards filtered={filtered} />
         </TabsContent>
       </Tabs>
 
