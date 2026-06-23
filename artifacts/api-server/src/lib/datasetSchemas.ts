@@ -21,6 +21,8 @@ import {
   ibmamsSavingsTrendTable,
   ibmamsTicketTrendsTable,
   roadmapInitiativesTable,
+  roadmapRequirementsTable,
+  roadmapRisksTable,
   executiveAlertsTable,
   dailyTrendsTable,
   aiInsightsTable,
@@ -498,6 +500,72 @@ export const DATASET_SCHEMAS: Record<string, DatasetSchema> = {
         ],
         sampleRows: [
           { "Portfolio": "Claims", "Product": "Claims Engine", "Application": "Claims Engine v4", "Initiative Type": "AI-First", "Description": "Automate denial drafting with LLM", "Expected Outcome": "30% denial-letter cycle reduction", "Technology": "watsonx.ai", "Current Version": "4.12", "Upgrade Version": "5.0", "JIRA ID": "HRZN-1001", "Service Category": "Claims Modernization", "Start Date": "2026-Q2", "End Date": "2026-Q4", "Status": "In Progress", "Priority": "High", "Notes": "", "Domain": "Claims", "Plan Year": 1, "Plan Quarter": "Q2", "Complexity": "Med", "Business Impact": "High - 30% cycle reduction", "Dependency": "watsonx.ai license" },
+        ],
+      },
+    ],
+  },
+
+  "roadmap-requirements": {
+    key: "roadmap-requirements",
+    title: "Roadmap — Requirements for Horizon Upload Template",
+    introLines: [
+      "Drives the 'Requirements for Horizon' governance section on the Transformation Roadmap page.",
+      "Each row is an IBM ask of Horizon — access grants, approvals, resource commitments, or infrastructure decisions.",
+      `Status values: Met | In Progress | Open | Overdue. ${STATUS_NOTE}`,
+      `Priority values: High | Med | Low. ${STATUS_NOTE}`,
+      `Category values: Data Access | Approval | Decision | Resource | Infrastructure | Commercial. ${STATUS_NOTE}`,
+    ],
+    sheets: [
+      {
+        sheetName: "Requirements",
+        tableName: "roadmap_requirements",
+        table: roadmapRequirementsTable,
+        columns: [
+          { header: "Name",           key: "name",           type: "str",  sample: "Production DB Read Access — Claims",         required: true  },
+          { header: "Category",       key: "category",       type: "str",  sample: "Data Access",                                required: true  },
+          { header: "Description",    key: "description",    type: "str",  sample: "IBM AIOps team requires read-only access…",   required: true  },
+          { header: "Due Date",       key: "dueDate",        type: "str",  sample: "2026-07-31",                                 required: true  },
+          { header: "Status",         key: "status",         type: "str",  sample: "Open",                                       required: true  },
+          { header: "IBM Workstream", key: "ibmWorkstream",  type: "str",  sample: "AIOps & Observability",                      required: true  },
+          { header: "Owner",          key: "owner",          type: "str",  sample: "Horizon IT Security",                        required: true  },
+          { header: "Priority",       key: "priority",       type: "str",  sample: "High",                                       required: true  },
+        ],
+        sampleRows: [
+          { "Name": "Production DB Read Access — Claims", "Category": "Data Access", "Description": "IBM AIOps team requires read-only access to claims DB for analytics.", "Due Date": "2026-07-31", "Status": "Open", "IBM Workstream": "AIOps & Observability", "Owner": "Horizon IT Security", "Priority": "High" },
+        ],
+      },
+    ],
+  },
+
+  "roadmap-risks": {
+    key: "roadmap-risks",
+    title: "Roadmap — Transformation Risks Upload Template",
+    introLines: [
+      "Drives the 'Risks & Mitigation' governance section on the Transformation Roadmap page.",
+      "Each row is a programme, technical, resource, compliance, commercial, or vendor risk.",
+      `Status values: Open | Mitigating | Closed. ${STATUS_NOTE}`,
+      `Likelihood / Impact / Rating values: High | Med | Low. ${STATUS_NOTE}`,
+      `Category values: Program | Technical | Resource | Compliance | Commercial | Vendor. ${STATUS_NOTE}`,
+    ],
+    sheets: [
+      {
+        sheetName: "Risks",
+        tableName: "roadmap_risks",
+        table: roadmapRisksTable,
+        columns: [
+          { header: "Title",             key: "title",            type: "str",  sample: "Legacy Inventory Sign-Off Delay",              required: true  },
+          { header: "Category",          key: "category",         type: "str",  sample: "Program",                                      required: true  },
+          { header: "Likelihood",        key: "likelihood",       type: "str",  sample: "High",                                         required: true  },
+          { header: "Impact",            key: "impact",           type: "str",  sample: "High",                                         required: true  },
+          { header: "Rating",            key: "rating",           type: "str",  sample: "High",                                         required: true  },
+          { header: "Owner",             key: "owner",            type: "str",  sample: "Horizon App Portfolio Team",                   required: true  },
+          { header: "Mitigation Action", key: "mitigationAction", type: "str",  sample: "IBM to provide pre-populated spreadsheet…",    required: true  },
+          { header: "Status",            key: "status",           type: "str",  sample: "Open",                                         required: true  },
+          { header: "Raised Date",       key: "raisedDate",       type: "str",  sample: "2026-04-10",                                   required: true  },
+          { header: "Notes",             key: "notes",            type: "str",  sample: "",                                             required: false },
+        ],
+        sampleRows: [
+          { "Title": "Legacy Inventory Sign-Off Delay", "Category": "Program", "Likelihood": "High", "Impact": "High", "Rating": "High", "Owner": "Horizon App Portfolio Team", "Mitigation Action": "IBM to provide pre-populated spreadsheet with draft decommission priorities.", "Status": "Open", "Raised Date": "2026-04-10", "Notes": "" },
         ],
       },
     ],

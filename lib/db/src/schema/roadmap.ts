@@ -1,5 +1,31 @@
 import { pgTable, text, varchar, integer, serial } from "drizzle-orm/pg-core";
 
+export const roadmapRequirementsTable = pgTable("roadmap_requirements", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(),
+  description: text("description").notNull(),
+  dueDate: varchar("due_date", { length: 10 }).notNull(),
+  status: varchar("status", { length: 30 }).notNull(),
+  ibmWorkstream: varchar("ibm_workstream", { length: 100 }).notNull(),
+  owner: varchar("owner", { length: 100 }).notNull(),
+  priority: varchar("priority", { length: 10 }).notNull(),
+});
+
+export const roadmapRisksTable = pgTable("roadmap_risks", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(),
+  likelihood: varchar("likelihood", { length: 10 }).notNull(),
+  impact: varchar("impact", { length: 10 }).notNull(),
+  rating: varchar("rating", { length: 10 }).notNull(),
+  owner: varchar("owner", { length: 100 }).notNull(),
+  mitigationAction: text("mitigation_action").notNull(),
+  status: varchar("status", { length: 20 }).notNull(),
+  raisedDate: varchar("raised_date", { length: 10 }).notNull(),
+  notes: text("notes").notNull().default(""),
+});
+
 export const roadmapInitiativesTable = pgTable("roadmap_initiatives", {
   id: serial("id").primaryKey(),
   portfolio: varchar("portfolio", { length: 100 }).notNull(),

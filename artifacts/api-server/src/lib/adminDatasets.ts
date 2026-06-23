@@ -122,6 +122,26 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
     category: "Roadmap",
   },
   {
+    key: "roadmap-requirements",
+    label: "Roadmap — Requirements for Horizon",
+    page: "Digital Roadmap",
+    pageRoute: "/dashboard/digital-roadmap",
+    description:
+      "IBM asks of Horizon: data-access grants, approvals, resource commitments, and infrastructure decisions. Refreshes the Requirements governance section of the Transformation Roadmap page.",
+    acceptedFormats: ".xlsx, .csv",
+    category: "Roadmap",
+  },
+  {
+    key: "roadmap-risks",
+    label: "Roadmap — Transformation Risks",
+    page: "Digital Roadmap",
+    pageRoute: "/dashboard/digital-roadmap",
+    description:
+      "Programme, technical, resource, compliance, commercial and vendor risks with likelihood, impact, mitigation and status. Refreshes the Risks & Mitigation governance section.",
+    acceptedFormats: ".xlsx, .csv",
+    category: "Roadmap",
+  },
+  {
     key: "executive-overview",
     label: "Executive Overview KPIs",
     page: "Executive Overview",
