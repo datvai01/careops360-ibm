@@ -8,7 +8,7 @@ import {
   useGetRoadmapRequirements,
   useGetRoadmapRisks,
   useCreateRoadmapInitiative,
-  useUpdateRoadmapInitiativeStatus,
+  useUpdateRoadmapInitiative,
   type RoadmapInitiative,
   type RoadmapAlert,
   type CreateRoadmapInitiativeRequest,
@@ -1171,7 +1171,7 @@ function InitiativeFormModal({
 
   const [error, setError] = useState<string | null>(null);
   const createMutation = useCreateRoadmapInitiative();
-  const updateMutation = useUpdateRoadmapInitiativeStatus();
+  const updateMutation = useUpdateRoadmapInitiative();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const set = (key: keyof typeof form) => (v: string | number) =>
@@ -1182,7 +1182,15 @@ function InitiativeFormModal({
     setError(null);
     try {
       if (isEdit && editTarget) {
-        await updateMutation.mutateAsync({ id: editTarget.id, data: form });
+        await updateMutation.mutateAsync({
+          id: editTarget.id,
+          data: {
+            ...form,
+            initiativeType: form.initiativeType as "Upgrade" | "Ticket Reduction" | "Transformation" | undefined,
+            status: form.status as "Active" | "Planned" | "Completed" | "At Risk" | undefined,
+            priority: form.priority as "High" | "Medium" | "Low" | undefined,
+          },
+        });
       } else {
         await createMutation.mutateAsync({
           data: {
@@ -1629,7 +1637,7 @@ function ImpactMap({ initiatives }: { initiatives: RoadmapInitiative[] }) {
       cells.push({
         cx: ci,
         ci: imp,
-        items: initiatives.filter(i => complexityNum(i.complexity) === ci && impactNum(i.priority) === imp),
+        items: initiatives.filter(i => complexityNum(i.complexity ?? undefined) === ci && impactNum(i.priority) === imp),
       });
     }
   }

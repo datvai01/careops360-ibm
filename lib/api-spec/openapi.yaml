@@ -876,6 +876,31 @@ paths:
                 items:
                   $ref: "#/components/schemas/RoadmapAlert"
 
+  /roadmap/initiatives/{id}:
+    put:
+      operationId: updateRoadmapInitiative
+      tags: [roadmap]
+      summary: Update a roadmap initiative (full update)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoadmapInitiativeRequest"
+      responses:
+        "200":
+          description: Updated initiative
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoadmapInitiative"
+
   /roadmap/initiatives/{id}/status:
     patch:
       operationId: updateRoadmapInitiativeStatus
@@ -2219,6 +2244,8 @@ components:
           type: string
         upgradeVersion:
           type: string
+        jiraId:
+          type: string
         workNumber:
           type: string
         serviceCategory:
@@ -2235,6 +2262,24 @@ components:
           enum: [High, Medium, Low]
         notes:
           type: string
+        domain:
+          type: string
+          nullable: true
+        planYear:
+          type: integer
+          nullable: true
+        planQuarter:
+          type: string
+          nullable: true
+        complexity:
+          type: string
+          nullable: true
+        businessImpact:
+          type: string
+          nullable: true
+        dependency:
+          type: string
+          nullable: true
         daysOverdue:
           type: integer
           nullable: true
@@ -2243,12 +2288,15 @@ components:
           nullable: true
         tShirtSize:
           type: string
+          nullable: true
           description: T-shirt sizing estimate (XS, S, M, L, XL)
         tShirtRationale:
           type: string
+          nullable: true
           description: Why this T-shirt size was chosen
         roiPlan:
           type: string
+          nullable: true
           description: How Horizon will get the ROI for this initiative
       required:
         - id
@@ -2261,7 +2309,7 @@ components:
         - technology
         - currentVersion
         - upgradeVersion
-        - workNumber
+        - jiraId
         - serviceCategory
         - startDate
         - endDate
@@ -2291,8 +2339,6 @@ components:
           type: string
         upgradeVersion:
           type: string
-        workNumber:
-          type: string
         serviceCategory:
           type: string
         startDate:
@@ -2306,6 +2352,18 @@ components:
           type: string
           enum: [High, Medium, Low]
         notes:
+          type: string
+        domain:
+          type: string
+        planYear:
+          type: integer
+        planQuarter:
+          type: string
+        complexity:
+          type: string
+        businessImpact:
+          type: string
+        dependency:
           type: string
         tShirtSize:
           type: string
@@ -2324,12 +2382,67 @@ components:
         - description
         - expectedOutcome
         - technology
-        - workNumber
         - serviceCategory
         - startDate
         - endDate
         - status
         - priority
+
+    UpdateRoadmapInitiativeRequest:
+      type: object
+      description: All fields optional — only provided fields are updated
+      properties:
+        portfolio:
+          type: string
+        product:
+          type: string
+        application:
+          type: string
+        initiativeType:
+          type: string
+          enum: [Upgrade, "Ticket Reduction", Transformation]
+        description:
+          type: string
+        expectedOutcome:
+          type: string
+        technology:
+          type: string
+        currentVersion:
+          type: string
+        upgradeVersion:
+          type: string
+        serviceCategory:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        status:
+          type: string
+          enum: [Active, Planned, Completed, "At Risk"]
+        priority:
+          type: string
+          enum: [High, Medium, Low]
+        notes:
+          type: string
+        domain:
+          type: string
+        planYear:
+          type: integer
+        planQuarter:
+          type: string
+        complexity:
+          type: string
+        businessImpact:
+          type: string
+        dependency:
+          type: string
+        tShirtSize:
+          type: string
+        tShirtRationale:
+          type: string
+        roiPlan:
+          type: string
 
     RoadmapSummary:
       type: object
@@ -2378,6 +2491,8 @@ components:
           type: string
         message:
           type: string
+        jiraId:
+          type: string
         workNumber:
           type: string
         portfolio:
@@ -2391,7 +2506,7 @@ components:
         - alertType
         - title
         - message
-        - workNumber
+        - jiraId
         - portfolio
 
     TransformationDeliverable:

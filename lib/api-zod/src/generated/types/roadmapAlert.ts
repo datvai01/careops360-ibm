@@ -14,7 +14,8 @@ export interface RoadmapAlert {
   alertType: RoadmapAlertAlertType;
   title: string;
   message: string;
-  workNumber: string;
+  jiraId: string;
+  workNumber?: string;
   portfolio: string;
   daysOverdue?: number | null;
 }

@@ -20,19 +20,26 @@ export interface RoadmapInitiative {
   technology: string;
   currentVersion: string;
   upgradeVersion: string;
-  workNumber: string;
+  jiraId: string;
+  workNumber?: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
   status: RoadmapInitiativeStatus;
   priority: RoadmapInitiativePriority;
   notes: string;
+  domain?: string | null;
+  planYear?: number | null;
+  planQuarter?: string | null;
+  complexity?: string | null;
+  businessImpact?: string | null;
+  dependency?: string | null;
   daysOverdue?: number | null;
   daysUntilEnd?: number | null;
   /** T-shirt sizing estimate (XS, S, M, L, XL) */
-  tShirtSize?: string;
+  tShirtSize?: string | null;
   /** Why this T-shirt size was chosen */
-  tShirtRationale?: string;
+  tShirtRationale?: string | null;
   /** How Horizon will get the ROI for this initiative */
-  roiPlan?: string;
+  roiPlan?: string | null;
 }

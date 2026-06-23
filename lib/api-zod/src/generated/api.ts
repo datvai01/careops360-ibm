@@ -1322,26 +1322,33 @@ export const GetRoadmapInitiativesResponseItem = zod.object({
   technology: zod.string(),
   currentVersion: zod.string(),
   upgradeVersion: zod.string(),
-  workNumber: zod.string(),
+  jiraId: zod.string(),
+  workNumber: zod.string().optional(),
   serviceCategory: zod.string(),
   startDate: zod.string(),
   endDate: zod.string(),
   status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
   priority: zod.enum(["High", "Medium", "Low"]),
   notes: zod.string(),
+  domain: zod.string().nullish(),
+  planYear: zod.number().nullish(),
+  planQuarter: zod.string().nullish(),
+  complexity: zod.string().nullish(),
+  businessImpact: zod.string().nullish(),
+  dependency: zod.string().nullish(),
   daysOverdue: zod.number().nullish(),
   daysUntilEnd: zod.number().nullish(),
   tShirtSize: zod
     .string()
-    .optional()
+    .nullish()
     .describe("T-shirt sizing estimate (XS, S, M, L, XL)"),
   tShirtRationale: zod
     .string()
-    .optional()
+    .nullish()
     .describe("Why this T-shirt size was chosen"),
   roiPlan: zod
     .string()
-    .optional()
+    .nullish()
     .describe("How Horizon will get the ROI for this initiative"),
 });
 export const GetRoadmapInitiativesResponse = zod.array(
@@ -1361,13 +1368,18 @@ export const CreateRoadmapInitiativeBody = zod.object({
   technology: zod.string(),
   currentVersion: zod.string().optional(),
   upgradeVersion: zod.string().optional(),
-  workNumber: zod.string(),
   serviceCategory: zod.string(),
   startDate: zod.string(),
   endDate: zod.string(),
   status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
   priority: zod.enum(["High", "Medium", "Low"]),
   notes: zod.string().optional(),
+  domain: zod.string().optional(),
+  planYear: zod.number().optional(),
+  planQuarter: zod.string().optional(),
+  complexity: zod.string().optional(),
+  businessImpact: zod.string().optional(),
+  dependency: zod.string().optional(),
   tShirtSize: zod
     .string()
     .optional()
@@ -1406,11 +1418,91 @@ export const GetRoadmapAlertsResponseItem = zod.object({
   alertType: zod.enum(["overdue", "atRisk", "endingSoon", "startOverdue"]),
   title: zod.string(),
   message: zod.string(),
-  workNumber: zod.string(),
+  jiraId: zod.string(),
+  workNumber: zod.string().optional(),
   portfolio: zod.string(),
   daysOverdue: zod.number().nullish(),
 });
 export const GetRoadmapAlertsResponse = zod.array(GetRoadmapAlertsResponseItem);
+
+/**
+ * @summary Update a roadmap initiative (full update)
+ */
+export const UpdateRoadmapInitiativeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateRoadmapInitiativeBody = zod
+  .object({
+    portfolio: zod.string().optional(),
+    product: zod.string().optional(),
+    application: zod.string().optional(),
+    initiativeType: zod
+      .enum(["Upgrade", "Ticket Reduction", "Transformation"])
+      .optional(),
+    description: zod.string().optional(),
+    expectedOutcome: zod.string().optional(),
+    technology: zod.string().optional(),
+    currentVersion: zod.string().optional(),
+    upgradeVersion: zod.string().optional(),
+    serviceCategory: zod.string().optional(),
+    startDate: zod.string().optional(),
+    endDate: zod.string().optional(),
+    status: zod.enum(["Active", "Planned", "Completed", "At Risk"]).optional(),
+    priority: zod.enum(["High", "Medium", "Low"]).optional(),
+    notes: zod.string().optional(),
+    domain: zod.string().optional(),
+    planYear: zod.number().optional(),
+    planQuarter: zod.string().optional(),
+    complexity: zod.string().optional(),
+    businessImpact: zod.string().optional(),
+    dependency: zod.string().optional(),
+    tShirtSize: zod.string().optional(),
+    tShirtRationale: zod.string().optional(),
+    roiPlan: zod.string().optional(),
+  })
+  .describe("All fields optional — only provided fields are updated");
+
+export const UpdateRoadmapInitiativeResponse = zod.object({
+  id: zod.number(),
+  portfolio: zod.string(),
+  product: zod.string(),
+  application: zod.string(),
+  initiativeType: zod.enum(["Upgrade", "Ticket Reduction", "Transformation"]),
+  description: zod.string(),
+  expectedOutcome: zod.string(),
+  technology: zod.string(),
+  currentVersion: zod.string(),
+  upgradeVersion: zod.string(),
+  jiraId: zod.string(),
+  workNumber: zod.string().optional(),
+  serviceCategory: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
+  priority: zod.enum(["High", "Medium", "Low"]),
+  notes: zod.string(),
+  domain: zod.string().nullish(),
+  planYear: zod.number().nullish(),
+  planQuarter: zod.string().nullish(),
+  complexity: zod.string().nullish(),
+  businessImpact: zod.string().nullish(),
+  dependency: zod.string().nullish(),
+  daysOverdue: zod.number().nullish(),
+  daysUntilEnd: zod.number().nullish(),
+  tShirtSize: zod
+    .string()
+    .nullish()
+    .describe("T-shirt sizing estimate (XS, S, M, L, XL)"),
+  tShirtRationale: zod
+    .string()
+    .nullish()
+    .describe("Why this T-shirt size was chosen"),
+  roiPlan: zod
+    .string()
+    .nullish()
+    .describe("How Horizon will get the ROI for this initiative"),
+});
 
 /**
  * @summary Update the status of a roadmap initiative
@@ -1434,26 +1526,33 @@ export const UpdateRoadmapInitiativeStatusResponse = zod.object({
   technology: zod.string(),
   currentVersion: zod.string(),
   upgradeVersion: zod.string(),
-  workNumber: zod.string(),
+  jiraId: zod.string(),
+  workNumber: zod.string().optional(),
   serviceCategory: zod.string(),
   startDate: zod.string(),
   endDate: zod.string(),
   status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
   priority: zod.enum(["High", "Medium", "Low"]),
   notes: zod.string(),
+  domain: zod.string().nullish(),
+  planYear: zod.number().nullish(),
+  planQuarter: zod.string().nullish(),
+  complexity: zod.string().nullish(),
+  businessImpact: zod.string().nullish(),
+  dependency: zod.string().nullish(),
   daysOverdue: zod.number().nullish(),
   daysUntilEnd: zod.number().nullish(),
   tShirtSize: zod
     .string()
-    .optional()
+    .nullish()
     .describe("T-shirt sizing estimate (XS, S, M, L, XL)"),
   tShirtRationale: zod
     .string()
-    .optional()
+    .nullish()
     .describe("Why this T-shirt size was chosen"),
   roiPlan: zod
     .string()
-    .optional()
+    .nullish()
     .describe("How Horizon will get the ROI for this initiative"),
 });
 

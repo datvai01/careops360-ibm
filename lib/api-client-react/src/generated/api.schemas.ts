@@ -756,21 +756,28 @@ export interface RoadmapInitiative {
   technology: string;
   currentVersion: string;
   upgradeVersion: string;
-  workNumber: string;
+  jiraId: string;
+  workNumber?: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
   status: RoadmapInitiativeStatus;
   priority: RoadmapInitiativePriority;
   notes: string;
+  domain?: string | null;
+  planYear?: number | null;
+  planQuarter?: string | null;
+  complexity?: string | null;
+  businessImpact?: string | null;
+  dependency?: string | null;
   daysOverdue?: number | null;
   daysUntilEnd?: number | null;
   /** T-shirt sizing estimate (XS, S, M, L, XL) */
-  tShirtSize?: string;
+  tShirtSize?: string | null;
   /** Why this T-shirt size was chosen */
-  tShirtRationale?: string;
+  tShirtRationale?: string | null;
   /** How Horizon will get the ROI for this initiative */
-  roiPlan?: string;
+  roiPlan?: string | null;
 }
 
 export type CreateRoadmapInitiativeRequestInitiativeType =
@@ -811,18 +818,81 @@ export interface CreateRoadmapInitiativeRequest {
   technology: string;
   currentVersion?: string;
   upgradeVersion?: string;
-  workNumber: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
   status: CreateRoadmapInitiativeRequestStatus;
   priority: CreateRoadmapInitiativeRequestPriority;
   notes?: string;
+  domain?: string;
+  planYear?: number;
+  planQuarter?: string;
+  complexity?: string;
+  businessImpact?: string;
+  dependency?: string;
   /** T-shirt sizing estimate (XS, S, M, L, XL) */
   tShirtSize?: string;
   /** Why this T-shirt size was chosen */
   tShirtRationale?: string;
   /** How Horizon will get the ROI for this initiative */
+  roiPlan?: string;
+}
+
+export type UpdateRoadmapInitiativeRequestInitiativeType =
+  (typeof UpdateRoadmapInitiativeRequestInitiativeType)[keyof typeof UpdateRoadmapInitiativeRequestInitiativeType];
+
+export const UpdateRoadmapInitiativeRequestInitiativeType = {
+  Upgrade: "Upgrade",
+  Ticket_Reduction: "Ticket Reduction",
+  Transformation: "Transformation",
+} as const;
+
+export type UpdateRoadmapInitiativeRequestStatus =
+  (typeof UpdateRoadmapInitiativeRequestStatus)[keyof typeof UpdateRoadmapInitiativeRequestStatus];
+
+export const UpdateRoadmapInitiativeRequestStatus = {
+  Active: "Active",
+  Planned: "Planned",
+  Completed: "Completed",
+  At_Risk: "At Risk",
+} as const;
+
+export type UpdateRoadmapInitiativeRequestPriority =
+  (typeof UpdateRoadmapInitiativeRequestPriority)[keyof typeof UpdateRoadmapInitiativeRequestPriority];
+
+export const UpdateRoadmapInitiativeRequestPriority = {
+  High: "High",
+  Medium: "Medium",
+  Low: "Low",
+} as const;
+
+/**
+ * All fields optional — only provided fields are updated
+ */
+export interface UpdateRoadmapInitiativeRequest {
+  portfolio?: string;
+  product?: string;
+  application?: string;
+  initiativeType?: UpdateRoadmapInitiativeRequestInitiativeType;
+  description?: string;
+  expectedOutcome?: string;
+  technology?: string;
+  currentVersion?: string;
+  upgradeVersion?: string;
+  serviceCategory?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: UpdateRoadmapInitiativeRequestStatus;
+  priority?: UpdateRoadmapInitiativeRequestPriority;
+  notes?: string;
+  domain?: string;
+  planYear?: number;
+  planQuarter?: string;
+  complexity?: string;
+  businessImpact?: string;
+  dependency?: string;
+  tShirtSize?: string;
+  tShirtRationale?: string;
   roiPlan?: string;
 }
 
@@ -863,7 +933,8 @@ export interface RoadmapAlert {
   alertType: RoadmapAlertAlertType;
   title: string;
   message: string;
-  workNumber: string;
+  jiraId: string;
+  workNumber?: string;
   portfolio: string;
   daysOverdue?: number | null;
 }

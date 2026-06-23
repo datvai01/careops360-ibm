@@ -19,13 +19,18 @@ export interface CreateRoadmapInitiativeRequest {
   technology: string;
   currentVersion?: string;
   upgradeVersion?: string;
-  workNumber: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
   status: CreateRoadmapInitiativeRequestStatus;
   priority: CreateRoadmapInitiativeRequestPriority;
   notes?: string;
+  domain?: string;
+  planYear?: number;
+  planQuarter?: string;
+  complexity?: string;
+  businessImpact?: string;
+  dependency?: string;
   /** T-shirt sizing estimate (XS, S, M, L, XL) */
   tShirtSize?: string;
   /** Why this T-shirt size was chosen */
