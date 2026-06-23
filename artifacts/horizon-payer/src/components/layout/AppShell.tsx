@@ -28,12 +28,17 @@ import {
   DownloadIcon,
   LoaderIcon,
   Settings,
+  X,
+  CheckCheck,
 } from "lucide-react";
 import { useExportAllData } from "@/hooks/useExportAllData";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTheme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -201,7 +206,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     resetTimers();
   }, [resetTimers]);
 
-  const activeAlerts = alerts?.filter(a => a.status === "active" && a.severity === "critical") || [];
+  const { notifications, unreadCount, isBannerDismissed, dismissBanner, dismiss, markAllSeen } = useNotifications(alerts);
+  const visibleBannerAlerts = (alerts ?? []).filter(
+    a => a.status === "active" && a.severity === "critical" && !isBannerDismissed(a.id)
+  );
   const { trigger: doExport, exporting } = useExportAllData();
 
   return (
@@ -357,12 +365,104 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
             </Button>
             
-            <Button variant="ghost" size="icon" className="relative">
-              <BellIcon className="w-5 h-5" />
-              {activeAlerts.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full"></span>
-              )}
-            </Button>
+            <Popover onOpenChange={(open) => { if (open) markAllSeen(); }}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <BellIcon className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 text-[10px] font-bold bg-destructive text-white rounded-full flex items-center justify-center leading-none">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-96 p-0" sideOffset={8}>
+                <div className="flex items-center justify-between px-4 py-3 border-b">
+                  <div className="flex items-center gap-2">
+                    <BellIcon className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold">Notifications</span>
+                    {unreadCount > 0 && (
+                      <Badge variant="destructive" className="h-5 px-1.5 text-[10px]">{unreadCount} new</Badge>
+                    )}
+                  </div>
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={markAllSeen}
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <CheckCheck className="w-3.5 h-3.5" />
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                <ScrollArea className="max-h-[420px]">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
+                      <BellIcon className="w-8 h-8 opacity-20" />
+                      <span className="text-sm">No active notifications</span>
+                    </div>
+                  ) : (
+                    <div className="divide-y">
+                      {notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          className={cn(
+                            "flex gap-3 px-4 py-3 transition-colors",
+                            !n.seenAt ? "bg-destructive/5" : "hover:bg-muted/40"
+                          )}
+                        >
+                          <div className={cn(
+                            "mt-0.5 w-2 h-2 rounded-full flex-shrink-0",
+                            n.severity === "critical" ? "bg-red-500" :
+                            n.severity === "high" ? "bg-orange-500" : "bg-amber-400"
+                          )} />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={cn(
+                                "text-[12px] font-medium leading-snug",
+                                !n.seenAt && "text-foreground"
+                              )}>
+                                {n.title}
+                              </p>
+                              <button
+                                onClick={() => dismiss(n.id)}
+                                className="flex-shrink-0 opacity-40 hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted mt-0.5"
+                                aria-label="Dismiss"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
+                              {n.description}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1.5">
+                              <span className={cn(
+                                "text-[10px] font-semibold uppercase tracking-wide",
+                                n.severity === "critical" ? "text-red-500" :
+                                n.severity === "high" ? "text-orange-500" : "text-amber-500"
+                              )}>
+                                {n.severity}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground/60">·</span>
+                              <span className="text-[10px] text-muted-foreground/60 capitalize">{n.status}</span>
+                              {!n.seenAt && (
+                                <>
+                                  <span className="text-[10px] text-muted-foreground/60">·</span>
+                                  <span className="text-[10px] font-medium text-destructive">New</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+                <div className="px-4 py-2 border-t bg-muted/30 text-[10px] text-muted-foreground/60 text-center">
+                  Notifications persist for 7 days
+                </div>
+              </PopoverContent>
+            </Popover>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -392,15 +492,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Alert Banner */}
-        {activeAlerts.length > 0 && (
-          <div className="no-print bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2 text-destructive text-sm font-medium">
-              <ActivityIcon className="w-4 h-4 animate-pulse" />
-              <span>Critical System Alert: {activeAlerts[0].title} - {activeAlerts[0].description}</span>
+        {visibleBannerAlerts.length > 0 && (
+          <div className="no-print bg-destructive/10 border-b border-destructive/20 px-4 py-2 flex items-center justify-between gap-3 flex-shrink-0">
+            <div className="flex items-center gap-2 text-destructive text-sm font-medium min-w-0">
+              <ActivityIcon className="w-4 h-4 animate-pulse flex-shrink-0" />
+              <span className="truncate">
+                <span className="font-semibold">Critical System Alert: </span>
+                {visibleBannerAlerts[0].title} — {visibleBannerAlerts[0].description}
+              </span>
             </div>
-            <Link href="/dashboard/app-health">
-              <Button variant="link" size="sm" className="h-auto p-0 text-destructive underline">View Details</Button>
-            </Link>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Link href="/dashboard/app-health">
+                <Button variant="link" size="sm" className="h-auto p-0 text-destructive underline text-xs">View Details</Button>
+              </Link>
+              <button
+                onClick={() => dismissBanner(visibleBannerAlerts[0].id)}
+                className="p-1 rounded hover:bg-destructive/20 text-destructive opacity-60 hover:opacity-100 transition-opacity"
+                aria-label="Dismiss alert"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
