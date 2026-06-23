@@ -220,333 +220,128 @@ type TreemapHandlers = {
 };
 const TreemapHandlersContext = createContext<TreemapHandlers | null>(null);
 
-// ── Product Card ─────────────────────────────────────────────────
-function ProductCard({ product, resources, color, selected, onClick }: {
-  product: string; resources: Resource[]; color: string; selected?: boolean; onClick?: () => void;
-}) {
-  const total = resources.length;
-  const offshore = resources.filter(r => r.location === "Offshore").length;
-  const onshore  = total - offshore;
-
-  const roleCounts: Record<string, number> = {};
-  for (const r of resources) roleCounts[r.role] = (roleCounts[r.role] || 0) + 1;
-  const topRoles = Object.entries(roleCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
-
-  const planFields: (keyof Resource["plan"])[] = ["industry", "agile", "agentic", "devops", "aiops", "futureTech"];
-  const notNa = (v: string) => v && v.trim().toLowerCase() !== "na";
-  const aiReady = resources.filter(r => notNa(r.plan.agentic)).length;
-  const aiPct   = Math.round((aiReady / total) * 100);
-  const skillPct = Math.round(
-    planFields.reduce((sum, f) => sum + resources.filter(r => notNa(r.plan[f])).length / total, 0)
-    / planFields.length * 100,
-  );
-  const aiColor = aiPct >= 60 ? C.green : aiPct >= 30 ? C.orange : C.red;
-  const abbrev  = (s: string) =>
-    s.replace("Operations Engineer", "Ops Eng")
-     .replace("Technical Lead", "TL")
-     .replace("Project Manager", "PM")
-     .replace("Developer", "Dev")
-     .replace("Business Analyst", "BA")
-     .replace("Quality Assurance", "QA");
-
-  return (
-    <div
-      onClick={onClick}
-      className={cn(
-        "rounded-lg border bg-card p-3 space-y-2 cursor-pointer transition-all border-t-[3px]",
-        selected ? "ring-2 shadow-md" : "hover:shadow-md",
-      )}
-      style={{ borderTopColor: color, outlineColor: color }}
-    >
-      {/* Title row */}
-      <div className="flex items-start justify-between gap-1">
-        <div className="min-w-0 flex-1">
-          <div className="text-xs font-bold leading-tight truncate" title={product}>{product}</div>
-          <div className="text-[10px] text-muted-foreground truncate">{resources[0]?.portfolio || ""}</div>
-        </div>
-        <div
-          className="flex-shrink-0 rounded-full text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center"
-          style={{ background: color }}
-        >
-          {total}
-        </div>
-      </div>
-
-      {/* Offshore / onshore split bar */}
-      <div>
-        <div className="flex h-2 rounded overflow-hidden gap-px">
-          {offshore > 0 && <div className="h-full" style={{ background: C.teal,   width: `${(offshore/total)*100}%` }} title={`${offshore} Offshore`} />}
-          {onshore  > 0 && <div className="h-full" style={{ background: C.purple, width: `${(onshore /total)*100}%` }} title={`${onshore} Onshore`}  />}
-        </div>
-        <div className="flex justify-between text-[9px] mt-0.5">
-          <span style={{ color: C.teal   }}>{offshore} Off</span>
-          <span style={{ color: C.purple }}>{onshore}  On</span>
-        </div>
-      </div>
-
-      {/* AI readiness */}
-      <div>
-        <div className="flex items-center justify-between text-[9px] mb-0.5">
-          <span className="text-muted-foreground uppercase tracking-wide font-medium">AI Ready</span>
-          <span className="font-bold tabular-nums" style={{ color: aiColor }}>{aiPct}%</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-          <div className="h-full rounded-full transition-all" style={{ width: `${aiPct}%`, background: aiColor }} />
-        </div>
-      </div>
-
-      {/* Skill plan coverage */}
-      <div>
-        <div className="flex items-center justify-between text-[9px] mb-0.5">
-          <span className="text-muted-foreground uppercase tracking-wide font-medium">Skill Plan</span>
-          <span className="font-bold tabular-nums text-muted-foreground">{skillPct}%</span>
-        </div>
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: `${skillPct}%`, background: C.blue, opacity: 0.65 }} />
-        </div>
-      </div>
-
-      {/* Top roles */}
-      <div className="flex flex-wrap gap-1">
-        {topRoles.map(([role, count]) => (
-          <span key={role} className="text-[9px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground">
-            {abbrev(role)} · {count}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── Domain Section (collapsible) ──────────────────────────────────
-function DomainSection({ domain, resources, color, selectedProduct, onProductClick }: {
-  domain: string; resources: Resource[]; color: string;
-  selectedProduct: string | null; onProductClick: (product: string, rs: Resource[]) => void;
-}) {
-  const [open, setOpen] = useState(true);
-  const byProduct = useMemo(() => {
-    const map: Record<string, Resource[]> = {};
-    for (const r of resources) (map[r.product || "Unassigned"] ??= []).push(r);
-    return Object.entries(map).sort((a, b) => b[1].length - a[1].length);
-  }, [resources]);
-  const portfolios = useMemo(() =>
-    [...new Set(resources.map(r => r.portfolio).filter(Boolean))].slice(0, 3),
-  [resources]);
-
-  return (
-    <div className="rounded-lg border overflow-hidden">
-      <button
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors text-left"
-        onClick={() => setOpen(o => !o)}
-      >
-        <span className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ background: color }} />
-        <span className="text-sm font-bold flex-1 truncate">{domain}</span>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          {portfolios.map(p => (
-            <Badge key={p} variant="outline" className="text-[9px] font-normal hidden sm:inline-flex">{p}</Badge>
-          ))}
-          <Badge className="text-[10px]" style={{ background: color, color: "#fff" }}>
-            {resources.length}
-          </Badge>
-          <Badge variant="outline" className="text-[10px]">{byProduct.length} products</Badge>
-        </div>
-        {open
-          ? <ChevronDown size={13} className="text-muted-foreground flex-shrink-0" />
-          : <ChevronRight size={13} className="text-muted-foreground flex-shrink-0" />}
-      </button>
-
-      {open && (
-        <div className="p-2.5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-          {byProduct.map(([product, rs]) => (
-            <ProductCard
-              key={product}
-              product={product}
-              resources={rs}
-              color={color}
-              selected={selectedProduct === product}
-              onClick={() => onProductClick(product, rs)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── ProductTreemap (Cards + Treemap toggle) ───────────────────────
 function ProductTreemap({
   filtered, filters, setFilters,
 }: { filtered: Resource[]; filters: FilterState; setFilters: (f: FilterState) => void }) {
-  const [viewMode,         setViewMode]         = useState<"cards" | "treemap">("cards");
-  const [selectedProduct,  setSelectedProduct]  = useState<{ name: string; resources: Resource[] } | null>(null);
-
-  // Domain nodes give us stable per-domain colors
-  const domainNodes = useMemo(() => buildLevel(filtered, []), [filtered]);
-
-  // Summary stats
-  const stats = useMemo(() => {
-    const products = new Set(filtered.map(r => r.product).filter(Boolean));
-    const domains  = new Set(filtered.map(r => r.domain).filter(Boolean));
-    const offshore = filtered.filter(r => r.location === "Offshore").length;
-    const notNa = (v: string) => v && v.trim().toLowerCase() !== "na";
-    const aiReady  = filtered.filter(r => notNa(r.plan?.agentic)).length;
-    return {
-      products:    products.size,
-      domains:     domains.size,
-      offshorePct: filtered.length > 0 ? Math.round((offshore / filtered.length) * 100) : 0,
-      aiPct:       filtered.length > 0 ? Math.round((aiReady  / filtered.length) * 100) : 0,
-    };
-  }, [filtered]);
-
-  // ── Treemap state ──
-  const [path,  setPath]  = useState<string[]>([]);
+  const [path, setPath] = useState<string[]>([]);
   const [hover, setHover] = useState<DrillNode | null>(null);
-  const scoped  = useMemo(() => filtered.filter(r => path.every((p, i) => (r[LEVELS[i]] as string) === p)), [filtered, path]);
-  const nodes   = useMemo(() => buildLevel(filtered, path), [filtered, path]);
-  const atLeaf  = path.length >= LEVELS.length;
-  const focused = hover ?? (path.length > 0
-    ? { key: path[path.length - 1], label: path[path.length - 1], count: scoped.length, resources: scoped, color: C.blue }
-    : null);
-  function drillInto(node: DrillNode) { if (path.length < LEVELS.length - 1) { setPath([...path, node.key]); setHover(null); } }
-  function jumpTo(idx: number) { setPath(path.slice(0, idx)); setHover(null); }
+
+  const scoped = useMemo(() => {
+    return filtered.filter(r =>
+      path.every((p, i) => (r[LEVELS[i]] as string) === p),
+    );
+  }, [filtered, path]);
+
+  const nodes = useMemo(() => buildLevel(filtered, path), [filtered, path]);
+
+  const atLeaf = path.length >= LEVELS.length;
+
+  function drillInto(node: DrillNode) {
+    if (path.length >= LEVELS.length - 1) return;
+    setPath([...path, node.key]);
+    setHover(null);
+  }
+  function jumpTo(idx: number) {
+    setPath(path.slice(0, idx));
+    setHover(null);
+  }
   function applyFilter() {
     const next = { ...filters };
     LEVEL_FILTER_KEYS.forEach((k, i) => { next[k] = path[i] ?? ""; });
     setFilters(next);
   }
+  function resetDrill() {
+    setPath([]);
+    setHover(null);
+  }
 
-  // ── Cards view focused node ──
-  const cardFocused: DrillNode | null = selectedProduct
-    ? {
-        key: selectedProduct.name,
-        label: selectedProduct.name,
-        count: selectedProduct.resources.length,
-        resources: selectedProduct.resources,
-        color: domainNodes.find(n => n.key === selectedProduct.resources[0]?.domain)?.color ?? C.blue,
-      }
-    : null;
-
-  const summaryKpis = [
-    { label: "Resources",  value: filtered.length,    color: C.blue   },
-    { label: "Products",   value: stats.products,     color: C.teal   },
-    { label: "Offshore",   value: `${stats.offshorePct}%`, color: C.purple  },
-    { label: "AI Ready",   value: `${stats.aiPct}%`,  color: stats.aiPct >= 60 ? C.green : stats.aiPct >= 30 ? C.orange : C.red },
-  ];
+  const focused = hover ?? (path.length > 0
+    ? { key: path[path.length - 1], label: path[path.length - 1], count: scoped.length, resources: scoped, color: C.blue }
+    : null);
 
   return (
     <Card className="p-5">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div>
           <h3 className="text-base font-bold flex items-center gap-2">
             <Package size={16} style={{ color: C.blue }} /> Product-Based Talent View
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {filtered.length} resources · {stats.domains} domains · {stats.products} products
+            Click any tile to drill: Domain &rarr; Portfolio &rarr; Product &rarr; Application Area &mdash; sized by headcount
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md border overflow-hidden text-xs">
-            <button
-              className={cn("px-3 py-1.5 transition-colors", viewMode === "cards" ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted text-muted-foreground")}
-              onClick={() => setViewMode("cards")}
-            >Cards</button>
-            <button
-              className={cn("px-3 py-1.5 transition-colors border-l", viewMode === "treemap" ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted text-muted-foreground")}
-              onClick={() => setViewMode("treemap")}
-            >Treemap</button>
-          </div>
+          {path.length > 0 && (
+            <Button onClick={applyFilter} size="sm" variant="outline" className="h-7 text-xs gap-1.5">
+              <Target size={11} /> Apply as Page Filter
+            </Button>
+          )}
+          {path.length > 0 && (
+            <Button onClick={resetDrill} size="sm" variant="ghost" className="h-7 text-xs gap-1.5">
+              Reset
+            </Button>
+          )}
+          <Badge variant="outline" className="text-xs">{scoped.length} of {filtered.length}</Badge>
         </div>
       </div>
 
-      {/* Summary KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        {summaryKpis.map(s => (
-          <div key={s.label} className="rounded-lg border bg-muted/20 px-3 py-2 flex items-center justify-between gap-2">
-            <span className="text-[10px] text-muted-foreground">{s.label}</span>
-            <span className="text-sm font-bold tabular-nums" style={{ color: s.color }}>{s.value}</span>
-          </div>
-        ))}
-      </div>
-
-      {viewMode === "cards" ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Domain accordion grid */}
-          <div className="lg:col-span-2 space-y-3 max-h-[620px] overflow-auto pr-1">
-            {domainNodes.length === 0
-              ? <div className="h-40 flex items-center justify-center text-sm text-muted-foreground border rounded-md">No resources match the current filters.</div>
-              : domainNodes.map(dn => (
-                  <DomainSection
-                    key={dn.key}
-                    domain={dn.key}
-                    resources={dn.resources}
-                    color={dn.color}
-                    selectedProduct={selectedProduct?.name ?? null}
-                    onProductClick={(name, rs) => setSelectedProduct({ name, resources: rs })}
-                  />
-                ))
-            }
-          </div>
-          {/* Detail panel */}
-          {cardFocused
-            ? <DrillDetailPanel focused={cardFocused} level={2} canDrill={false} />
-            : (
-              <div className="rounded-lg border bg-muted/20 p-4 h-[200px] lg:h-full flex flex-col items-center justify-center text-center">
-                <Package size={28} className="text-muted-foreground/30 mb-2" />
-                <div className="text-sm font-semibold text-muted-foreground">Click any product card</div>
-                <div className="text-xs text-muted-foreground/70 mt-1">See role mix, location split, and skill coverage for that product team.</div>
-              </div>
-            )
-          }
-        </div>
-      ) : (
-        /* ── Treemap view ── */
-        <>
-          <div className="flex items-center gap-1.5 text-xs mb-3 flex-wrap">
-            <button onClick={() => { setPath([]); setHover(null); }} className={cn("px-2 py-1 rounded font-semibold transition-colors", path.length === 0 ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground")}>
-              All Domains
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-1.5 text-xs mb-3 flex-wrap">
+        <button onClick={resetDrill} className={cn("px-2 py-1 rounded font-semibold transition-colors", path.length === 0 ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground")}>
+          All Domains
+        </button>
+        {path.map((p, i) => (
+          <span key={i} className="flex items-center gap-1.5">
+            <ChevronRight size={11} className="text-muted-foreground" />
+            <button
+              onClick={() => jumpTo(i + 1)}
+              className={cn("px-2 py-1 rounded font-semibold transition-colors", i === path.length - 1 ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground")}
+              title={`Go back to ${LEVEL_LABELS[i]} level`}
+            >
+              {p}
             </button>
-            {path.map((p, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                <ChevronRight size={11} className="text-muted-foreground" />
-                <button onClick={() => jumpTo(i + 1)} className={cn("px-2 py-1 rounded font-semibold transition-colors", i === path.length - 1 ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground")}>
-                  {p}
-                </button>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70">{LEVEL_LABELS[i]}</span>
-              </span>
-            ))}
-            <div className="ml-auto flex items-center gap-2">
-              {path.length > 0 && (
-                <Button onClick={applyFilter} size="sm" variant="outline" className="h-7 text-xs gap-1.5">
-                  <Target size={11} /> Apply Filter
-                </Button>
-              )}
-              <Badge variant="outline" className="text-xs">{scoped.length} of {filtered.length}</Badge>
-            </div>
-          </div>
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70">{LEVEL_LABELS[i]}</span>
+          </span>
+        ))}
+        {path.length < LEVELS.length && (
+          <span className="ml-auto text-[10px] uppercase tracking-wide text-muted-foreground/70">
+            Showing {nodes.length} {LEVEL_LABELS[path.length]}{nodes.length === 1 ? "" : "s"}
+          </span>
+        )}
+      </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 h-[440px]">
-              {atLeaf ? (
-                <ResourceList resources={scoped} />
-              ) : nodes.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-sm text-muted-foreground border rounded-md">No resources match.</div>
-              ) : (
-                <TreemapHandlersContext.Provider value={{ onTileClick: drillInto, onTileHover: n => setHover(n) }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <Treemap
-                      data={nodes.map(n => ({ name: n.label, size: n.count, color: n.color, node: n }))}
-                      dataKey="size" stroke="#fff" isAnimationActive={false}
-                      content={<InteractiveTile />}
-                    />
-                  </ResponsiveContainer>
-                </TreemapHandlersContext.Provider>
-              )}
+      {/* Treemap + side panel */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 h-[440px]">
+          {atLeaf ? (
+            <ResourceList resources={scoped} />
+          ) : nodes.length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground border rounded-md">
+              No resources match the current selection.
             </div>
-            <DrillDetailPanel focused={focused} level={path.length} canDrill={!atLeaf && hover !== null} />
-          </div>
-        </>
-      )}
+          ) : (
+            <TreemapHandlersContext.Provider
+              value={{
+                onTileClick: (n: DrillNode) => drillInto(n),
+                onTileHover: (n: DrillNode | null) => setHover(n),
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <Treemap
+                  data={nodes.map(n => ({ name: n.label, size: n.count, color: n.color, node: n }))}
+                  dataKey="size"
+                  stroke="#fff"
+                  isAnimationActive={false}
+                  content={<InteractiveTile />}
+                />
+              </ResponsiveContainer>
+            </TreemapHandlersContext.Provider>
+          )}
+        </div>
+
+        {/* Detail side panel */}
+        <DrillDetailPanel focused={focused} level={path.length} canDrill={!atLeaf && hover !== null} />
+      </div>
     </Card>
   );
 }
