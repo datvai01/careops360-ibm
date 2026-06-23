@@ -53,6 +53,7 @@ import type {
   GetTicketTrendsParams,
   GetVendorInvoiceListParams,
   HealthStatus,
+  HorizonRequirement,
   HourlyVolume,
   IbmAmsKpis,
   Incident,
@@ -73,8 +74,9 @@ import type {
   RoadmapSummary,
   SlaCompliance,
   TicketTrend,
+  TransformationDeliverable,
+  TransformationRisk,
   TrendData,
-  UpdateRoadmapInitiativeBody,
   UpdateRoadmapInitiativeStatusBody,
   User,
   VendorAgingRow,
@@ -4142,79 +4144,233 @@ export const useUpdateRoadmapInitiativeStatus = <
   return useMutation(getUpdateRoadmapInitiativeStatusMutationOptions(options));
 };
 
-// ─── Full update (PUT) ────────────────────────────────────────────────────────
+/**
+ * @summary Get transformation timeline deliverables
+ */
+export const getGetRoadmapTimelineDeliverablesUrl = () => {
+  return `/api/roadmap/timeline-deliverables`;
+};
 
-export const getUpdateRoadmapInitiativeUrl = (id: number) =>
-  `/api/roadmap/initiatives/${id}`;
+export const getRoadmapTimelineDeliverables = async (
+  options?: RequestInit,
+): Promise<TransformationDeliverable[]> => {
+  return customFetch<TransformationDeliverable[]>(
+    getGetRoadmapTimelineDeliverablesUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-export const updateRoadmapInitiative = async (
-  id: number,
-  updateRoadmapInitiativeBody: UpdateRoadmapInitiativeBody,
-  options?: SecondParameter<typeof customFetch>,
-): Promise<RoadmapInitiative> => {
-  return customFetch<RoadmapInitiative>(getUpdateRoadmapInitiativeUrl(id), {
+export const getGetRoadmapTimelineDeliverablesQueryKey = () => {
+  return [`/api/roadmap/timeline-deliverables`] as const;
+};
+
+export const getGetRoadmapTimelineDeliverablesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRoadmapTimelineDeliverablesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>
+  > = ({ signal }) =>
+    getRoadmapTimelineDeliverables({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRoadmapTimelineDeliverablesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>
+>;
+export type GetRoadmapTimelineDeliverablesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get transformation timeline deliverables
+ */
+
+export function useGetRoadmapTimelineDeliverables<
+  TData = Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapTimelineDeliverables>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRoadmapTimelineDeliverablesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get requirements for Horizon
+ */
+export const getGetRoadmapRequirementsUrl = () => {
+  return `/api/roadmap/requirements`;
+};
+
+export const getRoadmapRequirements = async (
+  options?: RequestInit,
+): Promise<HorizonRequirement[]> => {
+  return customFetch<HorizonRequirement[]>(getGetRoadmapRequirementsUrl(), {
     ...options,
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(updateRoadmapInitiativeBody),
+    method: "GET",
   });
 };
 
-export const getUpdateRoadmapInitiativeMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateRoadmapInitiative>>,
-    TError,
-    { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof updateRoadmapInitiative>>,
-  TError,
-  { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
-  TContext
-> => {
-  const mutationKey = ["updateRoadmapInitiative"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? { ...options, mutation: { ...options.mutation, mutationKey } }
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof updateRoadmapInitiative>>,
-    { id: number; data: BodyType<UpdateRoadmapInitiativeBody> }
-  > = ({ id, data }) => updateRoadmapInitiative(id, data, requestOptions);
-  return { mutationFn, ...mutationOptions };
+export const getGetRoadmapRequirementsQueryKey = () => {
+  return [`/api/roadmap/requirements`] as const;
 };
 
-export type UpdateRoadmapInitiativeMutationResult = NonNullable<
-  Awaited<ReturnType<typeof updateRoadmapInitiative>>
+export const getGetRoadmapRequirementsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRoadmapRequirements>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapRequirements>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRoadmapRequirementsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRoadmapRequirements>>
+  > = ({ signal }) => getRoadmapRequirements({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapRequirements>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRoadmapRequirementsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRoadmapRequirements>>
 >;
-export type UpdateRoadmapInitiativeMutationBody = BodyType<UpdateRoadmapInitiativeBody>;
-export type UpdateRoadmapInitiativeMutationError = ErrorType<unknown>;
+export type GetRoadmapRequirementsQueryError = ErrorType<unknown>;
 
 /**
- * @summary Update a roadmap initiative (full update)
+ * @summary Get requirements for Horizon
  */
-export const useUpdateRoadmapInitiative = <
+
+export function useGetRoadmapRequirements<
+  TData = Awaited<ReturnType<typeof getRoadmapRequirements>>,
   TError = ErrorType<unknown>,
-  TContext = unknown,
 >(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateRoadmapInitiative>>,
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapRequirements>>,
     TError,
-    { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
-    TContext
+    TData
   >;
   request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof updateRoadmapInitiative>>,
-  TError,
-  { id: number; data: BodyType<UpdateRoadmapInitiativeBody> },
-  TContext
-> => {
-  return useMutation(getUpdateRoadmapInitiativeMutationOptions(options));
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRoadmapRequirementsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get transformation risks and mitigations
+ */
+export const getGetRoadmapRisksUrl = () => {
+  return `/api/roadmap/risks`;
 };
+
+export const getRoadmapRisks = async (
+  options?: RequestInit,
+): Promise<TransformationRisk[]> => {
+  return customFetch<TransformationRisk[]>(getGetRoadmapRisksUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetRoadmapRisksQueryKey = () => {
+  return [`/api/roadmap/risks`] as const;
+};
+
+export const getGetRoadmapRisksQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRoadmapRisks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapRisks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetRoadmapRisksQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getRoadmapRisks>>> = ({
+    signal,
+  }) => getRoadmapRisks({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapRisks>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRoadmapRisksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRoadmapRisks>>
+>;
+export type GetRoadmapRisksQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get transformation risks and mitigations
+ */
+
+export function useGetRoadmapRisks<
+  TData = Awaited<ReturnType<typeof getRoadmapRisks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapRisks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRoadmapRisksQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

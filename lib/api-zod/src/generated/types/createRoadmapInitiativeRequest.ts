@@ -26,4 +26,10 @@ export interface CreateRoadmapInitiativeRequest {
   status: CreateRoadmapInitiativeRequestStatus;
   priority: CreateRoadmapInitiativeRequestPriority;
   notes?: string;
+  /** T-shirt sizing estimate (XS, S, M, L, XL) */
+  tShirtSize?: string;
+  /** Why this T-shirt size was chosen */
+  tShirtRationale?: string;
+  /** How Horizon will get the ROI for this initiative */
+  roiPlan?: string;
 }

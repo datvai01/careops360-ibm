@@ -907,6 +907,51 @@ paths:
               schema:
                 $ref: "#/components/schemas/RoadmapInitiative"
 
+  /roadmap/timeline-deliverables:
+    get:
+      operationId: getRoadmapTimelineDeliverables
+      tags: [roadmap]
+      summary: Get transformation timeline deliverables
+      responses:
+        "200":
+          description: List of transformation deliverables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransformationDeliverable"
+
+  /roadmap/requirements:
+    get:
+      operationId: getRoadmapRequirements
+      tags: [roadmap]
+      summary: Get requirements for Horizon
+      responses:
+        "200":
+          description: List of Horizon requirements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HorizonRequirement"
+
+  /roadmap/risks:
+    get:
+      operationId: getRoadmapRisks
+      tags: [roadmap]
+      summary: Get transformation risks and mitigations
+      responses:
+        "200":
+          description: List of transformation risks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransformationRisk"
+
 components:
   schemas:
     HealthStatus:
@@ -2348,3 +2393,115 @@ components:
         - message
         - workNumber
         - portfolio
+
+    TransformationDeliverable:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phase:
+          type: string
+          enum: [Foundation, Scale, Operate]
+        workstream:
+          type: string
+        owner:
+          type: string
+          enum: [IBM, Horizon, Joint]
+        ownerTeam:
+          type: string
+        dueDate:
+          type: string
+        status:
+          type: string
+          enum: ["On Track", "At Risk", "Complete", "Not Started"]
+        description:
+          type: string
+      required:
+        - id
+        - name
+        - phase
+        - workstream
+        - owner
+        - ownerTeam
+        - dueDate
+        - status
+        - description
+
+    HorizonRequirement:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+          enum: ["Data Access", "Decision", "Resource", "Approval", "Infrastructure"]
+        description:
+          type: string
+        dueDate:
+          type: string
+        status:
+          type: string
+          enum: ["Open", "In Progress", "Met", "Overdue"]
+        ibmWorkstream:
+          type: string
+        owner:
+          type: string
+        priority:
+          type: string
+          enum: [High, Med, Low]
+      required:
+        - id
+        - name
+        - category
+        - description
+        - dueDate
+        - status
+        - ibmWorkstream
+        - owner
+        - priority
+
+    TransformationRisk:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+          enum: [Program, Technical, Resource, Vendor, Compliance]
+        likelihood:
+          type: string
+          enum: [High, Med, Low]
+        impact:
+          type: string
+          enum: [High, Med, Low]
+        rating:
+          type: string
+          enum: [High, Med, Low]
+        owner:
+          type: string
+        mitigationAction:
+          type: string
+        status:
+          type: string
+          enum: [Open, Mitigating, Closed]
+        raisedDate:
+          type: string
+        notes:
+          type: string
+      required:
+        - id
+        - title
+        - category
+        - likelihood
+        - impact
+        - rating
+        - owner
+        - mitigationAction
+        - status
+        - raisedDate

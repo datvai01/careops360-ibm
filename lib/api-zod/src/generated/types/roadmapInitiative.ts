@@ -29,4 +29,10 @@ export interface RoadmapInitiative {
   notes: string;
   daysOverdue?: number | null;
   daysUntilEnd?: number | null;
+  /** T-shirt sizing estimate (XS, S, M, L, XL) */
+  tShirtSize?: string;
+  /** Why this T-shirt size was chosen */
+  tShirtRationale?: string;
+  /** How Horizon will get the ROI for this initiative */
+  roiPlan?: string;
 }

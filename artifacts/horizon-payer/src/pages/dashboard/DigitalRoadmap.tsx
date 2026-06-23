@@ -4,11 +4,17 @@ import {
   useGetRoadmapInitiatives,
   useGetRoadmapSummary,
   useGetRoadmapAlerts,
+  useGetRoadmapTimelineDeliverables,
+  useGetRoadmapRequirements,
+  useGetRoadmapRisks,
   useCreateRoadmapInitiative,
-  useUpdateRoadmapInitiative,
+  useUpdateRoadmapInitiativeStatus,
   type RoadmapInitiative,
   type RoadmapAlert,
   type CreateRoadmapInitiativeRequest,
+  type TransformationDeliverable,
+  type HorizonRequirement,
+  type TransformationRisk,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +46,9 @@ import {
   Download,
   FileSpreadsheet,
   FileText,
+  CalendarDays,
+  ClipboardList,
+  ShieldAlert,
 } from "lucide-react";
 
 // ─── Export Utilities ─────────────────────────────────────────────────────────
@@ -1162,7 +1171,7 @@ function InitiativeFormModal({
 
   const [error, setError] = useState<string | null>(null);
   const createMutation = useCreateRoadmapInitiative();
-  const updateMutation = useUpdateRoadmapInitiative();
+  const updateMutation = useUpdateRoadmapInitiativeStatus();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   const set = (key: keyof typeof form) => (v: string | number) =>
@@ -2038,10 +2047,500 @@ function SectionView({
   );
 }
 
+// ─── Governance Colour Helpers ────────────────────────────────────────────────
+
+const DELIVERABLE_STATUS_STYLE: Record<string, string> = {
+  "On Track":    "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950 dark:border-emerald-800",
+  "Complete":    "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950 dark:border-blue-800",
+  "At Risk":     "text-red-700 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-800",
+  "Not Started": "text-slate-600 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700",
+};
+
+const REQ_STATUS_STYLE: Record<string, string> = {
+  "Open":        "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950 dark:border-amber-800",
+  "In Progress": "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950 dark:border-blue-800",
+  "Met":         "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950 dark:border-emerald-800",
+  "Overdue":     "text-red-700 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-800",
+};
+
+const PRIORITY_BADGE: Record<string, string> = {
+  High: "text-red-700 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-800",
+  Med:  "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950 dark:border-amber-800",
+  Low:  "text-slate-600 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700",
+};
+
+const RISK_STATUS_STYLE: Record<string, string> = {
+  "Open":       "text-red-700 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-800",
+  "Mitigating": "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950 dark:border-amber-800",
+  "Closed":     "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950 dark:border-emerald-800",
+};
+
+const RISK_RATING_STYLE: Record<string, string> = {
+  High: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 font-bold",
+  Med:  "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-semibold",
+  Low:  "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
+};
+
+// heatmap cell background: likelihood row × impact column
+function heatmapCellClass(l: string, i: string): string {
+  if (l === "High" && i === "High") return "bg-red-200 dark:bg-red-900 text-red-900 dark:text-red-100";
+  if ((l === "High" && i === "Med") || (l === "Med" && i === "High")) return "bg-orange-200 dark:bg-orange-900 text-orange-900 dark:text-orange-100";
+  if ((l === "High" && i === "Low") || (l === "Low" && i === "High") || (l === "Med" && i === "Med")) return "bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-100";
+  if ((l === "Med" && i === "Low") || (l === "Low" && i === "Med")) return "bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100";
+  return "bg-emerald-100 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100";
+}
+
+const PHASE_ORDER = ["Foundation", "Scale", "Operate"] as const;
+const PHASE_STYLE: Record<string, { bg: string; text: string; badge: string; bar: string }> = {
+  Foundation: { bg: "bg-blue-50/60 dark:bg-blue-950/20",   text: "text-blue-700 dark:text-blue-400",   badge: "text-blue-700 bg-blue-100 border-blue-300 dark:text-blue-300 dark:bg-blue-900/60 dark:border-blue-700",   bar: "#3b82f6" },
+  Scale:      { bg: "bg-violet-50/60 dark:bg-violet-950/20", text: "text-violet-700 dark:text-violet-400", badge: "text-violet-700 bg-violet-100 border-violet-300 dark:text-violet-300 dark:bg-violet-900/60 dark:border-violet-700", bar: "#8b5cf6" },
+  Operate:    { bg: "bg-emerald-50/60 dark:bg-emerald-950/20", text: "text-emerald-700 dark:text-emerald-400", badge: "text-emerald-700 bg-emerald-100 border-emerald-300 dark:text-emerald-300 dark:bg-emerald-900/60 dark:border-emerald-700", bar: "#10b981" },
+};
+
+// ─── Timeline & Deliverables Section ─────────────────────────────────────────
+
+function TimelineDeliverablesSection() {
+  const { data: deliverables = [], isLoading } = useGetRoadmapTimelineDeliverables();
+  const [phaseFilter, setPhaseFilter] = useState("All");
+  const [wsFilter, setWsFilter] = useState("All");
+  const [ownerFilter, setOwnerFilter] = useState("All");
+
+  const workstreams = useMemo(() => {
+    const ws = [...new Set(deliverables.map(d => d.workstream))].sort();
+    return ["All", ...ws];
+  }, [deliverables]);
+
+  const filtered = useMemo(() => deliverables
+    .filter(d => phaseFilter === "All" || d.phase === phaseFilter)
+    .filter(d => wsFilter === "All" || d.workstream === wsFilter)
+    .filter(d => ownerFilter === "All" || d.owner === ownerFilter),
+  [deliverables, phaseFilter, wsFilter, ownerFilter]);
+
+  const kpis = useMemo(() => ({
+    total:      deliverables.length,
+    onTrack:    deliverables.filter(d => d.status === "On Track").length,
+    atRisk:     deliverables.filter(d => d.status === "At Risk").length,
+    complete:   deliverables.filter(d => d.status === "Complete").length,
+    notStarted: deliverables.filter(d => d.status === "Not Started").length,
+  }), [deliverables]);
+
+  if (isLoading) return <div className="h-32 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>;
+
+  return (
+    <div className="space-y-5">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {[
+          { label: "Total Deliverables", value: kpis.total,      color: "text-foreground",                            icon: <Layers className="h-4 w-4" /> },
+          { label: "On Track",           value: kpis.onTrack,    color: "text-emerald-600 dark:text-emerald-400",     icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: "Complete",           value: kpis.complete,   color: "text-blue-600 dark:text-blue-400",           icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: "At Risk",            value: kpis.atRisk,     color: "text-red-600 dark:text-red-400",             icon: <AlertTriangle className="h-4 w-4" /> },
+          { label: "Not Started",        value: kpis.notStarted, color: "text-slate-500 dark:text-slate-400",         icon: <Clock className="h-4 w-4" /> },
+        ].map(k => (
+          <Card key={k.label} className="p-3">
+            <div className={cn("mb-1", k.color)}>{k.icon}</div>
+            <p className={cn("text-2xl font-bold", k.color)}>{k.value}</p>
+            <p className="text-xs text-muted-foreground">{k.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Phase swimlane — visual bar per phase */}
+      <Card className="p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Delivery Phases</p>
+        <div className="space-y-2">
+          {PHASE_ORDER.map(phase => {
+            const items = deliverables.filter(d => d.phase === phase);
+            const complete   = items.filter(d => d.status === "Complete").length;
+            const onTrack    = items.filter(d => d.status === "On Track").length;
+            const atRisk     = items.filter(d => d.status === "At Risk").length;
+            const notStarted = items.filter(d => d.status === "Not Started").length;
+            const ps = PHASE_STYLE[phase];
+            return (
+              <div key={phase} className={cn("rounded-lg border p-3 flex items-center gap-4", ps.bg, "border-border")}>
+                <div className="w-28 flex-shrink-0">
+                  <p className={cn("text-sm font-bold", ps.text)}>{phase}</p>
+                  <p className="text-[10px] text-muted-foreground">{items.length} deliverables</p>
+                </div>
+                <div className="flex-1 h-4 rounded-full overflow-hidden flex bg-muted/40">
+                  {complete   > 0 && <div title={`${complete} Complete`}   className="h-full bg-blue-500 dark:bg-blue-600 transition-all"     style={{ width: `${(complete   / items.length) * 100}%` }} />}
+                  {onTrack    > 0 && <div title={`${onTrack} On Track`}    className="h-full bg-emerald-500 dark:bg-emerald-600 transition-all" style={{ width: `${(onTrack    / items.length) * 100}%` }} />}
+                  {atRisk     > 0 && <div title={`${atRisk} At Risk`}      className="h-full bg-red-500 dark:bg-red-600 transition-all"         style={{ width: `${(atRisk     / items.length) * 100}%` }} />}
+                  {notStarted > 0 && <div title={`${notStarted} Not Started`} className="h-full bg-slate-300 dark:bg-slate-600 transition-all" style={{ width: `${(notStarted / items.length) * 100}%` }} />}
+                </div>
+                <div className="hidden sm:flex items-center gap-2 text-[10px] flex-shrink-0">
+                  {complete   > 0 && <span className="text-blue-600 dark:text-blue-400 font-medium">{complete} done</span>}
+                  {onTrack    > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-medium">{onTrack} on track</span>}
+                  {atRisk     > 0 && <span className="text-red-600 dark:text-red-400 font-medium">{atRisk} at risk</span>}
+                  {notStarted > 0 && <span className="text-muted-foreground">{notStarted} not started</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Complete</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> On Track</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> At Risk</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-slate-300 dark:bg-slate-600 inline-block" /> Not Started</span>
+        </div>
+      </Card>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-muted-foreground">Filter:</span>
+        {(["All", ...PHASE_ORDER] as string[]).map(p => (
+          <button key={p} onClick={() => setPhaseFilter(p)}
+            className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
+              phaseFilter === p ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {p === "All" ? "All Phases" : p}
+          </button>
+        ))}
+        <span className="text-border">|</span>
+        {(["All", "IBM", "Horizon", "Joint"] as string[]).map(o => (
+          <button key={o} onClick={() => setOwnerFilter(o)}
+            className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
+              ownerFilter === o ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {o === "All" ? "All Owners" : o}
+          </button>
+        ))}
+        {filtered.length !== deliverables.length && (
+          <button onClick={() => { setPhaseFilter("All"); setOwnerFilter("All"); setWsFilter("All"); }}
+            className="ml-auto px-2.5 py-1 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground gap-1 flex items-center">
+            <X className="h-3 w-3" /> Clear
+          </button>
+        )}
+        <span className="ml-auto text-xs text-muted-foreground">{filtered.length} of {deliverables.length}</span>
+      </div>
+
+      {/* Deliverable table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Deliverable</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-28">Phase</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground">Workstream</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-20">Owner</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Team</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Due Date</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={7} className="text-center py-10 text-muted-foreground">No deliverables match the current filters.</td></tr>
+              ) : filtered.map((d, i) => (
+                <tr key={d.id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", i % 2 === 0 ? "bg-background" : "bg-muted/5")}>
+                  <td className="px-4 py-2.5">
+                    <p className="font-medium text-sm leading-tight">{d.name}</p>
+                    <p className="text-muted-foreground mt-0.5 leading-snug">{d.description}</p>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className={cn("text-[10px]", PHASE_STYLE[d.phase]?.badge)}>{d.phase}</Badge>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{d.workstream}</td>
+                  <td className="px-3 py-2.5">
+                    <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold",
+                      d.owner === "IBM" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
+                      d.owner === "Horizon" ? "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200" :
+                      "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
+                    )}>{d.owner}</span>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground text-[10px]">{d.ownerTeam}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground font-mono">{d.dueDate}</td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className={cn("text-[10px]", DELIVERABLE_STATUS_STYLE[d.status] ?? "")}>{d.status}</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Requirements for Horizon Section ────────────────────────────────────────
+
+function RequirementsSection() {
+  const { data: requirements = [], isLoading } = useGetRoadmapRequirements();
+  const [catFilter, setCatFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const categories = useMemo(() => {
+    const cats = [...new Set(requirements.map(r => r.category))].sort();
+    return ["All", ...cats];
+  }, [requirements]);
+
+  const filtered = useMemo(() => requirements
+    .filter(r => catFilter === "All" || r.category === catFilter)
+    .filter(r => statusFilter === "All" || r.status === statusFilter),
+  [requirements, catFilter, statusFilter]);
+
+  const kpis = useMemo(() => ({
+    open:       requirements.filter(r => r.status === "Open").length,
+    inProgress: requirements.filter(r => r.status === "In Progress").length,
+    met:        requirements.filter(r => r.status === "Met").length,
+    overdue:    requirements.filter(r => r.status === "Overdue").length,
+  }), [requirements]);
+
+  if (isLoading) return <div className="h-32 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>;
+
+  return (
+    <div className="space-y-5">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Open",        value: kpis.open,       color: "text-amber-600 dark:text-amber-400",   icon: <Clock className="h-4 w-4" /> },
+          { label: "In Progress", value: kpis.inProgress, color: "text-blue-600 dark:text-blue-400",     icon: <Activity className="h-4 w-4" /> },
+          { label: "Met",         value: kpis.met,        color: "text-emerald-600 dark:text-emerald-400", icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: "Overdue",     value: kpis.overdue,    color: "text-red-600 dark:text-red-400",       icon: <AlertTriangle className="h-4 w-4" /> },
+        ].map(k => (
+          <Card key={k.label} className="p-3">
+            <div className={cn("mb-1", k.color)}>{k.icon}</div>
+            <p className={cn("text-2xl font-bold", k.color)}>{k.value}</p>
+            <p className="text-xs text-muted-foreground">{k.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-muted-foreground">Category:</span>
+        {categories.map(c => (
+          <button key={c} onClick={() => setCatFilter(c)}
+            className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
+              catFilter === c ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {c}
+          </button>
+        ))}
+        <span className="text-border ml-1">|</span>
+        <span className="text-xs text-muted-foreground ml-1">Status:</span>
+        {["All", "Open", "In Progress", "Met", "Overdue"].map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
+              statusFilter === s ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {s}
+          </button>
+        ))}
+        <span className="ml-auto text-xs text-muted-foreground">{filtered.length} of {requirements.length}</span>
+      </div>
+
+      {/* Requirements table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Requirement</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-32">Category</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground">IBM Workstream Unblocked</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-36">Owner</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-16">Priority</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Due</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={7} className="text-center py-10 text-muted-foreground">No requirements match the current filters.</td></tr>
+              ) : filtered.map((r, i) => (
+                <tr key={r.id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", i % 2 === 0 ? "bg-background" : "bg-muted/5")}>
+                  <td className="px-4 py-2.5">
+                    <p className="font-medium text-sm leading-tight">{r.name}</p>
+                    <p className="text-muted-foreground mt-0.5 leading-snug">{r.description}</p>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className="text-[10px]">{r.category}</Badge>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{r.ibmWorkstream}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground text-[10px]">{r.owner}</td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className={cn("text-[10px]", PRIORITY_BADGE[r.priority] ?? "")}>{r.priority}</Badge>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground font-mono">{r.dueDate}</td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className={cn("text-[10px]", REQ_STATUS_STYLE[r.status] ?? "")}>{r.status}</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Risks & Mitigation Section ───────────────────────────────────────────────
+
+function RisksMitigationSection() {
+  const { data: risks = [], isLoading } = useGetRoadmapRisks();
+  const [catFilter, setCatFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [ratingFilter, setRatingFilter] = useState("All");
+
+  const filtered = useMemo(() => risks
+    .filter(r => catFilter === "All" || r.category === catFilter)
+    .filter(r => statusFilter === "All" || r.status === statusFilter)
+    .filter(r => ratingFilter === "All" || r.rating === ratingFilter),
+  [risks, catFilter, statusFilter, ratingFilter]);
+
+  const kpis = useMemo(() => ({
+    open:       risks.filter(r => r.status === "Open").length,
+    mitigating: risks.filter(r => r.status === "Mitigating").length,
+    closed:     risks.filter(r => r.status === "Closed").length,
+    highRating: risks.filter(r => r.rating === "High").length,
+    medRating:  risks.filter(r => r.rating === "Med").length,
+  }), [risks]);
+
+  const heatmapData = useMemo(() => {
+    const levels = ["High", "Med", "Low"];
+    return levels.map(l => ({
+      likelihood: l,
+      cells: levels.map(i => ({
+        impact: i,
+        count: risks.filter(r => r.likelihood === l && r.impact === i && r.status !== "Closed").length,
+      })),
+    }));
+  }, [risks]);
+
+  if (isLoading) return <div className="h-32 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>;
+
+  return (
+    <div className="space-y-5">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        {[
+          { label: "Open",           value: kpis.open,       color: "text-red-600 dark:text-red-400",       icon: <AlertTriangle className="h-4 w-4" /> },
+          { label: "Mitigating",     value: kpis.mitigating, color: "text-amber-600 dark:text-amber-400",   icon: <Wrench className="h-4 w-4" /> },
+          { label: "Closed",         value: kpis.closed,     color: "text-emerald-600 dark:text-emerald-400", icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: "High Rating",    value: kpis.highRating, color: "text-red-600 dark:text-red-400",       icon: <AlertTriangle className="h-4 w-4" /> },
+          { label: "Medium Rating",  value: kpis.medRating,  color: "text-amber-600 dark:text-amber-400",   icon: <Activity className="h-4 w-4" /> },
+        ].map(k => (
+          <Card key={k.label} className="p-3">
+            <div className={cn("mb-1", k.color)}>{k.icon}</div>
+            <p className={cn("text-2xl font-bold", k.color)}>{k.value}</p>
+            <p className="text-xs text-muted-foreground">{k.label}</p>
+          </Card>
+        ))}
+      </div>
+
+      {/* Risk heatmap */}
+      <Card className="p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Risk Heatmap (Open + Mitigating)</p>
+        <div className="inline-block">
+          <div className="flex items-end gap-1 mb-1">
+            <div className="w-20 flex-shrink-0" />
+            {["High Impact", "Med Impact", "Low Impact"].map(label => (
+              <div key={label} className="w-24 text-center text-[10px] font-semibold text-muted-foreground">{label}</div>
+            ))}
+          </div>
+          {heatmapData.map(row => (
+            <div key={row.likelihood} className="flex items-center gap-1 mb-1">
+              <div className="w-20 flex-shrink-0 text-[10px] font-semibold text-muted-foreground text-right pr-2">{row.likelihood} Likelihood</div>
+              {row.cells.map(cell => (
+                <div key={cell.impact}
+                  className={cn("w-24 h-12 rounded-lg flex items-center justify-center text-sm font-bold border border-border/20 transition-colors", heatmapCellClass(row.likelihood, cell.impact))}
+                >
+                  {cell.count > 0 ? cell.count : <span className="text-[10px] opacity-40">—</span>}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-muted-foreground">Rating:</span>
+        {["All", "High", "Med", "Low"].map(r => (
+          <button key={r} onClick={() => setRatingFilter(r)}
+            className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
+              ratingFilter === r ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {r === "All" ? "All Ratings" : r}
+          </button>
+        ))}
+        <span className="text-border ml-1">|</span>
+        <span className="text-xs text-muted-foreground ml-1">Status:</span>
+        {["All", "Open", "Mitigating", "Closed"].map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
+            className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
+              statusFilter === s ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {s}
+          </button>
+        ))}
+        <span className="ml-auto text-xs text-muted-foreground">{filtered.length} of {risks.length}</span>
+      </div>
+
+      {/* Risk table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b bg-muted/30">
+                <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Risk</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Category</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-20">Likelihood</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-16">Impact</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-16">Rating</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground">Mitigation Action</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-32">Owner</th>
+                <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={8} className="text-center py-10 text-muted-foreground">No risks match the current filters.</td></tr>
+              ) : filtered.map((r, i) => (
+                <tr key={r.id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", i % 2 === 0 ? "bg-background" : "bg-muted/5")}>
+                  <td className="px-4 py-2.5">
+                    <p className="font-medium text-sm leading-tight">{r.title}</p>
+                    {r.notes && <p className="text-muted-foreground mt-0.5 text-[10px] italic">{r.notes}</p>}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className="text-[10px]">{r.category}</Badge>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px]", RISK_RATING_STYLE[r.likelihood] ?? "")}>{r.likelihood}</span>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px]", RISK_RATING_STYLE[r.impact] ?? "")}>{r.impact}</span>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px]", RISK_RATING_STYLE[r.rating] ?? "")}>{r.rating}</span>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground leading-snug">{r.mitigationAction}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground text-[10px]">{r.owner}</td>
+                  <td className="px-3 py-2.5">
+                    <Badge variant="outline" className={cn("text-[10px]", RISK_STATUS_STYLE[r.status] ?? "")}>{r.status}</Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
+
+type GovSectionKey = "timeline" | "requirements" | "risks";
+
+const GOV_NAV: { key: GovSectionKey; label: string; shortLabel: string }[] = [
+  { key: "timeline",     label: "Timeline & Deliverables",   shortLabel: "Timeline"     },
+  { key: "requirements", label: "Requirements for Horizon",  shortLabel: "Requirements" },
+  { key: "risks",        label: "Risks & Mitigation",        shortLabel: "Risks"        },
+];
 
 export default function DigitalRoadmap() {
   const [activeSection, setActiveSection] = useState<SectionKey>("transformation");
+  const [govSection, setGovSection] = useState<GovSectionKey | null>(null);
   const [selectedInitiative, setSelectedInitiative] = useState<RoadmapInitiative | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<number>>(new Set());
 
@@ -2165,53 +2664,119 @@ export default function DigitalRoadmap() {
       {/* Alerts */}
       <AlertsPanel alerts={alerts} onDismiss={id => setDismissedAlerts(s => new Set([...s, id]))} />
 
-      {/* Section tabs */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        {SECTIONS.map(sec => (
+      {/* Governance link-nav */}
+      <div className="flex items-center gap-1 border border-border rounded-lg px-3 py-2 bg-muted/20">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mr-2 flex-shrink-0">Governance</span>
+        {GOV_NAV.map(nav => (
           <button
-            key={sec.key}
-            onClick={() => setActiveSection(sec.key)}
+            key={nav.key}
+            onClick={() => setGovSection(prev => prev === nav.key ? null : nav.key)}
             className={cn(
-              "flex-1 flex items-start gap-3 rounded-lg border px-4 py-3 text-left transition-all",
-              activeSection === sec.key
-                ? cn("shadow-sm", sec.accent, "border-current")
-                : "border-border bg-background hover:bg-muted/30"
+              "px-3 py-1.5 rounded-md text-xs font-medium transition-colors border",
+              govSection === nav.key
+                ? "bg-foreground text-background border-foreground shadow-sm"
+                : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-foreground/40"
             )}
           >
-            <span className={cn("mt-0.5 flex-shrink-0", activeSection === sec.key ? sec.color : "text-muted-foreground")}>
-              {sec.icon}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className={cn("text-sm font-semibold leading-snug", activeSection === sec.key ? sec.color : "text-foreground")}>
-                  {sec.label}
-                </p>
-                <span className={cn(
-                  "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase leading-none",
-                  sec.tierBadge
-                )}>
-                  {sec.tier === "STRATEGIC" ? <Target className="h-2.5 w-2.5" /> : <Wrench className="h-2.5 w-2.5" />}
-                  {sec.tier}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground leading-snug mt-0.5 hidden sm:block line-clamp-2">{sec.desc}</p>
-            </div>
+            {nav.label}
           </button>
         ))}
+        {govSection && (
+          <button
+            onClick={() => setGovSection(null)}
+            className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+          >
+            <X className="h-3 w-3" />
+            Back to Initiatives
+          </button>
+        )}
       </div>
 
-      {/* Active section content */}
-      <SectionView
-        key={activeSection}
-        initiatives={initiatives}
-        sectionKey={activeSection}
-        initiativeType={currentSection.initiativeType}
-        onSelect={setSelectedInitiative}
-      />
+      {/* Governance sections — swap in when a gov link is active */}
+      {govSection === "timeline" && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-blue-500" />
+            <h2 className="text-base font-semibold">Timeline &amp; Deliverables</h2>
+            <span className="text-xs text-muted-foreground">— Key milestones and delivery commitments by phase</span>
+          </div>
+          <TimelineDeliverablesSection />
+        </div>
+      )}
 
-      {/* Detail panel */}
-      {selectedInitiative && (
-        <DetailPanel initiative={selectedInitiative} onClose={() => setSelectedInitiative(null)} />
+      {govSection === "requirements" && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-violet-500" />
+            <h2 className="text-base font-semibold">Requirements for Horizon</h2>
+            <span className="text-xs text-muted-foreground">— Decisions, approvals, and resources Horizon must provide to unblock IBM delivery</span>
+          </div>
+          <RequirementsSection />
+        </div>
+      )}
+
+      {govSection === "risks" && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 text-red-500" />
+            <h2 className="text-base font-semibold">Risks &amp; Mitigation</h2>
+            <span className="text-xs text-muted-foreground">— Active transformation risk register with mitigation actions and heatmap</span>
+          </div>
+          <RisksMitigationSection />
+        </div>
+      )}
+
+      {/* Section tabs — hidden when a governance section is active */}
+      {!govSection && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {SECTIONS.map(sec => (
+              <button
+                key={sec.key}
+                onClick={() => setActiveSection(sec.key)}
+                className={cn(
+                  "flex-1 flex items-start gap-3 rounded-lg border px-4 py-3 text-left transition-all",
+                  activeSection === sec.key
+                    ? cn("shadow-sm", sec.accent, "border-current")
+                    : "border-border bg-background hover:bg-muted/30"
+                )}
+              >
+                <span className={cn("mt-0.5 flex-shrink-0", activeSection === sec.key ? sec.color : "text-muted-foreground")}>
+                  {sec.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className={cn("text-sm font-semibold leading-snug", activeSection === sec.key ? sec.color : "text-foreground")}>
+                      {sec.label}
+                    </p>
+                    <span className={cn(
+                      "inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase leading-none",
+                      sec.tierBadge
+                    )}>
+                      {sec.tier === "STRATEGIC" ? <Target className="h-2.5 w-2.5" /> : <Wrench className="h-2.5 w-2.5" />}
+                      {sec.tier}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-snug mt-0.5 hidden sm:block line-clamp-2">{sec.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Active section content */}
+          <SectionView
+            key={activeSection}
+            initiatives={initiatives}
+            sectionKey={activeSection}
+            initiativeType={currentSection.initiativeType}
+            onSelect={setSelectedInitiative}
+          />
+
+          {/* Detail panel */}
+          {selectedInitiative && (
+            <DetailPanel initiative={selectedInitiative} onClose={() => setSelectedInitiative(null)} />
+          )}
+        </>
       )}
     </div>
   );

@@ -1331,6 +1331,18 @@ export const GetRoadmapInitiativesResponseItem = zod.object({
   notes: zod.string(),
   daysOverdue: zod.number().nullish(),
   daysUntilEnd: zod.number().nullish(),
+  tShirtSize: zod
+    .string()
+    .optional()
+    .describe("T-shirt sizing estimate (XS, S, M, L, XL)"),
+  tShirtRationale: zod
+    .string()
+    .optional()
+    .describe("Why this T-shirt size was chosen"),
+  roiPlan: zod
+    .string()
+    .optional()
+    .describe("How Horizon will get the ROI for this initiative"),
 });
 export const GetRoadmapInitiativesResponse = zod.array(
   GetRoadmapInitiativesResponseItem,
@@ -1356,6 +1368,18 @@ export const CreateRoadmapInitiativeBody = zod.object({
   status: zod.enum(["Active", "Planned", "Completed", "At Risk"]),
   priority: zod.enum(["High", "Medium", "Low"]),
   notes: zod.string().optional(),
+  tShirtSize: zod
+    .string()
+    .optional()
+    .describe("T-shirt sizing estimate (XS, S, M, L, XL)"),
+  tShirtRationale: zod
+    .string()
+    .optional()
+    .describe("Why this T-shirt size was chosen"),
+  roiPlan: zod
+    .string()
+    .optional()
+    .describe("How Horizon will get the ROI for this initiative"),
 });
 
 /**
@@ -1419,4 +1443,82 @@ export const UpdateRoadmapInitiativeStatusResponse = zod.object({
   notes: zod.string(),
   daysOverdue: zod.number().nullish(),
   daysUntilEnd: zod.number().nullish(),
+  tShirtSize: zod
+    .string()
+    .optional()
+    .describe("T-shirt sizing estimate (XS, S, M, L, XL)"),
+  tShirtRationale: zod
+    .string()
+    .optional()
+    .describe("Why this T-shirt size was chosen"),
+  roiPlan: zod
+    .string()
+    .optional()
+    .describe("How Horizon will get the ROI for this initiative"),
 });
+
+/**
+ * @summary Get transformation timeline deliverables
+ */
+export const GetRoadmapTimelineDeliverablesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  phase: zod.enum(["Foundation", "Scale", "Operate"]),
+  workstream: zod.string(),
+  owner: zod.enum(["IBM", "Horizon", "Joint"]),
+  ownerTeam: zod.string(),
+  dueDate: zod.string(),
+  status: zod.enum(["On Track", "At Risk", "Complete", "Not Started"]),
+  description: zod.string(),
+});
+export const GetRoadmapTimelineDeliverablesResponse = zod.array(
+  GetRoadmapTimelineDeliverablesResponseItem,
+);
+
+/**
+ * @summary Get requirements for Horizon
+ */
+export const GetRoadmapRequirementsResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  category: zod.enum([
+    "Data Access",
+    "Decision",
+    "Resource",
+    "Approval",
+    "Infrastructure",
+  ]),
+  description: zod.string(),
+  dueDate: zod.string(),
+  status: zod.enum(["Open", "In Progress", "Met", "Overdue"]),
+  ibmWorkstream: zod.string(),
+  owner: zod.string(),
+  priority: zod.enum(["High", "Med", "Low"]),
+});
+export const GetRoadmapRequirementsResponse = zod.array(
+  GetRoadmapRequirementsResponseItem,
+);
+
+/**
+ * @summary Get transformation risks and mitigations
+ */
+export const GetRoadmapRisksResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  category: zod.enum([
+    "Program",
+    "Technical",
+    "Resource",
+    "Vendor",
+    "Compliance",
+  ]),
+  likelihood: zod.enum(["High", "Med", "Low"]),
+  impact: zod.enum(["High", "Med", "Low"]),
+  rating: zod.enum(["High", "Med", "Low"]),
+  owner: zod.string(),
+  mitigationAction: zod.string(),
+  status: zod.enum(["Open", "Mitigating", "Closed"]),
+  raisedDate: zod.string(),
+  notes: zod.string().optional(),
+});
+export const GetRoadmapRisksResponse = zod.array(GetRoadmapRisksResponseItem);

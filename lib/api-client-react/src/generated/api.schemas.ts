@@ -756,7 +756,7 @@ export interface RoadmapInitiative {
   technology: string;
   currentVersion: string;
   upgradeVersion: string;
-  jiraId: string;
+  workNumber: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
@@ -765,14 +765,11 @@ export interface RoadmapInitiative {
   notes: string;
   daysOverdue?: number | null;
   daysUntilEnd?: number | null;
-  domain?: string;
-  planYear?: number;
-  planQuarter?: string;
-  complexity?: string;
-  businessImpact?: string;
-  dependency?: string;
+  /** T-shirt sizing estimate (XS, S, M, L, XL) */
   tShirtSize?: string;
+  /** Why this T-shirt size was chosen */
   tShirtRationale?: string;
+  /** How Horizon will get the ROI for this initiative */
   roiPlan?: string;
 }
 
@@ -814,47 +811,18 @@ export interface CreateRoadmapInitiativeRequest {
   technology: string;
   currentVersion?: string;
   upgradeVersion?: string;
+  workNumber: string;
   serviceCategory: string;
   startDate: string;
   endDate: string;
   status: CreateRoadmapInitiativeRequestStatus;
   priority: CreateRoadmapInitiativeRequestPriority;
   notes?: string;
-  domain?: string;
-  planYear?: number;
-  planQuarter?: string;
-  complexity?: string;
-  businessImpact?: string;
-  dependency?: string;
+  /** T-shirt sizing estimate (XS, S, M, L, XL) */
   tShirtSize?: string;
+  /** Why this T-shirt size was chosen */
   tShirtRationale?: string;
-  roiPlan?: string;
-}
-
-export interface UpdateRoadmapInitiativeBody {
-  portfolio?: string;
-  product?: string;
-  application?: string;
-  initiativeType?: string;
-  description?: string;
-  expectedOutcome?: string;
-  technology?: string;
-  currentVersion?: string;
-  upgradeVersion?: string;
-  serviceCategory?: string;
-  startDate?: string;
-  endDate?: string;
-  status?: string;
-  priority?: string;
-  notes?: string;
-  domain?: string;
-  planYear?: number;
-  planQuarter?: string;
-  complexity?: string;
-  businessImpact?: string;
-  dependency?: string;
-  tShirtSize?: string;
-  tShirtRationale?: string;
+  /** How Horizon will get the ROI for this initiative */
   roiPlan?: string;
 }
 
@@ -895,9 +863,152 @@ export interface RoadmapAlert {
   alertType: RoadmapAlertAlertType;
   title: string;
   message: string;
-  jiraId: string;
+  workNumber: string;
   portfolio: string;
   daysOverdue?: number | null;
+}
+
+export type TransformationDeliverablePhase =
+  (typeof TransformationDeliverablePhase)[keyof typeof TransformationDeliverablePhase];
+
+export const TransformationDeliverablePhase = {
+  Foundation: "Foundation",
+  Scale: "Scale",
+  Operate: "Operate",
+} as const;
+
+export type TransformationDeliverableOwner =
+  (typeof TransformationDeliverableOwner)[keyof typeof TransformationDeliverableOwner];
+
+export const TransformationDeliverableOwner = {
+  IBM: "IBM",
+  Horizon: "Horizon",
+  Joint: "Joint",
+} as const;
+
+export type TransformationDeliverableStatus =
+  (typeof TransformationDeliverableStatus)[keyof typeof TransformationDeliverableStatus];
+
+export const TransformationDeliverableStatus = {
+  On_Track: "On Track",
+  At_Risk: "At Risk",
+  Complete: "Complete",
+  Not_Started: "Not Started",
+} as const;
+
+export interface TransformationDeliverable {
+  id: number;
+  name: string;
+  phase: TransformationDeliverablePhase;
+  workstream: string;
+  owner: TransformationDeliverableOwner;
+  ownerTeam: string;
+  dueDate: string;
+  status: TransformationDeliverableStatus;
+  description: string;
+}
+
+export type HorizonRequirementCategory =
+  (typeof HorizonRequirementCategory)[keyof typeof HorizonRequirementCategory];
+
+export const HorizonRequirementCategory = {
+  Data_Access: "Data Access",
+  Decision: "Decision",
+  Resource: "Resource",
+  Approval: "Approval",
+  Infrastructure: "Infrastructure",
+} as const;
+
+export type HorizonRequirementStatus =
+  (typeof HorizonRequirementStatus)[keyof typeof HorizonRequirementStatus];
+
+export const HorizonRequirementStatus = {
+  Open: "Open",
+  In_Progress: "In Progress",
+  Met: "Met",
+  Overdue: "Overdue",
+} as const;
+
+export type HorizonRequirementPriority =
+  (typeof HorizonRequirementPriority)[keyof typeof HorizonRequirementPriority];
+
+export const HorizonRequirementPriority = {
+  High: "High",
+  Med: "Med",
+  Low: "Low",
+} as const;
+
+export interface HorizonRequirement {
+  id: number;
+  name: string;
+  category: HorizonRequirementCategory;
+  description: string;
+  dueDate: string;
+  status: HorizonRequirementStatus;
+  ibmWorkstream: string;
+  owner: string;
+  priority: HorizonRequirementPriority;
+}
+
+export type TransformationRiskCategory =
+  (typeof TransformationRiskCategory)[keyof typeof TransformationRiskCategory];
+
+export const TransformationRiskCategory = {
+  Program: "Program",
+  Technical: "Technical",
+  Resource: "Resource",
+  Vendor: "Vendor",
+  Compliance: "Compliance",
+} as const;
+
+export type TransformationRiskLikelihood =
+  (typeof TransformationRiskLikelihood)[keyof typeof TransformationRiskLikelihood];
+
+export const TransformationRiskLikelihood = {
+  High: "High",
+  Med: "Med",
+  Low: "Low",
+} as const;
+
+export type TransformationRiskImpact =
+  (typeof TransformationRiskImpact)[keyof typeof TransformationRiskImpact];
+
+export const TransformationRiskImpact = {
+  High: "High",
+  Med: "Med",
+  Low: "Low",
+} as const;
+
+export type TransformationRiskRating =
+  (typeof TransformationRiskRating)[keyof typeof TransformationRiskRating];
+
+export const TransformationRiskRating = {
+  High: "High",
+  Med: "Med",
+  Low: "Low",
+} as const;
+
+export type TransformationRiskStatus =
+  (typeof TransformationRiskStatus)[keyof typeof TransformationRiskStatus];
+
+export const TransformationRiskStatus = {
+  Open: "Open",
+  Mitigating: "Mitigating",
+  Closed: "Closed",
+} as const;
+
+export interface TransformationRisk {
+  id: number;
+  title: string;
+  category: TransformationRiskCategory;
+  likelihood: TransformationRiskLikelihood;
+  impact: TransformationRiskImpact;
+  rating: TransformationRiskRating;
+  owner: string;
+  mitigationAction: string;
+  status: TransformationRiskStatus;
+  raisedDate: string;
+  notes?: string;
 }
 
 export type GetExecutiveKpisParams = {
