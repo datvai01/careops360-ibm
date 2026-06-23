@@ -2138,7 +2138,7 @@ const GOV_YEAR_BANDS = [
   { label: "Year 3 · 2028", sub: "Transform & Optimize" },
 ];
 
-function GovernanceTimelineView({ deliverables }: { deliverables: TransformationDeliverable[] }) {
+function GovernanceTimelineView({ deliverables, onSelect }: { deliverables: TransformationDeliverable[]; onSelect: (id: number) => void }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const grouped = useMemo(() => {
@@ -2304,11 +2304,12 @@ function GovernanceTimelineView({ deliverables }: { deliverables: Transformation
                             <div
                               className="absolute top-1/2 z-20 cursor-pointer"
                               style={{ left: `${pct}%`, transform: "translate(-50%, -50%)" }}
+                              onClick={() => onSelect(d.id)}
                             >
                               {isComplete ? (
                                 <Star className="h-4 w-4 text-amber-400 drop-shadow-sm hover:scale-125 transition-transform" fill="currentColor" />
                               ) : isAtRisk ? (
-                                <div className="w-3.5 h-3.5 rotate-45 border-2 border-red-500 bg-red-100 dark:bg-red-950 hover:scale-125 transition-transform" />
+                                <div className="w-3.5 h-3.5 rotate-45 border-2 border-amber-500 bg-amber-100 dark:bg-amber-950 hover:scale-125 transition-transform" />
                               ) : isOnTrack ? (
                                 <Circle className="h-4 w-4 text-emerald-500 hover:scale-125 transition-transform" fill="currentColor" />
                               ) : (
@@ -2367,7 +2368,7 @@ function GovernanceTimelineView({ deliverables }: { deliverables: Transformation
                 <Circle className="h-3 w-3 text-emerald-500" fill="currentColor" /> On Track
               </span>
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <span className="w-2.5 h-2.5 rotate-45 border-2 border-red-500 inline-block" /> At Risk
+                <span className="w-2.5 h-2.5 rotate-45 border-2 border-amber-500 inline-block" /> At Risk
               </span>
               <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Circle className="h-3 w-3 text-slate-400" /> Not Started
@@ -2393,15 +2394,29 @@ function GovernanceTimelineView({ deliverables }: { deliverables: Transformation
 function TimelineDeliverablesSection() {
   const { data: deliverables = [], isLoading } = useGetRoadmapTimelineDeliverables();
   const [phaseFilter, setPhaseFilter] = useState("All");
-  const [wsFilter, setWsFilter]       = useState("All");
   const [ownerFilter, setOwnerFilter] = useState("All");
   const [view, setView]               = useState<"timeline" | "table">("timeline");
+  const [selectedId, setSelectedId]   = useState<number | null>(null);
+  const rowRefs = React.useRef<Map<number, HTMLTableRowElement>>(new Map());
 
   const filtered = useMemo(() => deliverables
     .filter(d => phaseFilter === "All" || d.phase === phaseFilter)
-    .filter(d => wsFilter === "All"    || d.workstream === wsFilter)
     .filter(d => ownerFilter === "All" || d.owner === ownerFilter),
-  [deliverables, phaseFilter, wsFilter, ownerFilter]);
+  [deliverables, phaseFilter, ownerFilter]);
+
+  const handleMarkerClick = useCallback((id: number) => {
+    setSelectedId(id);
+    setView("table");
+  }, []);
+
+  React.useEffect(() => {
+    if (view === "table" && selectedId !== null) {
+      const el = rowRefs.current.get(selectedId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [view, selectedId]);
 
   const kpis = useMemo(() => ({
     total:      deliverables.length,
@@ -2496,7 +2511,7 @@ function TimelineDeliverablesSection() {
           </button>
         ))}
         {filtered.length !== deliverables.length && (
-          <button onClick={() => { setPhaseFilter("All"); setOwnerFilter("All"); setWsFilter("All"); }}
+          <button onClick={() => { setPhaseFilter("All"); setOwnerFilter("All"); }}
             className="px-2.5 py-1 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground gap-1 flex items-center">
             <X className="h-3 w-3" /> Clear
           </button>
@@ -2521,7 +2536,7 @@ function TimelineDeliverablesSection() {
 
       {/* Content — Timeline or Table */}
       {view === "timeline" ? (
-        <GovernanceTimelineView deliverables={filtered} />
+        <GovernanceTimelineView deliverables={filtered} onSelect={handleMarkerClick} />
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
@@ -2541,15 +2556,22 @@ function TimelineDeliverablesSection() {
                 {filtered.length === 0 ? (
                   <tr><td colSpan={7} className="text-center py-10 text-muted-foreground">No deliverables match the current filters.</td></tr>
                 ) : filtered.map((d, i) => {
-                  const isComplete = d.status === "Complete";
-                  const isAtRisk   = d.status === "At Risk";
+                  const isComplete   = d.status === "Complete";
+                  const isAtRisk     = d.status === "At Risk";
+                  const isSelected   = selectedId === d.id;
                   return (
-                    <tr key={d.id} className={cn(
-                      "border-b border-border/30 hover:bg-muted/20 transition-colors",
-                      isComplete ? "bg-amber-50/30 dark:bg-amber-950/10" :
-                      isAtRisk   ? "bg-red-50/40 dark:bg-red-950/20" :
-                      i % 2 === 0 ? "bg-background" : "bg-muted/5"
-                    )}>
+                    <tr
+                      key={d.id}
+                      ref={el => { if (el) rowRefs.current.set(d.id, el); else rowRefs.current.delete(d.id); }}
+                      className={cn(
+                        "border-b border-border/30 hover:bg-muted/20 transition-colors",
+                        isSelected  ? "ring-2 ring-inset ring-blue-400 bg-blue-50/60 dark:bg-blue-950/30" :
+                        isComplete  ? "bg-blue-50/40 dark:bg-blue-950/20" :
+                        isAtRisk    ? "bg-red-50/40 dark:bg-red-950/20" :
+                        i % 2 === 0 ? "bg-background" : "bg-muted/5"
+                      )}
+                      onClick={() => setSelectedId(isSelected ? null : d.id)}
+                    >
                       <td className="px-4 py-2.5">
                         <div className="flex items-start gap-1.5">
                           {isComplete && <Star className="h-3.5 w-3.5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" />}
