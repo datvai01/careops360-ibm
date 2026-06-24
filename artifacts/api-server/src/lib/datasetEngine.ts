@@ -296,7 +296,7 @@ export function buildDatasetTemplateWithLiveData(
     ...schema,
     sheets: schema.sheets.map((s) => ({
       ...s,
-      sampleRows: liveRows[s.sheetName]?.length ? liveRows[s.sheetName].slice(0, 50) : s.sampleRows,
+      sampleRows: liveRows[s.sheetName]?.length ? liveRows[s.sheetName].slice(0, 500) : s.sampleRows,
     })),
   };
   return buildDatasetTemplate(enriched);

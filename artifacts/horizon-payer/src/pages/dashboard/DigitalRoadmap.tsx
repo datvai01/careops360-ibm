@@ -154,6 +154,18 @@ type SectionTier = "STRATEGIC" | "TACTICAL" | "FOUNDATIONAL";
 
 const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiativeType: string; color: string; accent: string; icon: React.ReactNode; desc: string; tier: SectionTier; tierBadge: string }[] = [
   {
+    key: "foundational",
+    label: "Foundational Initiatives",
+    shortLabel: "Foundational",
+    initiativeType: "Foundational",
+    color: "text-orange-700 dark:text-orange-400",
+    accent: "border-orange-500 bg-orange-50 dark:bg-orange-950/40",
+    icon: <Star className="h-4 w-4" />,
+    desc: "Platform prerequisites that enable transformation — AIOps, CareOps360 enablement, POD model, integration hub, cloud infrastructure, data & identity foundations",
+    tier: "FOUNDATIONAL",
+    tierBadge: "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-700 dark:bg-orange-900/60 dark:text-orange-200",
+  },
+  {
     key: "transformation",
     label: "Transformation Roadmap",
     shortLabel: "Strategic",
@@ -188,18 +200,6 @@ const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiative
     desc: "Incident reduction, automation of repetitive work, shift-left strategies, self-service enablement",
     tier: "TACTICAL",
     tierBadge: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200",
-  },
-  {
-    key: "foundational",
-    label: "Foundational Initiatives",
-    shortLabel: "Foundational",
-    initiativeType: "Foundational",
-    color: "text-orange-700 dark:text-orange-400",
-    accent: "border-orange-500 bg-orange-50 dark:bg-orange-950/40",
-    icon: <Star className="h-4 w-4" />,
-    desc: "Platform governance, operating model, data foundations, security enablers, and program-level prerequisites",
-    tier: "FOUNDATIONAL",
-    tierBadge: "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-700 dark:bg-orange-900/60 dark:text-orange-200",
   },
 ];
 
@@ -299,9 +299,9 @@ const YEAR_OUTCOMES: Record<SectionKey, Record<number, string[]>> = {
     3: ["AI-driven ticket prevention achieving near-zero reactive work", "Self-healing systems live across all critical workflows"],
   },
   foundational: {
-    1: ["CareOps360 Command Center live — executive visibility from day one", "AIOps event correlation engine deployed — 40%+ alert noise reduction", "4 pilot POD pods stood up across Payer, Clinical, Digital, and Provider domains", "Angular Wave 1 complete — 30 apps on Angular 17, CVE class eliminated"],
-    2: ["Full POD operating model scaled across all 8 domains", "API-first integration hub Phase 1 live — 15 integration points modernised", "200+ engineers certified across IBM cloud-native and AI disciplines", "Analytics consolidated to Power BI — 6 reporting tools retired"],
-    3: ["AI-driven prior auth at 85% straight-through rate", "GenAI member engagement platform live — NPS +12 uplift", "Horizon operating in fully self-sustaining digital operating model", "Self-healing AIOps achieving near-zero reactive ticket volume"],
+    1: ["CareOps360 Command Center live — enterprise operational visibility from day one", "AIOps event correlation engine deployed — 40%+ alert noise reduction", "4 pilot POD pods stood up — product-aligned delivery replacing project model", "OpenShift container platform live — hybrid cloud ready for transformation workloads"],
+    2: ["All 8 domains on full POD model — 40% delivery throughput improvement", "Zero-trust IAM & CI/CD pipelines across all pods — secure, weekly delivery cadence", "Data governance framework live — AI/ML data foundation in place for all domains", "API standards & developer portal — partner onboarding SLA from 6 weeks to 3 days"],
+    3: ["Self-healing AIOps — near-zero reactive ticket volume; 95%+ P3-P4 auto-remediated", "Horizon in fully self-sustaining digital operating model — IBM in advisory role", "200+ engineers certified — skills self-sufficient across all 8 delivery domains", "ESC governance board mature — full value realization tracking and IBM contract accountability"],
   },
 };
 
@@ -2922,7 +2922,7 @@ const GOV_NAV: { key: GovSectionKey; label: string; shortLabel: string }[] = [
 ];
 
 export default function DigitalRoadmap() {
-  const [activeSection, setActiveSection] = useState<SectionKey>("transformation");
+  const [activeSection, setActiveSection] = useState<SectionKey>("foundational");
   const [govSection, setGovSection] = useState<GovSectionKey | null>(null);
   const [selectedInitiative, setSelectedInitiative] = useState<RoadmapInitiative | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<number>>(new Set());
