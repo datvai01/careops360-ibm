@@ -364,6 +364,7 @@ async function buildGovernanceCombined() {
 }
 
 router.get("/roadmap/governance-combined", async (_req, res): Promise<void> => {
+  res.set("Cache-Control", "no-store");
   const data = await buildGovernanceCombined();
   res.json(data);
 });
