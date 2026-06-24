@@ -2366,7 +2366,7 @@ function CombinedGovernanceTimeline({
 
 function TimelineDeliverablesSection() {
   const { data: rawInitiatives, isLoading } = useGetRoadmapGovernanceCombined();
-  const initiatives: GovernanceCombinedInitiative[] = rawInitiatives ?? [];
+  const initiatives: GovernanceCombinedInitiative[] = Array.isArray(rawInitiatives) ? rawInitiatives : [];
   const [catFilter, setCatFilter]       = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [view, setView]                 = useState<"timeline" | "table">("timeline");
