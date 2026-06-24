@@ -947,6 +947,21 @@ paths:
                 items:
                   $ref: "#/components/schemas/TransformationDeliverable"
 
+  /roadmap/governance-combined:
+    get:
+      operationId: getRoadmapGovernanceCombined
+      tags: [roadmap]
+      summary: Get combined governance timeline across Strategic, Technical Remediation, Tactical, and Foundational categories
+      responses:
+        "200":
+          description: Combined governance timeline initiatives
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GovernanceCombinedInitiative"
+
   /roadmap/requirements:
     get:
       operationId: getRoadmapRequirements
@@ -2508,6 +2523,36 @@ components:
         - message
         - jiraId
         - portfolio
+
+    GovernanceCombinedInitiative:
+      type: object
+      required: [id, jiraId, category, domain, application, description, status, startDate, endDate, priority, complexity, businessImpact]
+      properties:
+        id:
+          type: integer
+        jiraId:
+          type: string
+        category:
+          type: string
+          enum: [Strategic, "Technical Remediation", Tactical, Foundational]
+        domain:
+          type: string
+        application:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        priority:
+          type: string
+        complexity:
+          type: string
+        businessImpact:
+          type: string
 
     TransformationDeliverable:
       type: object

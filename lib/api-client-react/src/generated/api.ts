@@ -52,6 +52,7 @@ import type {
   GetRoadmapInitiativesParams,
   GetTicketTrendsParams,
   GetVendorInvoiceListParams,
+  GovernanceCombinedInitiative,
   HealthStatus,
   HorizonRequirement,
   HourlyVolume,
@@ -4305,6 +4306,86 @@ export function useGetRoadmapTimelineDeliverables<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetRoadmapTimelineDeliverablesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get combined governance timeline across Strategic, Technical Remediation, Tactical, and Foundational categories
+ */
+export const getGetRoadmapGovernanceCombinedUrl = () => {
+  return `/api/roadmap/governance-combined`;
+};
+
+export const getRoadmapGovernanceCombined = async (
+  options?: RequestInit,
+): Promise<GovernanceCombinedInitiative[]> => {
+  return customFetch<GovernanceCombinedInitiative[]>(
+    getGetRoadmapGovernanceCombinedUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetRoadmapGovernanceCombinedQueryKey = () => {
+  return [`/api/roadmap/governance-combined`] as const;
+};
+
+export const getGetRoadmapGovernanceCombinedQueryOptions = <
+  TData = Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetRoadmapGovernanceCombinedQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>
+  > = ({ signal }) =>
+    getRoadmapGovernanceCombined({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetRoadmapGovernanceCombinedQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>
+>;
+export type GetRoadmapGovernanceCombinedQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get combined governance timeline across Strategic, Technical Remediation, Tactical, and Foundational categories
+ */
+
+export function useGetRoadmapGovernanceCombined<
+  TData = Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getRoadmapGovernanceCombined>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetRoadmapGovernanceCombinedQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

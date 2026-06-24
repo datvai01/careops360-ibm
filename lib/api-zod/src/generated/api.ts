@@ -1575,6 +1575,32 @@ export const GetRoadmapTimelineDeliverablesResponse = zod.array(
 );
 
 /**
+ * @summary Get combined governance timeline across Strategic, Technical Remediation, Tactical, and Foundational categories
+ */
+export const GetRoadmapGovernanceCombinedResponseItem = zod.object({
+  id: zod.number(),
+  jiraId: zod.string(),
+  category: zod.enum([
+    "Strategic",
+    "Technical Remediation",
+    "Tactical",
+    "Foundational",
+  ]),
+  domain: zod.string(),
+  application: zod.string(),
+  description: zod.string(),
+  status: zod.string(),
+  startDate: zod.string(),
+  endDate: zod.string(),
+  priority: zod.string(),
+  complexity: zod.string(),
+  businessImpact: zod.string(),
+});
+export const GetRoadmapGovernanceCombinedResponse = zod.array(
+  GetRoadmapGovernanceCombinedResponseItem,
+);
+
+/**
  * @summary Get requirements for Horizon
  */
 export const GetRoadmapRequirementsResponseItem = zod.object({

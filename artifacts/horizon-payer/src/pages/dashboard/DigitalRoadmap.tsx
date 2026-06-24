@@ -4,7 +4,7 @@ import {
   useGetRoadmapInitiatives,
   useGetRoadmapSummary,
   useGetRoadmapAlerts,
-  useGetRoadmapTimelineDeliverables,
+  useGetRoadmapGovernanceCombined,
   useGetRoadmapRequirements,
   useGetRoadmapRisks,
   useCreateRoadmapInitiative,
@@ -12,7 +12,7 @@ import {
   type RoadmapInitiative,
   type RoadmapAlert,
   type CreateRoadmapInitiativeRequest,
-  type TransformationDeliverable,
+  type GovernanceCombinedInitiative,
   type HorizonRequirement,
   type TransformationRisk,
 } from "@workspace/api-client-react";
@@ -2058,13 +2058,6 @@ function SectionView({
 
 // ─── Governance Colour Helpers ────────────────────────────────────────────────
 
-const DELIVERABLE_STATUS_STYLE: Record<string, string> = {
-  "On Track":    "text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950 dark:border-emerald-800",
-  "Complete":    "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950 dark:border-blue-800",
-  "At Risk":     "text-red-700 bg-red-50 border-red-200 dark:text-red-300 dark:bg-red-950 dark:border-red-800",
-  "Not Started": "text-slate-600 bg-slate-100 border-slate-200 dark:text-slate-300 dark:bg-slate-800 dark:border-slate-700",
-};
-
 const REQ_STATUS_STYLE: Record<string, string> = {
   "Open":        "text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-300 dark:bg-amber-950 dark:border-amber-800",
   "In Progress": "text-blue-700 bg-blue-50 border-blue-200 dark:text-blue-300 dark:bg-blue-950 dark:border-blue-800",
@@ -2099,68 +2092,62 @@ function heatmapCellClass(l: string, i: string): string {
   return "bg-emerald-100 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-100";
 }
 
-const PHASE_ORDER = ["Foundation", "Scale", "Operate"] as const;
-const PHASE_STYLE: Record<string, { bg: string; text: string; badge: string; bar: string }> = {
-  Foundation: { bg: "bg-blue-50/60 dark:bg-blue-950/20",   text: "text-blue-700 dark:text-blue-400",   badge: "text-blue-700 bg-blue-100 border-blue-300 dark:text-blue-300 dark:bg-blue-900/60 dark:border-blue-700",   bar: "#3b82f6" },
-  Scale:      { bg: "bg-violet-50/60 dark:bg-violet-950/20", text: "text-violet-700 dark:text-violet-400", badge: "text-violet-700 bg-violet-100 border-violet-300 dark:text-violet-300 dark:bg-violet-900/60 dark:border-violet-700", bar: "#8b5cf6" },
-  Operate:    { bg: "bg-emerald-50/60 dark:bg-emerald-950/20", text: "text-emerald-700 dark:text-emerald-400", badge: "text-emerald-700 bg-emerald-100 border-emerald-300 dark:text-emerald-300 dark:bg-emerald-900/60 dark:border-emerald-700", bar: "#10b981" },
+const CATEGORY_HEX: Record<string, string> = {
+  "Strategic":             "#3b82f6",
+  "Technical Remediation": "#f97316",
+  "Tactical":              "#10b981",
+  "Foundational":          "#8b5cf6",
 };
 
-// ─── Governance Timeline Helpers ──────────────────────────────────────────────
+const CATEGORY_ORDER = ["Strategic", "Technical Remediation", "Tactical", "Foundational"] as const;
 
-function tlDuePct(dateStr: string): number {
-  const t = new Date(dateStr + "T23:59:59").getTime();
-  return Math.min(100, Math.max(0, ((t - TL_START) / TL_MS) * 100));
-}
-
-const WORKSTREAM_HEX: Record<string, string> = {
-  "Platform Modernization":  "#3b82f6",
-  "AIOps & Observability":   "#06b6d4",
-  "Delivery Transformation": "#8b5cf6",
-  "Technical Remediation":   "#64748b",
-  "Capability Uplift":       "#f59e0b",
-  "Provider Operations":     "#10b981",
-  "Program Governance":      "#f43f5e",
-  "Clinical Automation":     "#ec4899",
-  "Data & Analytics":        "#f97316",
-  "Digital Innovation":      "#14b8a6",
-};
-
-const GOV_PHASE_BANDS: readonly { phase: string; startPct: number; endPct: number; bg: string; color: string }[] = [
-  { phase: "Foundation", startPct: 0,     endPct: 25,    bg: "rgba(59,130,246,0.06)",  color: "#3b82f6" },
-  { phase: "Scale",      startPct: 25,    endPct: 66.67, bg: "rgba(139,92,246,0.06)",  color: "#8b5cf6" },
-  { phase: "Operate",    startPct: 66.67, endPct: 100,   bg: "rgba(16,185,129,0.06)",  color: "#10b981" },
-];
-
-const GOV_YEAR_BANDS = [
+const COMBINED_YEAR_BANDS = [
   { label: "Year 1 · 2026", sub: "Quick Wins & Foundation" },
   { label: "Year 2 · 2027", sub: "Scale & Integration" },
   { label: "Year 3 · 2028", sub: "Transform & Optimize" },
 ];
 
-function GovernanceTimelineView({ deliverables, onSelect }: { deliverables: TransformationDeliverable[]; onSelect: (id: number) => void }) {
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+// ─── Combined Governance Timeline (Gantt-bar view across all categories) ──────
 
-  const grouped = useMemo(() => {
-    const ws = [...new Set(deliverables.map(d => d.workstream))].sort();
-    return ws.map(w => ({
-      workstream: w,
-      items: deliverables.filter(d => d.workstream === w).sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
-    }));
-  }, [deliverables]);
+function CombinedGovernanceTimeline({
+  initiatives,
+  onSelect,
+}: {
+  initiatives: GovernanceCombinedInitiative[];
+  onSelect: (id: number) => void;
+}) {
+  const [hoveredId, setHoveredId]         = useState<number | null>(null);
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
+  const [collapsedDoms, setCollapsedDoms] = useState<Set<string>>(new Set());
 
-  const toggleWs = useCallback((ws: string) => {
-    setCollapsed(prev => {
-      const next = new Set(prev);
-      if (next.has(ws)) next.delete(ws); else next.add(ws);
-      return next;
-    });
-  }, []);
+  const toggleCat = useCallback((cat: string) => setCollapsedCats(prev => {
+    const n = new Set(prev); n.has(cat) ? n.delete(cat) : n.add(cat); return n;
+  }), []);
+  const toggleDom = useCallback((key: string) => setCollapsedDoms(prev => {
+    const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n;
+  }), []);
+
+  const grouped = useMemo(() =>
+    CATEGORY_ORDER
+      .filter(cat => initiatives.some(i => i.category === cat))
+      .map(cat => {
+        const catItems = initiatives.filter(i => i.category === cat);
+        const domains  = [...new Set(catItems.map(i => i.domain))].sort();
+        return {
+          category: cat,
+          items:    catItems,
+          domainGroups: domains.map(d => ({
+            domain: d,
+            items:  catItems.filter(i => i.domain === d).sort((a, b) => a.startDate.localeCompare(b.startDate)),
+          })),
+        };
+      }),
+  [initiatives]);
 
   if (grouped.length === 0) {
     return (
       <Card className="p-8 text-center">
-        <p className="text-sm text-muted-foreground">No deliverables match the current filters.</p>
+        <p className="text-sm text-muted-foreground">No initiatives match the current filters.</p>
       </Card>
     );
   }
@@ -2168,42 +2155,29 @@ function GovernanceTimelineView({ deliverables, onSelect }: { deliverables: Tran
   return (
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">
-        <div style={{ minWidth: 900 }}>
+        <div style={{ minWidth: 960 }}>
           {/* Year band headers */}
           <div className="flex border-b border-border bg-background sticky top-0 z-10">
-            <div className="w-52 flex-shrink-0 border-r border-border bg-background" />
-            {GOV_YEAR_BANDS.map((yb, yi) => (
+            <div className="w-64 flex-shrink-0 border-r border-border bg-background" />
+            {COMBINED_YEAR_BANDS.map((yb, yi) => (
               <div key={yb.label} className={cn("flex-1 text-center py-2 border-r border-border last:border-r-0", yi % 2 === 1 && "bg-muted/10")}>
                 <p className="text-xs font-semibold text-foreground leading-tight">{yb.label}</p>
                 <p className="text-[10px] text-muted-foreground">{yb.sub}</p>
               </div>
             ))}
           </div>
-
-          {/* Quarter sub-headers with phase band labels */}
+          {/* Quarter sub-headers */}
           <div className="flex border-b border-border bg-muted/20">
-            <div className="w-52 flex-shrink-0 border-r border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Workstream / Deliverable
+            <div className="w-64 flex-shrink-0 border-r border-border px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Category / Domain / Initiative
             </div>
             <div className="flex-1 relative">
-              {/* Phase band label overlays */}
-              {GOV_PHASE_BANDS.map(b => (
-                <div
-                  key={b.phase}
-                  className="absolute top-0 bottom-0 flex items-start pt-0.5 justify-center overflow-hidden"
-                  style={{ left: `${b.startPct}%`, width: `${b.endPct - b.startPct}%`, background: b.bg, borderLeft: `1px solid ${b.color}30` }}
-                >
-                  <span className="text-[9px] font-semibold tracking-wider uppercase opacity-60" style={{ color: b.color }}>{b.phase}</span>
-                </div>
-              ))}
-              <div className="flex h-full relative z-10">
+              <div className="flex h-full">
                 {TL_QUARTERS.map((q, i) => (
                   <div
                     key={i}
-                    className={cn(
-                      "flex-1 text-center text-[10px] font-medium text-muted-foreground py-1.5 border-r border-border/50 last:border-r-0",
-                      q.yearStart && "border-l-2 border-border"
-                    )}
+                    className={cn("flex-1 text-center text-[10px] font-medium text-muted-foreground py-1.5 border-r border-border/50 last:border-r-0",
+                      q.yearStart && "border-l-2 border-border")}
                   >
                     {q.label}
                   </div>
@@ -2212,141 +2186,151 @@ function GovernanceTimelineView({ deliverables, onSelect }: { deliverables: Tran
             </div>
           </div>
 
-          {/* Workstream groups */}
-          {grouped.map(({ workstream, items }) => {
-            const hex = WORKSTREAM_HEX[workstream] ?? "#64748b";
-            const isCollapsed = collapsed.has(workstream);
+          {/* Category groups */}
+          {grouped.map(({ category, items: catItems, domainGroups }) => {
+            const catHex       = CATEGORY_HEX[category] ?? "#64748b";
+            const catCollapsed = collapsedCats.has(category);
             return (
-              <div key={workstream}>
-                {/* Workstream header row */}
+              <div key={category}>
+                {/* Category header */}
                 <div
-                  className="flex items-center border-b border-border/50 bg-muted/10 cursor-pointer hover:bg-muted/20 transition-colors"
-                  onClick={() => toggleWs(workstream)}
+                  className="flex items-center border-b border-border bg-muted/20 cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => toggleCat(category)}
                 >
-                  <div className="w-52 flex-shrink-0 border-r border-border px-3 py-1.5 flex items-center gap-1.5">
-                    {isCollapsed
-                      ? <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                      : <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />}
-                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
-                    <span className="text-xs font-semibold" style={{ color: hex }}>{workstream}</span>
-                    <span className="text-[10px] text-muted-foreground ml-1">({items.length})</span>
+                  <div className="w-64 flex-shrink-0 border-r border-border px-3 py-2 flex items-center gap-1.5">
+                    {catCollapsed
+                      ? <ChevronRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                      : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: catHex }} />
+                    <span className="text-xs font-bold" style={{ color: catHex }}>{category}</span>
+                    <span className="text-[10px] text-muted-foreground ml-1">({catItems.length})</span>
                   </div>
-                  <div className="flex-1 relative h-6">
-                    {GOV_PHASE_BANDS.map(b => (
-                      <div key={b.phase} className="absolute top-0 bottom-0" style={{ left: `${b.startPct}%`, width: `${b.endPct - b.startPct}%`, background: b.bg }} />
-                    ))}
+                  <div className="flex-1 relative h-7">
                     {[0, 1, 2].map(yi => (
-                      <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+                      <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/10")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
                     ))}
                     {TL_QUARTERS.map((q, i) => (
                       <div key={i} className={cn("absolute top-0 bottom-0 border-l border-border/30", q.yearStart && "border-l-2 border-border/50")} style={{ left: `${q.pct}%` }} />
                     ))}
-                    {/* Mini milestone dots in header row */}
-                    {items.map(d => {
-                      const pct = tlDuePct(d.dueDate);
+                    {catItems.map(init => {
+                      const bar = tlBarStyle(init.startDate, init.endDate);
                       return (
-                        <div
-                          key={d.id}
-                          className="absolute top-1/2 w-1.5 h-1.5 rounded-full pointer-events-none"
-                          style={{ left: `${pct}%`, transform: "translate(-50%, -50%)", backgroundColor: hex + "88" }}
-                        />
+                        <div key={init.id} className="absolute top-1/2 h-1.5 rounded-full pointer-events-none"
+                          style={{ left: bar.left, width: bar.width, backgroundColor: catHex + "44", transform: "translateY(-50%)" }} />
                       );
                     })}
                   </div>
                 </div>
 
-                {/* Deliverable rows */}
-                {!isCollapsed && items.map((d, rowIdx) => {
-                  const pct       = tlDuePct(d.dueDate);
-                  const isComplete = d.status === "Complete";
-                  const isOnTrack  = d.status === "On Track";
-                  const isAtRisk   = d.status === "At Risk";
+                {/* Domain sub-groups */}
+                {!catCollapsed && domainGroups.map(({ domain, items }) => {
+                  const domKey       = `${category}::${domain}`;
+                  const domCollapsed = collapsedDoms.has(domKey);
                   return (
-                    <div
-                      key={d.id}
-                      className={cn(
-                        "flex items-center border-b border-border/20 transition-colors group",
-                        rowIdx % 2 === 0 ? "bg-background" : "bg-muted/5",
-                      )}
-                    >
-                      {/* Label column */}
-                      <div className="w-52 flex-shrink-0 border-r border-border px-3 py-2 group-hover:bg-muted/20 transition-colors">
-                        <div className="flex items-start gap-1">
-                          {isComplete && <Star className="h-3 w-3 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" />}
-                          <p className="text-[11px] font-medium leading-tight">{d.name}</p>
+                    <div key={domain}>
+                      {/* Domain sub-header */}
+                      <div
+                        className="flex items-center border-b border-border/40 bg-muted/5 cursor-pointer hover:bg-muted/15 transition-colors"
+                        onClick={() => toggleDom(domKey)}
+                      >
+                        <div className="w-64 flex-shrink-0 border-r border-border pl-6 pr-3 py-1.5 flex items-center gap-1.5">
+                          {domCollapsed
+                            ? <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            : <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />}
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: catHex + "99" }} />
+                          <span className="text-xs font-semibold text-foreground/70 truncate">{domain}</span>
+                          <span className="text-[10px] text-muted-foreground ml-1 flex-shrink-0">({items.length})</span>
                         </div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <Badge variant="outline" className={cn("text-[9px] py-0 px-1", PHASE_STYLE[d.phase]?.badge)}>{d.phase}</Badge>
+                        <div className="flex-1 relative h-6">
+                          {[0, 1, 2].map(yi => (
+                            <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+                          ))}
+                          {TL_QUARTERS.map((q, i) => (
+                            <div key={i} className={cn("absolute top-0 bottom-0 border-l border-border/20", q.yearStart && "border-l-2 border-border/40")} style={{ left: `${q.pct}%` }} />
+                          ))}
+                          {items.map(init => {
+                            const bar = tlBarStyle(init.startDate, init.endDate);
+                            return (
+                              <div key={init.id} className="absolute top-1/2 h-1.5 rounded-sm pointer-events-none"
+                                style={{ left: bar.left, width: bar.width, backgroundColor: catHex + "66", transform: "translateY(-50%)" }} />
+                            );
+                          })}
                         </div>
                       </div>
 
-                      {/* Bar / marker area */}
-                      <div className="flex-1 relative h-10">
-                        {/* Phase bands */}
-                        {GOV_PHASE_BANDS.map(b => (
-                          <div key={b.phase} className="absolute top-0 bottom-0" style={{ left: `${b.startPct}%`, width: `${b.endPct - b.startPct}%`, background: b.bg }} />
-                        ))}
-                        {/* Year alternating tint */}
-                        {[0, 1, 2].map(yi => (
-                          <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
-                        ))}
-                        {/* Quarter gridlines */}
-                        {TL_QUARTERS.map((q, i) => (
-                          <div key={i} className={cn("absolute top-0 bottom-0 border-l pointer-events-none", q.yearStart ? "border-border/40" : "border-border/20")} style={{ left: `${q.pct}%` }} />
-                        ))}
-                        {/* Today line */}
-                        <div className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-10" style={{ left: `${TL_TODAY_PCT}%` }}>
-                          <div className="absolute top-0 left-0.5 text-[8px] text-red-500 font-medium whitespace-nowrap">Today</div>
-                        </div>
-                        {/* Milestone marker with HoverCard */}
-                        <HoverCard openDelay={150} closeDelay={80}>
-                          <HoverCardTrigger asChild>
-                            <div
-                              className="absolute top-1/2 z-20 cursor-pointer"
-                              style={{ left: `${pct}%`, transform: "translate(-50%, -50%)" }}
-                              onClick={() => onSelect(d.id)}
-                            >
-                              {isComplete ? (
-                                <Star className="h-4 w-4 text-amber-400 drop-shadow-sm hover:scale-125 transition-transform" fill="currentColor" />
-                              ) : isAtRisk ? (
-                                <div className="w-3.5 h-3.5 rotate-45 border-2 border-amber-500 bg-amber-100 dark:bg-amber-950 hover:scale-125 transition-transform" />
-                              ) : isOnTrack ? (
-                                <Circle className="h-4 w-4 text-emerald-500 hover:scale-125 transition-transform" fill="currentColor" />
-                              ) : (
-                                <Circle className="h-4 w-4 text-slate-400 hover:scale-125 transition-transform" />
+                      {/* Initiative rows */}
+                      {!domCollapsed && items.map((init, rowIdx) => {
+                        const bar         = tlBarStyle(init.startDate, init.endDate);
+                        const isHovered   = hoveredId === init.id;
+                        const isCompleted = init.status === "Completed";
+                        const isAtRisk    = init.status === "At Risk";
+                        return (
+                          <div
+                            key={init.id}
+                            onClick={() => onSelect(init.id)}
+                            onMouseEnter={() => setHoveredId(init.id)}
+                            onMouseLeave={() => setHoveredId(null)}
+                            className={cn(
+                              "flex items-center border-b border-border/20 cursor-pointer group transition-colors",
+                              rowIdx % 2 === 0 ? "bg-background" : "bg-muted/5",
+                              isHovered && "bg-muted/20"
+                            )}
+                          >
+                            {/* Label column */}
+                            <div className="w-64 flex-shrink-0 border-r border-border pl-10 pr-3 py-1.5 group-hover:bg-muted/10 transition-colors">
+                              <p className="text-xs font-medium leading-tight truncate">{init.application}</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[10px] font-mono text-muted-foreground">{init.jiraId}</span>
+                                <SmallBadge label={init.status} className={cn(STATUS_STYLE[init.status] ?? "", "text-[9px] py-0 px-1")} />
+                              </div>
+                            </div>
+                            {/* Bar area */}
+                            <div className="flex-1 relative h-9">
+                              {[0, 1, 2].map(yi => (
+                                <div key={yi} className={cn("absolute top-0 bottom-0", yi % 2 === 1 && "bg-muted/5")} style={{ left: `${(yi / 3) * 100}%`, width: `${100 / 3}%` }} />
+                              ))}
+                              {TL_QUARTERS.map((q, i) => (
+                                <div key={i} className={cn("absolute top-0 bottom-0 border-l pointer-events-none", q.yearStart ? "border-border/40" : "border-border/20")} style={{ left: `${q.pct}%` }} />
+                              ))}
+                              <div className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-10" style={{ left: `${TL_TODAY_PCT}%` }}>
+                                <div className="absolute top-0 left-0.5 text-[8px] text-red-500 font-medium whitespace-nowrap">Today</div>
+                              </div>
+                              <div
+                                className={cn(
+                                  "absolute top-1/2 -translate-y-1/2 h-5 rounded flex items-center px-1.5 overflow-hidden transition-opacity duration-150",
+                                  isCompleted && "opacity-40",
+                                  isAtRisk && "ring-1 ring-red-400 ring-offset-0"
+                                )}
+                                style={{ left: bar.left, width: bar.width, backgroundColor: catHex + (isHovered ? "ff" : "cc") }}
+                              >
+                                <span className="text-white text-[9px] font-medium truncate whitespace-nowrap drop-shadow-sm">{init.jiraId}</span>
+                              </div>
+                              {/* Hover tooltip */}
+                              {isHovered && (
+                                <div className="absolute z-40 pointer-events-none" style={{ left: bar.left, bottom: "calc(100% + 4px)" }}>
+                                  <div className="bg-popover border border-border rounded-lg shadow-2xl p-3 w-80">
+                                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                      <span className="font-mono text-[10px] text-muted-foreground">{init.jiraId}</span>
+                                      <SmallBadge label={init.status}   className={STATUS_STYLE[init.status] ?? ""} />
+                                      <SmallBadge label={init.priority} className={PRIORITY_BADGE[init.priority] ?? ""} />
+                                    </div>
+                                    <p className="text-xs font-semibold mb-1 leading-snug">{init.application}</p>
+                                    {init.businessImpact && (
+                                      <p className="text-[11px] text-blue-700 dark:text-blue-400 mb-1.5 leading-snug">
+                                        {init.businessImpact.slice(0, 100)}{(init.businessImpact?.length ?? 0) > 100 ? "…" : ""}
+                                      </p>
+                                    )}
+                                    <p className="text-[11px] text-muted-foreground leading-snug">{init.description.slice(0, 90)}…</p>
+                                    <div className="flex items-center gap-1 mt-2 text-[10px] text-muted-foreground border-t border-border/50 pt-1.5">
+                                      <span>{init.startDate}</span><span>→</span><span>{init.endDate}</span>
+                                    </div>
+                                  </div>
+                                </div>
                               )}
                             </div>
-                          </HoverCardTrigger>
-                          <HoverCardContent side="top" align="center" className="w-80 p-3">
-                            <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-                              {isComplete && <Star className="h-3 w-3 text-amber-400 flex-shrink-0" fill="currentColor" />}
-                              <Badge variant="outline" className={cn("text-[9px]", DELIVERABLE_STATUS_STYLE[d.status] ?? "")}>{d.status}</Badge>
-                              <Badge variant="outline" className={cn("text-[9px]", PHASE_STYLE[d.phase]?.badge)}>{d.phase}</Badge>
-                            </div>
-                            <p className="text-xs font-semibold mb-1 leading-snug">{d.name}</p>
-                            <p className="text-[11px] text-muted-foreground leading-snug mb-2">{d.description}</p>
-                            <div className="text-[10px] text-muted-foreground space-y-0.5 border-t border-border/50 pt-1.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground/70 w-20 flex-shrink-0">Workstream:</span>
-                                <span className="font-medium">{d.workstream}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground/70 w-20 flex-shrink-0">Owner:</span>
-                                <span className={cn("inline-flex items-center px-1.5 py-0 rounded text-[9px] font-semibold",
-                                  d.owner === "IBM"     ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
-                                  d.owner === "Horizon" ? "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200" :
-                                  "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
-                                )}>{d.owner}</span>
-                                <span>{d.ownerTeam}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-muted-foreground/70 w-20 flex-shrink-0">Due date:</span>
-                                <span className="font-mono font-medium">{d.dueDate}</span>
-                              </div>
-                            </div>
-                          </HoverCardContent>
-                        </HoverCard>
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
@@ -2357,30 +2341,19 @@ function GovernanceTimelineView({ deliverables, onSelect }: { deliverables: Tran
           {/* Footer legend */}
           <div className="flex items-center gap-4 px-4 py-2.5 border-t border-border bg-muted/10 flex-wrap">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <div className="w-px h-3 bg-red-400/70" />
-              <span>Today</span>
+              <div className="w-px h-3 bg-red-400/70" /><span>Today</span>
             </div>
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Star className="h-3 w-3 text-amber-400" fill="currentColor" /> Complete
-              </span>
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Circle className="h-3 w-3 text-emerald-500" fill="currentColor" /> On Track
-              </span>
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <span className="w-2.5 h-2.5 rotate-45 border-2 border-amber-500 inline-block" /> At Risk
-              </span>
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                <Circle className="h-3 w-3 text-slate-400" /> Not Started
-              </span>
-            </div>
-            <div className="flex items-center gap-3 ml-auto flex-wrap">
-              {GOV_PHASE_BANDS.map(b => (
-                <span key={b.phase} className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: b.color + "33", border: `1px solid ${b.color}50` }} />
-                  {b.phase}
+              {CATEGORY_ORDER.map(cat => (
+                <span key={cat} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                  <span className="w-3 h-3 rounded-sm inline-block" style={{ backgroundColor: (CATEGORY_HEX[cat] ?? "#64748b") + "cc" }} />
+                  {cat}
                 </span>
               ))}
+            </div>
+            <div className="flex items-center gap-3 ml-auto flex-wrap text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="ring-1 ring-red-400 w-3 h-3 rounded-sm inline-block bg-transparent" /> At Risk</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm inline-block opacity-40 bg-slate-400" /> Completed</span>
             </div>
           </div>
         </div>
@@ -2389,22 +2362,23 @@ function GovernanceTimelineView({ deliverables, onSelect }: { deliverables: Tran
   );
 }
 
-// ─── Timeline & Deliverables Section ─────────────────────────────────────────
+// ─── Timeline & Deliverables Section (new) ────────────────────────────────────
 
 function TimelineDeliverablesSection() {
-  const { data: deliverables = [], isLoading } = useGetRoadmapTimelineDeliverables();
-  const [phaseFilter, setPhaseFilter] = useState("All");
-  const [ownerFilter, setOwnerFilter] = useState("All");
-  const [view, setView]               = useState<"timeline" | "table">("timeline");
-  const [selectedId, setSelectedId]   = useState<number | null>(null);
+  const { data: rawInitiatives, isLoading } = useGetRoadmapGovernanceCombined();
+  const initiatives: GovernanceCombinedInitiative[] = rawInitiatives ?? [];
+  const [catFilter, setCatFilter]       = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [view, setView]                 = useState<"timeline" | "table">("timeline");
+  const [selectedId, setSelectedId]     = useState<number | null>(null);
   const rowRefs = React.useRef<Map<number, HTMLTableRowElement>>(new Map());
 
-  const filtered = useMemo(() => deliverables
-    .filter(d => phaseFilter === "All" || d.phase === phaseFilter)
-    .filter(d => ownerFilter === "All" || d.owner === ownerFilter),
-  [deliverables, phaseFilter, ownerFilter]);
+  const filtered = useMemo(() => initiatives
+    .filter(i => catFilter    === "All" || i.category === catFilter)
+    .filter(i => statusFilter === "All" || i.status   === statusFilter),
+  [initiatives, catFilter, statusFilter]);
 
-  const handleMarkerClick = useCallback((id: number) => {
+  const handleBarClick = useCallback((id: number) => {
     setSelectedId(id);
     setView("table");
   }, []);
@@ -2412,19 +2386,24 @@ function TimelineDeliverablesSection() {
   React.useEffect(() => {
     if (view === "table" && selectedId !== null) {
       const el = rowRefs.current.get(selectedId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [view, selectedId]);
 
   const kpis = useMemo(() => ({
-    total:      deliverables.length,
-    onTrack:    deliverables.filter(d => d.status === "On Track").length,
-    atRisk:     deliverables.filter(d => d.status === "At Risk").length,
-    complete:   deliverables.filter(d => d.status === "Complete").length,
-    notStarted: deliverables.filter(d => d.status === "Not Started").length,
-  }), [deliverables]);
+    total:     initiatives.length,
+    active:    initiatives.filter(i => i.status === "Active").length,
+    atRisk:    initiatives.filter(i => i.status === "At Risk").length,
+    planned:   initiatives.filter(i => i.status === "Planned").length,
+    completed: initiatives.filter(i => i.status === "Completed").length,
+  }), [initiatives]);
+
+  const handleDownload = useCallback(() => {
+    const a = document.createElement("a");
+    a.href = "/api/roadmap/governance-export";
+    a.download = "Governance_Timeline.xlsx";
+    a.click();
+  }, []);
 
   if (isLoading) return <div className="h-32 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>;
 
@@ -2433,11 +2412,11 @@ function TimelineDeliverablesSection() {
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { label: "Total Deliverables", value: kpis.total,      color: "text-foreground",                          icon: <Layers className="h-4 w-4" /> },
-          { label: "On Track",           value: kpis.onTrack,    color: "text-emerald-600 dark:text-emerald-400",   icon: <CheckCircle2 className="h-4 w-4" /> },
-          { label: "Complete",           value: kpis.complete,   color: "text-amber-500 dark:text-amber-400",       icon: <Star className="h-4 w-4" fill="currentColor" /> },
-          { label: "At Risk",            value: kpis.atRisk,     color: "text-red-600 dark:text-red-400",           icon: <AlertTriangle className="h-4 w-4" /> },
-          { label: "Not Started",        value: kpis.notStarted, color: "text-slate-500 dark:text-slate-400",       icon: <Clock className="h-4 w-4" /> },
+          { label: "Total Initiatives", value: kpis.total,     color: "text-foreground",                         icon: <Layers className="h-4 w-4" /> },
+          { label: "Active",            value: kpis.active,    color: "text-emerald-600 dark:text-emerald-400",  icon: <CheckCircle2 className="h-4 w-4" /> },
+          { label: "Completed",         value: kpis.completed, color: "text-blue-600 dark:text-blue-400",        icon: <Star className="h-4 w-4" fill="currentColor" /> },
+          { label: "At Risk",           value: kpis.atRisk,    color: "text-red-600 dark:text-red-400",          icon: <AlertTriangle className="h-4 w-4" /> },
+          { label: "Planned",           value: kpis.planned,   color: "text-slate-500 dark:text-slate-400",      icon: <Clock className="h-4 w-4" /> },
         ].map(k => (
           <Card key={k.label} className="p-3">
             <div className={cn("mb-1", k.color)}>{k.icon}</div>
@@ -2447,156 +2426,154 @@ function TimelineDeliverablesSection() {
         ))}
       </div>
 
-      {/* Phase swimlane — visual bar per phase with ⭐ achievement pill */}
+      {/* Category breakdown */}
       <Card className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Delivery Phases</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Initiative Categories</p>
         <div className="space-y-2">
-          {PHASE_ORDER.map(phase => {
-            const items      = deliverables.filter(d => d.phase === phase);
-            const complete   = items.filter(d => d.status === "Complete").length;
-            const onTrack    = items.filter(d => d.status === "On Track").length;
-            const atRisk     = items.filter(d => d.status === "At Risk").length;
-            const notStarted = items.filter(d => d.status === "Not Started").length;
-            const ps = PHASE_STYLE[phase];
+          {CATEGORY_ORDER.map(cat => {
+            const catItems  = initiatives.filter(i => i.category === cat);
+            const completed = catItems.filter(i => i.status === "Completed").length;
+            const active    = catItems.filter(i => i.status === "Active").length;
+            const atRisk    = catItems.filter(i => i.status === "At Risk").length;
+            const planned   = catItems.filter(i => i.status === "Planned").length;
+            const hex       = CATEGORY_HEX[cat] ?? "#64748b";
+            if (catItems.length === 0) return null;
             return (
-              <div key={phase} className={cn("rounded-lg border p-3 flex items-center gap-4", ps.bg, "border-border")}>
-                <div className="w-28 flex-shrink-0">
-                  <p className={cn("text-sm font-bold", ps.text)}>{phase}</p>
-                  <p className="text-[10px] text-muted-foreground">{items.length} deliverables</p>
+              <div key={cat} className="flex items-center gap-4 p-2.5 rounded-lg border border-border bg-muted/5">
+                <div className="w-44 flex-shrink-0 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: hex }}>{cat}</p>
+                    <p className="text-[10px] text-muted-foreground">{catItems.length} initiatives</p>
+                  </div>
                 </div>
                 <div className="flex-1 h-4 rounded-full overflow-hidden flex bg-muted/40">
-                  {complete   > 0 && <div title={`${complete} Complete`}      className="h-full bg-amber-400 dark:bg-amber-500 transition-all"     style={{ width: `${(complete   / items.length) * 100}%` }} />}
-                  {onTrack    > 0 && <div title={`${onTrack} On Track`}       className="h-full bg-emerald-500 dark:bg-emerald-600 transition-all" style={{ width: `${(onTrack    / items.length) * 100}%` }} />}
-                  {atRisk     > 0 && <div title={`${atRisk} At Risk`}         className="h-full bg-red-500 dark:bg-red-600 transition-all"          style={{ width: `${(atRisk     / items.length) * 100}%` }} />}
-                  {notStarted > 0 && <div title={`${notStarted} Not Started`} className="h-full bg-slate-300 dark:bg-slate-600 transition-all"     style={{ width: `${(notStarted / items.length) * 100}%` }} />}
+                  {completed > 0 && <div title={`${completed} Completed`}  className="h-full bg-blue-500"    style={{ width: `${(completed / catItems.length) * 100}%` }} />}
+                  {active    > 0 && <div title={`${active} Active`}        className="h-full bg-emerald-500" style={{ width: `${(active    / catItems.length) * 100}%` }} />}
+                  {atRisk    > 0 && <div title={`${atRisk} At Risk`}       className="h-full bg-red-500"     style={{ width: `${(atRisk    / catItems.length) * 100}%` }} />}
+                  {planned   > 0 && <div title={`${planned} Planned`}      className="h-full bg-slate-400"   style={{ width: `${(planned   / catItems.length) * 100}%` }} />}
                 </div>
-                <div className="hidden sm:flex items-center gap-2 text-[10px] flex-shrink-0">
-                  {complete   > 0 && (
-                    <span className="flex items-center gap-0.5 text-amber-500 dark:text-amber-400 font-semibold">
-                      <Star className="h-2.5 w-2.5" fill="currentColor" />{complete} achieved
-                    </span>
-                  )}
-                  {onTrack    > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-medium">{onTrack} on track</span>}
-                  {atRisk     > 0 && <span className="text-red-600 dark:text-red-400 font-medium">{atRisk} at risk</span>}
-                  {notStarted > 0 && <span className="text-muted-foreground">{notStarted} not started</span>}
+                <div className="hidden sm:flex items-center gap-3 text-[10px] flex-shrink-0">
+                  {completed > 0 && <span className="text-blue-600 dark:text-blue-400 font-medium">{completed} done</span>}
+                  {active    > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-medium">{active} active</span>}
+                  {atRisk    > 0 && <span className="text-red-600 dark:text-red-400 font-medium">{atRisk} at risk</span>}
+                  {planned   > 0 && <span className="text-muted-foreground">{planned} planned</span>}
                 </div>
               </div>
             );
           })}
         </div>
-        <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1"><Star className="h-2.5 w-2.5 text-amber-400" fill="currentColor" /> Complete</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> On Track</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> At Risk</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-slate-300 dark:bg-slate-600 inline-block" /> Not Started</span>
-        </div>
       </Card>
 
-      {/* Filters + view toggle */}
+      {/* Filters + view toggle + download */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-muted-foreground">Filter:</span>
-        {(["All", ...PHASE_ORDER] as string[]).map(p => (
-          <button key={p} onClick={() => setPhaseFilter(p)}
+        <span className="text-xs text-muted-foreground font-medium">Category:</span>
+        {(["All", ...CATEGORY_ORDER] as string[]).map(cat => (
+          <button key={cat} onClick={() => setCatFilter(cat)}
             className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
-              phaseFilter === p ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
-            {p === "All" ? "All Phases" : p}
+              catFilter === cat
+                ? "bg-foreground text-background border-foreground"
+                : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {cat === "All" ? "All" : cat}
           </button>
         ))}
-        <span className="text-border">|</span>
-        {(["All", "IBM", "Horizon", "Joint"] as string[]).map(o => (
-          <button key={o} onClick={() => setOwnerFilter(o)}
+        <span className="text-border mx-1">|</span>
+        <span className="text-xs text-muted-foreground font-medium">Status:</span>
+        {(["All", "Active", "At Risk", "Planned", "Completed"] as string[]).map(s => (
+          <button key={s} onClick={() => setStatusFilter(s)}
             className={cn("px-2.5 py-1 rounded-md text-xs font-medium transition-colors border",
-              ownerFilter === o ? "bg-foreground text-background border-foreground" : "bg-background text-muted-foreground border-border hover:text-foreground")}>
-            {o === "All" ? "All Owners" : o}
+              statusFilter === s
+                ? "bg-foreground text-background border-foreground"
+                : "bg-background text-muted-foreground border-border hover:text-foreground")}>
+            {s}
           </button>
         ))}
-        {filtered.length !== deliverables.length && (
-          <button onClick={() => { setPhaseFilter("All"); setOwnerFilter("All"); }}
-            className="px-2.5 py-1 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground gap-1 flex items-center">
+        {(catFilter !== "All" || statusFilter !== "All") && (
+          <button onClick={() => { setCatFilter("All"); setStatusFilter("All"); }}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground">
             <X className="h-3 w-3" /> Clear
           </button>
         )}
-        <span className="text-xs text-muted-foreground">{filtered.length} of {deliverables.length}</span>
-        {/* View toggle — matches pattern used on individual initiative tabs */}
-        <div className="ml-auto flex items-center gap-1 border border-border rounded-md overflow-hidden">
+        <span className="text-[11px] text-muted-foreground">{filtered.length} of {initiatives.length}</span>
+        <button onClick={handleDownload}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground transition-colors">
+          <Download className="h-3.5 w-3.5" /> Download Excel
+        </button>
+        <div className="ml-auto flex items-center border border-border rounded-md overflow-hidden">
           {(["timeline", "table"] as const).map(v => (
-            <button
-              key={v}
-              onClick={() => setView(v)}
-              className={cn(
-                "px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
-                view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
+            <button key={v} onClick={() => setView(v)}
+              className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
+                view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>
               {v === "timeline" ? "Timeline" : "Table"}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Content — Timeline or Table */}
+      {/* Content */}
       {view === "timeline" ? (
-        <GovernanceTimelineView deliverables={filtered} onSelect={handleMarkerClick} />
+        <CombinedGovernanceTimeline initiatives={filtered} onSelect={handleBarClick} />
       ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Deliverable</th>
-                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-28">Phase</th>
-                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground">Workstream</th>
-                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-20">Owner</th>
-                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Team</th>
-                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Due Date</th>
+                  <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Initiative</th>
+                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-36">Category</th>
+                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground">Domain</th>
                   <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Status</th>
+                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-16">Priority</th>
+                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-16">Size</th>
+                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">Start</th>
+                  <th className="text-left px-3 py-2.5 font-semibold text-muted-foreground w-24">End</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-10 text-muted-foreground">No deliverables match the current filters.</td></tr>
+                  <tr><td colSpan={8} className="text-center py-10 text-muted-foreground">No initiatives match the current filters.</td></tr>
                 ) : filtered.map((d, i) => {
-                  const isComplete   = d.status === "Complete";
-                  const isAtRisk     = d.status === "At Risk";
-                  const isSelected   = selectedId === d.id;
+                  const isCompleted = d.status === "Completed";
+                  const isAtRisk    = d.status === "At Risk";
+                  const isSelected  = selectedId === d.id;
+                  const catHex      = CATEGORY_HEX[d.category] ?? "#64748b";
                   return (
                     <tr
                       key={d.id}
                       ref={el => { if (el) rowRefs.current.set(d.id, el); else rowRefs.current.delete(d.id); }}
+                      onClick={() => setSelectedId(isSelected ? null : d.id)}
                       className={cn(
-                        "border-b border-border/30 hover:bg-muted/20 transition-colors",
+                        "border-b border-border/30 hover:bg-muted/20 transition-colors cursor-pointer",
                         isSelected  ? "ring-2 ring-inset ring-blue-400 bg-blue-50/60 dark:bg-blue-950/30" :
-                        isComplete  ? "bg-blue-50/40 dark:bg-blue-950/20" :
+                        isCompleted ? "bg-blue-50/30 dark:bg-blue-950/15" :
                         isAtRisk    ? "bg-red-50/40 dark:bg-red-950/20" :
                         i % 2 === 0 ? "bg-background" : "bg-muted/5"
                       )}
-                      onClick={() => setSelectedId(isSelected ? null : d.id)}
                     >
                       <td className="px-4 py-2.5">
-                        <div className="flex items-start gap-1.5">
-                          {isComplete && <Star className="h-3.5 w-3.5 text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" />}
-                          <div>
-                            <p className="font-medium text-sm leading-tight">{d.name}</p>
-                            <p className="text-muted-foreground mt-0.5 leading-snug">{d.description}</p>
-                          </div>
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <span className="font-mono text-[10px] text-muted-foreground">{d.jiraId}</span>
+                          {isCompleted && <Star className="h-3 w-3 text-amber-400 flex-shrink-0" fill="currentColor" />}
                         </div>
+                        <p className="font-medium text-xs leading-tight">{d.application}</p>
+                        <p className="text-muted-foreground text-[11px] mt-0.5 leading-snug">{d.description.slice(0, 80)}{d.description.length > 80 ? "…" : ""}</p>
                       </td>
                       <td className="px-3 py-2.5">
-                        <Badge variant="outline" className={cn("text-[10px]", PHASE_STYLE[d.phase]?.badge)}>{d.phase}</Badge>
+                        <span className="flex items-center gap-1 text-[10px] font-bold" style={{ color: catHex }}>
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: catHex }} />
+                          {d.category}
+                        </span>
                       </td>
-                      <td className="px-3 py-2.5 text-muted-foreground">{d.workstream}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground text-[11px]">{d.domain}</td>
                       <td className="px-3 py-2.5">
-                        <span className={cn("inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold",
-                          d.owner === "IBM"     ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" :
-                          d.owner === "Horizon" ? "bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200" :
-                          "bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200"
-                        )}>{d.owner}</span>
+                        <Badge variant="outline" className={cn("text-[10px]", STATUS_STYLE[d.status] ?? "")}>{d.status}</Badge>
                       </td>
-                      <td className="px-3 py-2.5 text-muted-foreground text-[10px]">{d.ownerTeam}</td>
-                      <td className="px-3 py-2.5 text-muted-foreground font-mono">{d.dueDate}</td>
                       <td className="px-3 py-2.5">
-                        <Badge variant="outline" className={cn("text-[10px]", DELIVERABLE_STATUS_STYLE[d.status] ?? "")}>{d.status}</Badge>
+                        <Badge variant="outline" className={cn("text-[10px]", PRIORITY_BADGE[d.priority] ?? "")}>{d.priority}</Badge>
                       </td>
+                      <td className="px-3 py-2.5 text-muted-foreground text-[10px]">{d.complexity}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground font-mono text-[10px]">{d.startDate}</td>
+                      <td className="px-3 py-2.5 text-muted-foreground font-mono text-[10px]">{d.endDate}</td>
                     </tr>
                   );
                 })}

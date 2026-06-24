@@ -939,6 +939,31 @@ export interface RoadmapAlert {
   daysOverdue?: number | null;
 }
 
+export type GovernanceCombinedInitiativeCategory =
+  (typeof GovernanceCombinedInitiativeCategory)[keyof typeof GovernanceCombinedInitiativeCategory];
+
+export const GovernanceCombinedInitiativeCategory = {
+  Strategic: "Strategic",
+  Technical_Remediation: "Technical Remediation",
+  Tactical: "Tactical",
+  Foundational: "Foundational",
+} as const;
+
+export interface GovernanceCombinedInitiative {
+  id: number;
+  jiraId: string;
+  category: GovernanceCombinedInitiativeCategory;
+  domain: string;
+  application: string;
+  description: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  priority: string;
+  complexity: string;
+  businessImpact: string;
+}
+
 export type TransformationDeliverablePhase =
   (typeof TransformationDeliverablePhase)[keyof typeof TransformationDeliverablePhase];
 

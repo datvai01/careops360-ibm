@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import * as XLSX from "xlsx";
 import { db, roadmapInitiativesTable, roadmapRequirementsTable, roadmapRisksTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 
@@ -311,6 +312,81 @@ router.patch("/roadmap/initiatives/:id/status", async (req, res): Promise<void> 
   }
 
   res.json(enrichRow(updated[0]));
+});
+
+const CATEGORY_MAP: Record<string, string> = {
+  "Transformation":   "Strategic",
+  "Upgrade":          "Technical Remediation",
+  "Ticket Reduction": "Tactical",
+  "Foundational":     "Foundational",
+};
+
+const FOUNDATIONAL_ITEMS = [
+  { id: 10001, jiraId: "GOV-001", domain: "Platform Modernization",  application: "CareOps360 Command Center — Phase 1 Go-Live",             description: "Executive dashboard with real-time KPIs, claims, PA, and member ops views live for Horizon leadership.", status: "Completed", startDate: "2026-01-01", endDate: "2026-03-31", priority: "High",   complexity: "High", businessImpact: "Enterprise-wide operational visibility." },
+  { id: 10002, jiraId: "GOV-002", domain: "AIOps & Observability",   application: "AIOps Event Correlation Engine Deployed",                 description: "Unified telemetry pipeline with alert correlation reducing noise by 40%+.", status: "Completed", startDate: "2026-01-01", endDate: "2026-04-30", priority: "High",   complexity: "High", businessImpact: "Noise reduction and faster MTTR." },
+  { id: 10003, jiraId: "GOV-003", domain: "Delivery Transformation", application: "POD Operating Model — Foundation Pods Stood Up",          description: "4 pilot domain pods fully staffed, role assignments finalised, ways-of-working agreed.", status: "Completed", startDate: "2026-01-01", endDate: "2026-06-30", priority: "High",   complexity: "Med",  businessImpact: "Enables product-aligned delivery." },
+  { id: 10004, jiraId: "GOV-004", domain: "Technical Remediation",   application: "Legacy Angular 12 → 17 Migration Wave 1 (30 apps)",       description: "First wave of 30 applications migrated to Angular 17; regression test packs validated.", status: "Active", startDate: "2026-01-01", endDate: "2026-08-31", priority: "High",   complexity: "High", businessImpact: "Reduces security debt across 30 apps." },
+  { id: 10005, jiraId: "GOV-005", domain: "Capability Uplift",       application: "Skills Bootcamp — Cloud & AI Cohort 1 Complete",          description: "First cohort of 40 Horizon engineers complete IBM cloud-native and AI foundations certification.", status: "Active", startDate: "2026-01-01", endDate: "2026-09-30", priority: "High",   complexity: "Med",  businessImpact: "40 certified engineers accelerating delivery." },
+  { id: 10006, jiraId: "GOV-006", domain: "Provider Operations",     application: "Provider Credentialing Automation Live",                  description: "Automated credentialing workflow reducing audit cycle from 30 → 10 days. Blocked on provider FHIR feed.", status: "At Risk", startDate: "2026-01-01", endDate: "2026-09-30", priority: "High",   complexity: "High", businessImpact: "Credentialing cycle 30→10 days." },
+  { id: 10007, jiraId: "GOV-007", domain: "Platform Modernization",  application: "API-First Integration Hub — Phase 1",                     description: "Real-time partner exchange API hub deployed across 15 key integration points.", status: "Active", startDate: "2026-07-01", endDate: "2026-12-31", priority: "High",   complexity: "High", businessImpact: "15 integration points modernised." },
+  { id: 10008, jiraId: "GOV-008", domain: "Program Governance",      application: "IBM–Horizon Year 2 Contract Extension Signed",            description: "Multi-year extension covering Year 2–3 AMS scope, AI programme, and IBM watsonx licensing.", status: "Planned", startDate: "2026-07-01", endDate: "2026-10-31", priority: "Critical", complexity: "Low", businessImpact: "Enables Scale-phase mobilisation." },
+  { id: 10009, jiraId: "GOV-009", domain: "Clinical Automation",     application: "Prior Auth AI Engine — 70% Auto-Approval Target",         description: "ML-driven prior auth decision engine targeting 70% straight-through processing rate.", status: "Planned", startDate: "2026-07-01", endDate: "2027-03-31", priority: "High",   complexity: "High", businessImpact: "70% straight-through PA rate." },
+  { id: 10010, jiraId: "GOV-010", domain: "Delivery Transformation", application: "POD Model — Full Scale (All Domains)",                    description: "All 8 domains operating in full POD model with self-service sprint cadences.", status: "Planned", startDate: "2026-07-01", endDate: "2027-03-31", priority: "High",   complexity: "Med",  businessImpact: "All 8 domains product-aligned." },
+  { id: 10011, jiraId: "GOV-011", domain: "Data & Analytics",        application: "Power BI Analytics Consolidation",                        description: "Single Power BI platform replacing 6 separate reporting tools; 200+ dashboards migrated.", status: "Planned", startDate: "2026-07-01", endDate: "2027-06-30", priority: "Med",    complexity: "Med",  businessImpact: "6 reporting tools consolidated." },
+  { id: 10012, jiraId: "GOV-012", domain: "Digital Innovation",      application: "GenAI Member Engagement Platform — Beta",                 description: "AI-powered member portal with natural language benefits navigation and claims inquiry.", status: "Planned", startDate: "2026-07-01", endDate: "2027-09-30", priority: "High",   complexity: "High", businessImpact: "Member self-service AI uplift." },
+  { id: 10013, jiraId: "GOV-013", domain: "Capability Uplift",       application: "Skills Bootcamp — All Cohorts Complete (200+ resources)", description: "Full Horizon engineering population certified across IBM cloud-native, AI, and agile disciplines.", status: "Planned", startDate: "2026-07-01", endDate: "2027-09-30", priority: "High",   complexity: "Med",  businessImpact: "200+ certified engineers." },
+  { id: 10014, jiraId: "GOV-014", domain: "Technical Remediation",   application: "Legacy Elimination — EOL Systems Decommissioned",         description: "All end-of-life systems identified in the Year-1 inventory formally decommissioned.", status: "Planned", startDate: "2026-07-01", endDate: "2027-12-31", priority: "High",   complexity: "High", businessImpact: "Zero unsupported runtime risk." },
+  { id: 10015, jiraId: "GOV-015", domain: "Clinical Automation",     application: "AI-Driven Prior Auth — 85% Auto-Approval",                description: "Full production deployment achieving 85% straight-through rate, reducing clinical reviewer load by 60%.", status: "Planned", startDate: "2027-07-01", endDate: "2028-03-31", priority: "High",   complexity: "High", businessImpact: "Clinical reviewer load ‑60%." },
+  { id: 10016, jiraId: "GOV-016", domain: "Digital Innovation",      application: "GenAI Member Engagement — Full Production (NPS +12)",     description: "Full member-facing AI platform live; NPS improvement of +12 tracked over 3 months post-launch.", status: "Planned", startDate: "2027-07-01", endDate: "2028-06-30", priority: "High",   complexity: "High", businessImpact: "NPS +12 uplift." },
+  { id: 10017, jiraId: "GOV-017", domain: "AIOps & Observability",   application: "Self-Healing Operations — AI-Driven Ticket Prevention",   description: "Predictive remediation engine achieving near-zero reactive ticket volume across all critical systems.", status: "Planned", startDate: "2027-07-01", endDate: "2028-09-30", priority: "High",   complexity: "High", businessImpact: "Near-zero reactive ticket volume." },
+  { id: 10018, jiraId: "GOV-018", domain: "Technical Remediation",   application: "Full Technology Stack Modernization Complete",            description: "100% supported, maintained technology estate. Zero unsupported runtime dependencies.", status: "Planned", startDate: "2027-07-01", endDate: "2028-12-31", priority: "High",   complexity: "High", businessImpact: "100% supported tech estate." },
+  { id: 10019, jiraId: "GOV-019", domain: "Delivery Transformation", application: "Horizon Digital Operating Model — Steady State",          description: "Horizon operating fully in product-aligned POD model with IBM in advisory and augmentation role.", status: "Planned", startDate: "2027-07-01", endDate: "2028-12-31", priority: "High",   complexity: "Low",  businessImpact: "Self-sustaining digital operating model." },
+];
+
+async function buildGovernanceCombined() {
+  const rows = await db.select().from(roadmapInitiativesTable).orderBy(roadmapInitiativesTable.initiativeType, roadmapInitiativesTable.domain, roadmapInitiativesTable.application);
+  const dbItems = rows.map(r => ({
+    id: r.id,
+    jiraId: r.jiraId,
+    category: CATEGORY_MAP[r.initiativeType] ?? r.initiativeType,
+    domain: r.domain || r.product || "General",
+    application: r.application,
+    description: r.description,
+    status: r.status,
+    startDate: r.startDate,
+    endDate: r.endDate,
+    priority: r.priority,
+    complexity: r.complexity,
+    businessImpact: r.businessImpact,
+  }));
+  const foundational = FOUNDATIONAL_ITEMS.map(f => ({ ...f, category: "Foundational" }));
+  return [...dbItems, ...foundational];
+}
+
+router.get("/roadmap/governance-combined", async (_req, res): Promise<void> => {
+  const data = await buildGovernanceCombined();
+  res.json(data);
+});
+
+router.get("/roadmap/governance-export", async (_req, res): Promise<void> => {
+  const data = await buildGovernanceCombined();
+  const wb = XLSX.utils.book_new();
+  const COLS = ["jiraId", "category", "domain", "application", "status", "priority", "complexity", "startDate", "endDate", "description", "businessImpact"];
+  const HEADERS = ["ID", "Category", "Domain / Workstream", "Initiative / Application", "Status", "Priority", "Complexity", "Start Date", "End Date", "Description", "Business Impact"];
+
+  const categories: Array<"Strategic" | "Technical Remediation" | "Tactical" | "Foundational" | "All"> = ["All", "Strategic", "Technical Remediation", "Tactical", "Foundational"];
+  for (const cat of categories) {
+    const subset = cat === "All" ? data : data.filter(d => d.category === cat);
+    const rows = [HEADERS, ...subset.map(d => COLS.map(c => (d as Record<string, unknown>)[c] ?? ""))];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [8, 22, 28, 50, 12, 10, 12, 12, 12, 60, 50].map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws, cat === "Technical Remediation" ? "Tech Remediation" : cat);
+  }
+
+  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", 'attachment; filename="Governance_Timeline.xlsx"');
+  res.send(buf);
 });
 
 router.get("/roadmap/timeline-deliverables", (_req, res): void => {

@@ -61,6 +61,8 @@ export * from "./getRoadmapInitiativesParams";
 export * from "./getTicketTrendsParams";
 export * from "./getTicketTrendsPeriod";
 export * from "./getVendorInvoiceListParams";
+export * from "./governanceCombinedInitiative";
+export * from "./governanceCombinedInitiativeCategory";
 export * from "./healthStatus";
 export * from "./horizonRequirement";
 export * from "./horizonRequirementCategory";
