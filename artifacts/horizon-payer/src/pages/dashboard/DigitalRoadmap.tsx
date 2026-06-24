@@ -2453,10 +2453,9 @@ function TimelineDeliverablesSection() {
         ))}
       </div>
 
-      {/* Category breakdown */}
-      <Card className="p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Initiative Categories</p>
-        <div className="space-y-2">
+      {/* Category breakdown — compact */}
+      <Card className="px-4 py-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {CATEGORY_ORDER.map(cat => {
             const catItems  = initiatives.filter(i => i.category === cat);
             const completed = catItems.filter(i => i.status === "Completed").length;
@@ -2466,24 +2465,22 @@ function TimelineDeliverablesSection() {
             const hex       = CATEGORY_HEX[cat] ?? "#64748b";
             if (catItems.length === 0) return null;
             return (
-              <div key={cat} className="flex items-center gap-4 p-2.5 rounded-lg border border-border bg-muted/5">
-                <div className="w-44 flex-shrink-0 flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
-                  <div>
-                    <p className="text-xs font-bold" style={{ color: hex }}>{cat}</p>
-                    <p className="text-[10px] text-muted-foreground">{catItems.length} initiatives</p>
-                  </div>
+              <div key={cat} className="flex items-center gap-3 min-w-0">
+                <div className="w-32 flex-shrink-0 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: hex }} />
+                  <p className="text-xs font-semibold truncate" style={{ color: hex }}>{cat}</p>
+                  <p className="text-[10px] text-muted-foreground flex-shrink-0">({catItems.length})</p>
                 </div>
-                <div className="flex-1 h-4 rounded-full overflow-hidden flex bg-muted/40">
+                <div className="flex-1 h-2 rounded-full overflow-hidden flex bg-muted/40">
                   {completed > 0 && <div title={`${completed} Completed`}  className="h-full bg-blue-500"    style={{ width: `${(completed / catItems.length) * 100}%` }} />}
                   {active    > 0 && <div title={`${active} Active`}        className="h-full bg-emerald-500" style={{ width: `${(active    / catItems.length) * 100}%` }} />}
                   {atRisk    > 0 && <div title={`${atRisk} At Risk`}       className="h-full bg-red-500"     style={{ width: `${(atRisk    / catItems.length) * 100}%` }} />}
                   {planned   > 0 && <div title={`${planned} Planned`}      className="h-full bg-slate-400"   style={{ width: `${(planned   / catItems.length) * 100}%` }} />}
                 </div>
-                <div className="hidden sm:flex items-center gap-3 text-[10px] flex-shrink-0">
-                  {completed > 0 && <span className="text-blue-600 dark:text-blue-400 font-medium">{completed} done</span>}
-                  {active    > 0 && <span className="text-emerald-600 dark:text-emerald-400 font-medium">{active} active</span>}
-                  {atRisk    > 0 && <span className="text-red-600 dark:text-red-400 font-medium">{atRisk} at risk</span>}
+                <div className="hidden sm:flex items-center gap-2 text-[10px] flex-shrink-0">
+                  {completed > 0 && <span className="text-blue-600 dark:text-blue-400">{completed}✓</span>}
+                  {active    > 0 && <span className="text-emerald-600 dark:text-emerald-400">{active} active</span>}
+                  {atRisk    > 0 && <span className="text-red-500">{atRisk} risk</span>}
                   {planned   > 0 && <span className="text-muted-foreground">{planned} planned</span>}
                 </div>
               </div>
