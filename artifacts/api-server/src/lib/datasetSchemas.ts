@@ -467,7 +467,13 @@ export const DATASET_SCHEMAS: Record<string, DatasetSchema> = {
     key: "transformation-roadmap",
     title: "Transformation Roadmap — CareOps360 Upload Template",
     introLines: [
-      "Single sheet 'Initiatives' driving the 60-initiative Transformation Roadmap, swimlanes, and drill-downs.",
+      "Single sheet 'Initiatives' driving the Transformation Roadmap — all swimlanes, timeline, and drill-downs.",
+      `Initiative Type values: Transformation | Upgrade | Ticket Reduction | Foundational. ${STATUS_NOTE}`,
+      "Foundational rows appear in the dedicated 'Foundational Initiatives' tab and in the governance Gantt as a 4th category.",
+      `Status values: Active | Planned | Completed | At Risk | On Hold. ${STATUS_NOTE}`,
+      `Priority values: High | Medium | Low | Critical. ${STATUS_NOTE}`,
+      `Complexity values: High | Med | Low. ${STATUS_NOTE}`,
+      `Plan Year values: 1 (2026) | 2 (2027) | 3 (2028). ${STATUS_NOTE}`,
     ],
     sheets: [
       {
@@ -475,10 +481,10 @@ export const DATASET_SCHEMAS: Record<string, DatasetSchema> = {
         tableName: "roadmap_initiatives",
         table: roadmapInitiativesTable,
         columns: [
-          { header: "Portfolio", key: "portfolio", type: "str", sample: "Claims", required: true },
-          { header: "Product", key: "product", type: "str", sample: "Claims Engine", required: true },
-          { header: "Application", key: "application", type: "str", sample: "Claims Engine v4", required: true },
-          { header: "Initiative Type", key: "initiativeType", type: "str", sample: "AI-First", required: true },
+          { header: "Portfolio", key: "portfolio", type: "str", sample: "IT Infrastructure", required: true },
+          { header: "Product", key: "product", type: "str", sample: "IBM Instana", required: true },
+          { header: "Application", key: "application", type: "str", sample: "AIOps Event Correlation Engine", required: true },
+          { header: "Initiative Type", key: "initiativeType", type: "str", sample: "Foundational", required: true },
           { header: "Description", key: "description", type: "str", sample: "Automate denial drafting with LLM", required: true },
           { header: "Expected Outcome", key: "expectedOutcome", type: "str", sample: "30% denial-letter cycle reduction", required: true },
           { header: "Technology", key: "technology", type: "str", sample: "watsonx.ai", required: true },
