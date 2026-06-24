@@ -147,10 +147,10 @@ function exportToXLSX(data: RoadmapInitiative[], filename: string) {
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
-type SectionKey = "upgrade" | "transformation" | "ticket";
+type SectionKey = "upgrade" | "transformation" | "ticket" | "foundational";
 type YearFilter = 0 | 1 | 2 | 3;
 
-type SectionTier = "STRATEGIC" | "TACTICAL";
+type SectionTier = "STRATEGIC" | "TACTICAL" | "FOUNDATIONAL";
 
 const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiativeType: string; color: string; accent: string; icon: React.ReactNode; desc: string; tier: SectionTier; tierBadge: string }[] = [
   {
@@ -188,6 +188,18 @@ const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiative
     desc: "Incident reduction, automation of repetitive work, shift-left strategies, self-service enablement",
     tier: "TACTICAL",
     tierBadge: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200",
+  },
+  {
+    key: "foundational",
+    label: "Foundational Initiatives",
+    shortLabel: "Foundational",
+    initiativeType: "Foundational",
+    color: "text-orange-700 dark:text-orange-400",
+    accent: "border-orange-500 bg-orange-50 dark:bg-orange-950/40",
+    icon: <Star className="h-4 w-4" />,
+    desc: "Platform governance, operating model, data foundations, security enablers, and program-level prerequisites",
+    tier: "FOUNDATIONAL",
+    tierBadge: "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-700 dark:bg-orange-900/60 dark:text-orange-200",
   },
 ];
 
@@ -285,6 +297,11 @@ const YEAR_OUTCOMES: Record<SectionKey, Record<number, string[]>> = {
     1: ["1,500+ monthly tickets eliminated or meaningfully reduced", "Self-service capabilities live for billing, enrollment, and broker teams", "AIOps event correlation reducing alert noise by 40%+", "Tier-1 resolution rate improved 20%+"],
     2: ["Full shift-left program operational across all domains", "Predictive monitoring preventing issues before member impact", "Knowledge base achieving 80% first-call resolution"],
     3: ["AI-driven ticket prevention achieving near-zero reactive work", "Self-healing systems live across all critical workflows"],
+  },
+  foundational: {
+    1: ["CareOps360 Command Center live — executive visibility from day one", "AIOps event correlation engine deployed — 40%+ alert noise reduction", "4 pilot POD pods stood up across Payer, Clinical, Digital, and Provider domains", "Angular Wave 1 complete — 30 apps on Angular 17, CVE class eliminated"],
+    2: ["Full POD operating model scaled across all 8 domains", "API-first integration hub Phase 1 live — 15 integration points modernised", "200+ engineers certified across IBM cloud-native and AI disciplines", "Analytics consolidated to Power BI — 6 reporting tools retired"],
+    3: ["AI-driven prior auth at 85% straight-through rate", "GenAI member engagement platform live — NPS +12 uplift", "Horizon operating in fully self-sustaining digital operating model", "Self-healing AIOps achieving near-zero reactive ticket volume"],
   },
 };
 
