@@ -24,6 +24,7 @@ import CapabilityUplift from "@/pages/dashboard/CapabilityUplift";
 import MemberServices from "@/pages/dashboard/MemberServices";
 import Administration from "@/pages/dashboard/Administration";
 import PodTransformation from "@/pages/dashboard/PodTransformation";
+import TransformationEcosystem from "@/pages/dashboard/TransformationEcosystem";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -58,6 +59,7 @@ function DashboardRouter() {
         <Route path="/dashboard/help" component={Help} />
         <Route path="/dashboard/capability-uplift" component={CapabilityUplift} />
         <Route path="/dashboard/pod-transformation" component={PodTransformation} />
+        <Route path="/dashboard/transformation-ecosystem" component={TransformationEcosystem} />
         <Route path="/dashboard/administration" component={Administration} />
         <Route component={NotFound} />
       </Switch>

@@ -30,6 +30,7 @@ import {
   Settings,
   X,
   CheckCheck,
+  Sparkles,
 } from "lucide-react";
 import { useExportAllData } from "@/hooks/useExportAllData";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -81,6 +82,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: "AIOps & Service KPIs", path: "/dashboard/ibm-ams", icon: CpuIcon },
       { name: "Transformation Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
+      { name: "Transformation Ecosystem", path: "/dashboard/transformation-ecosystem", icon: Sparkles },
       { name: "Skills & Enablement", path: "/dashboard/capability-uplift", icon: Award },
     ],
   },
