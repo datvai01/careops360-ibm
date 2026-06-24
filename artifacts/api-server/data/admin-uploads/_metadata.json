@@ -34,5 +34,14 @@
     "sizeBytes": 7837,
     "version": 1,
     "storedFilename": "roadmap-risks__v1782190044556.xlsx"
+  },
+  "transformation-roadmap": {
+    "key": "transformation-roadmap",
+    "uploadedAt": "2026-06-24T23:25:40.312Z",
+    "uploadedBy": "admin@horizon.com",
+    "sourceFilename": "Transformation_Roadmap_Template_Horizon_Foundational_Y1Q1_Y1Q2.xlsx",
+    "sizeBytes": 27317,
+    "version": 2,
+    "storedFilename": "transformation-roadmap__v1782343540312.xlsx"
   }
 }

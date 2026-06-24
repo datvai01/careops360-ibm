@@ -1,0 +1,248 @@
+The purpose of the dashboard is to show how the IBM team will transition from a traditional managed-services / steady-state delivery mindset into a transformation-led operating ecosystem.
+
+This is not just a project tracker. It should visually show the team’s journey into new ways of working, new behaviors, new governance rhythms, new tooling adoption, and measurable transformation outcomes.
+
+Use React, Tailwind CSS, shadcn/ui, Framer Motion, Lucide icons, and Recharts.
+
+Keep the functionality simple but make the design fancy, polished, and client-demo ready.
+
+Core Narrative
+
+IBM will help Horizon evolve from steady-state operations into a transformation ecosystem by shifting the team mindset across:
+
+From ticket execution to outcome ownership
+From reactive support to proactive improvement
+From project delivery to product-based thinking
+From manual operations to AIOps and automation
+From inconsistent Agile usage to disciplined Agile ways of working
+From static reporting to CareOps360 governance visibility
+From activity tracking to value realization
+From vendor dependency to IBM-led Quality Engineering transition
+
+Quality Engineering transition should appear last as an enabling workstream, not the lead story.
+
+Design Direction
+
+Make the dashboard look premium:
+
+Executive white theme
+IBM blue accents
+Subtle gradients
+Glassmorphism KPI cards
+Animated maturity indicators
+Smooth hover effects
+Framer Motion page transitions
+Modern icons
+Status badges
+Clean typography
+No dark theme
+No cluttered portal layout
+
+The dashboard should feel like a Transformation Ecosystem Cockpit.
+
+Page Structure
+
+Create a single-page dashboard with the following sections.
+
+1. Executive Hero Section
+
+Title:
+Horizon Transformation Mindset & Ecosystem Dashboard
+
+Subtitle:
+IBM team transition from steady-state delivery to transformation-led operations
+
+Add a short executive narrative:
+
+“IBM will transition the team into a transformation ecosystem focused on outcome ownership, Agile discipline, automation-first thinking, product-based delivery, CareOps360-enabled governance, measurable value realization, and controlled Quality Engineering transition.”
+
+Show badges:
+
+Current maturity stage: Foundation
+Target maturity stage: Transformation-Led
+Overall health: On Track
+Governance cadence: Weekly
+2. Premium KPI Cards
+
+Show 6 KPI cards:
+
+Transformation mindset adoption
+Agile discipline maturity
+Automation-first behaviors
+Product ownership alignment
+CareOps360 governance adoption
+QE transition readiness
+
+Each card should show:
+
+Current score
+Target score
+Trend arrow
+Status badge
+Short explanation
+
+Example:
+Transformation Mindset Adoption
+Current: 2.5 / 5
+Target: 4.5 / 5
+Status: In Progress
+Text: “Team is shifting from task completion to outcome ownership.”
+
+3. Chart 1: Mindset Shift Journey
+
+Create a polished horizontal journey/timeline chart showing the team’s transition across 5 stages:
+
+Stabilize Current Delivery
+Align on Transformation Outcomes
+Adopt New Ways of Working
+Embed Automation & Governance
+Operate as Transformation Ecosystem
+
+For each stage show:
+
+Completion %
+Expected behaviors
+Owner
+Status
+Key evidence
+
+Example evidence:
+
+Agile ceremonies adopted
+Automation backlog created
+CareOps360 dashboard reviewed weekly
+Product ownership model agreed
+Value metrics baselined
+4. Chart 2: Transformation Ecosystem Maturity
+
+Create a radar chart or grouped bar chart showing current vs target maturity across these dimensions:
+
+Outcome ownership
+Agile ways of working
+Automation mindset
+AIOps adoption
+Product-based delivery
+CareOps360 governance
+Value realization
+Quality Engineering transition
+
+Quality Engineering transition must be last.
+
+Use score from 1 to 5.
+
+5. Chart 3: Behavior Adoption by Workstream
+
+Create a simple but polished bar chart showing adoption percentage across workstreams:
+
+Governance & Operating Model
+AIOps & Automation
+Agile Adoption
+CareOps360 Enablement
+Product Model Transformation
+Value Realization
+Quality Engineering Transition
+
+Quality Engineering Transition must always appear last.
+
+6. Transformation Behavior Tracker Table
+
+Create one editable table with these columns:
+
+Behavior / Capability
+Current mindset
+Target mindset
+Workstream
+Owner
+Adoption score
+Evidence needed
+Risk
+Mitigation
+Next action
+
+Use these sample rows:
+
+Outcome ownership
+Current mindset: Team focuses on completing assigned tasks
+Target mindset: Team owns business and operational outcomes
+Workstream: Governance & Operating Model
+Agile discipline
+Current mindset: Agile ceremonies are inconsistent
+Target mindset: Teams use backlog discipline, sprint planning, reviews, and retrospectives consistently
+Workstream: Agile Adoption
+Automation-first thinking
+Current mindset: Manual issue handling is accepted as normal
+Target mindset: Repeatable work is reviewed for automation opportunity
+Workstream: AIOps & Automation
+Proactive operations
+Current mindset: Team responds after incidents occur
+Target mindset: Team uses AIOps insights to prevent recurring issues
+Workstream: AIOps & Automation
+Governance transparency
+Current mindset: Reporting is manual and fragmented
+Target mindset: CareOps360 provides weekly governance visibility
+Workstream: CareOps360 Enablement
+Product-based ownership
+Current mindset: Teams align around projects and tasks
+Target mindset: Teams align around products, platforms, and outcomes
+Workstream: Product Model Transformation
+Value realization
+Current mindset: Progress is measured through activities
+Target mindset: Progress is measured through benefits, KPIs, and value outcomes
+Workstream: Value Realization
+Quality Engineering transition
+Current mindset: QE knowledge sits with incumbent vendor
+Target mindset: IBM owns QE process, regression knowledge, automation assets, and defect governance
+Workstream: Quality Engineering Transition
+7. Risks and Mitigations Panel
+
+Show a compact premium panel for risks and mitigations.
+
+Include these risks:
+
+Risk: Team may continue to operate in task-execution mode.
+Mitigation: Reinforce outcome-based KPIs, governance reviews, and ownership-based accountability.
+Risk: Agile adoption may remain superficial.
+Mitigation: Use practical coaching, backlog quality checks, sprint health metrics, and team-level adoption reviews.
+Risk: Automation may remain secondary to daily operations.
+Mitigation: Establish automation intake, prioritization, and weekly review of repeatable manual work.
+Risk: CareOps360 may become a reporting tool instead of a governance behavior.
+Mitigation: Tie CareOps360 usage to weekly leadership reviews and decision tracking.
+Risk: Product model may be defined but not adopted.
+Mitigation: Align roles, ownership, metrics, and decision rights to product/platform teams.
+Risk: QE transition may remain knowledge-transfer focused without mindset shift.
+Mitigation: Use shadow/reverse-shadow, quality ownership metrics, automation assessment, and IBM readiness sign-off.
+8. Simple Interactions
+
+Add only these filters:
+
+Workstream
+Adoption status
+Owner
+
+Add buttons:
+
+Add behavior
+Export CSV
+Reset demo data
+
+Use localStorage so updates remain after refresh.
+
+Workstream Order
+
+Use this exact order everywhere:
+
+Governance & Operating Model
+AIOps & Automation
+Agile Adoption
+CareOps360 Enablement
+Product Model Transformation
+Value Realization
+Quality Engineering Transition
+
+Quality Engineering Transition must always appear last.
+
+Final Experience
+
+The dashboard should not feel like a normal project tracker.
+
+It should feel like a premium Transformation Ecosystem Cockpit that shows IBM’s plan to move the team from steady-state delivery into a transformational mindset, with visible maturity progression, behavior adoption, risks with mitigations, and evidence of change.
