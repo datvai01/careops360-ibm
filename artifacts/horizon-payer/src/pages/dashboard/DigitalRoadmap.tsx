@@ -1298,16 +1298,20 @@ function InitiativeFormModal({
             <FormTextarea value={form.businessImpact} onChange={set("businessImpact")} placeholder="Quantified business value (e.g. 25% cost reduction)…" rows={2} />
           </FieldRow>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className={form.initiativeType === "Upgrade" ? "grid grid-cols-3 gap-4" : "grid grid-cols-1 gap-4"}>
             <FieldRow label="Technology" required>
-              <FormInput value={form.technology} onChange={set("technology")} placeholder="e.g. Angular, .NET 8" required />
+              <FormInput value={form.technology} onChange={set("technology")} placeholder="e.g. Angular, .NET 8, IBM Instana" required />
             </FieldRow>
-            <FieldRow label="Current Version">
-              <FormInput value={form.currentVersion} onChange={set("currentVersion")} placeholder="e.g. 4.8" />
-            </FieldRow>
-            <FieldRow label="Upgrade Version">
-              <FormInput value={form.upgradeVersion} onChange={set("upgradeVersion")} placeholder="e.g. 8.0" />
-            </FieldRow>
+            {form.initiativeType === "Upgrade" && (
+              <>
+                <FieldRow label="Current Version">
+                  <FormInput value={form.currentVersion} onChange={set("currentVersion")} placeholder="e.g. 4.8" />
+                </FieldRow>
+                <FieldRow label="Upgrade Version">
+                  <FormInput value={form.upgradeVersion} onChange={set("upgradeVersion")} placeholder="e.g. 8.0" />
+                </FieldRow>
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -1337,8 +1341,8 @@ function InitiativeFormModal({
                 { value: "High", label: "High" },
               ]} />
             </FieldRow>
-            <FieldRow label="Dependency">
-              <FormInput value={form.dependency} onChange={set("dependency")} placeholder="e.g. HLGN-1004" />
+            <FieldRow label="Dependency (optional)">
+              <FormInput value={form.dependency} onChange={set("dependency")} placeholder="e.g. HLGN-1004, GOV-002" />
             </FieldRow>
           </div>
 
