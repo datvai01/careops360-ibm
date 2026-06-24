@@ -50,6 +50,8 @@ import {
   ClipboardList,
   ShieldAlert,
   Star,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 // ─── Export Utilities ─────────────────────────────────────────────────────────
@@ -2371,6 +2373,7 @@ function TimelineDeliverablesSection() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [view, setView]                 = useState<"timeline" | "table">("timeline");
   const [selectedId, setSelectedId]     = useState<number | null>(null);
+  const [fullscreen, setFullscreen]     = useState(false);
   const rowRefs = React.useRef<Map<number, HTMLTableRowElement>>(new Map());
 
   const filtered = useMemo(() => initiatives
@@ -2390,6 +2393,13 @@ function TimelineDeliverablesSection() {
     }
   }, [view, selectedId]);
 
+  React.useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setFullscreen(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [fullscreen]);
+
   const kpis = useMemo(() => ({
     total:     initiatives.length,
     active:    initiatives.filter(i => i.status === "Active").length,
@@ -2407,7 +2417,7 @@ function TimelineDeliverablesSection() {
 
   if (isLoading) return <div className="h-32 flex items-center justify-center text-sm text-muted-foreground">Loading…</div>;
 
-  return (
+  const body = (
     <div className="space-y-5">
       {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -2499,14 +2509,24 @@ function TimelineDeliverablesSection() {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground transition-colors">
           <Download className="h-3.5 w-3.5" /> Download Excel
         </button>
-        <div className="ml-auto flex items-center border border-border rounded-md overflow-hidden">
-          {(["timeline", "table"] as const).map(v => (
-            <button key={v} onClick={() => setView(v)}
-              className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
-                view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>
-              {v === "timeline" ? "Timeline" : "Table"}
-            </button>
-          ))}
+        <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center border border-border rounded-md overflow-hidden">
+            {(["timeline", "table"] as const).map(v => (
+              <button key={v} onClick={() => setView(v)}
+                className={cn("px-3 py-1.5 text-xs font-medium transition-colors border-r border-border/50 last:border-r-0",
+                  view === v ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>
+                {v === "timeline" ? "Timeline" : "Table"}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setFullscreen(f => !f)}
+            title={fullscreen ? "Exit full screen (Esc)" : "Expand to full screen"}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground transition-colors"
+          >
+            {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <span className="hidden sm:inline ml-0.5">{fullscreen ? "Minimize" : "Full Screen"}</span>
+          </button>
         </div>
       </div>
 
@@ -2582,6 +2602,29 @@ function TimelineDeliverablesSection() {
           </div>
         </Card>
       )}
+    </div>
+  );
+
+  if (!fullscreen) return body;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden">
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+          <h2 className="text-base font-semibold">Timeline &amp; Deliverables</h2>
+          <span className="text-xs text-muted-foreground hidden sm:inline ml-1">— Key milestones and delivery commitments by phase</span>
+        </div>
+        <button
+          onClick={() => setFullscreen(false)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border hover:bg-muted text-muted-foreground transition-colors"
+        >
+          <Minimize2 className="h-3.5 w-3.5" /> Exit Full Screen
+        </button>
+      </div>
+      <div className="flex-1 overflow-y-auto px-6 py-5">
+        {body}
+      </div>
     </div>
   );
 }
