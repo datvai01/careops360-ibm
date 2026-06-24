@@ -2112,13 +2112,13 @@ function heatmapCellClass(l: string, i: string): string {
 }
 
 const CATEGORY_HEX: Record<string, string> = {
-  "Strategic":             "#3b82f6",
-  "Technical Remediation": "#f97316",
-  "Tactical":              "#10b981",
-  "Foundational":          "#8b5cf6",
+  "Foundational":                          "#8b5cf6",
+  "Strategic":                             "#3b82f6",
+  "Technical Remediation (N-1/2 Upgrades)": "#f97316",
+  "Ticket Reduction":                      "#10b981",
 };
 
-const CATEGORY_ORDER = ["Strategic", "Technical Remediation", "Tactical", "Foundational"] as const;
+const CATEGORY_ORDER = ["Foundational", "Strategic", "Technical Remediation (N-1/2 Upgrades)", "Ticket Reduction"] as const;
 
 const COMBINED_YEAR_BANDS = [
   { label: "Year 1 · 2026", sub: "Quick Wins & Foundation" },

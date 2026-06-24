@@ -316,8 +316,8 @@ router.patch("/roadmap/initiatives/:id/status", async (req, res): Promise<void> 
 
 const CATEGORY_MAP: Record<string, string> = {
   "Transformation":   "Strategic",
-  "Upgrade":          "Technical Remediation",
-  "Ticket Reduction": "Tactical",
+  "Upgrade":          "Technical Remediation (N-1/2 Upgrades)",
+  "Ticket Reduction": "Ticket Reduction",
   "Foundational":     "Foundational",
 };
 
