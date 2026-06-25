@@ -87,6 +87,10 @@ const SECTIONS = [
 
 const ALL_RATING_IDS = SECTIONS.flatMap(s => s.qs.filter(q => !q.type).map(q => q.id));
 
+const Q_NUMBER_MAP = Object.fromEntries(
+  SECTIONS.flatMap(s => s.qs).map((q, i) => [q.id, i + 1])
+);
+
 export default function TransformationMindsetSurvey() {
   const [answers, setAnswers] = useState<Record<string, number | string>>({});
   const [step, setStep] = useState(0); // 0 = intro, 1..N = sections, N+1 = done
@@ -212,7 +216,7 @@ export default function TransformationMindsetSurvey() {
                 {currentSection.qs.map((q, qi) => (
                   <div key={q.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                     <p className="text-sm font-medium text-slate-800 mb-4 leading-snug">
-                      <span className="text-blue-500 font-bold mr-1.5">{ALL_RATING_IDS.indexOf(q.id) + 1 || ""}.</span>
+                      <span className="text-blue-500 font-bold mr-1.5">{Q_NUMBER_MAP[q.id]}.</span>
                       {q.text}
                     </p>
 
