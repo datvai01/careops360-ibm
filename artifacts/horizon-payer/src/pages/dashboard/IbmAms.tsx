@@ -885,58 +885,83 @@ function TrackerSparkline({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-/* ── KPI Card ───────────────────────────────────────────────── */
-function TrackerKpiCard({ k, selected, onClick }: { k: KpiDef; selected: boolean; onClick: () => void }) {
-  const s  = kpiStatus(k);
-  const t  = kpiTrend(k);
-  const p  = kpiProgress(k);
-  const ss = KPI_STATUS_STYLES[s];
-  const { Icon: StatusIcon } = ss;
-  const TrendIcon = t.dir === "up" ? TrendingUp : t.dir === "down" ? TrendingDown : Minus;
-  const trendColor = t.good ? GREEN : t.dir === "flat" ? "#6B7280" : RED;
-  const sparkColor = s === "behind" ? RED : GREEN;
+/* ── Compact Dynamic Metric Tile (replaces old static MetricTile) ── */
+function DynStatusDot({ s }: { s: ReturnType<typeof kpiStatus> }) {
+  const color =
+    s === "on-track" ? "bg-status-green" :
+    s === "at-risk"  ? "bg-status-yellow" :
+    s === "behind"   ? "bg-status-red" : "bg-muted-foreground/40";
+  return <span className={cn("w-2 h-2 rounded-full flex-shrink-0", color)} />;
+}
+
+function DynMetricTile({ k, accent, selected, onClick }: {
+  k: KpiDef; accent: "blue" | "teal"; selected: boolean; onClick: () => void;
+}) {
+  const s = kpiStatus(k);
+  const statusLabel =
+    s === "on-track" ? "On Target" : s === "at-risk" ? "At Risk" : s === "behind" ? "Below Target" : "No Data";
+  const actualStr = k.currentValue !== null ? `${kpiFmt(k.currentValue, k.unit)} ${k.unit}` : "—";
+  const targetStr = k.target !== null ? `${kpiFmt(k.target, k.unit)} ${k.unit}` : "—";
+
+  const ring = accent === "blue"
+    ? cn(
+        "border-[#0f62fe]/20 bg-[#0f62fe]/[0.04] hover:border-[#0f62fe]/50 hover:shadow-md hover:shadow-[#0f62fe]/10",
+        selected && "border-[#0f62fe] shadow-md shadow-[#0f62fe]/20",
+      )
+    : cn(
+        "border-emerald-500/20 bg-emerald-500/[0.04] hover:border-emerald-500/50 hover:shadow-md hover:shadow-emerald-500/10",
+        selected && "border-emerald-500 shadow-md shadow-emerald-500/20",
+      );
+
   return (
-    <motion.button whileHover={{ y: -2 }} onClick={onClick}
-      className={cn(
-        "text-left bg-card rounded-2xl border-2 shadow-sm p-4 transition-all duration-150 w-full",
-        selected ? "border-blue-500 shadow-blue-100 shadow-md" : "border-border hover:border-blue-200 hover:shadow-md",
-      )}>
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#EEF4FF", color: IBM_BLUE }}>
-          {k.category}
-        </span>
-        <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-          style={{ background: ss.bg, color: ss.color }}>
-          <StatusIcon className="w-3 h-3" /> {ss.label}
-        </span>
-      </div>
-      <p className="text-sm font-bold mb-1 leading-tight">{k.name}</p>
-      <div className="flex items-baseline gap-1.5 mb-1">
-        <span className="text-2xl font-bold">
-          {k.currentValue !== null ? kpiFmt(k.currentValue, k.unit) : "—"}
-        </span>
-        <span className="text-xs text-muted-foreground">{k.unit}</span>
-        {k.currentValue !== null && k.previousValue !== null && (
-          <span className="flex items-center gap-0.5 text-xs font-medium ml-auto" style={{ color: trendColor }}>
-            <TrendIcon className="w-3.5 h-3.5" />{t.pct.toFixed(1)}%
-          </span>
-        )}
-      </div>
-      {k.target !== null && (
-        <div className="mb-2">
-          <div className="flex justify-between text-xs text-muted-foreground mb-0.5">
-            <span>Target: {kpiFmt(k.target, k.unit)} {k.unit}</span>
-            <span>{Math.round(p)}%</span>
+    <UiTooltip delayDuration={150}>
+      <TooltipTrigger asChild>
+        <button onClick={onClick}
+          className={cn("rounded-md border px-3 py-2.5 transition-all text-left flex flex-col gap-1.5 w-full", ring)}>
+          <div className="flex items-start justify-between gap-2">
+            <div className="text-[11px] font-semibold leading-tight">{k.name}</div>
+            <DynStatusDot s={s} />
           </div>
-          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-            <motion.div className="h-full rounded-full" style={{ background: ss.color }}
-              initial={{ width: 0 }} animate={{ width: `${p}%` }}
-              transition={{ duration: 0.8, ease: "easeOut" }} />
+          <div className="flex items-baseline justify-between gap-2 text-[10.5px]">
+            <span className="text-muted-foreground">Target: <span className="font-medium text-foreground/80">{targetStr}</span></span>
+            <span className="font-bold">{actualStr}</span>
+          </div>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-sm p-0 overflow-hidden border-0 shadow-xl">
+        <div className="bg-card border border-border rounded-md">
+          <div className="px-3 py-2 border-b border-border flex items-center justify-between gap-3 bg-muted/40">
+            <div className={cn("text-xs font-bold leading-tight",
+              accent === "blue" ? "text-[#0f62fe]" : "text-emerald-700 dark:text-emerald-400")}>
+              {k.name}
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <DynStatusDot s={s} />
+              <span className="text-[10px] uppercase font-bold tracking-wide text-muted-foreground">{statusLabel}</span>
+            </div>
+          </div>
+          <div className="p-3 space-y-2.5">
+            <div className="flex items-baseline justify-between gap-3 pb-2 border-b border-border/60">
+              <div>
+                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground">Target</div>
+                <div className="text-xs font-semibold">{targetStr}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground">Actual</div>
+                <div className="text-sm font-bold">{actualStr}</div>
+              </div>
+            </div>
+            {k.description && (
+              <div>
+                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground mb-0.5">What it measures</div>
+                <p className="text-[11px] leading-snug text-foreground/85">{k.description}</p>
+              </div>
+            )}
+            <p className="text-[10px] text-muted-foreground italic">Click to view history &amp; leave feedback</p>
           </div>
         </div>
-      )}
-      <TrackerSparkline data={k.sparkline} color={sparkColor} />
-    </motion.button>
+      </TooltipContent>
+    </UiTooltip>
   );
 }
 
@@ -1208,7 +1233,6 @@ function ServiceLevelAndKpiPanel() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [histLoading, setHistLoading] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("All");
   const [showAdd, setShowAdd] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const expandedRef = useRef<HTMLDivElement>(null);
@@ -1248,18 +1272,22 @@ function ServiceLevelAndKpiPanel() {
     behind:  kpis.filter(k => kpiStatus(k) === "behind").length,
   };
 
-  const filtered = activeCategory === "All" ? kpis : kpis.filter(k => k.category === activeCategory);
   const selectedKpi = kpis.find(k => k.key === selectedKey) ?? null;
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-2">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="bg-card rounded-2xl border border-border p-4 space-y-3">
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-8 w-1/2" />
-            <Skeleton className="h-2 w-full" />
-            <Skeleton className="h-9 w-full" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-2">
+        {[0, 1].map(col => (
+          <div key={col} className="rounded-lg border border-border bg-card overflow-hidden">
+            <div className="bg-muted/40 border-b border-border px-4 py-2.5"><Skeleton className="h-4 w-1/2" /></div>
+            <div className="p-3 grid grid-cols-2 xl:grid-cols-3 gap-2">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="rounded-md border border-border px-3 py-2.5 space-y-1.5">
+                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -1299,33 +1327,55 @@ function ServiceLevelAndKpiPanel() {
       {/* Charts */}
       <TrackerChartsSection kpis={kpis} />
 
-      {/* Category filter */}
-      <div className="flex gap-1 flex-wrap">
-        {KPI_CATEGORIES.map(cat => (
-          <button key={cat} onClick={() => setActiveCategory(cat)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
-              activeCategory === cat
-                ? "text-white shadow-sm"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted",
-            )}
-            style={activeCategory === cat ? { background: IBM_BLUE } : {}}>
-            {cat}
-            {cat !== "All" && (
-              <span className="ml-1.5 opacity-70">({kpis.filter(k => k.category === cat).length})</span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Two-column tile grid — CSL | Business KPIs */}
+      <TooltipProvider delayDuration={150}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left — Critical Service Levels */}
+          <section className="rounded-lg border border-[#0f62fe]/30 bg-card overflow-hidden">
+            <header className="bg-[#0f62fe]/[0.08] border-b border-[#0f62fe]/20 px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-[#0f62fe] rounded-sm" />
+                <h3 className="text-sm font-bold text-[#0f62fe]">Critical Service Levels · Technical Metrics</h3>
+              </div>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Delivery &amp; Quality</span>
+            </header>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+              {kpis.filter(k => k.category === "Critical Service Levels").map(k => (
+                <DynMetricTile key={k.key} k={k} accent="blue"
+                  selected={selectedKey === k.key}
+                  onClick={() => void selectKpi(k.key)} />
+              ))}
+            </div>
+          </section>
 
-      {/* KPI card grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
-        {filtered.map(k => (
-          <TrackerKpiCard key={k.key} k={k}
-            selected={selectedKey === k.key}
-            onClick={() => void selectKpi(k.key)} />
-        ))}
-      </div>
+          {/* Right — Business KPIs */}
+          <section className="rounded-lg border border-emerald-500/30 bg-card overflow-hidden">
+            <header className="bg-emerald-500/[0.08] border-b border-emerald-500/20 px-4 py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-5 bg-emerald-500 rounded-sm" />
+                <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Key Performance Indicators · Business Outcomes</h3>
+              </div>
+              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Member &amp; Operations</span>
+            </header>
+            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+              {kpis.filter(k => k.category === "Business KPIs").map(k => (
+                <DynMetricTile key={k.key} k={k} accent="teal"
+                  selected={selectedKey === k.key}
+                  onClick={() => void selectKpi(k.key)} />
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="flex items-center justify-between text-[10.5px] text-muted-foreground">
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-green" /> On Target</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-yellow" /> At Risk</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-red" /> Below Target</span>
+          </div>
+          <span className="italic">Click any tile to expand history &amp; feedback</span>
+        </div>
+      </TooltipProvider>
 
       {/* Expanded panel */}
       <AnimatePresence>
