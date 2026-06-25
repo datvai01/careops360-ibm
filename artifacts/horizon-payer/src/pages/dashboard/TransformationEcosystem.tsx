@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LineChart, Line, AreaChart, Area,
+  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
+  BarChart, Bar, LabelList,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
 import {
@@ -85,6 +86,180 @@ const STATUS_STYLES = {
   "behind":   { label: "Needs Focus", bg: "#FFF1F1", color: RED,   Icon: AlertTriangle },
   "no-data":  { label: "No Data",     bg: "#F4F4F4", color: "#8D8D8D", Icon: Clock },
 };
+
+/* ─── Charts Overview Section ───────────────────────────────── */
+function ChartsSection({ kpis }: { kpis: KpiDef[] }) {
+  if (kpis.length === 0) return null;
+
+  // Donut — overall health
+  const counts = { onTrack: 0, atRisk: 0, behind: 0, noData: 0 };
+  kpis.forEach(k => {
+    const s = kpiStatus(k);
+    if (s === "on-track") counts.onTrack++;
+    else if (s === "at-risk") counts.atRisk++;
+    else if (s === "behind") counts.behind++;
+    else counts.noData++;
+  });
+  const healthPct = Math.round((counts.onTrack / kpis.length) * 100);
+  const donutData = [
+    { name: "On Track",    value: counts.onTrack,  color: GREEN },
+    { name: "At Risk",     value: counts.atRisk,   color: AMBER },
+    { name: "Needs Focus", value: counts.behind,   color: RED   },
+    ...(counts.noData > 0 ? [{ name: "No Data", value: counts.noData, color: "#D1D5DB" }] : []),
+  ].filter(d => d.value > 0);
+
+  // Histogram — performance vs target (% of target achieved)
+  const BUCKETS = [
+    { label: "<70%",    min: 0,   max: 70,       count: 0, color: RED   },
+    { label: "70–80%",  min: 70,  max: 80,       count: 0, color: "#F05032" },
+    { label: "80–90%",  min: 80,  max: 90,       count: 0, color: AMBER },
+    { label: "90–95%",  min: 90,  max: 95,       count: 0, color: "#42BE65" },
+    { label: "95–100%", min: 95,  max: 100,      count: 0, color: GREEN },
+    { label: ">100%",   min: 100, max: Infinity, count: 0, color: "#0043CE" },
+  ];
+  kpis.forEach(k => {
+    if (k.currentValue === null || k.target === null || k.target === 0) return;
+    const p = kpiProgress(k);
+    const bucket = BUCKETS.find(b => p >= b.min && p < b.max) ?? BUCKETS[BUCKETS.length - 1];
+    bucket.count++;
+  });
+
+  // Movers — top 5 improving + bottom 3 declining, sorted by directional change
+  const movers = kpis
+    .filter(k => k.currentValue !== null && k.previousValue !== null && k.previousValue !== 0)
+    .map(k => {
+      const raw = ((k.currentValue! - k.previousValue!) / Math.abs(k.previousValue!)) * 100;
+      const dir = k.targetDirection === "higher" ? raw : -raw;
+      const nm = k.name.length > 24 ? k.name.slice(0, 22) + "…" : k.name;
+      return { name: nm, change: Math.round(dir * 10) / 10, color: dir >= 0 ? GREEN : RED };
+    })
+    .sort((a, b) => b.change - a.change);
+  const top5 = movers.slice(0, 5);
+  const bot3 = movers.slice(-3).filter(m => m.change < 0);
+  const moverData = [...top5, ...bot3].filter((m, i, arr) =>
+    arr.findIndex(x => x.name === m.name) === i,
+  );
+
+  // Category comparison — average progress per group
+  const catGroups = ["Critical Service Levels", "Business KPIs"];
+  const catData = catGroups.map(cat => {
+    const group = kpis.filter(k => k.category === cat);
+    const avg = group.length
+      ? Math.round(group.reduce((s, k) => s + kpiProgress(k), 0) / group.length)
+      : 0;
+    const ot = group.filter(k => kpiStatus(k) === "on-track").length;
+    const ar = group.filter(k => kpiStatus(k) === "at-risk").length;
+    const bh = group.filter(k => kpiStatus(k) === "behind").length;
+    return { cat: cat === "Critical Service Levels" ? "CSL" : "Biz KPIs", avg, onTrack: ot, atRisk: ar, behind: bh };
+  });
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+      {/* ── 1. Overall Health Donut ── */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex flex-col">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Overall Health</p>
+        <p className="text-xs text-slate-400 mb-3">All {kpis.length} metrics · {MONTH_LABELS[new Date().getMonth()]} {new Date().getFullYear()}</p>
+        <div className="relative flex-1 flex items-center justify-center min-h-[160px]">
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={donutData} cx="50%" cy="50%" innerRadius={48} outerRadius={72}
+                paddingAngle={3} dataKey="value" startAngle={90} endAngle={-270}>
+                {donutData.map((e, i) => <Cell key={i} fill={e.color} stroke="none" />)}
+              </Pie>
+              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #e2e8f0" }}
+                formatter={(v: number, n: string) => [v, n]} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-3xl font-bold text-slate-900">{healthPct}%</span>
+            <span className="text-[10px] text-slate-400 font-medium">On Track</span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center mt-2">
+          {donutData.map(d => (
+            <div key={d.name} className="flex items-center gap-1 text-[10px] text-slate-500">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
+              {d.name} <span className="font-semibold text-slate-700">({d.value})</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 2. Performance Distribution Histogram ── */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Performance vs Target</p>
+        <p className="text-xs text-slate-400 mb-3">Count of metrics by % of target achieved</p>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={BUCKETS} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="label" tick={{ fontSize: 9, fill: "#94a3b8" }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: "#94a3b8" }} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #e2e8f0" }}
+              formatter={(v: number) => [v, "Metrics"]} />
+            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+              {BUCKETS.map((b, i) => <Cell key={i} fill={b.color} />)}
+              <LabelList dataKey="count" position="top"
+                style={{ fontSize: 10, fontWeight: 600, fill: "#64748b" }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ── 3. Category Status Grouped Bars ── */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Status by Group</p>
+        <p className="text-xs text-slate-400 mb-3">CSL (18) vs Business KPIs (12)</p>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={catData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <XAxis dataKey="cat" tick={{ fontSize: 10, fill: "#64748b" }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: "#94a3b8" }} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #e2e8f0" }} />
+            <Bar dataKey="onTrack" name="On Track" stackId="a" fill={GREEN} radius={[0,0,0,0]} />
+            <Bar dataKey="atRisk"  name="At Risk"  stackId="a" fill={AMBER} radius={[0,0,0,0]} />
+            <Bar dataKey="behind"  name="Needs Focus" stackId="a" fill={RED} radius={[4,4,0,0]}>
+              <LabelList dataKey="avg" position="top"
+                formatter={(v: number) => `${v}%`}
+                style={{ fontSize: 10, fontWeight: 600, fill: "#64748b" }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="flex gap-3 justify-center mt-1">
+          {[{ c: GREEN, l: "On Track" }, { c: AMBER, l: "At Risk" }, { c: RED, l: "Needs Focus" }].map(x => (
+            <div key={x.l} className="flex items-center gap-1 text-[10px] text-slate-500">
+              <span className="w-2 h-2 rounded-sm" style={{ background: x.c }} /> {x.l}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 4. Month-over-Month Movers ── */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">M-o-M Movers</p>
+        <p className="text-xs text-slate-400 mb-3">Top improvements &amp; declines vs prior month</p>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={moverData} layout="vertical"
+            margin={{ top: 4, right: 36, left: 4, bottom: 0 }}>
+            <XAxis type="number" tick={{ fontSize: 8, fill: "#94a3b8" }}
+              tickFormatter={(v: number) => `${v > 0 ? "+" : ""}${v}%`} />
+            <YAxis type="category" dataKey="name" tick={{ fontSize: 8, fill: "#64748b" }} width={90} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8, border: "1px solid #e2e8f0" }}
+              formatter={(v: number) => [`${v > 0 ? "+" : ""}${v}%`, "vs prev month"]} />
+            <ReferenceLine x={0} stroke="#e2e8f0" />
+            <Bar dataKey="change" radius={[0, 3, 3, 0]}>
+              {moverData.map((m, i) => <Cell key={i} fill={m.color} fillOpacity={0.85} />)}
+              <LabelList dataKey="change" position="right"
+                formatter={(v: number) => `${v > 0 ? "+" : ""}${v}%`}
+                style={{ fontSize: 8, fill: "#64748b" }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+    </div>
+  );
+}
 
 /* ─── Sparkline ─────────────────────────────────────────────── */
 function Sparkline({ data, color }: { data: number[]; color: string }) {
@@ -577,6 +752,11 @@ export default function KpiTracker() {
         </div>
 
         {/* ── Summary pills ── */}
+        {/* (pills rendered below charts) */}
+        {/* ── Charts Overview ── */}
+        {!loading && <ChartsSection kpis={kpis} />}
+
+        {/* ── Pills ── */}
         <div className="flex flex-wrap gap-3">
           {[
             { label: `${kpis.length} KPIs Tracked`, color: IBM_BLUE },
