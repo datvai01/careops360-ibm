@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell,
+  RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Legend,
 } from "recharts";
 import {
-  Sparkles, CheckCircle2, AlertTriangle, AlertCircle,
-  Download, RotateCcw, Plus, ShieldAlert, ArrowRight,
-  BarChart2, ClipboardList, Send, History, ChevronDown,
+  Sparkles, CheckCircle2,
+  Download, RotateCcw, Plus,
+  ClipboardList, Send, History, ChevronDown,
   ChevronUp, TrendingUp, TrendingDown, Minus, Clock, User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,33 +110,6 @@ function saveSnapshots(snaps: SurveySnapshot[]) {
   localStorage.setItem(SURVEY_LS_KEY, JSON.stringify(snaps));
 }
 
-const JOURNEY_STAGES = [
-  {
-    label: "Stabilize Current Delivery",
-    completion: 90, owner: "IBM Delivery Lead", status: "Completed",
-    evidence: ["Baseline metrics established across all towers", "Incident and ticket SLAs stabilised", "Horizon stakeholder relationships onboarded"],
-  },
-  {
-    label: "Align on Transformation Outcomes",
-    completion: 75, owner: "IBM Program Director", status: "On Track",
-    evidence: ["Value metrics baselined and agreed", "Product ownership model documented", "Horizon exec alignment session completed"],
-  },
-  {
-    label: "Adopt New Ways of Working",
-    completion: 52, owner: "IBM CoE Lead", status: "In Progress",
-    evidence: ["Agile ceremonies running across 4 of 7 workstreams", "Automation backlog created with 23 candidates", "CareOps360 governance cadence adopted"],
-  },
-  {
-    label: "Embed Automation & Governance",
-    completion: 28, owner: "IBM AIOps Lead", status: "In Progress",
-    evidence: ["AIOps event correlation live in 2 domains", "Runbook library seeded with 14 automations", "Weekly governance review rhythm established"],
-  },
-  {
-    label: "Operate as Transformation Ecosystem",
-    completion: 10, owner: "IBM Alliance Executive", status: "Planned",
-    evidence: ["QE transition readiness assessment underway", "Product-led KPIs defined; adoption in progress", "IBM–Horizon Year 2 strategy being finalised"],
-  },
-];
 
 const SEED_BEHAVIORS = [
   { id: "b1", behavior: "Outcome ownership", workstream: "Governance & Operating Model", currentMindset: "Team focuses on completing assigned tasks", targetMindset: "Team owns business and operational outcomes", owner: "IBM Delivery Lead", adoptionScore: 2.5, evidenceNeeded: "Outcome KPIs tracked in governance reviews", risk: "Resistance to accountability shift", mitigation: "Tie individual OKRs to outcome metrics", nextAction: "Baseline outcome KPIs by end of Q2" },
@@ -150,14 +122,6 @@ const SEED_BEHAVIORS = [
   { id: "b8", behavior: "Quality Engineering transition", workstream: "Quality Engineering Transition", currentMindset: "QE knowledge sits with incumbent vendor", targetMindset: "IBM owns QE process, regression knowledge, automation assets, and defect governance", owner: "IBM QE Lead", adoptionScore: 1.5, evidenceNeeded: "IBM QE readiness sign-off from Horizon CIO", risk: "Transition remains knowledge-transfer focused without mindset shift", mitigation: "Shadow/reverse-shadow, quality ownership metrics, automation assessment", nextAction: "Complete QE capability assessment by end of Q3" },
 ];
 
-const RISKS = [
-  { level: "High", risk: "Team may continue to operate in task-execution mode.", mitigation: "Reinforce outcome-based KPIs, governance reviews, and ownership-based accountability." },
-  { level: "High", risk: "Agile adoption may remain superficial.", mitigation: "Use practical coaching, backlog quality checks, sprint health metrics, and team-level adoption reviews." },
-  { level: "Med",  risk: "Automation may remain secondary to daily operations.", mitigation: "Establish automation intake, prioritisation, and weekly review of repeatable manual work." },
-  { level: "Med",  risk: "CareOps360 may become a reporting tool instead of a governance behaviour.", mitigation: "Tie CareOps360 usage to weekly leadership reviews and decision tracking." },
-  { level: "Med",  risk: "Product model may be defined but not adopted.", mitigation: "Align roles, ownership, metrics, and decision rights to product/platform teams." },
-  { level: "High", risk: "QE transition may remain knowledge-transfer focused without mindset shift.", mitigation: "Use shadow/reverse-shadow, quality ownership metrics, automation assessment, and IBM readiness sign-off." },
-];
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -246,14 +210,6 @@ export default function TransformationEcosystem() {
     })),
   [activeScores]);
 
-  const barData = useMemo(() =>
-    SURVEY_QUESTIONS.map(q => {
-      const score = activeScores[q.id] ?? DEFAULT_SCORES[q.id];
-      const pct = Math.round((score / 5) * 100);
-      const color = pct >= 70 ? GREEN : pct >= 44 ? AMBER : RED;
-      return { workstream: q.workstream.replace("Quality Engineering Transition", "QE Transition"), pct, color };
-    }),
-  [activeScores]);
 
   const answeredCount = SURVEY_QUESTIONS.filter(q => draftScores[q.id] !== undefined).length;
   const allAnswered = answeredCount === SURVEY_QUESTIONS.length;
@@ -572,89 +528,91 @@ export default function TransformationEcosystem() {
           </div>
         </motion.section>
 
-        {/* ── Journey Timeline ─────────────────────────────────── */}
+        {/* ── Ecosystem Maturity Radar ─────────────────────────── */}
         <motion.section variants={fadeUp} initial="hidden" animate="visible" transition={{ duration: 0.45, delay: 0.15 }}
           className="bg-white border border-slate-100 rounded-2xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <ArrowRight className="w-5 h-5 text-blue-600" /> Mindset Shift Journey
-          </h2>
-          <div className="relative">
-            <div className="absolute top-7 left-0 right-0 h-0.5 bg-slate-100 mx-8 z-0" />
-            <div className="grid grid-cols-5 gap-3">
-              {JOURNEY_STAGES.map((stage, i) => {
-                const dotColor = stage.completion >= 80 ? GREEN : stage.completion >= 40 ? IBM_BLUE : "#94a3b8";
-                return (
-                  <div key={stage.label} className="flex flex-col items-center text-center">
-                    <motion.div className="relative z-10 w-14 h-14 rounded-full flex items-center justify-center shadow-md border-4 border-white mb-3 text-white text-sm font-bold"
-                      style={{ background: dotColor }}
-                      initial={{ scale: 0.6, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 0.4, delay: i * 0.1 }}>
-                      {stage.completion}%
-                    </motion.div>
-                    <p className="text-xs font-semibold text-slate-800 mb-1 leading-tight">{stage.label}</p>
-                    <p className="text-xs text-slate-400 mb-2">{stage.owner}</p>
-                    <StatusBadge status={stage.status} />
-                    <ul className="mt-3 space-y-1.5 text-left w-full">
-                      {stage.evidence.map((e, j) => (
-                        <li key={j} className="flex items-start gap-1.5 text-xs text-slate-500">
-                          <CheckCircle2 className="w-3 h-3 mt-0.5 shrink-0 text-slate-300" />
-                          <span className="leading-tight">{e}</span>
-                        </li>
-                      ))}
-                    </ul>
+          <div className="flex items-start justify-between flex-wrap gap-3 mb-1">
+            <div>
+              <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-blue-600" /> Ecosystem Maturity Model
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {latestSnapshot
+                  ? `Live from assessment by ${latestSnapshot.assessor} · ${formatDate(latestSnapshot.date)}`
+                  : "Submit an assessment above to populate this chart with your scores"}
+              </p>
+            </div>
+            {latestSnapshot && (
+              <div className="flex items-center gap-4 flex-wrap">
+                {[
+                  { label: "Current", color: IBM_BLUE, dash: false },
+                  { label: "Target (5)", color: IBM_CYAN, dash: true },
+                ].map(l => (
+                  <div key={l.label} className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <svg width="20" height="4">
+                      <line x1="0" y1="2" x2="20" y2="2"
+                        stroke={l.color} strokeWidth="2"
+                        strokeDasharray={l.dash ? "4 3" : undefined} />
+                    </svg>
+                    {l.label}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-        </motion.section>
 
-        {/* ── Charts row ───────────────────────────────────────── */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          <motion.div variants={fadeUp} initial="hidden" animate="visible" transition={{ duration: 0.45, delay: 0.2 }}
-            className="bg-white border border-slate-100 rounded-2xl shadow-md p-6">
-            <h2 className="text-base font-bold text-slate-800 mb-1 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600" /> Ecosystem Maturity — Current vs Target
-            </h2>
-            <p className="text-xs text-slate-400 mb-4">Reflects latest submitted assessment scores</p>
-            <ResponsiveContainer width="100%" height={320}>
-              <RadarChart data={radarData} margin={{ top: 10, right: 30, bottom: 10, left: 30 }}>
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: "#64748b" }} />
-                <Radar name="Current" dataKey="current" stroke={IBM_BLUE} fill={IBM_BLUE} fillOpacity={0.25} strokeWidth={2} dot />
-                <Radar name="Target"  dataKey="target"  stroke={IBM_CYAN} fill={IBM_CYAN}  fillOpacity={0.06} strokeWidth={1.5} strokeDasharray="4 3" />
-              </RadarChart>
-            </ResponsiveContainer>
-          </motion.div>
-
-          <motion.div variants={fadeUp} initial="hidden" animate="visible" transition={{ duration: 0.45, delay: 0.25 }}
-            className="bg-white border border-slate-100 rounded-2xl shadow-md p-6">
-            <h2 className="text-base font-bold text-slate-800 mb-1 flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-blue-600" /> Behaviour Adoption by Workstream
-            </h2>
-            <p className="text-xs text-slate-400 mb-4">Reflects latest submitted assessment scores</p>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={barData} layout="vertical" margin={{ left: 8, right: 40, top: 4, bottom: 4 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} />
-                <YAxis type="category" dataKey="workstream" width={150} tick={{ fontSize: 10, fill: "#475569" }} />
-                <Tooltip formatter={(v: number) => [`${v}%`, "Adoption"]} />
-                <Bar dataKey="pct" radius={[0, 4, 4, 0]} label={{ position: "right", fontSize: 10, formatter: (v: number) => `${v}%` }}>
-                  {barData.map((d, i) => <Cell key={i} fill={d.color} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-            <div className="flex items-center gap-4 mt-2 justify-center">
-              {[["On Track (4-5)", GREEN], ["In Progress (3)", IBM_BLUE], ["Needs Attention (1-2)", AMBER]].map(([l, c]) => (
-                <div key={l} className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <div className="w-3 h-3 rounded-sm" style={{ background: c as string }} />
-                  {l}
-                </div>
-              ))}
+          {!latestSnapshot && (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-300">
+              <Sparkles className="w-12 h-12 mb-3 opacity-40" />
+              <p className="text-sm font-medium text-slate-400">No assessment submitted yet</p>
+              <p className="text-xs text-slate-300 mt-1">Complete the survey above and click Submit Assessment</p>
             </div>
-          </motion.div>
-        </div>
+          )}
+
+          {latestSnapshot && (
+            <>
+              <ResponsiveContainer width="100%" height={420}>
+                <RadarChart data={radarData} margin={{ top: 20, right: 40, bottom: 20, left: 40 }}>
+                  <PolarGrid stroke="#e2e8f0" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: "#475569" }} />
+                  <Radar name="Current" dataKey="current" stroke={IBM_BLUE} fill={IBM_BLUE} fillOpacity={0.28} strokeWidth={2.5} dot={{ r: 4, fill: IBM_BLUE }} />
+                  <Radar name="Target (5)" dataKey="target" stroke={IBM_CYAN} fill={IBM_CYAN} fillOpacity={0.05} strokeWidth={1.5} strokeDasharray="5 3" />
+                  <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                </RadarChart>
+              </ResponsiveContainer>
+
+              {/* Per-dimension score strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-2 mt-2">
+                {SURVEY_QUESTIONS.map(q => {
+                  const score = activeScores[q.id];
+                  const prev  = prevSnapshot?.scores[q.id];
+                  const delta = prev !== undefined ? score - prev : null;
+                  const barColor = score >= 4 ? GREEN : score >= 3 ? IBM_BLUE : score >= 2 ? AMBER : RED;
+                  return (
+                    <div key={q.id} className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center">
+                      <p className="text-xs text-slate-400 mb-1.5 leading-tight truncate" title={q.workstream}>
+                        {q.workstream.replace("Quality Engineering Transition", "QE Transition").replace("& Operating Model", "& Ops")}
+                      </p>
+                      <div className="flex items-center justify-center gap-1 mb-1.5">
+                        <span className="text-2xl font-bold" style={{ color: barColor }}>{score}</span>
+                        <span className="text-xs text-slate-300">/5</span>
+                        {delta !== null && delta !== 0 && (
+                          <span className={cn("text-xs font-semibold ml-1", delta > 0 ? "text-emerald-500" : "text-red-400")}>
+                            {delta > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          </span>
+                        )}
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${(score / 5) * 100}%`, background: barColor }} />
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">{SCALE_LABELS[score]}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </motion.section>
 
         {/* ── Behaviour Tracker ────────────────────────────────── */}
         <motion.section variants={fadeUp} initial="hidden" animate="visible" transition={{ duration: 0.45, delay: 0.3 }}
@@ -743,33 +701,6 @@ export default function TransformationEcosystem() {
             </table>
           </div>
           <p className="text-xs text-slate-400 mt-3">Click any cell to edit inline. Changes are auto-saved to your browser.</p>
-        </motion.section>
-
-        {/* ── Risks ────────────────────────────────────────────── */}
-        <motion.section variants={fadeUp} initial="hidden" animate="visible" transition={{ duration: 0.45, delay: 0.35 }}>
-          <h2 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-red-500" /> Risks & Mitigations
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {RISKS.map((r, i) => (
-              <motion.div key={i} variants={fadeUp} initial="hidden" animate="visible" transition={{ duration: 0.45, delay: i * 0.05 + 0.4 }}
-                className="bg-white border border-slate-100 rounded-xl shadow-sm p-4 flex gap-3 hover:shadow-md transition-shadow">
-                <div className="shrink-0 mt-0.5">
-                  {r.level === "High" ? <AlertCircle className="w-5 h-5 text-red-500" /> : <AlertTriangle className="w-5 h-5 text-amber-500" />}
-                </div>
-                <div>
-                  <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full inline-block mb-1.5",
-                    r.level === "High" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-700")}>
-                    {r.level}
-                  </span>
-                  <p className="text-sm font-medium text-slate-800 mb-1.5">{r.risk}</p>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    <span className="font-semibold text-slate-600">Mitigation: </span>{r.mitigation}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </motion.section>
 
         <div className="h-4" />
