@@ -1,0 +1,122 @@
+[
+  {
+    "id": "a1b2c3d4-0001-4000-8000-000000000001",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide01Cover.tsx",
+    "title": "Cover — IBM × Horizon AI Transformation Response",
+    "description": "Title slide introducing the deck: IBM AMS responding to 6 leadership questions from Horizon BCBS on AI transformation.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0002-4000-8000-000000000002",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide02Q1Divider.tsx",
+    "title": "Q1 — AI Productivity & Proposed Tool Stack",
+    "description": "Section divider for Question 1: How will AI drive productivity, and which tools is IBM proposing for Horizon?",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0003-4000-8000-000000000003",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide03Q1Pillars.tsx",
+    "title": "Q1 — How AI Drives Productivity",
+    "description": "Three productivity pillars — Automate (watsonx Orchestrate), Augment (watsonx.ai), Accelerate (watsonx Code Assistant).",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0004-4000-8000-000000000004",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide04Q1Tools.tsx",
+    "title": "Q1 — Proposed AI Tool Stack",
+    "description": "Six proposed tools: watsonx.ai, watsonx Code Assistant, watsonx Orchestrate, IBM AIOps, IBM Process Mining, CareOps360.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0005-4000-8000-000000000005",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide05Q2Divider.tsx",
+    "title": "Q2 — Team Structure in a Project-Funded Model",
+    "description": "Section divider for Question 2: How would IBM structure delivery teams given Horizon's project-based funding model?",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0006-4000-8000-000000000006",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide06Q2TeamStructure.tsx",
+    "title": "Q2 — From Project Funding to Product Pods",
+    "description": "Three-phase team evolution: Today (project silos) → 6 Months (hybrid pod model) → 18 Months+ (product-funded steady state).",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0007-4000-8000-000000000007",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide07Q3Divider.tsx",
+    "title": "Q3 — Horizon's AI Adoption Journey",
+    "description": "Section divider for Question 3: What are the steps of Horizon's evolution as the team adopts AI in delivery over time?",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0008-4000-8000-000000000008",
+    "position": 8,
+    "filepath": "src/pages/slides/Slide08Q3Journey.tsx",
+    "title": "Q3 — Three-Horizon Evolution",
+    "description": "Foundation (Now–12m), Scale (12–24m), and Operate (24m+) phases with specific initiatives per phase.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0009-4000-8000-000000000009",
+    "position": 9,
+    "filepath": "src/pages/slides/Slide09Q4Divider.tsx",
+    "title": "Q4 — Data Readiness & AI Agent Requirements",
+    "description": "Section divider for Question 4: IBM's assessment of Horizon's current data and what is needed to enable AI agents.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0010-4000-8000-000000000010",
+    "position": 10,
+    "filepath": "src/pages/slides/Slide10Q4DataReadiness.tsx",
+    "title": "Q4 — Current State & Enablement Path",
+    "description": "Two-column view: current data strengths and gaps on the left; IBM's data access, governance, and infrastructure requirements on the right.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0011-4000-8000-000000000011",
+    "position": 11,
+    "filepath": "src/pages/slides/Slide11Q5Divider.tsx",
+    "title": "Q5 — Transformation Priorities & Pod Alignment",
+    "description": "Section divider for Question 5: Which efforts should Horizon prioritise first and how do they connect to the pod model?",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0012-4000-8000-000000000012",
+    "position": 12,
+    "filepath": "src/pages/slides/Slide12Q5Priorities.tsx",
+    "title": "Q5 — Sequenced Priority Model",
+    "description": "Three sequenced priorities: 01 AIOps & Operational Visibility → 02 POD Operating Model → 03 AI Use Cases (PA & Member).",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0013-4000-8000-000000000013",
+    "position": 13,
+    "filepath": "src/pages/slides/Slide13Q6Divider.tsx",
+    "title": "Q6 — Transition Plan: 30 / 60 / 90 Days",
+    "description": "Section divider for Question 6: A detailed walkthrough of the transition and what Horizon should expect at each milestone.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0014-4000-8000-000000000014",
+    "position": 14,
+    "filepath": "src/pages/slides/Slide14Q6Milestones.tsx",
+    "title": "Q6 — Milestone Expectations",
+    "description": "Four-column milestone grid: Day 30, Day 60, Day 90, and 6 Months+ — each with four specific deliverables.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0015-4000-8000-000000000015",
+    "position": 15,
+    "filepath": "src/pages/slides/Slide15Close.tsx",
+    "title": "Closing — Operational Excellence Through AI",
+    "description": "IBM's commitment statement to Horizon BCBS, next steps, and CareOps360 access details.",
+    "speakerNotes": ""
+  }
+]
