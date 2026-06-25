@@ -736,7 +736,7 @@ function p3() {
           'URL: See Replit preview — /dashboard',
           'Horizon Executive: exec@horizon.com',
           'IBM Executive: ibm@horizon.com',
-          'Password: Horizon&IBM2026',
+          'Password: IBM@Horizon2027',
           'Note: Demo mode only — no live PHI or production data',
         ], { bg: C.fblue, accent: C.blue }),
       ]

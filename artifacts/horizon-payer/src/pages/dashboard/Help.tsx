@@ -47,7 +47,7 @@ const TIPS = [
   { icon: ClockIcon, title: "Global Time Range", desc: "Use the time-range selector in the header to filter all dashboards between 24H, 7D, and 14D windows simultaneously." },
   { icon: CpuIcon, title: "IBM AIOps Period Selector", desc: "The IBM AIOps Value page has its own independent period selector (7D / 14D / 21D) — separate from the global filter." },
   { icon: ShieldCheckIcon, title: "Live Data Polling", desc: "All metrics auto-refresh every 30 seconds. Watch the 'Updated Xs ago' counter in the header to confirm live polling." },
-  { icon: KeyIcon, title: "Demo Credentials", desc: "Password for all demo accounts is: demo123. Switch accounts to explore role-based views." },
+  { icon: KeyIcon, title: "Demo Credentials", desc: "Password for all demo accounts is: IBM@Horizon2027. Switch accounts to explore role-based views." },
 ];
 
 function formatProgress(pct: number) {
@@ -245,7 +245,7 @@ export default function Help() {
                 </div>
               ))}
               <div className="text-[11px] text-muted-foreground/50 mt-2 px-1">
-                Password for all accounts: <span className="font-mono font-semibold text-muted-foreground">demo123</span>
+                Password for all accounts: <span className="font-mono font-semibold text-muted-foreground">IBM@Horizon2027</span>
               </div>
             </div>
           </div>

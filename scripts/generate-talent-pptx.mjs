@@ -65,7 +65,7 @@ async function captureScreenshots() {
   // Defaults are the project's documented demo credentials.
   const BASE  = process.env.HORIZON_BASE_URL || "http://localhost:80";
   const EMAIL = process.env.HORIZON_EMAIL    || "exec@horizon.com";
-  const PASS  = process.env.HORIZON_PASSWORD || "Horizon&IBM2026";
+  const PASS  = process.env.HORIZON_PASSWORD || "IBM@Horizon2027";
 
   console.log("• Logging into dashboard...");
   await page.goto(`${BASE}/`, { waitUntil: "domcontentloaded" });
@@ -257,7 +257,7 @@ function buildDeck(data) {
     { text: "User: ", options: { bold: true, color: C.ink } },
     { text: "exec@horizon.com    ", options: { color: C.ash } },
     { text: "Pwd: ", options: { bold: true, color: C.ink } },
-    { text: "Horizon&IBM2026\n", options: { color: C.ash } },
+    { text: "IBM@Horizon2027\n", options: { color: C.ash } },
     { text: "Path: ", options: { bold: true, color: C.ink } },
     { text: "Dashboard → Capability Uplift → Talent Plan", options: { color: C.ash } },
   ], {

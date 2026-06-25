@@ -279,7 +279,7 @@ const doc = new Document({
       GAP(2),
       H3("Portal Credentials (Demo Environment)"),
       BODY("URL: careops360-ibm.replit.app", { sz: 9 }),
-      BODY("Login: exec@horizon.com / Horizon&IBM2026", { sz: 9 }),
+      BODY("Login: exec@horizon.com / IBM@Horizon2027", { sz: 9 }),
       BODY("Demo mode only \u2014 no live PHI or production data.", { sz: 8.5, i: true, c: C.g50 }),
     ]),
 

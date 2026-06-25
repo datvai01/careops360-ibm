@@ -24,10 +24,10 @@
 
 ## Demo Login Credentials
 
-- **exec@horizon.com** / demo123 — Executive Leadership (CEO view)
-- **ops@horizon.com** / demo123 — Operations Leadership
-- **it@horizon.com** / demo123 — IT Leadership / CIO Dashboard
-- **ibm@horizon.com** / demo123 — IBM AMS Delivery Manager
+- **exec@horizon.com** / IBM@Horizon2027 — Executive Leadership (CEO view)
+- **ops@horizon.com** / IBM@Horizon2027 — Operations Leadership
+- **it@horizon.com** / IBM@Horizon2027 — IT Leadership / CIO Dashboard
+- **ibm@horizon.com** / IBM@Horizon2027 — IBM AMS Delivery Manager
 
 ## Dashboard Sections
 
@@ -96,7 +96,7 @@ PostgreSQL via Replit's built-in database (DATABASE_URL env var). Drizzle ORM is
 - API routes serve realistic mock data (no DB needed for demo)
 - Auto-refresh via React Query's refetchInterval (30 seconds)
 - Role-based views (executive / ibm_delivery / admin)
-- **Admin role**: `admin@horizon.com` (pwd `Horizon&IBM2026`) is the platform administrator. Sees the Administration nav group; non-admins do not. Administration page is double-gated (nav hidden + page-level role check that renders an Access Denied card for non-admins).
+- **Admin role**: `admin@horizon.com` (pwd `IBM@Horizon2027`) is the platform administrator. Sees the Administration nav group; non-admins do not. Administration page is double-gated (nav hidden + page-level role check that renders an Access Denied card for non-admins).
 - **Admin dataset uploads (per-page)**: `/api/admin/datasets` lists 12 page-backed datasets (Talent Plan, Members, Claims, Prior Auth, Providers, Contact Center, Vendor Invoices, App Health, IBM AIOps, Roadmap, Executive Overview, Capability Uplift). For each dataset:
   - `GET /api/admin/datasets/:key/template` returns a multi-sheet `.xlsx` with the exact column layout, an Instructions sheet, and a snapshot of current data baked in (so the team always edits the right format).
   - `POST /api/admin/datasets/:key/upload` (multipart) parses the workbook, validates rows, **deletes existing rows in the matching DB tables and bulk-inserts the new ones**, then saves the source file + metadata.

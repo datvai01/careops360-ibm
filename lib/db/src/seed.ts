@@ -1,4 +1,5 @@
 import { db, pool } from "./index.js";
+import { sql } from "drizzle-orm";
 import {
   usersTable,
   executiveAlertsTable,
@@ -360,9 +361,11 @@ async function seed() {
   // Users
   await db.delete(usersTable);
   await db.insert(usersTable).values([
-    { id: "1", username: "exec@horizon.com", passwordHash: "Horizon&IBM2026", name: "Sarah Mitchell", role: "executive", email: "exec@horizon.com", avatar: "SM", title: "Chief Executive Officer" },
-    { id: "4", username: "ibm@horizon.com", passwordHash: "Horizon&IBM2026", name: "David Kumar", role: "ibm_delivery", email: "ibm@horizon.com", avatar: "DK", title: "IBM AMS Delivery Manager" },
-    { id: "admin1", username: "admin@horizon.com", passwordHash: "Horizon&IBM2026", name: "Alexandra Reed", role: "admin", email: "admin@horizon.com", avatar: "AR", title: "Platform Administrator" },
+    { id: "1",      username: "exec@horizon.com",  passwordHash: "IBM@Horizon2027", name: "Sarah Mitchell",  role: "executive",    email: "exec@horizon.com",  avatar: "SM", title: "Chief Executive Officer" },
+    { id: "2",      username: "ops@horizon.com",   passwordHash: "IBM@Horizon2027", name: "Marcus Johnson", role: "executive",    email: "ops@horizon.com",   avatar: "MJ", title: "Chief Operating Officer" },
+    { id: "3",      username: "it@horizon.com",    passwordHash: "IBM@Horizon2027", name: "Lisa Chen",      role: "executive",    email: "it@horizon.com",    avatar: "LC", title: "Chief Information Officer" },
+    { id: "4",      username: "ibm@horizon.com",   passwordHash: "IBM@Horizon2027", name: "David Kumar",    role: "ibm_delivery", email: "ibm@horizon.com",   avatar: "DK", title: "IBM AMS Delivery Manager" },
+    { id: "admin1", username: "admin@horizon.com", passwordHash: "IBM@Horizon2027", name: "Alexandra Reed", role: "admin",        email: "admin@horizon.com", avatar: "AR", title: "Platform Administrator" },
   ]);
   console.log("  users seeded");
 
@@ -890,8 +893,9 @@ async function seed() {
   ]);
   console.log("  roadmap_initiatives seeded");
 
-  // Roadmap Requirements (IBM asks of Horizon — incumbent sales-cycle context)
-  await db.delete(roadmapRequirementsTable);
+  // Roadmap Requirements — skip if data already exists (managed via Admin dataset upload)
+  const reqCount = await db.select({ n: sql`count(*)` }).from(roadmapRequirementsTable);
+  if (Number(reqCount[0]?.n ?? 0) === 0) {
   await db.insert(roadmapRequirementsTable).values([
     { name: "IBM–Horizon Year 2 Contract Extension Decision",         category: "Decision",       description: "Horizon Procurement and IT Leadership must confirm intent to extend the IBM AMS engagement through Year 2–3 (2027–2028). A signed Letter of Intent or binding extension is required before IBM can mobilise the Scale-phase team and commit Year-2 sub-contractor bench.",                           dueDate: "2026-09-30", status: "Open",        ibmWorkstream: "Program Governance",       owner: "Horizon Procurement & IT",     priority: "High" },
     { name: "Executive Sponsor Continuity Confirmation",              category: "Decision",       description: "Horizon must confirm a named VP-level executive sponsor through the end of Year 2. Any change in sponsor requires a 30-day transition window and formal handover briefing to IBM Delivery Management to avoid programme disruption.",                                                                   dueDate: "2026-07-31", status: "In Progress", ibmWorkstream: "Program Governance",       owner: "Horizon Executive Team",       priority: "High" },
@@ -916,9 +920,13 @@ async function seed() {
     { name: "Bootcamp Participant Nominations — Cohort 2 (80 FTE)",  category: "Resource",       description: "Second bootcamp cohort doubles enrolment to reach the remaining Horizon engineering population. Nominations required by January 2027; manager approvals and backfill planning to be initiated by November 2026.",                                                                                     dueDate: "2027-01-15", status: "Open",        ibmWorkstream: "Capability Uplift",       owner: "Horizon HR & Workforce",       priority: "Med"  },
   ]);
   console.log("  roadmap_requirements seeded");
+  } else {
+    console.log("  roadmap_requirements — skipped (data already exists)");
+  }
 
-  // Roadmap Risks (IBM-as-incumbent perspective — active sales cycle)
-  await db.delete(roadmapRisksTable);
+  // Roadmap Risks — skip if data already exists (managed via Admin dataset upload)
+  const riskCount = await db.select({ n: sql`count(*)` }).from(roadmapRisksTable);
+  if (Number(riskCount[0]?.n ?? 0) === 0) {
   await db.insert(roadmapRisksTable).values([
     { title: "Contract Renewal Stalls — Horizon Opens Competitive Re-RFP",         category: "Commercial",  likelihood: "Med",  impact: "High", rating: "High", owner: "IBM Account Executive",          mitigationAction: "Accelerate proof-of-value narrative for Year 1; prepare competitive displacement brief. IBM to request an exclusive extension negotiation window with Horizon Procurement by Q3 2026. Ensure ESC KPI pack demonstrates quantified value monthly.",                                          status: "Open",       raisedDate: "2026-05-01", notes: "Horizon procurement cycle opens Q4 2026. IBM must secure LoI before Capital Committee." },
     { title: "Horizon Executive Sponsor Turnover",                                  category: "Program",     likelihood: "Med",  impact: "High", rating: "High", owner: "IBM Delivery Management",         mitigationAction: "Broaden IBM relationship to three named Horizon VPs, not just one sponsor. Document programme value story in sponsor-agnostic format. Initiate introductory meetings with CIO and CFO by September 2026.",                                                                                      status: "Mitigating", raisedDate: "2026-04-15", notes: "Current sponsor (SVP Operations) has internal re-org exposure. IBM escalating relationship depth." },
@@ -940,6 +948,9 @@ async function seed() {
     { title: "Power BI License Volume Shortage",                                    category: "Vendor",      likelihood: "Low",  impact: "Low",  rating: "Low",  owner: "Horizon IT Operations",           mitigationAction: "IBM validated minimum required licence count before procurement. Staggered rollout planned to match actual active users vs. total staff headcount. Licence count confirmed adequate.",                                                                                                         status: "Closed",     raisedDate: "2026-05-10", notes: "Resolved — licence count confirmed adequate for Year-1 deployment." },
   ]);
   console.log("  roadmap_risks seeded");
+  } else {
+    console.log("  roadmap_risks — skipped (data already exists)");
+  }
 
   // Backfill T-shirt size, sizing rationale, and "How Horizon will get the ROI"
   // for the 16 Transformation initiatives. These remain editable via the UI;

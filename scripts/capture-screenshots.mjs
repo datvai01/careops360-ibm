@@ -5,7 +5,7 @@ mkdirSync('screenshots/dashboard', { recursive: true });
 
 const BASE = 'http://localhost:80';
 const EMAIL = 'exec@horizon.com';
-const PASS  = 'Horizon&IBM2026';
+const PASS  = 'IBM@Horizon2027';
 
 const PAGES = [
   { id: 'login',              path: '/',                              label: 'Login' },
