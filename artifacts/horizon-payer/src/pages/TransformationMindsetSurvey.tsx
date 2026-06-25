@@ -139,7 +139,7 @@ export default function TransformationMindsetSurvey() {
             <path d="M4 4h5v10h14V4h5v24h-5V19H9v9H4V4z" fill="white"/>
           </svg>
         </div>
-        <span className="text-sm font-semibold text-slate-700">IBM · Horizon BCBS — Transformation Transition Survey</span>
+        <span className="text-sm font-semibold text-slate-700">IBM · Horizon BCBS — Transformation Mindset Survey</span>
         <div className="ml-auto flex items-center gap-2 text-xs text-slate-400">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
           Anonymous · Aggregate use only
@@ -165,7 +165,7 @@ export default function TransformationMindsetSurvey() {
                   style={{ background: IBM_BLUE }}>
                   <ClipboardList className="w-8 h-8 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900 mb-3">Horizon Transformation Transition Survey</h1>
+                <h1 className="text-2xl font-bold text-slate-900 mb-3">Horizon Transformation Mindset Survey</h1>
                 <p className="text-slate-600 leading-relaxed max-w-lg mx-auto">
                   This anonymous workshop survey captures feedback on current operations maturity and opportunities to move toward a more proactive, transformation-led operating model.
                 </p>

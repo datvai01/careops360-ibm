@@ -155,7 +155,7 @@ export default function TransformationMindsetDashboard() {
               <ClipboardList className="w-5 h-5 text-blue-200" />
               <span className="text-blue-200 text-sm font-medium tracking-wide uppercase">IBM AMS · Workshop Tool</span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1">Horizon Transformation Transition Survey</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-1">Horizon Transformation Mindset Survey</h1>
             <p className="text-blue-100 text-sm mb-5">Anonymous workshop feedback to shape IBM-Horizon's transition from stable operations to transformation-led delivery</p>
             <div className="flex flex-wrap gap-3 mb-5">
               {[
