@@ -19,7 +19,7 @@ const SECTIONS = [
     title: "Section 1: Current Operations Stability",
     qs: [
       { id: "q1", text: "How would you rate the overall stability of current operations?" },
-      { id: "q2", text: "How consistently are services delivered against expected SLAs and commitments?" },
+      { id: "q2", text: "Have there been any P1 (Priority 1) incidents in the past 12 months? Rate how effectively they were identified, escalated, and resolved to prevent recurrence." },
       { id: "q3", text: "How confident are you that current operations can support future transformation without disruption?" },
     ],
   },
@@ -29,6 +29,7 @@ const SECTIONS = [
       { id: "q4", text: "How effectively are high-priority incidents managed from identification to resolution?" },
       { id: "q5", text: "How clearly are roles, responsibilities, and communication handled during major incidents?" },
       { id: "q6", text: "How well are recurring issues, root causes, and preventive actions identified and tracked?" },
+      { id: "q6b", text: "Please describe any recent outages that had a measurable business impact (e.g. member portal downtime, claims processing delays, or regulatory timeline risk). Include approximate duration and affected services if known.", type: "text" as const },
     ],
   },
   {
