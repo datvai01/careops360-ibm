@@ -66,3 +66,9 @@ id = "cqo-CVeuEj6YcSKR_i4RX"
 uri = "file://.local/outputs/CareOps360-Transformation-Deck.pptx"
 type = "slides"
 title = "CareOps360 Transformation Deck (PPTX)"
+
+[[outputs]]
+id = "csP18DYt-bMO4BpvqSnCA"
+uri = "file://.local/outputs/Horizon-CareOps.pptx"
+type = "slides"
+title = "Horizon CareOps.pptx"
