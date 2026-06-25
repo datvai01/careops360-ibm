@@ -23,18 +23,9 @@ const SECTIONS = [
       { id: "q3", text: "How confident are you that current operations can support future transformation without disruption?" },
       {
         id: "q_outage",
-        text: "Which of the following recent outages have had a measurable business impact? (Select all that apply)",
-        type: "checkbox" as const,
-        options: [
-          "Member portal downtime",
-          "Claims processing delays",
-          "Prior authorization system unavailability",
-          "Provider portal outage",
-          "Batch processing / job failures",
-          "EDI / interface failures",
-          "Regulatory reporting delays",
-          "None in the past 12 months",
-        ],
+        text: "How many outages with measurable business impact have occurred in the past 12 months?",
+        type: "radio" as const,
+        options: ["None", "0–2", "3–6", "Every month"],
       },
     ],
   },
@@ -225,33 +216,19 @@ export default function TransformationMindsetSurvey() {
                       {q.text}
                     </p>
 
-                    {q.type === "checkbox" && "options" in q ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {q.type === "radio" && "options" in q ? (
+                      <div className="flex flex-wrap gap-2">
                         {q.options.map((opt: string) => {
-                          const selected = ((answers[q.id] as string) ?? "").split("|||").filter(Boolean).includes(opt);
+                          const selected = answers[q.id] === opt;
                           return (
                             <button key={opt} type="button"
-                              onClick={() => {
-                                const cur = ((answers[q.id] as string) ?? "").split("|||").filter(Boolean);
-                                const next = selected ? cur.filter(x => x !== opt) : [...cur, opt];
-                                setAnswers(a => ({ ...a, [q.id]: next.join("|||") }));
-                              }}
+                              onClick={() => setAnswers(a => ({ ...a, [q.id]: opt }))}
                               className={cn(
-                                "flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 text-left text-sm transition-all duration-150",
+                                "px-5 py-2 rounded-full border-2 text-sm font-medium transition-all duration-150",
                                 selected
-                                  ? "border-blue-500 bg-blue-50 text-blue-800 font-medium shadow-sm"
-                                  : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-slate-50",
+                                  ? "border-blue-500 bg-blue-500 text-white shadow-sm"
+                                  : "border-slate-200 bg-white text-slate-600 hover:border-blue-300",
                               )}>
-                              <span className={cn(
-                                "w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all",
-                                selected ? "border-blue-500 bg-blue-500" : "border-slate-300 bg-white",
-                              )}>
-                                {selected && (
-                                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
-                                )}
-                              </span>
                               {opt}
                             </button>
                           );
