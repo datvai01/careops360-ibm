@@ -12,3 +12,4 @@ export * from "./roadmap";
 export * from "./talent";
 export * from "./pageKpis";
 export * from "./capability";
+export * from "./transformationSurvey";

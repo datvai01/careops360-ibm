@@ -1,0 +1,458 @@
+Build a premium, client-ready **Horizon Transformation Mindset Survey & Dynamic Transition Plan** web app.
+
+IBM is the incumbent operations partner. The current environment is generally stable, but Horizon wants the IBM-Horizon team to evolve from steady-state operations into a more proactive, transformation-led mindset and ecosystem.
+
+This app will be used during a workshop. IBM should be able to share an anonymous survey link with participants. Participants will provide candid feedback, and the facilitator dashboard should dynamically aggregate the responses and generate an AI-suggested transition plan.
+
+Use React, Tailwind CSS, shadcn/ui, Framer Motion, Lucide icons, Recharts, Node/Express backend, and SQLite or Replit DB.
+
+Use OpenAI API for AI-generated recommendations using environment variable `OPENAI_API_KEY`. If the API key is unavailable, use a rule-based fallback recommendation engine.
+
+---
+
+## Core Positioning
+
+The app should not imply that current operations are broken.
+
+Use constructive language:
+
+* Stable operations
+* Next level of maturity
+* Proactive improvement
+* Transformation-led mindset
+* Automation readiness
+* Intelligent operations readiness
+* Governance visibility
+* Outcome ownership
+* Product/platform ownership
+* Value realization
+
+Avoid negative language such as:
+
+* Failed operations
+* Broken process
+* Poor performance
+* Lack of capability
+
+Do not assume AIOps is already implemented. Refer to it as future readiness for automation and intelligent operations.
+
+Quality Engineering transition from the current vendor should be referenced as a later enabling workstream in the AI-generated transition plan, but it should not dominate the survey.
+
+---
+
+## App Routes
+
+Create two main routes.
+
+### 1. `/survey`
+
+This is the anonymous participant survey page.
+
+Requirements:
+
+* No login
+* No name field
+* No email field
+* No participant identifier
+* Mobile-friendly layout
+* Premium but simple user experience
+* Progress indicator
+* Submit button
+* Thank-you confirmation page after submission
+
+Survey intro text:
+
+“This anonymous workshop survey captures feedback on current operations maturity and opportunities to move toward a more proactive, transformation-led operating model.”
+
+Privacy note:
+
+“Responses are anonymous and will be used only in aggregate for workshop planning.”
+
+### 2. `/dashboard`
+
+This is the IBM facilitator dashboard.
+
+Requirements:
+
+* Show shareable anonymous survey link: `/survey`
+* Show aggregate response count
+* Show average maturity scores
+* Show 2–3 charts only
+* Show AI-generated transition plan
+* Show response themes from open-text comments
+* Add buttons:
+
+  * Refresh results
+  * Generate / Refresh AI Transition Plan
+  * Export CSV
+  * Clear demo data / reset
+
+Dashboard should feel premium and executive-ready, suitable for use during client orals or a workshop readout.
+
+---
+
+## Rating Scale
+
+Use this scale for Questions 1–18:
+
+1 = Needs focus
+2 = Emerging
+3 = Stable
+4 = Proactive
+5 = Transformation-led
+
+Questions 19–20 should be open-text questions.
+
+---
+
+## Survey Questions — Exactly 20 Total
+
+Create exactly 20 questions.
+
+### Section 1: Current Operations Stability
+
+1. How would you rate the overall stability of current operations?
+
+2. How consistently are services delivered against expected SLAs and commitments?
+
+3. How confident are you that current operations can support future transformation without disruption?
+
+### Section 2: Incident and High-Priority Incident Management
+
+4. How effectively are high-priority incidents managed from identification to resolution?
+
+5. How clearly are roles, responsibilities, and communication handled during major incidents?
+
+6. How well are recurring issues, root causes, and preventive actions identified and tracked?
+
+### Section 3: Proactive Improvement Mindset
+
+7. How ready is the team to shift from reactive support to proactive improvement?
+
+8. How often does the team identify improvement opportunities before issues occur?
+
+9. How effectively are lessons learned converted into sustained operational improvements?
+
+### Section 4: Data, Automation, and Intelligent Operations Readiness
+
+Do not assume AIOps is already implemented. Position this section as future readiness for automation and intelligent operations.
+
+10. How effectively does the team use operational data, trends, and patterns to drive improvements?
+
+11. How ready is the environment for increased automation and intelligent operations capabilities in the future?
+
+12. How clearly are automation opportunities identified, prioritized, and tracked today?
+
+### Section 5: Agile and Transformation Ways of Working
+
+13. How consistently are Agile ways of working used where applicable, including backlog discipline, prioritization, and team ceremonies?
+
+14. How ready are teams to adopt Agile discipline in selected transformation areas?
+
+15. How effectively are business priorities translated into delivery actions and measurable outcomes?
+
+### Section 6: Governance and Visibility
+
+16. How effective is current governance visibility across operations, risks, decisions, and transformation activities?
+
+17. How useful would a CareOps360-style governance dashboard be for weekly leadership visibility and decision-making?
+
+### Section 7: Product / Outcome Ownership
+
+18. How ready is the organization to move toward product/platform ownership and outcome-based accountability?
+
+### Section 8: Open Feedback
+
+19. What are the top 2–3 changes that would help the IBM-Horizon team move from stable operations to a transformation-led mindset?
+
+20. What risks, concerns, or dependencies should IBM and Horizon address early to make this transformation successful?
+
+---
+
+## Dashboard Dimension Mapping
+
+Map the 18 rating questions into these dimensions:
+
+* Operations Stability: Questions 1–3
+* High-Priority Incident Management: Questions 4–6
+* Proactive Improvement: Questions 7–9
+* Automation & Intelligent Operations Readiness: Questions 10–12
+* Agile Ways of Working: Questions 13–15
+* Governance Visibility: Questions 16–17
+* Product / Outcome Ownership: Question 18
+
+Quality Engineering transition should remain a later enabling workstream in the AI-generated transition plan, not a separate survey dimension.
+
+---
+
+## Dashboard Charts
+
+Create only 3 charts.
+
+### Chart 1: Current Maturity by Dimension
+
+Create a bar chart showing average score for each dimension:
+
+1. Operations Stability
+2. High-Priority Incident Management
+3. Proactive Improvement
+4. Automation & Intelligent Operations Readiness
+5. Agile Ways of Working
+6. Governance Visibility
+7. Product / Outcome Ownership
+
+### Chart 2: Current vs Target Mindset
+
+Create a grouped bar chart showing current average score vs target score of 4.5 for each dimension.
+
+### Chart 3: Priority Transformation Areas
+
+Show the lowest scoring dimensions as priority areas.
+
+Use color logic:
+
+* Green: 4.0 and above
+* Amber: 3.0 to 3.9
+* Red: below 3.0
+
+This chart should help the facilitator quickly explain where the team should focus first.
+
+---
+
+## AI-Suggested Transition Plan
+
+Create a dashboard section called:
+
+**AI-Suggested Transition Plan**
+
+When the facilitator clicks “Generate / Refresh AI Transition Plan,” analyze aggregate survey scores and open-text responses to generate:
+
+1. Executive summary
+2. Current strengths
+3. Transformation opportunities
+4. Recommended 30 / 60 / 90-day transition plan
+5. Priority actions
+6. Risks and mitigations
+7. Suggested workshop discussion themes
+
+The AI response must use this framing:
+
+“Given that current operations are stable, the transition plan should focus on moving the IBM-Horizon team toward a transformation-led ecosystem, not correcting failed operations.”
+
+The AI-generated plan should recommend practical actions such as:
+
+* Strengthen outcome-based governance
+* Establish transformation mindset checkpoints
+* Identify automation candidates from recurring work
+* Improve incident prevention and root cause discipline
+* Introduce Agile discipline in selected transformation areas
+* Launch CareOps360-style governance visibility
+* Clarify product/platform ownership
+* Define value realization metrics
+* Position Quality Engineering transition as a later enabling workstream
+* Use QE transition to reinforce ownership, automation, defect governance, and quality mindset
+
+---
+
+## Rule-Based Fallback Recommendation Engine
+
+If OpenAI API is unavailable, generate recommendations using these rules.
+
+### Operations Stability
+
+If Operations Stability average is below 3.5:
+
+Recommend strengthening operational confidence before scaling transformation, including SLA transparency, service dependency mapping, and operational readiness checkpoints.
+
+### High-Priority Incident Management
+
+If Incident Management average is below 3.5:
+
+Recommend a major incident playbook, clearer role ownership, communication discipline, RCA quality improvement, and preventive action tracking.
+
+### Proactive Improvement
+
+If Proactive Improvement average is below 3.5:
+
+Recommend recurring issue analysis, improvement backlog creation, weekly improvement reviews, and ownership for proactive service improvement.
+
+### Automation & Intelligent Operations Readiness
+
+If Automation Readiness average is below 3.5:
+
+Recommend automation opportunity intake, monitoring signal review, operational data readiness, prioritization of repeatable manual work, and future AIOps readiness planning.
+
+### Agile Ways of Working
+
+If Agile average is below 3.5:
+
+Recommend selected Agile pilot teams, backlog hygiene, sprint planning, reviews, retrospectives, and practical coaching without implying that Horizon must adopt Agile everywhere immediately.
+
+### Governance Visibility
+
+If Governance Visibility average is below 3.5:
+
+Recommend CareOps360-style dashboard, decision log, risk tracker, weekly governance cadence, and leadership visibility into transformation progress.
+
+### Product / Outcome Ownership
+
+If Product Ownership average is below 3.5:
+
+Recommend product/service taxonomy, ownership model, decision rights, outcome metrics, and alignment of teams to products/platforms rather than only projects or tasks.
+
+### General Strength
+
+If most dimensions are 3.5 or above:
+
+Recommend moving directly into a transformation acceleration plan focused on automation, governance visibility, product ownership, and value realization.
+
+---
+
+## Dashboard Layout
+
+Create a premium single-page dashboard with these sections:
+
+### 1. Executive Header
+
+Title:
+
+**Horizon Transformation Mindset Survey**
+
+Subtitle:
+
+**Anonymous workshop feedback to shape IBM-Horizon’s transition from stable operations to transformation-led delivery**
+
+Show badges:
+
+* Anonymous survey active
+* Aggregate responses only
+* Current maturity stage
+* Target maturity stage
+* Last updated timestamp
+
+### 2. KPI Cards
+
+Create 6 premium KPI cards:
+
+* Total responses
+* Overall maturity score
+* Strongest dimension
+* Priority focus area
+* Transformation readiness
+* AI plan status
+
+Each card should have an icon, subtle animation, short text, and status badge.
+
+### 3. Charts Section
+
+Show the 3 charts listed above.
+
+### 4. AI-Suggested Transition Plan
+
+Show a polished plan panel with:
+
+* Executive summary
+* 30-day actions
+* 60-day actions
+* 90-day actions
+* Risks and mitigations
+* Workshop discussion themes
+
+### 5. Anonymous Feedback Themes
+
+Summarize open-text comments into themes.
+
+Show:
+
+* Most common improvement themes
+* Common risks / concerns
+* Suggested facilitator talking points
+
+### 6. Raw Aggregate Table
+
+Show an aggregate table by dimension:
+
+* Dimension
+* Average score
+* Response count
+* Status
+* Recommended focus
+
+Do not show individual participant records by default.
+
+---
+
+## Design Requirements
+
+Make the app visually impressive but simple:
+
+* Premium executive look
+* White background
+* IBM blue accents
+* Glassmorphism cards
+* Smooth animations
+* Professional typography
+* Clean dashboard layout
+* Status badges
+* Subtle gradients
+* Responsive for laptop, tablet, and mobile
+* No dark theme
+* No complex navigation
+* Keep the app easy to demo in a workshop
+
+The dashboard should feel like a premium workshop tool, not a generic survey form.
+
+---
+
+## Data and Privacy Requirements
+
+* Do not collect names
+* Do not collect emails
+* Do not collect IP addresses
+* Do not collect participant identifiers
+* Store only:
+
+  * Anonymous survey answers
+  * Timestamp
+  * Optional open-text comments
+* Dashboard should display results only in aggregate.
+* Add a privacy note on the survey page.
+
+---
+
+## Technical Requirements
+
+Generate a complete working Replit app with:
+
+* React frontend
+* Node/Express backend
+* SQLite or Replit DB
+* Anonymous survey page
+* Facilitator dashboard
+* AI-generated transition plan
+* Rule-based fallback plan
+* CSV export
+* Sample seed data for demo
+* Local development support
+* Deployment-ready configuration
+* README with setup, run, and deployment instructions
+
+Use local environment variable:
+
+`OPENAI_API_KEY`
+
+If missing, fallback logic should still generate a transition plan.
+
+---
+
+## Final Experience
+
+The final experience should allow IBM to:
+
+1. Share an anonymous `/survey` link during the workshop.
+2. Collect candid anonymous feedback from client participants.
+3. See aggregate maturity results update on the dashboard.
+4. Generate a dynamic transition plan based on participant input.
+5. Position the output as a constructive plan to move from stable operations to a transformation-led mindset and ecosystem.
+
+The app should help IBM show that it is not only continuing stable operations, but also creating a structured, measurable path toward transformation-led delivery.

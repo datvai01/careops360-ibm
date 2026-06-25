@@ -25,6 +25,8 @@ import MemberServices from "@/pages/dashboard/MemberServices";
 import Administration from "@/pages/dashboard/Administration";
 import PodTransformation from "@/pages/dashboard/PodTransformation";
 import TransformationEcosystem from "@/pages/dashboard/TransformationEcosystem";
+import TransformationMindsetDashboard from "@/pages/dashboard/TransformationMindsetDashboard";
+import TransformationMindsetSurvey from "@/pages/TransformationMindsetSurvey";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -60,6 +62,7 @@ function DashboardRouter() {
         <Route path="/dashboard/capability-uplift" component={CapabilityUplift} />
         <Route path="/dashboard/pod-transformation" component={PodTransformation} />
         <Route path="/dashboard/transformation-ecosystem" component={TransformationEcosystem} />
+        <Route path="/dashboard/transformation-mindset" component={TransformationMindsetDashboard} />
         <Route path="/dashboard/administration" component={Administration} />
         <Route component={NotFound} />
       </Switch>
@@ -71,6 +74,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Login} />
+      <Route path="/survey" component={TransformationMindsetSurvey} />
       <Route path="/dashboard/*" component={() => <ProtectedRoute component={DashboardRouter} />} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={DashboardRouter} />} />
       <Route component={NotFound} />

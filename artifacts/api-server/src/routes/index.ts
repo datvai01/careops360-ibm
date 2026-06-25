@@ -15,6 +15,7 @@ import downloadsRouter from "./downloads";
 import talentPlanRouter from "./talentPlan";
 import adminDatasetsRouter from "./adminDatasets";
 import capabilityRouter from "./capability";
+import transformationSurveyRouter from "./transformationSurvey";
 
 const router: IRouter = Router();
 
@@ -34,5 +35,6 @@ router.use(downloadsRouter);
 router.use(talentPlanRouter);
 router.use(adminDatasetsRouter);
 router.use(capabilityRouter);
+router.use(transformationSurveyRouter);
 
 export default router;

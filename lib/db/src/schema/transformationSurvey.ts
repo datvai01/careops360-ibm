@@ -1,0 +1,26 @@
+import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
+
+export const transformationSurveyResponsesTable = pgTable("transformation_survey_responses", {
+  id: serial("id").primaryKey(),
+  q1:  integer("q1"),
+  q2:  integer("q2"),
+  q3:  integer("q3"),
+  q4:  integer("q4"),
+  q5:  integer("q5"),
+  q6:  integer("q6"),
+  q7:  integer("q7"),
+  q8:  integer("q8"),
+  q9:  integer("q9"),
+  q10: integer("q10"),
+  q11: integer("q11"),
+  q12: integer("q12"),
+  q13: integer("q13"),
+  q14: integer("q14"),
+  q15: integer("q15"),
+  q16: integer("q16"),
+  q17: integer("q17"),
+  q18: integer("q18"),
+  q19: text("q19"),
+  q20: text("q20"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
