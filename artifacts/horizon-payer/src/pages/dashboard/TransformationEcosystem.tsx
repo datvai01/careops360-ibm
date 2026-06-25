@@ -21,7 +21,7 @@ const GREEN    = "#24A148";
 const AMBER    = "#F1C21B";
 const RED      = "#DA1E28";
 const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const CATEGORIES = ["All","Claims Operations","Member Operations","App Health","IBM AMS Value","Transformation"];
+const CATEGORIES = ["All","Critical Service Levels","Business KPIs"];
 const SENTIMENT_OPTS = [
   { v: "positive", label: "✅ Positive" },
   { v: "neutral",  label: "🔵 Neutral"  },
