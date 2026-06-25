@@ -13,3 +13,4 @@ export * from "./talent";
 export * from "./pageKpis";
 export * from "./capability";
 export * from "./transformationSurvey";
+export * from "./kpiTracker";

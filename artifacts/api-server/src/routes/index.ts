@@ -16,6 +16,7 @@ import talentPlanRouter from "./talentPlan";
 import adminDatasetsRouter from "./adminDatasets";
 import capabilityRouter from "./capability";
 import transformationSurveyRouter from "./transformationSurvey";
+import kpiTrackerRouter from "./kpiTracker";
 
 const router: IRouter = Router();
 
@@ -36,5 +37,6 @@ router.use(talentPlanRouter);
 router.use(adminDatasetsRouter);
 router.use(capabilityRouter);
 router.use(transformationSurveyRouter);
+router.use(kpiTrackerRouter);
 
 export default router;
