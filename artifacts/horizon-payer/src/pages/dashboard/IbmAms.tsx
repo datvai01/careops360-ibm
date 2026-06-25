@@ -6,16 +6,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   ResponsiveContainer, ComposedChart, BarChart, Bar, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  PieChart, Pie, Cell, LabelList, AreaChart, Area, LineChart, ReferenceLine,
 } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   CpuIcon, ArrowRightIcon, ZapIcon, LightbulbIcon, ShieldCheckIcon, InfoIcon,
   ArrowUpIcon, ArrowDownIcon, MinusIcon,
+  TrendingUp, TrendingDown, Minus, ChevronLeft, ChevronRight,
+  Plus, X, MessageSquare, BarChart2, CheckCircle2, Clock,
+  ChevronDown, ChevronUp, RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip as UiTooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { KpiMetric } from "@workspace/api-client-react";
 import { LastRefresh } from "@/components/admin/LastRefresh";
@@ -24,6 +33,15 @@ import { HelpHint } from "@/components/admin/HelpHint";
 const IBM_BLUE = "#0f62fe";
 const TEAL     = "#009d9a";
 const GREEN    = "#24a148";
+const AMBER    = "#F1C21B";
+const RED      = "#DA1E28";
+const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const KPI_CATEGORIES = ["All","Critical Service Levels","Business KPIs"];
+const SENTIMENT_OPTS = [
+  { v: "positive", label: "✅ Positive" },
+  { v: "neutral",  label: "🔵 Neutral"  },
+  { v: "concern",  label: "⚠️ Concern"  },
+];
 
 type IbmPeriod = "7d" | "14d" | "21d";
 
@@ -636,310 +654,709 @@ export default function IbmAms() {
   );
 }
 
-// ─── Critical Service Levels & Business KPIs ──────────────────────────────────
-// Modeled on IBM's "Going Beyond Traditional IT Service Levels" framework.
-// CSLs are the technical/delivery commitments; KPIs are the business outcomes
-// that IBM commits to deliver alongside Horizon's operations teams.
+// ─── KPI Tracker — dynamic types & helpers ────────────────────────────────────
 
-type ServiceMetric = {
-  name: string;
-  target: string;
-  actual: string;
-  status: "green" | "amber" | "red";
-  description: string;
-  measurement: string;
+function getToken() { return localStorage.getItem("horizon_token") ?? ""; }
+async function kpiApi<T>(path: string, opts?: RequestInit): Promise<T> {
+  const r = await fetch(path, {
+    ...opts,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}`, ...(opts?.headers ?? {}) },
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json() as Promise<T>;
+}
+
+type KpiDef = {
+  key: string; category: string; name: string; unit: string;
+  description: string | null; target: number | null; targetDirection: string;
+  displayOrder: number; currentValue: number | null; previousValue: number | null;
+  sparkline: number[];
+};
+type HistoryEntry = { year: number; month: number; value: number; note: string | null };
+type FeedbackItem = { id: number; kpiKey: string | null; comment: string; sentiment: string; authorName: string | null; createdAt: string };
+
+function kpiStatus(k: KpiDef): "on-track" | "at-risk" | "behind" | "no-data" {
+  if (k.currentValue === null || k.target === null) return "no-data";
+  const r = k.currentValue / k.target;
+  if (k.targetDirection === "higher") return r >= 0.95 ? "on-track" : r >= 0.80 ? "at-risk" : "behind";
+  return r <= 1.05 ? "on-track" : r <= 1.30 ? "at-risk" : "behind";
+}
+function kpiProgress(k: KpiDef): number {
+  if (k.currentValue === null || k.target === null) return 0;
+  if (k.targetDirection === "higher") return Math.min(100, (k.currentValue / k.target) * 100);
+  if (k.target === 0) return k.currentValue === 0 ? 100 : 0;
+  return Math.max(0, Math.min(100, ((2 * k.target - k.currentValue) / k.target) * 100));
+}
+function kpiTrend(k: KpiDef) {
+  if (k.currentValue === null || k.previousValue === null || k.previousValue === 0)
+    return { pct: 0, dir: "flat" as const, good: false };
+  const raw = ((k.currentValue - k.previousValue) / Math.abs(k.previousValue)) * 100;
+  const dir = Math.abs(raw) < 0.05 ? ("flat" as const) : raw > 0 ? ("up" as const) : ("down" as const);
+  const good = k.targetDirection === "higher" ? dir === "up" : dir === "down";
+  return { pct: Math.abs(raw), dir, good };
+}
+function kpiFmt(v: number, unit: string): string {
+  if (unit === "count" || unit === "$K") return v >= 1000 ? `${(v / 1000).toFixed(1)}K` : String(Math.round(v));
+  if (unit === "%" || unit === "days") return v.toFixed(1);
+  if (unit === "/ 5") return v.toFixed(1);
+  return String(v);
+}
+function sentColor(s: string) { return s === "positive" ? GREEN : s === "concern" ? RED : IBM_BLUE; }
+
+const KPI_STATUS_STYLES = {
+  "on-track": { label: "On Track",    bg: "#DEFBE6", color: GREEN, Icon: CheckCircle2 },
+  "at-risk":  { label: "At Risk",     bg: "#FFF8E1", color: AMBER, Icon: Clock },
+  "behind":   { label: "Needs Focus", bg: "#FFF1F1", color: RED,   Icon: ChevronDown },
+  "no-data":  { label: "No Data",     bg: "#F4F4F4", color: "#8D8D8D", Icon: Clock },
 };
 
-const CRITICAL_SERVICE_LEVELS: ServiceMetric[] = [
-  {
-    name: "Incident Response (P1)", target: "≤ 15 min", actual: "11 min", status: "green",
-    description: "Time from a Severity-1 incident being raised to an IBM responder acknowledging and beginning triage. Drives perception of operational discipline for member-impacting outages.",
-    measurement: "Mean acknowledgement time across all P1 tickets in the reporting period (ServiceNow + IBM AIOps event log).",
-  },
-  {
-    name: "Incident Resolution (P1)", target: "≤ 4 hrs", actual: "3.2 hrs", status: "green",
-    description: "End-to-end clock from P1 incident creation to verified service restoration. Direct measure of how fast IBM restores claims, enrollment, and provider-facing services.",
-    measurement: "Mean time-to-restore (MTTR) for P1 tickets resolved in the period.",
-  },
-  {
-    name: "Problem Resolution", target: "≤ 30 days", actual: "22 days", status: "green",
-    description: "Time to permanently eliminate the underlying root cause behind a recurring incident — preventing repeat occurrences and reducing future ticket volume.",
-    measurement: "Average elapsed days from problem-record open to closed-with-permanent-fix.",
-  },
-  {
-    name: "Application Availability", target: "≥ 99.7%", actual: "99.84%", status: "green",
-    description: "Composite uptime across Tier-1 payer applications (FACETS, claims portals, member self-service, provider portal). The single most-watched metric for member trust.",
-    measurement: "Monthly weighted average of synthetic + real-user monitoring across Tier-1 apps, excluding planned maintenance.",
-  },
-  {
-    name: "Quality Delivery to Production", target: "≥ 98%", actual: "98.6%", status: "green",
-    description: "Percentage of production releases that ship without a Severity-1 or Severity-2 defect surfacing within 30 days. Validates IBM's shift-left quality engineering rigor.",
-    measurement: "(Releases without S1/S2 defect in 30-day window) ÷ (total production releases).",
-  },
-  {
-    name: "Quality Delivery to UAT", target: "≥ 95%", actual: "96.2%", status: "green",
-    description: "First-time UAT pass rate on builds promoted by IBM. A leading indicator that prevents downstream production defects and rework.",
-    measurement: "UAT cycles passed on first submission ÷ total UAT cycles in the period.",
-  },
-  {
-    name: "Service Request Completion", target: "≥ 96%", actual: "97.4%", status: "green",
-    description: "Standard service requests (access, configuration, reports) fulfilled within their committed turnaround time. Reflects day-to-day responsiveness for Horizon staff.",
-    measurement: "(SRs closed within SLA) ÷ (total SRs closed in the period).",
-  },
-  {
-    name: "Testing Coverage Ratio", target: "≥ 85%", actual: "82%", status: "amber",
-    description: "Share of code paths and business scenarios covered by automated tests across the Tier-1 portfolio. Currently below target — uplift planned via the Test Automation initiative.",
-    measurement: "Weighted average of unit + integration coverage across covered repositories (SonarQube + IBM ADDI).",
-  },
-  {
-    name: "Story Test Automation", target: "≥ 80%", actual: "84%", status: "green",
-    description: "Percentage of agile user stories that ship with automated acceptance tests (BDD/Cucumber). Locks in feature behavior and prevents regressions.",
-    measurement: "(Stories with automated acceptance tests) ÷ (stories closed in the sprint).",
-  },
-  {
-    name: "Unit Test Automation", target: "≥ 75%", actual: "78%", status: "green",
-    description: "Code-level unit test coverage on net-new code committed in the period. Foundational to the IBM shift-left strategy.",
-    measurement: "Lines of new code covered by unit tests ÷ total new lines (SonarQube).",
-  },
-  {
-    name: "DevOps Deployments / Month", target: "≥ 120", actual: "147", status: "green",
-    description: "Total successful production deployments per month across the Horizon portfolio. A direct measure of delivery throughput and CI/CD maturity.",
-    measurement: "Count of green production pipeline runs per calendar month (Jenkins / GitHub Actions).",
-  },
-  {
-    name: "Deployment w/o Known Defects", target: "≥ 97%", actual: "98.1%", status: "green",
-    description: "Percentage of releases promoted to production with zero open Severity-1/2 defects. Enforces the no-known-defects gate at the release boundary.",
-    measurement: "(Releases with zero open S1/S2 at promotion) ÷ (total releases).",
-  },
-  {
-    name: "Change Mgmt Effectiveness", target: "≥ 96%", actual: "97.5%", status: "green",
-    description: "Successful changes implemented without rollback, emergency, or post-implementation incident. Reflects Change Advisory Board (CAB) discipline.",
-    measurement: "(Successful changes) ÷ (total changes), excluding standard pre-approved changes.",
-  },
-  {
-    name: "Root Cause Analysis & Reporting", target: "100%", actual: "100%", status: "green",
-    description: "All P1/P2 incidents receive a documented RCA within 5 business days, reviewed jointly with Horizon leadership. Builds an institutional knowledge loop.",
-    measurement: "RCAs delivered on time ÷ RCAs required for P1/P2 incidents in the period.",
-  },
-  {
-    name: "On-Budget Delivery", target: "≥ 95%", actual: "96.8%", status: "green",
-    description: "Programs and projects delivered within ±5% of their approved budget envelope. Protects Horizon's planned IT spend and prevents surprise overruns.",
-    measurement: "(Projects closed within ±5% budget) ÷ (total projects closed in the period).",
-  },
-  {
-    name: "IT Customer Satisfaction (CSAT)", target: "≥ 4.3/5", actual: "4.5/5", status: "green",
-    description: "Quarterly business-stakeholder satisfaction score on IBM's delivery, support, and partnership across the AMS engagement.",
-    measurement: "Average of stakeholder survey scores (1–5 scale) collected at end of quarter.",
-  },
-  {
-    name: "Retention of Key Personnel", target: "≥ 90%", actual: "92%", status: "green",
-    description: "Retention of IBM team members designated as Key Personnel under the contract — protects continuity, deep platform knowledge, and Horizon-specific institutional context.",
-    measurement: "(Key Personnel still on engagement at period end) ÷ (Key Personnel at period start), rolling 12-month.",
-  },
-  {
-    name: "Staffing Attrition (annualized)", target: "≤ 12%", actual: "9.4%", status: "green",
-    description: "Annualized voluntary attrition across the entire IBM delivery team. Lower attrition correlates directly with delivery velocity and quality.",
-    measurement: "(Voluntary departures in trailing 12 months ÷ average headcount) annualized.",
-  },
-];
+/* ── Tracker Charts Section ─────────────────────────────────── */
+function TrackerChartsSection({ kpis }: { kpis: KpiDef[] }) {
+  if (kpis.length === 0) return null;
+  const counts = { onTrack: 0, atRisk: 0, behind: 0, noData: 0 };
+  kpis.forEach(k => {
+    const s = kpiStatus(k);
+    if (s === "on-track") counts.onTrack++;
+    else if (s === "at-risk") counts.atRisk++;
+    else if (s === "behind") counts.behind++;
+    else counts.noData++;
+  });
+  const healthPct = Math.round((counts.onTrack / kpis.length) * 100);
+  const donutData = [
+    { name: "On Track",    value: counts.onTrack,  color: GREEN },
+    { name: "At Risk",     value: counts.atRisk,   color: AMBER },
+    { name: "Needs Focus", value: counts.behind,   color: RED   },
+    ...(counts.noData > 0 ? [{ name: "No Data", value: counts.noData, color: "#D1D5DB" }] : []),
+  ].filter(d => d.value > 0);
 
-const BUSINESS_KPIS: ServiceMetric[] = [
-  {
-    name: "Timely Claims Payment", target: "≥ 98%", actual: "98.6%", status: "green",
-    description: "Provider claims paid within the regulatory turnaround time required by NJ DOBI and CMS. Direct driver of provider satisfaction and audit posture.",
-    measurement: "(Claims paid within mandated TAT) ÷ (total claims paid in the period).",
-  },
-  {
-    name: "Timely Claims Submission", target: "≥ 97%", actual: "97.8%", status: "green",
-    description: "Outbound encounter and 837 submissions transmitted to CMS, BCBSA, and downstream payers within their submission windows. Prevents revenue leakage and rework.",
-    measurement: "(Submissions on time) ÷ (total submissions due in the period).",
-  },
-  {
-    name: "Letters Generation On-Time", target: "≥ 95%", actual: "96.1%", status: "green",
-    description: "Member-facing correspondence (EOBs, denial letters, appeals notices) generated and dispatched within regulatory and SLA windows.",
-    measurement: "(Letters dispatched on time) ÷ (total letters required in the period).",
-  },
-  {
-    name: "ID Cards Generation", target: "≤ 5 days", actual: "3.8 days", status: "green",
-    description: "End-to-end turnaround from enrollment confirmation to physical ID card mailed. Critical first-impression KPI for new members.",
-    measurement: "Mean elapsed days from enrollment-effective to ID card produced and mailed.",
-  },
-  {
-    name: "On-Time Enrollments", target: "≥ 98%", actual: "98.4%", status: "green",
-    description: "Member enrollment transactions fully processed and effective by the requested coverage start date. Drives member experience and revenue accuracy.",
-    measurement: "(Enrollments active by requested effective date) ÷ (total enrollments processed).",
-  },
-  {
-    name: "Timely Bills Generation", target: "≥ 99%", actual: "99.2%", status: "green",
-    description: "Premium bills generated and sent to subscribers / groups in line with the billing calendar — preserves cash flow and downstream collections.",
-    measurement: "(Bills generated on schedule) ÷ (total bills due in the period).",
-  },
-  {
-    name: "ASO Billing Compliance", target: "100%", actual: "99.7%", status: "amber",
-    description: "Administrative Services Only (self-funded) groups billed in strict accordance with their contract terms — high-stakes accuracy KPI under audit.",
-    measurement: "(ASO bills meeting contract terms) ÷ (total ASO bills issued).",
-  },
-  {
-    name: "Successful Small-Group Conversion", target: "≥ 95%", actual: "96.3%", status: "green",
-    description: "Small-group renewals and plan changes completed without member or broker escalation. Reflects clean handoff between Sales, Underwriting, and Operations.",
-    measurement: "(Small-group conversions closed without escalation) ÷ (total small-group conversions).",
-  },
-  {
-    name: "Rates Loading On-Time", target: "≥ 98%", actual: "98.9%", status: "green",
-    description: "Annual and off-cycle rate sheets loaded into core systems before their effective date — prevents incorrect billing and benefit calculation.",
-    measurement: "(Rate loads completed before effective date) ÷ (total rate loads scheduled).",
-  },
-  {
-    name: "Same-Day eFax to Care Radius", target: "≥ 95%", actual: "94.2%", status: "amber",
-    description: "Inbound clinical eFaxes (auths, clinical docs) delivered to Care Radius the same business day. Below target — being remediated via the AIOps document-routing automation.",
-    measurement: "(eFaxes delivered to Care Radius same business day) ÷ (total inbound clinical eFaxes).",
-  },
-  {
-    name: "Timely HIPAA Forms Processing", target: "≥ 99%", actual: "99.4%", status: "green",
-    description: "HIPAA authorization, disclosure, and request forms processed within mandated regulatory windows. Compliance-critical privacy KPI.",
-    measurement: "(HIPAA forms processed within mandated TAT) ÷ (total HIPAA forms received).",
-  },
-  {
-    name: "Patient Logs to RightFax", target: "≥ 98%", actual: "98.7%", status: "green",
-    description: "Patient interaction logs successfully transmitted from clinical workflow systems to the RightFax archive — ensures complete care documentation and audit trail.",
-    measurement: "(Logs successfully delivered to RightFax) ÷ (total logs queued for transmission).",
-  },
-];
+  const BUCKETS = [
+    { label: "<70%",    min: 0,   max: 70,       count: 0, color: RED   },
+    { label: "70–80%",  min: 70,  max: 80,       count: 0, color: "#F05032" },
+    { label: "80–90%",  min: 80,  max: 90,       count: 0, color: AMBER },
+    { label: "90–95%",  min: 90,  max: 95,       count: 0, color: "#42BE65" },
+    { label: "95–100%", min: 95,  max: 100,      count: 0, color: GREEN },
+    { label: ">100%",   min: 100, max: Infinity, count: 0, color: "#0043CE" },
+  ];
+  kpis.forEach(k => {
+    if (k.currentValue === null || k.target === null || k.target === 0) return;
+    const p = kpiProgress(k);
+    const bucket = BUCKETS.find(b => p >= b.min && p < b.max) ?? BUCKETS[BUCKETS.length - 1];
+    bucket.count++;
+  });
 
-function StatusDot({ status }: { status: ServiceMetric["status"] }) {
-  const cls =
-    status === "green" ? "bg-status-green" :
-    status === "amber" ? "bg-status-yellow" :
-    "bg-status-red";
-  return <span className={cn("w-2 h-2 rounded-full flex-shrink-0", cls)} />;
-}
+  const movers = kpis
+    .filter(k => k.currentValue !== null && k.previousValue !== null && k.previousValue !== 0)
+    .map(k => {
+      const raw = ((k.currentValue! - k.previousValue!) / Math.abs(k.previousValue!)) * 100;
+      const dir = k.targetDirection === "higher" ? raw : -raw;
+      const nm = k.name.length > 24 ? k.name.slice(0, 22) + "…" : k.name;
+      return { name: nm, change: Math.round(dir * 10) / 10, color: dir >= 0 ? GREEN : RED };
+    })
+    .sort((a, b) => b.change - a.change);
+  const moverData = [...movers.slice(0, 5), ...movers.slice(-3).filter(m => m.change < 0)]
+    .filter((m, i, arr) => arr.findIndex(x => x.name === m.name) === i);
 
-function MetricTile({ metric, accent }: { metric: ServiceMetric; accent: "blue" | "teal" }) {
-  const ring = accent === "blue"
-    ? "border-[#0f62fe]/20 bg-[#0f62fe]/[0.04] hover:border-[#0f62fe]/60 hover:shadow-md hover:shadow-[#0f62fe]/10"
-    : "border-emerald-500/20 bg-emerald-500/[0.04] hover:border-emerald-500/60 hover:shadow-md hover:shadow-emerald-500/10";
-  const accentText = accent === "blue" ? "text-[#0f62fe]" : "text-emerald-700 dark:text-emerald-400";
-  const statusLabel =
-    metric.status === "green" ? "On Target" :
-    metric.status === "amber" ? "At Risk"   :
-    "Below Target";
+  const catData = ["Critical Service Levels", "Business KPIs"].map(cat => {
+    const group = kpis.filter(k => k.category === cat);
+    const avg = group.length ? Math.round(group.reduce((s, k) => s + kpiProgress(k), 0) / group.length) : 0;
+    return {
+      cat: cat === "Critical Service Levels" ? "CSL" : "Biz KPIs",
+      avg,
+      onTrack: group.filter(k => kpiStatus(k) === "on-track").length,
+      atRisk:  group.filter(k => kpiStatus(k) === "at-risk").length,
+      behind:  group.filter(k => kpiStatus(k) === "behind").length,
+    };
+  });
+
   return (
-    <UiTooltip delayDuration={150}>
-      <TooltipTrigger asChild>
-        <div className={cn(
-          "rounded-md border px-3 py-2.5 transition-all cursor-help flex flex-col gap-1.5",
-          ring,
-        )}>
-          <div className="flex items-start justify-between gap-2">
-            <div className="text-[11px] font-semibold leading-tight text-foreground">{metric.name}</div>
-            <StatusDot status={metric.status} />
-          </div>
-          <div className="flex items-baseline justify-between gap-2 text-[10.5px]">
-            <span className="text-muted-foreground">Target: <span className="font-medium text-foreground/80">{metric.target}</span></span>
-            <span className="font-bold text-foreground">{metric.actual}</span>
-          </div>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-sm p-0 overflow-hidden border-0 shadow-xl">
-        <div className="bg-card border border-border rounded-md">
-          <div className={cn("px-3 py-2 border-b border-border flex items-center justify-between gap-3 bg-muted/40")}>
-            <div className={cn("text-xs font-bold leading-tight", accentText)}>{metric.name}</div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <StatusDot status={metric.status} />
-              <span className="text-[10px] uppercase font-bold tracking-wide text-muted-foreground">{statusLabel}</span>
-            </div>
-          </div>
-          <div className="p-3 space-y-2.5">
-            <div className="flex items-baseline justify-between gap-3 pb-2 border-b border-border/60">
-              <div>
-                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground">Target</div>
-                <div className="text-xs font-semibold text-foreground">{metric.target}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground">Actual</div>
-                <div className="text-sm font-bold text-foreground">{metric.actual}</div>
-              </div>
-            </div>
-            <div>
-              <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground mb-0.5">What it measures</div>
-              <p className="text-[11px] leading-snug text-foreground/85">{metric.description}</p>
-            </div>
-            <div>
-              <div className="text-[9.5px] uppercase font-semibold tracking-wide text-muted-foreground mb-0.5">Calculation</div>
-              <p className="text-[11px] leading-snug text-muted-foreground italic">{metric.measurement}</p>
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* 1 — Overall Health Donut */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm p-5 flex flex-col">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Overall Health</p>
+        <p className="text-xs text-muted-foreground mb-3">All {kpis.length} metrics · {MONTH_LABELS[new Date().getMonth()]} {new Date().getFullYear()}</p>
+        <div className="relative flex-1 flex items-center justify-center min-h-[160px]">
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={donutData} cx="50%" cy="50%" innerRadius={48} outerRadius={72}
+                paddingAngle={3} dataKey="value" startAngle={90} endAngle={-270}>
+                {donutData.map((e, i) => <Cell key={i} fill={e.color} stroke="none" />)}
+              </Pie>
+              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number, n: string) => [v, n]} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-3xl font-bold">{healthPct}%</span>
+            <span className="text-[10px] text-muted-foreground font-medium">On Track</span>
           </div>
         </div>
-      </TooltipContent>
-    </UiTooltip>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 justify-center mt-2">
+          {donutData.map(d => (
+            <div key={d.name} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: d.color }} />
+              {d.name} <span className="font-semibold">({d.value})</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 2 — Performance Distribution */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm p-5">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Performance vs Target</p>
+        <p className="text-xs text-muted-foreground mb-3">Count of metrics by % of target achieved</p>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={BUCKETS} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+            <XAxis dataKey="label" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => [v, "Metrics"]} />
+            <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+              {BUCKETS.map((b, i) => <Cell key={i} fill={b.color} />)}
+              <LabelList dataKey="count" position="top" style={{ fontSize: 10, fontWeight: 600 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* 3 — Status by Group */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm p-5">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Status by Group</p>
+        <p className="text-xs text-muted-foreground mb-3">CSL (18) vs Business KPIs (12)</p>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={catData} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+            <XAxis dataKey="cat" tick={{ fontSize: 10 }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 9 }} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+            <Bar dataKey="onTrack" name="On Track"    stackId="a" fill={GREEN} radius={[0,0,0,0]} />
+            <Bar dataKey="atRisk"  name="At Risk"     stackId="a" fill={AMBER} radius={[0,0,0,0]} />
+            <Bar dataKey="behind"  name="Needs Focus" stackId="a" fill={RED}   radius={[4,4,0,0]}>
+              <LabelList dataKey="avg" position="top" formatter={(v: number) => `${v}%`} style={{ fontSize: 10, fontWeight: 600 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+        <div className="flex gap-3 justify-center mt-1">
+          {[{ c: GREEN, l: "On Track" }, { c: AMBER, l: "At Risk" }, { c: RED, l: "Needs Focus" }].map(x => (
+            <div key={x.l} className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="w-2 h-2 rounded-sm" style={{ background: x.c }} /> {x.l}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4 — M-o-M Movers */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm p-5">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">M-o-M Movers</p>
+        <p className="text-xs text-muted-foreground mb-3">Top improvements &amp; declines vs prior month</p>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={moverData} layout="vertical" margin={{ top: 4, right: 36, left: 4, bottom: 0 }}>
+            <XAxis type="number" tick={{ fontSize: 8 }} tickFormatter={(v: number) => `${v > 0 ? "+" : ""}${v}%`} />
+            <YAxis type="category" dataKey="name" tick={{ fontSize: 8 }} width={90} />
+            <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v: number) => [`${v > 0 ? "+" : ""}${v}%`, "vs prev"]} />
+            <ReferenceLine x={0} stroke="hsl(var(--border))" />
+            <Bar dataKey="change" radius={[0, 3, 3, 0]}>
+              {moverData.map((m, i) => <Cell key={i} fill={m.color} fillOpacity={0.85} />)}
+              <LabelList dataKey="change" position="right"
+                formatter={(v: number) => `${v > 0 ? "+" : ""}${v}%`}
+                style={{ fontSize: 8 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
 
-function ServiceLevelAndKpiPanel() {
-  const cslGreen = CRITICAL_SERVICE_LEVELS.filter(m => m.status === "green").length;
-  const kpiGreen = BUSINESS_KPIS.filter(m => m.status === "green").length;
+/* ── Sparkline ──────────────────────────────────────────────── */
+function TrackerSparkline({ data, color }: { data: number[]; color: string }) {
+  const pts = data.map((v, i) => ({ i, v }));
   return (
-    <TooltipProvider delayDuration={150}>
-    <Card className="shadow-md">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+    <ResponsiveContainer width="100%" height={36}>
+      <AreaChart data={pts} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
+        <defs>
+          <linearGradient id={`tsg_${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%"  stopColor={color} stopOpacity={0.3} />
+            <stop offset="95%" stopColor={color} stopOpacity={0}   />
+          </linearGradient>
+        </defs>
+        <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5}
+          fill={`url(#tsg_${color.replace("#", "")})`} dot={false} />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+/* ── KPI Card ───────────────────────────────────────────────── */
+function TrackerKpiCard({ k, selected, onClick }: { k: KpiDef; selected: boolean; onClick: () => void }) {
+  const s  = kpiStatus(k);
+  const t  = kpiTrend(k);
+  const p  = kpiProgress(k);
+  const ss = KPI_STATUS_STYLES[s];
+  const { Icon: StatusIcon } = ss;
+  const TrendIcon = t.dir === "up" ? TrendingUp : t.dir === "down" ? TrendingDown : Minus;
+  const trendColor = t.good ? GREEN : t.dir === "flat" ? "#6B7280" : RED;
+  const sparkColor = s === "behind" ? RED : GREEN;
+  return (
+    <motion.button whileHover={{ y: -2 }} onClick={onClick}
+      className={cn(
+        "text-left bg-card rounded-2xl border-2 shadow-sm p-4 transition-all duration-150 w-full",
+        selected ? "border-blue-500 shadow-blue-100 shadow-md" : "border-border hover:border-blue-200 hover:shadow-md",
+      )}>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#EEF4FF", color: IBM_BLUE }}>
+          {k.category}
+        </span>
+        <span className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+          style={{ background: ss.bg, color: ss.color }}>
+          <StatusIcon className="w-3 h-3" /> {ss.label}
+        </span>
+      </div>
+      <p className="text-sm font-bold mb-1 leading-tight">{k.name}</p>
+      <div className="flex items-baseline gap-1.5 mb-1">
+        <span className="text-2xl font-bold">
+          {k.currentValue !== null ? kpiFmt(k.currentValue, k.unit) : "—"}
+        </span>
+        <span className="text-xs text-muted-foreground">{k.unit}</span>
+        {k.currentValue !== null && k.previousValue !== null && (
+          <span className="flex items-center gap-0.5 text-xs font-medium ml-auto" style={{ color: trendColor }}>
+            <TrendIcon className="w-3.5 h-3.5" />{t.pct.toFixed(1)}%
+          </span>
+        )}
+      </div>
+      {k.target !== null && (
+        <div className="mb-2">
+          <div className="flex justify-between text-xs text-muted-foreground mb-0.5">
+            <span>Target: {kpiFmt(k.target, k.unit)} {k.unit}</span>
+            <span>{Math.round(p)}%</span>
+          </div>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <motion.div className="h-full rounded-full" style={{ background: ss.color }}
+              initial={{ width: 0 }} animate={{ width: `${p}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }} />
+          </div>
+        </div>
+      )}
+      <TrackerSparkline data={k.sparkline} color={sparkColor} />
+    </motion.button>
+  );
+}
+
+/* ── Expanded Panel ─────────────────────────────────────────── */
+function TrackerExpandedPanel({ kpi, history, feedback, onClose, onFeedbackSubmit }: {
+  kpi: KpiDef; history: HistoryEntry[]; feedback: FeedbackItem[];
+  onClose: () => void; onFeedbackSubmit: () => void;
+}) {
+  const [fbForm, setFbForm] = useState({ comment: "", sentiment: "neutral", authorName: "" });
+  const [fbSending, setFbSending] = useState(false);
+  const [fbSuccess, setFbSuccess] = useState(false);
+  const [showTable, setShowTable] = useState(false);
+  const chartData = history.map(h => ({
+    label: `${MONTH_LABELS[h.month - 1]} ${String(h.year).slice(2)}`,
+    value: h.value,
+  }));
+  const myFeedback = feedback.filter(f => f.kpiKey === kpi.key);
+
+  async function submitFeedback() {
+    if (!fbForm.comment.trim()) return;
+    setFbSending(true);
+    try {
+      await kpiApi("/api/kpi-tracker/feedback", {
+        method: "POST",
+        body: JSON.stringify({ kpiKey: kpi.key, comment: fbForm.comment, sentiment: fbForm.sentiment, authorName: fbForm.authorName }),
+      });
+      setFbForm({ comment: "", sentiment: "neutral", authorName: "" });
+      setFbSuccess(true);
+      setTimeout(() => setFbSuccess(false), 3000);
+      onFeedbackSubmit();
+    } finally { setFbSending(false); }
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+      className="bg-card border border-primary/20 rounded-2xl shadow-lg p-6 space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold text-primary mb-0.5">{kpi.category}</p>
+          <h3 className="text-xl font-bold">{kpi.name}</h3>
+          {kpi.description && <p className="text-sm text-muted-foreground mt-0.5">{kpi.description}</p>}
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted">
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {chartData.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">18-Month Historical Trend</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={chartData} margin={{ left: -10, right: 16, top: 4, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 9 }} interval={2} />
+              <YAxis tick={{ fontSize: 9 }} />
+              <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }}
+                formatter={(v: number) => [`${kpiFmt(v, kpi.unit)} ${kpi.unit}`, kpi.name]} />
+              {kpi.target !== null && (
+                <ReferenceLine y={kpi.target} stroke={GREEN} strokeDasharray="5 3"
+                  label={{ value: `Target ${kpiFmt(kpi.target, kpi.unit)}`, fontSize: 9, fill: GREEN, position: "insideTopRight" }} />
+              )}
+              <Line type="monotone" dataKey="value" stroke={IBM_BLUE} strokeWidth={2}
+                dot={{ r: 2, fill: IBM_BLUE }} activeDot={{ r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div>
+        <button onClick={() => setShowTable(v => !v)}
+          className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
+          <BarChart2 className="w-3.5 h-3.5" /> Monthly Data Table
+          {showTable ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        </button>
+        <AnimatePresence>
+          {showTable && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+              <div className="mt-3 max-h-48 overflow-y-auto rounded-xl border border-border">
+                <table className="w-full text-xs">
+                  <thead className="bg-muted/50 sticky top-0">
+                    <tr>
+                      {["Month","Value","vs Target","Note"].map(h => (
+                        <th key={h} className="text-left px-3 py-2 text-muted-foreground font-semibold">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...history].reverse().map((h, i) => {
+                      const gap = kpi.target ? ((h.value - kpi.target) / kpi.target) * 100 : null;
+                      const isGood = gap === null ? null : kpi.targetDirection === "higher" ? gap >= 0 : gap <= 0;
+                      return (
+                        <tr key={i} className="border-t border-border/50">
+                          <td className="px-3 py-1.5 font-medium">{MONTH_LABELS[h.month - 1]} {h.year}</td>
+                          <td className="px-3 py-1.5 font-bold">
+                            {kpiFmt(h.value, kpi.unit)} <span className="font-normal text-muted-foreground">{kpi.unit}</span>
+                          </td>
+                          <td className="px-3 py-1.5">
+                            {gap !== null && (
+                              <span style={{ color: isGood ? GREEN : RED }}>
+                                {gap > 0 ? "+" : ""}{gap.toFixed(1)}%
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-1.5 text-muted-foreground">{h.note ?? "—"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <div className="border-t border-border pt-5 space-y-4">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+          <MessageSquare className="w-3.5 h-3.5" /> Feedback on this KPI ({myFeedback.length})
+        </p>
+        {myFeedback.length > 0 && (
+          <div className="space-y-2 max-h-36 overflow-y-auto">
+            {myFeedback.map(f => (
+              <div key={f.id} className="bg-muted/40 rounded-xl px-3 py-2 text-xs">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: sentColor(f.sentiment) }} />
+                  <span className="font-medium">{f.authorName ?? "Anonymous"}</span>
+                  <span className="text-muted-foreground ml-auto">{new Date(f.createdAt).toLocaleDateString()}</span>
+                </div>
+                <p className="leading-relaxed">&quot;{f.comment}&quot;</p>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Select value={fbForm.sentiment} onValueChange={v => setFbForm(f => ({ ...f, sentiment: v }))}>
+              <SelectTrigger className="w-36 text-xs h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {SENTIMENT_OPTS.map(o => <SelectItem key={o.v} value={o.v} className="text-xs">{o.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Input placeholder="Your name (optional)" value={fbForm.authorName}
+              onChange={e => setFbForm(f => ({ ...f, authorName: e.target.value }))}
+              className="text-xs h-8 flex-1" />
+          </div>
+          <Textarea rows={2} placeholder="Share your observations on this KPI…"
+            value={fbForm.comment}
+            onChange={e => setFbForm(f => ({ ...f, comment: e.target.value }))}
+            className="text-xs resize-none" />
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={() => void submitFeedback()}
+              disabled={fbSending || !fbForm.comment.trim()}
+              className="text-xs gap-1" style={{ background: IBM_BLUE }}>
+              <MessageSquare className="w-3 h-3" /> Submit Feedback
+            </Button>
+            {fbSuccess && <span className="text-xs text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Saved</span>}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Add Entry Modal ────────────────────────────────────────── */
+function TrackerAddEntryModal({ kpis, open, onClose, onSaved }: {
+  kpis: KpiDef[]; open: boolean; onClose: () => void; onSaved: () => void;
+}) {
+  const now = new Date();
+  const [form, setForm] = useState({
+    kpiKey: "", year: now.getFullYear(), month: now.getMonth() + 1, value: "", note: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function save() {
+    if (!form.kpiKey || !form.value) { setErr("Select a KPI and enter a value."); return; }
+    setSaving(true); setErr(null);
+    try {
+      await kpiApi("/api/kpi-tracker/entries", {
+        method: "POST",
+        body: JSON.stringify({ ...form, value: Number(form.value) }),
+      });
+      onSaved(); onClose();
+    } catch { setErr("Failed to save. Try again."); }
+    finally { setSaving(false); }
+  }
+
+  const selectedKpi = kpis.find(k => k.key === form.kpiKey);
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-base flex items-center gap-2">
+            <Plus className="w-4 h-4 text-primary" /> Add Monthly Entry
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
           <div>
-            <CardTitle>Service Levels &amp; Business KPI Commitments</CardTitle>
-            <CardDescription>
-              Critical Service Levels (CSL) measure delivery quality; Business KPIs measure operational outcomes for Horizon members and providers. Sample list — to be reviewed with Horizon during transition and baselining.
-            </CardDescription>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">KPI</label>
+            <Select value={form.kpiKey} onValueChange={v => setForm(f => ({ ...f, kpiKey: v }))}>
+              <SelectTrigger className="text-sm"><SelectValue placeholder="Select a KPI…" /></SelectTrigger>
+              <SelectContent>
+                {KPI_CATEGORIES.slice(1).map(cat => (
+                  <div key={cat}>
+                    <p className="text-xs text-muted-foreground px-2 pt-2 pb-1 font-semibold">{cat}</p>
+                    {kpis.filter(k => k.category === cat).map(k => (
+                      <SelectItem key={k.key} value={k.key} className="text-sm">{k.name}</SelectItem>
+                    ))}
+                  </div>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="flex gap-4 text-[11px] text-muted-foreground">
-            <div><span className="font-bold text-foreground">{cslGreen}/{CRITICAL_SERVICE_LEVELS.length}</span> CSLs on target</div>
-            <div><span className="font-bold text-foreground">{kpiGreen}/{BUSINESS_KPIS.length}</span> KPIs on target</div>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left — Critical Service Levels (technical / delivery) */}
-          <section className="rounded-lg border border-[#0f62fe]/30 bg-card overflow-hidden">
-            <header className="bg-[#0f62fe]/[0.08] border-b border-[#0f62fe]/20 px-4 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-5 bg-[#0f62fe] rounded-sm" />
-                <h3 className="text-sm font-bold text-[#0f62fe]">Critical Service Levels (CSL) &middot; Technical Metrics</h3>
-              </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Delivery &amp; Quality</span>
-            </header>
-            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-              {CRITICAL_SERVICE_LEVELS.map((m) => (
-                <MetricTile key={m.name} metric={m} accent="blue" />
-              ))}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Year</label>
+              <Select value={String(form.year)} onValueChange={v => setForm(f => ({ ...f, year: Number(v) }))}>
+                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[2024, 2025, 2026].map(y => <SelectItem key={y} value={String(y)} className="text-sm">{y}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
-          </section>
-
-          {/* Right — Business KPIs */}
-          <section className="rounded-lg border border-emerald-500/30 bg-card overflow-hidden">
-            <header className="bg-emerald-500/[0.08] border-b border-emerald-500/20 px-4 py-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-5 bg-emerald-500 rounded-sm" />
-                <h3 className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Key Performance Indicators (KPI) &middot; Business Outcomes</h3>
-              </div>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Member &amp; Operations</span>
-            </header>
-            <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-              {BUSINESS_KPIS.map((m) => (
-                <MetricTile key={m.name} metric={m} accent="teal" />
-              ))}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Month</label>
+              <Select value={String(form.month)} onValueChange={v => setForm(f => ({ ...f, month: Number(v) }))}>
+                <SelectTrigger className="text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {MONTH_LABELS.map((m, i) => <SelectItem key={i} value={String(i + 1)} className="text-sm">{m}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
-          </section>
-        </div>
-
-        <div className="mt-4 flex items-center justify-between text-[10.5px] text-muted-foreground">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-green" /> On Target</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-yellow" /> At Risk</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-status-red" /> Below Target</span>
           </div>
-          <span className="italic">Sample list — to be reviewed with Horizon during transition &amp; baselining</span>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+              Value {selectedKpi ? `(${selectedKpi.unit})` : ""}
+            </label>
+            <Input type="number" step="any" placeholder="Enter value…"
+              value={form.value} onChange={e => setForm(f => ({ ...f, value: e.target.value }))}
+              className="text-sm" />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Note (optional)</label>
+            <Textarea rows={2} placeholder="Context or observations…"
+              value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
+              className="text-sm resize-none" />
+          </div>
+          {err && <p className="text-xs text-destructive">{err}</p>}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+            <Button size="sm" onClick={() => void save()} disabled={saving}
+              style={{ background: IBM_BLUE }} className="text-xs">
+              {saving ? "Saving…" : "Save Entry"}
+            </Button>
+          </div>
         </div>
-      </CardContent>
-    </Card>
-    </TooltipProvider>
+      </DialogContent>
+    </Dialog>
   );
 }
+
+/* ── Service Levels & KPIs Panel (dynamic) ──────────────────── */
+function ServiceLevelAndKpiPanel() {
+  const [kpis, setKpis] = useState<KpiDef[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [histLoading, setHistLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [showAdd, setShowAdd] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const expandedRef = useRef<HTMLDivElement>(null);
+
+  const loadData = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
+    else setRefreshing(true);
+    try {
+      const [ks, fbs] = await Promise.all([
+        kpiApi<KpiDef[]>("/api/kpi-tracker/kpis"),
+        kpiApi<FeedbackItem[]>("/api/kpi-tracker/feedback"),
+      ]);
+      setKpis(ks);
+      setFeedback(fbs);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { void loadData(); }, [loadData]);
+
+  async function selectKpi(key: string) {
+    if (selectedKey === key) { setSelectedKey(null); return; }
+    setSelectedKey(key);
+    setHistLoading(true);
+    try {
+      const data = await kpiApi<HistoryEntry[]>(`/api/kpi-tracker/kpis/${key}/history`);
+      setHistory(data);
+    } finally { setHistLoading(false); }
+    setTimeout(() => expandedRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+  }
+
+  const summary = {
+    onTrack: kpis.filter(k => kpiStatus(k) === "on-track").length,
+    atRisk:  kpis.filter(k => kpiStatus(k) === "at-risk").length,
+    behind:  kpis.filter(k => kpiStatus(k) === "behind").length,
+  };
+
+  const filtered = activeCategory === "All" ? kpis : kpis.filter(k => k.category === activeCategory);
+  const selectedKpi = kpis.find(k => k.key === selectedKey) ?? null;
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-2">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} className="bg-card rounded-2xl border border-border p-4 space-y-3">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-2 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-3">
+          {[
+            { label: `${kpis.length} KPIs Tracked`, color: IBM_BLUE },
+            { label: `${summary.onTrack} On Track`,   color: GREEN  },
+            { label: `${summary.atRisk} At Risk`,     color: AMBER  },
+            { label: `${summary.behind} Needs Focus`, color: RED    },
+          ].map(pill => (
+            <div key={pill.label} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border"
+              style={{ background: `${pill.color}12`, borderColor: `${pill.color}30`, color: pill.color }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: pill.color }} />
+              {pill.label}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => void loadData(true)}
+            className={cn("p-1.5 rounded-lg hover:bg-muted text-muted-foreground", refreshing && "animate-spin")}>
+            <RefreshCw className="w-4 h-4" />
+          </button>
+          <Button size="sm" onClick={() => setShowAdd(true)}
+            className="gap-1 text-xs" style={{ background: IBM_BLUE }}>
+            <Plus className="w-3.5 h-3.5" /> Add Entry
+          </Button>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <TrackerChartsSection kpis={kpis} />
+
+      {/* Category filter */}
+      <div className="flex gap-1 flex-wrap">
+        {KPI_CATEGORIES.map(cat => (
+          <button key={cat} onClick={() => setActiveCategory(cat)}
+            className={cn(
+              "px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
+              activeCategory === cat
+                ? "text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
+            )}
+            style={activeCategory === cat ? { background: IBM_BLUE } : {}}>
+            {cat}
+            {cat !== "All" && (
+              <span className="ml-1.5 opacity-70">({kpis.filter(k => k.category === cat).length})</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* KPI card grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+        {filtered.map(k => (
+          <TrackerKpiCard key={k.key} k={k}
+            selected={selectedKey === k.key}
+            onClick={() => void selectKpi(k.key)} />
+        ))}
+      </div>
+
+      {/* Expanded panel */}
+      <AnimatePresence>
+        {selectedKpi && (
+          <div ref={expandedRef}>
+            {histLoading ? (
+              <div className="bg-card border border-border rounded-2xl p-6">
+                <Skeleton className="h-6 w-1/3 mb-4" />
+                <Skeleton className="h-48 w-full" />
+              </div>
+            ) : (
+              <TrackerExpandedPanel
+                kpi={selectedKpi}
+                history={history}
+                feedback={feedback}
+                onClose={() => setSelectedKey(null)}
+                onFeedbackSubmit={() => void loadData(true)}
+              />
+            )}
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Entry modal */}
+      <TrackerAddEntryModal
+        kpis={kpis}
+        open={showAdd}
+        onClose={() => setShowAdd(false)}
+        onSaved={() => void loadData(true)}
+      />
+    </div>
+  );
+}
+
