@@ -21,6 +21,21 @@ const SECTIONS = [
       { id: "q1", text: "How would you rate the overall stability of current operations?" },
       { id: "q2", text: "Have there been any P1 (Priority 1) incidents in the past 12 months? Rate how effectively they were identified, escalated, and resolved to prevent recurrence." },
       { id: "q3", text: "How confident are you that current operations can support future transformation without disruption?" },
+      {
+        id: "q_outage",
+        text: "Which of the following recent outages have had a measurable business impact? (Select all that apply)",
+        type: "checkbox" as const,
+        options: [
+          "Member portal downtime",
+          "Claims processing delays",
+          "Prior authorization system unavailability",
+          "Provider portal outage",
+          "Batch processing / job failures",
+          "EDI / interface failures",
+          "Regulatory reporting delays",
+          "None in the past 12 months",
+        ],
+      },
     ],
   },
   {
@@ -29,7 +44,6 @@ const SECTIONS = [
       { id: "q4", text: "How effectively are high-priority incidents managed from identification to resolution?" },
       { id: "q5", text: "How clearly are roles, responsibilities, and communication handled during major incidents?" },
       { id: "q6", text: "How well are recurring issues, root causes, and preventive actions identified and tracked?" },
-      { id: "q6b", text: "Please describe any recent outages that had a measurable business impact (e.g. member portal downtime, claims processing delays, or regulatory timeline risk). Include approximate duration and affected services if known.", type: "text" as const },
     ],
   },
   {
@@ -116,6 +130,7 @@ export default function TransformationMindsetSurvey() {
       ALL_RATING_IDS.forEach(id => { payload[id] = answers[id]; });
       payload.q19 = answers.q19 ?? "";
       payload.q20 = answers.q20 ?? "";
+      payload.q_outage = answers.q_outage ?? "";
       const res = await fetch("/api/transformation-survey/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,7 +225,39 @@ export default function TransformationMindsetSurvey() {
                       {q.text}
                     </p>
 
-                    {!q.type ? (
+                    {q.type === "checkbox" && "options" in q ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {q.options.map((opt: string) => {
+                          const selected = ((answers[q.id] as string) ?? "").split("|||").filter(Boolean).includes(opt);
+                          return (
+                            <button key={opt} type="button"
+                              onClick={() => {
+                                const cur = ((answers[q.id] as string) ?? "").split("|||").filter(Boolean);
+                                const next = selected ? cur.filter(x => x !== opt) : [...cur, opt];
+                                setAnswers(a => ({ ...a, [q.id]: next.join("|||") }));
+                              }}
+                              className={cn(
+                                "flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 text-left text-sm transition-all duration-150",
+                                selected
+                                  ? "border-blue-500 bg-blue-50 text-blue-800 font-medium shadow-sm"
+                                  : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-slate-50",
+                              )}>
+                              <span className={cn(
+                                "w-4 h-4 rounded border-2 flex-shrink-0 flex items-center justify-center transition-all",
+                                selected ? "border-blue-500 bg-blue-500" : "border-slate-300 bg-white",
+                              )}>
+                                {selected && (
+                                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </span>
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : !q.type ? (
                       <>
                         {/* Scale legend */}
                         <div className="grid grid-cols-5 gap-1.5 mb-3">
