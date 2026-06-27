@@ -1,0 +1,1469 @@
+Build a professional, interactive web application called Horizon Autonomous Agent Value Simulator.
+
+The application should demonstrate how IBM can help Horizon implement autonomous agents within the first 6 months of engagement to drive measurable productivity across IT operations, QE, modernization, business operations, release governance, and transformation execution.
+
+The app should feel like an executive-ready IBM client demo for Horizon BCBS. It should be visually polished, interactive, and easy to present in an orals / proposal discussion.
+
+Use:
+
+* React with Vite
+* Tailwind CSS
+* Recharts
+* Lucide React icons
+* No backend required
+* All data should be local sample data
+* Fully responsive design
+* Clean enterprise UI with dark blue, white, light gray, subtle gradients, professional cards, badges, and charts
+
+Application name:
+Horizon Autonomous Agent Value Simulator
+
+Subtitle:
+6-Month Path to Measurable Productivity through Governed Autonomous Agents
+
+Primary message:
+IBM is not proposing AI as a generic experiment. IBM is proposing a governed autonomous agent path that starts with high-volume Horizon workflows, proves measurable productivity in the first 90 days, and scales into business operations, modernization, and transformation execution within 6 months.
+
+Horizon context to use throughout the application:
+
+* Horizon has a large managed services, application operations, and QE environment.
+* IBM is the incumbent and already understands Horizon applications, operational challenges, delivery data, ticket patterns, testing scope, governance needs, and modernization opportunities.
+* Horizon is moving toward a product / pod-based model but is currently largely funded by projects.
+* IBM’s approach should support the transition from project-funded delivery to more persistent capability-aligned pods.
+* IBM will bring Transformation Office advisors, AI specialists, AIOps experts, QE automation experts, modernization architects, and business process SMEs.
+* IBM will leverage AIOps, BOB, AWS services where appropriate, Horizon-approved agnostic AI tools, and existing Horizon knowledge assets.
+* The agent strategy should support three major pillars:
+    1. Operations
+    2. Modernization
+    3. Transformation / Business Operations
+* The purpose is measurable productivity, not AI experimentation.
+
+Design requirements:
+
+* Executive consulting dashboard style
+* IBM-inspired professional theme
+* Dark navy header
+* White and light gray content area
+* Blue accent colors
+* Use cards, tabs, badges, charts, sliders, and workflow diagrams
+* Use simple animation / hover effects
+* Avoid cartoonish UI
+* Make it look boardroom-ready
+* Include Horizon-specific wording throughout
+* Include “Why this matters for Horizon” callout boxes
+* Include “Before vs After” comparisons
+* Include measurable value and productivity metrics
+* Include personas and role-based value
+* Include a 6-month implementation path
+* Include governance and guardrails
+
+Navigation tabs:
+
+1. Executive View
+2. Agent Catalog
+3. Personas
+4. Agent Workflow Demo
+5. ROI Simulator
+6. 6-Month Roadmap
+7. Governance & Guardrails
+8. IBM First-Wave Recommendation
+
+⸻
+
+TAB 1: EXECUTIVE VIEW
+
+Create an executive dashboard with the following sections:
+
+A. Hero section
+
+Title:
+Autonomous Agents for Horizon: From AI-Assisted Delivery to Governed Autonomy
+
+Description:
+IBM will help Horizon deploy a practical portfolio of autonomous agents that improve IT operations, QE delivery, modernization planning, release readiness, and payer business operations. The first 6 months will focus on measurable productivity, governed adoption, human approval workflows, and scalable agent patterns that support Horizon’s product / pod evolution.
+
+B. Executive metric cards
+
+Show the following metric cards:
+
+1. Total Agents Proposed
+    Value: 10
+    Description: Across IT operations, QE, modernization, release governance, and business operations
+2. 6-Month Productivity Target
+    Value: 25–30%
+    Description: Realistic productivity improvement in selected workflows by month 6
+3. Business Process Productivity
+    Value: 15–25%
+    Description: Claims, prior authorization, member service, and provider data productivity opportunity
+4. IT Operations Productivity
+    Value: 20–30%
+    Description: Triage, problem management, knowledge reuse, and runbook acceleration
+5. QE Productivity Opportunity
+    Value: 20–30%
+    Description: Test generation, regression optimization, traceability, and defect summarization
+6. Target Pilot Areas
+    Value: 4
+    Description: IT operations, QE, claims, and prior authorization in the first 90 days
+
+C. Chart 1: Productivity Ramp Over 6 Months
+
+Use a line chart with the following data:
+
+* Month 1: 3%
+* Month 2: 7%
+* Month 3: 12%
+* Month 4: 18%
+* Month 5: 24%
+* Month 6: 30%
+
+Chart title:
+Productivity Ramp Over 6 Months
+
+Chart subtitle:
+Expected productivity improvement as agents move from assisted workflows to governed autonomy.
+
+D. Chart 2: Productivity by Agent
+
+Use a bar chart with midpoint productivity values:
+
+* Incident Triage Agent: 25%
+* Problem Management Agent: 12%
+* QE Test Agent: 25%
+* Modernization Assessment Agent: 30%
+* Release Readiness Agent: 30%
+* Claims Process Agent: 20%
+* Prior Authorization Agent: 18%
+* Member Service Agent: 15%
+* Provider Data Agent: 20%
+* Knowledge / Runbook Agent: 20%
+
+Chart title:
+Indicative Productivity by Agent
+
+E. Executive storyline card
+
+Include this text:
+
+IBM’s recommendation for Horizon:
+Start with agents where IBM already has operational context and Horizon has high-volume manual effort. The first 90 days should prove value in Incident Triage, QE Test Generation, Claims Process Support, and Prior Authorization Intake. By month 6, Horizon should have a governed agent operating model, production-ready agent patterns, productivity measurement, human approval workflows, and a scale roadmap aligned to the product / pod transformation.
+
+⸻
+
+TAB 2: AGENT CATALOG
+
+Create expandable agent cards for the following 10 agents.
+
+Each card should include:
+
+* Agent name
+* Pillar
+* Persona
+* Description
+* Key inputs
+* Outputs
+* KPIs
+* Productivity range
+* Recommended implementation month
+* Human approval required
+* Autonomy level
+* Before vs After comparison
+* Why this matters for Horizon
+
+Use badges for pillars:
+
+* Operations
+* Modernization
+* QE
+* Business Operations
+* Transformation
+
+Autonomy levels:
+
+* Level 1: Assist
+* Level 2: Recommend
+* Level 3: Execute with approval
+* Level 4: Autonomous within guardrails
+* Level 5: Multi-agent orchestration
+
+Agent 1: Incident Triage Agent
+
+Pillar:
+Operations
+
+Persona:
+L2 Support Analyst, Ops Lead
+
+Description:
+Reviews alerts, tickets, application logs, runbooks, known errors, CMDB records, and historical resolutions to recommend likely root cause and next-best action.
+
+Key inputs:
+AIOps alerts, ServiceNow/Jira tickets, application logs, CMDB, runbooks, known error database, prior incident resolutions.
+
+Outputs:
+Triage summary, likely root cause, recommended fix, confidence score, escalation path, similar historical incidents, draft ticket update.
+
+KPIs:
+MTTR reduction, triage effort reduction, first-touch resolution improvement, ticket aging reduction, escalation quality.
+
+Productivity range:
+20% to 30%
+
+Recommended implementation month:
+Month 2 build, Month 3 pilot
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Analysts manually review alerts, logs, tickets, runbooks, and prior incidents.
+
+After:
+Agent creates a triage summary, recommends root cause, and suggests next-best action for analyst approval.
+
+Why this matters for Horizon:
+Horizon’s managed services environment has high-volume operational work. IBM already understands many of the applications and recurring support patterns, making this a fast-value agent.
+
+Agent 2: Problem Management Agent
+
+Pillar:
+Operations
+
+Persona:
+Service Manager, Problem Manager, Ops Lead
+
+Description:
+Detects recurring incidents, groups patterns by root cause, identifies problem candidates, and recommends permanent fixes or backlog items.
+
+Key inputs:
+Incident history, recurring defects, application ownership data, known errors, service performance data, change history.
+
+Outputs:
+Problem candidate list, recurrence analysis, impact summary, suspected root cause, preventive action recommendation, backlog candidate.
+
+KPIs:
+Repeat incident reduction, problem backlog quality, avoided tickets, recurring issue aging, permanent fix conversion.
+
+Productivity range:
+10% to 15%
+
+Recommended implementation month:
+Month 4
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Service managers manually identify repeat issues through ticket review and status meetings.
+
+After:
+Agent highlights recurring patterns and drafts problem candidates for review.
+
+Why this matters for Horizon:
+Reducing repeat incidents directly supports operational stability and frees capacity for modernization work.
+
+Agent 3: QE Test Agent
+
+Pillar:
+QE / Modernization
+
+Persona:
+Test Lead, QA Analyst, Product Owner
+
+Description:
+Generates test cases, regression packs, traceability mapping, and defect summaries from requirements, user stories, prior test cases, and release scope.
+
+Key inputs:
+Requirements, user stories, acceptance criteria, existing test cases, defects, regression history, release scope, application documentation.
+
+Outputs:
+Test scenarios, test cases, regression pack recommendations, traceability matrix, defect summary, coverage gaps.
+
+KPIs:
+Test case creation effort reduction, regression coverage, defect leakage reduction, test cycle acceleration, traceability completeness.
+
+Productivity range:
+20% to 30%
+
+Recommended implementation month:
+Month 2 build, Month 3 pilot
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Test teams manually create test scenarios and traceability documents.
+
+After:
+Agent drafts test cases, maps coverage, and recommends regression scope for test lead approval.
+
+Why this matters for Horizon:
+Horizon has a large QE scope. This agent creates measurable productivity in a high-effort delivery area and supports modernization velocity.
+
+Agent 4: Modernization Assessment Agent
+
+Pillar:
+Modernization
+
+Persona:
+Application Owner, Architect, Modernization Lead
+
+Description:
+Assesses application complexity, technical debt, cloud readiness, API dependencies, incident history, and modernization pathway.
+
+Key inputs:
+Application inventory, CMDB, code metadata, technology stack, interface inventory, incident history, infrastructure data, security findings.
+
+Outputs:
+Modernization score, complexity score, cloud readiness assessment, risk profile, recommended disposition, migration wave recommendation.
+
+KPIs:
+Assessment cycle time, modernization backlog quality, application disposition accuracy, planning acceleration, technical debt visibility.
+
+Productivity range:
+25% to 35%
+
+Recommended implementation month:
+Month 5
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Architects manually collect application data and build modernization assessments.
+
+After:
+Agent creates a structured assessment and recommended modernization path for architect review.
+
+Why this matters for Horizon:
+This connects operational pain points to modernization priorities and supports the move toward product-aligned pods.
+
+Agent 5: Release Readiness Agent
+
+Pillar:
+Transformation
+
+Persona:
+Release Manager, Product Owner, PMO, Delivery Lead
+
+Description:
+Summarizes release status, open risks, defects, test readiness, change dependencies, deployment readiness, and go/no-go recommendations.
+
+Key inputs:
+Release plan, defects, test status, change requests, dependency tracker, deployment checklist, risk log, environment readiness.
+
+Outputs:
+Release readiness score, executive summary, risk actions, dependency summary, go/no-go recommendation, draft release briefing.
+
+KPIs:
+Readiness reporting effort, release risk visibility, late issue reduction, governance cycle time, decision quality.
+
+Productivity range:
+25% to 35%
+
+Recommended implementation month:
+Month 5
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Release managers manually consolidate status across testing, defects, dependencies, and change readiness.
+
+After:
+Agent creates a release readiness summary and highlights go/no-go risks.
+
+Why this matters for Horizon:
+Horizon’s transformation requires better cross-team visibility and faster release decisioning.
+
+Agent 6: Claims Process Agent
+
+Pillar:
+Business Operations
+
+Persona:
+Claims Operations Lead, Business Analyst, Process Owner
+
+Description:
+Reviews claims exception queues, aging claims, denial patterns, adjustment requests, manual rework, and process bottlenecks to recommend next-best action, routing, and backlog candidates.
+
+Key inputs:
+Claims exception queues, aging reports, denial codes, adjustment history, business rules, process SOPs, prior resolution notes.
+
+Outputs:
+Claims exception summary, denial pattern analysis, recommended action, routing recommendation, backlog candidate, productivity impact estimate.
+
+KPIs:
+Claims exception handling effort, aging claim reduction, denial rework reduction, manual touchpoint reduction, business backlog quality.
+
+Productivity range:
+15% to 25%
+
+Recommended implementation month:
+Month 2 build, Month 3 pilot
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Claims teams manually review exceptions, aging, denial patterns, and rework drivers.
+
+After:
+Agent groups similar exceptions, recommends routing, and identifies recurring backlog candidates.
+
+Why this matters for Horizon:
+This shows Horizon that IBM’s AI strategy is not limited to IT. It directly supports payer business operations and measurable productivity.
+
+Agent 7: Prior Authorization Agent
+
+Pillar:
+Business Operations
+
+Persona:
+Prior Authorization Operations Lead, Clinical Operations Analyst, Intake Specialist
+
+Description:
+Supports prior authorization intake and review readiness by checking for missing information, summarizing request status, identifying routing needs, and recommending next steps based on policy and operational rules.
+
+Key inputs:
+PA intake records, clinical documentation checklist, policy rules, member eligibility, provider information, status history, SOPs.
+
+Outputs:
+Intake completeness score, missing information summary, routing recommendation, status summary, next-best action.
+
+KPIs:
+Intake review effort, incomplete request rate, cycle time, manual routing effort, status inquiry effort.
+
+Productivity range:
+15% to 20%
+
+Recommended implementation month:
+Month 2 build, Month 3 pilot
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+PA operations manually inspect intake information, missing documentation, status, and routing.
+
+After:
+Agent checks completeness, flags missing information, and recommends next-best action.
+
+Why this matters for Horizon:
+Prior authorization is a high-visibility payer process where cycle time and operational effort matter.
+
+Agent 8: Member Service Agent
+
+Pillar:
+Business Operations
+
+Persona:
+Contact Center Lead, Member Service Representative, Member Operations Lead
+
+Description:
+Summarizes member interaction history, identifies repeat contact drivers, suggests next-best action, and creates concise case summaries for faster member issue resolution.
+
+Key inputs:
+Member service cases, call notes, benefit information, claim status, authorization status, prior interactions, SOPs.
+
+Outputs:
+Member issue summary, repeat contact reason, recommended next action, escalation guidance, case summary.
+
+KPIs:
+Average handle time, repeat contact rate, case summarization effort, first-contact resolution support, escalation quality.
+
+Productivity range:
+10% to 20%
+
+Recommended implementation month:
+Month 4
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Representatives manually review member history, claim status, authorization status, and prior contact notes.
+
+After:
+Agent summarizes the issue and recommends next-best action.
+
+Why this matters for Horizon:
+Better member service support improves productivity and member experience while identifying systemic issues.
+
+Agent 9: Provider Data Agent
+
+Pillar:
+Business Operations
+
+Persona:
+Provider Operations Lead, Data Steward, Network Operations Analyst
+
+Description:
+Reviews provider roster updates, duplicate records, missing data, network status mismatches, and data quality exceptions to recommend corrections and create steward worklists.
+
+Key inputs:
+Provider roster files, provider master data, network status data, credentialing data, directory records, exception reports, data quality rules.
+
+Outputs:
+Provider data exception list, duplicate detection, missing data summary, correction recommendation, steward worklist, downstream impact summary.
+
+KPIs:
+Manual provider data review effort, roster processing time, provider directory accuracy, duplicate reduction, downstream claims/member service issue reduction.
+
+Productivity range:
+15% to 25%
+
+Recommended implementation month:
+Month 4
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 2 initially, Level 3 by month 6
+
+Before:
+Data stewards manually review rosters, exceptions, mismatches, and duplicates.
+
+After:
+Agent identifies exceptions, recommends corrections, and creates steward worklists.
+
+Why this matters for Horizon:
+Provider data quality affects claims, member service, provider experience, and compliance-sensitive operations.
+
+Agent 10: Knowledge / Runbook Agent
+
+Pillar:
+Operations
+
+Persona:
+Support Analyst, New Joiner, Pod Member
+
+Description:
+Answers operational questions using Horizon-specific runbooks, prior tickets, SOPs, known errors, and application knowledge.
+
+Key inputs:
+Runbooks, SOPs, prior tickets, known errors, knowledge articles, application documentation.
+
+Outputs:
+Step-by-step guidance, source references, escalation guidance, confidence level, related tickets.
+
+KPIs:
+Analyst onboarding time, knowledge reuse, ticket resolution time, escalation reduction, support consistency.
+
+Productivity range:
+15% to 25%
+
+Recommended implementation month:
+Month 3
+
+Human approval required:
+Yes
+
+Autonomy level:
+Level 1 initially, Level 2 by month 6
+
+Before:
+Analysts search across multiple documents, tickets, and SME channels.
+
+After:
+Agent provides contextual answers with source references and escalation guidance.
+
+Why this matters for Horizon:
+This preserves institutional knowledge and supports product / pod-based delivery by making knowledge easier to reuse.
+
+⸻
+
+TAB 3: PERSONAS
+
+Create persona cards for the following personas:
+
+1. L2 Support Analyst
+    Current pain points:
+
+* Too much manual log and ticket review
+* Limited time to search prior fixes
+* High dependency on SME knowledge
+    Agent support:
+* Incident Triage Agent
+* Knowledge / Runbook Agent
+    Time saved:
+    2–4 hours per week per analyst
+    Value created:
+    Faster triage, better first-touch resolution, less escalation
+    Example question:
+    “What is the likely cause of this alert and what was done last time?”
+
+2. Ops Lead
+    Current pain points:
+
+* Too many tickets to prioritize manually
+* Limited visibility into recurring incidents
+* Manual status consolidation
+    Agent support:
+* Incident Triage Agent
+* Problem Management Agent
+* Knowledge / Runbook Agent
+    Time saved:
+    4–6 hours per week
+    Value created:
+    Better prioritization, faster root-cause analysis, reduced repeat issues
+    Example question:
+    “Which incidents this week are likely related and need problem management?”
+
+3. Service Manager
+    Current pain points:
+
+* Manual problem identification
+* Reactive recurring incident management
+* Slow service reporting
+    Agent support:
+* Problem Management Agent
+* Incident Triage Agent
+    Time saved:
+    3–5 hours per week
+    Value created:
+    Reduced recurring tickets and better preventive action planning
+    Example question:
+    “Which incidents should be converted into problem records?”
+
+4. Test Lead
+    Current pain points:
+
+* Manual test case writing
+* Regression scope decisions take time
+* Traceability is effort-heavy
+    Agent support:
+* QE Test Agent
+    Time saved:
+    5–8 hours per week
+    Value created:
+    Faster test planning, improved coverage, better traceability
+    Example question:
+    “Generate test scenarios and regression recommendations for this user story.”
+
+5. Application Owner
+    Current pain points:
+
+* Modernization planning requires manual discovery
+* Technical debt data is fragmented
+* Business pain points are not always linked to app strategy
+    Agent support:
+* Modernization Assessment Agent
+* Problem Management Agent
+    Time saved:
+    4–7 hours per week
+    Value created:
+    Faster modernization intake and better prioritization
+    Example question:
+    “What is the modernization readiness score for this application?”
+
+6. Release Manager
+    Current pain points:
+
+* Manual release readiness reporting
+* Dependencies spread across teams
+* Defect and test status consolidation is time-consuming
+    Agent support:
+* Release Readiness Agent
+* QE Test Agent
+    Time saved:
+    4–6 hours per week
+    Value created:
+    Faster release governance and improved risk visibility
+    Example question:
+    “Summarize release readiness and identify go/no-go risks.”
+
+7. Claims Operations Lead
+    Current pain points:
+
+* Claims exceptions require manual review
+* Aging claims and denial patterns are hard to group
+* Process issues are not always linked to technology backlog
+    Agent support:
+* Claims Process Agent
+    Time saved:
+    5–8 hours per week
+    Value created:
+    Reduced claims exception effort and better backlog quality
+    Example question:
+    “Group these claims exceptions by likely root cause and recommended action.”
+
+8. Prior Authorization Operations Lead
+    Current pain points:
+
+* Intake completeness review is manual
+* Missing information creates delays
+* Routing decisions depend on tribal knowledge
+    Agent support:
+* Prior Authorization Agent
+    Time saved:
+    4–6 hours per week
+    Value created:
+    Faster intake review and improved cycle time visibility
+    Example question:
+    “What information is missing from this PA request and where should it be routed?”
+
+9. Provider Data Steward
+    Current pain points:
+
+* Manual roster review
+* Duplicate and mismatch detection is time-consuming
+* Downstream impact is not always visible
+    Agent support:
+* Provider Data Agent
+    Time saved:
+    4–6 hours per week
+    Value created:
+    Improved provider data quality and reduced downstream issues
+    Example question:
+    “Identify provider data mismatches and recommend steward actions.”
+
+10. Transformation Office Lead
+    Current pain points:
+
+* Transformation progress is manually consolidated
+* Value tracking is inconsistent
+* Product / pod transition requires better visibility
+    Agent support:
+* Release Readiness Agent
+* Modernization Assessment Agent
+* Business Process Agents
+    Time saved:
+    4–8 hours per week
+    Value created:
+    Better executive visibility and measurable transformation outcomes
+    Example question:
+    “Which agents are producing measurable productivity this month?”
+
+Each persona card should include:
+
+* Persona name
+* Role description
+* Pain points
+* Agents that help
+* Time saved
+* Value created
+* Example prompt/question
+* Persona impact score from 1 to 5
+
+⸻
+
+TAB 4: AGENT WORKFLOW DEMO
+
+Create an interactive workflow simulator.
+
+User can select one of these workflows from a dropdown or button group:
+
+1. AIOps Incident Triage
+2. QE Test Generation
+3. Claims Exception Workflow
+4. Prior Authorization Workflow
+5. Member Service Workflow
+6. Provider Data Workflow
+7. Modernization Assessment
+8. Release Readiness
+
+When selected, show:
+
+* Workflow title
+* Description
+* Persona involved
+* Input data
+* Step-by-step agent process using cards and arrows
+* Agent output
+* Human approval point
+* Expected productivity gain
+* Sample agent response
+* Before vs After comparison
+
+Workflow 1: AIOps Incident Triage
+
+Description:
+Agent reviews AIOps alert, correlates ticket history, checks logs and runbooks, and recommends resolution.
+
+Steps:
+
+1. Alert received from AIOps
+2. Agent checks logs, CMDB, runbook, and similar tickets
+3. Agent identifies likely root cause
+4. Agent recommends resolution and confidence score
+5. Human analyst approves or escalates
+6. Agent updates ticket and knowledge base
+
+Sample output:
+“Likely root cause: database connection pool saturation. Similar issue occurred 3 times in the last 60 days. Recommended action: restart connection pool service, validate downstream batch queue, and monitor for 30 minutes. Confidence: 82%.”
+
+Expected productivity:
+20–30% triage effort reduction
+
+Workflow 2: QE Test Generation
+
+Description:
+Agent converts requirements and user stories into test scenarios, regression recommendations, and traceability.
+
+Steps:
+
+1. Requirement or user story selected
+2. Agent reviews prior test cases and defects
+3. Agent generates test scenarios
+4. Agent maps traceability
+5. Test lead reviews and approves
+6. Agent publishes test pack
+
+Sample output:
+“Generated 14 test scenarios, including 5 positive, 4 negative, 3 regression, and 2 integration scenarios. Found coverage gap for eligibility exception handling.”
+
+Expected productivity:
+20–30% testing productivity improvement
+
+Workflow 3: Claims Exception Workflow
+
+Description:
+Agent reviews claims exceptions, groups patterns, recommends actions, and identifies recurring backlog candidates.
+
+Steps:
+
+1. Claims exception queue selected
+2. Agent reviews denial codes, aging, adjustment history, and SOPs
+3. Agent groups similar exceptions by likely root cause
+4. Agent recommends next-best action or routing
+5. Claims lead approves recommendation
+6. Agent updates worklist and creates backlog candidate if recurring
+
+Sample output:
+“42 exceptions are related to coordination of benefits mismatch. 18 are aged over 15 days. Recommended action: route to COB review queue and create backlog item for upstream eligibility validation rule.”
+
+Expected productivity:
+15–25% claims exception analysis effort reduction
+
+Workflow 4: Prior Authorization Workflow
+
+Description:
+Agent checks PA request completeness, missing documentation, routing logic, and next-best action.
+
+Steps:
+
+1. PA request received
+2. Agent checks required documents, eligibility, provider data, and policy rules
+3. Agent identifies missing information
+4. Agent recommends routing and next-best action
+5. PA operations user validates
+6. Agent updates status summary and work queue
+
+Sample output:
+“PA request is 78% complete. Missing: clinical notes and diagnosis code confirmation. Recommended routing: pending information queue. Suggested outbound note drafted.”
+
+Expected productivity:
+15–20% intake review effort reduction
+
+Workflow 5: Member Service Workflow
+
+Description:
+Agent summarizes member issue, prior interactions, claim or authorization status, and recommends next-best action.
+
+Steps:
+
+1. Member case selected
+2. Agent reviews prior contacts, claim status, authorization status, and benefit context
+3. Agent summarizes member issue
+4. Agent recommends next-best action
+5. Service representative validates response
+6. Agent creates case note and flags repeat contact driver
+
+Sample output:
+“Member has contacted 3 times regarding claim status. Root issue appears to be pending provider documentation. Recommended action: explain status, provide expected next step, and route documentation request to provider operations.”
+
+Expected productivity:
+10–20% case summarization and handling support improvement
+
+Workflow 6: Provider Data Workflow
+
+Description:
+Agent identifies provider data gaps, duplicate records, roster exceptions, and downstream impact.
+
+Steps:
+
+1. Provider roster or exception file received
+2. Agent checks provider master data, directory records, network status, and credentialing data
+3. Agent identifies duplicates, missing data, and mismatches
+4. Agent recommends corrections
+5. Data steward approves updates
+6. Agent creates worklist and downstream impact summary
+
+Sample output:
+“Found 27 provider records with network status mismatch and 11 probable duplicates. Recommended steward review for high-volume providers first due to downstream claims and member directory impact.”
+
+Expected productivity:
+15–25% manual provider data review reduction
+
+Workflow 7: Modernization Assessment
+
+Description:
+Agent assesses application readiness, technical debt, operational pain, and modernization pathway.
+
+Steps:
+
+1. Application selected
+2. Agent reviews app inventory, incidents, technology stack, interfaces, and risk data
+3. Agent calculates complexity and modernization readiness score
+4. Agent recommends disposition
+5. Architect reviews
+6. Modernization wave plan updated
+
+Sample output:
+“Application modernization readiness: Medium. Complexity score: 68/100. Recommended path: refactor targeted services and remediate API dependencies before cloud migration. High incident volume supports prioritization in Wave 2.”
+
+Expected productivity:
+25–35% assessment cycle time reduction
+
+Workflow 8: Release Readiness
+
+Description:
+Agent reviews test status, open defects, dependencies, change readiness, and release risks.
+
+Steps:
+
+1. Release data collected
+2. Agent checks defects, dependencies, testing, change readiness, and deployment checklist
+3. Agent calculates readiness score
+4. Agent drafts executive summary
+5. Release manager approves
+6. Dashboard / briefing updated
+
+Sample output:
+“Release readiness score: 74/100. Key risks: 3 open severity defects, incomplete regression signoff, and one unresolved dependency. Recommendation: conditional go with defect closure by Thursday.”
+
+Expected productivity:
+25–35% readiness reporting effort reduction
+
+⸻
+
+TAB 5: ROI SIMULATOR
+
+Create an interactive ROI calculator with sliders.
+
+Sliders:
+
+1. Number of FTEs impacted
+
+* Default: 150
+* Min: 25
+* Max: 1000
+
+2. Average fully loaded annual cost per FTE
+
+* Default: $140,000
+* Min: $80,000
+* Max: $220,000
+
+3. Productivity gain percentage
+
+* Default: 20%
+* Min: 5%
+* Max: 40%
+
+4. Adoption factor
+
+* Default: 60%
+* Min: 20%
+* Max: 100%
+
+5. Implementation cost
+
+* Default: $1,200,000
+* Min: $250,000
+* Max: $5,000,000
+
+Calculations:
+Gross annual productivity value = FTEs impacted × annual cost × productivity gain %
+
+Realized annual value = gross annual productivity value × adoption factor
+
+Net annual value = realized annual value - implementation cost
+
+ROI % = net annual value / implementation cost × 100
+
+Realized monthly value = realized annual value / 12
+
+Payback months = implementation cost / realized monthly value
+
+Show result cards:
+
+* Gross annual productivity value
+* Realized annual value
+* Net annual value
+* ROI %
+* Payback months
+
+Show a bar chart comparing:
+
+* Implementation cost
+* Realized annual value
+* Net annual value
+
+Add a scenario selector with three options:
+
+Conservative:
+
+* FTEs impacted: 100
+* Annual cost: $130,000
+* Productivity gain: 12%
+* Adoption factor: 50%
+* Implementation cost: $1,200,000
+
+Expected:
+
+* FTEs impacted: 150
+* Annual cost: $140,000
+* Productivity gain: 20%
+* Adoption factor: 60%
+* Implementation cost: $1,200,000
+
+Transformational:
+
+* FTEs impacted: 300
+* Annual cost: $150,000
+* Productivity gain: 30%
+* Adoption factor: 75%
+* Implementation cost: $2,000,000
+
+Add note:
+“These are directional business case estimates. IBM recommends using Horizon’s actual ticket volume, delivery metrics, QE effort, claims exception effort, prior authorization effort, provider data review effort, release governance effort, and modernization assessment effort to finalize the committed value case.”
+
+Add another note:
+“Productivity should be measured as capacity creation, cycle time improvement, rework reduction, and reduction in manual analysis effort — not only as labor reduction.”
+
+⸻
+
+TAB 6: 6-MONTH ROADMAP
+
+Create a horizontal roadmap with 6 months.
+
+Each month should have:
+
+* Theme
+* Key activities
+* Agents introduced
+* Value measurement
+* Key deliverables
+
+Month 1: Foundation & Baseline
+
+Theme:
+Establish agent foundation, data readiness, and measurable baseline.
+
+Activities:
+
+* Confirm pilot areas across IT operations, QE, claims, and prior authorization
+* Baseline ticket volume, claims exception effort, PA intake effort, provider data review effort, QE effort, and release reporting effort
+* Confirm approved data sources and access
+* Establish AI governance and PHI/PII guardrails
+* Define productivity measurement model
+* Finalize first-wave agent backlog
+* Align with Horizon product / pod transition roadmap
+
+Agents introduced:
+None in production; agent designs finalized
+
+Value measurement:
+Baseline current effort, cycle time, volume, and quality metrics
+
+Deliverables:
+
+* Agent backlog
+* Baseline productivity dashboard
+* Governance model
+* Data access plan
+* First-wave agent designs
+
+Month 2: Assisted Agent Build
+
+Theme:
+Build first-wave agents as copilots with human review.
+
+Activities:
+
+* Build Incident Triage Agent
+* Build QE Test Agent
+* Build Claims Process Agent
+* Build Prior Authorization Agent
+* Validate agent outputs with Horizon SMEs
+* Configure prompt templates
+* Define approval workflow
+* Prepare sandbox demos
+
+Agents introduced:
+
+* Incident Triage Agent
+* QE Test Agent
+* Claims Process Agent
+* Prior Authorization Agent
+
+Value measurement:
+Measure accuracy, usefulness, user feedback, time saved in controlled scenarios
+
+Deliverables:
+
+* Working first-wave agents
+* Prompt library
+* SME validation results
+* Initial demo environment
+
+Month 3: Pilot Deployment
+
+Theme:
+Deploy agents into selected real workflows and start value tracking.
+
+Activities:
+
+* Deploy first-wave agents into selected support, QE, claims, and PA workflows
+* Capture user feedback
+* Tune prompts and business rules
+* Track adoption and productivity
+* Start weekly value reporting
+* Create repeatable onboarding materials
+
+Agents introduced:
+
+* Knowledge / Runbook Agent
+
+Value measurement:
+Measure time saved, adoption rate, human approval rate, rework, and cycle time
+
+Deliverables:
+
+* Pilot performance report
+* Value tracking dashboard
+* User feedback summary
+* Updated prompt and rules library
+
+Month 4: Business Process Expansion
+
+Theme:
+Expand from IT and QE pilots into broader business process productivity.
+
+Activities:
+
+* Add Provider Data Agent
+* Add Member Service Agent
+* Connect recurring process issues to modernization backlog
+* Expand claims and PA workflows
+* Introduce confidence scoring
+* Introduce structured human approval workflow
+* Start cross-agent insights
+
+Agents introduced:
+
+* Provider Data Agent
+* Member Service Agent
+* Problem Management Agent
+
+Value measurement:
+Measure claims exception effort, PA cycle time, provider data review effort, repeat contact drivers, and repeat incident trends
+
+Deliverables:
+
+* Business process agent pilots
+* Confidence scoring model
+* Approval workflow
+* Process-to-modernization backlog linkage
+
+Month 5: Modernization & Release Integration
+
+Theme:
+Use agents to connect operations, business pain points, modernization, and release governance.
+
+Activities:
+
+* Add Modernization Assessment Agent
+* Add Release Readiness Agent
+* Link business process pain points to application modernization priorities
+* Expand QE automation
+* Build release readiness dashboard
+* Start productivity reporting by persona and process
+* Prepare scale model for product / pod-based teams
+
+Agents introduced:
+
+* Modernization Assessment Agent
+* Release Readiness Agent
+
+Value measurement:
+Measure modernization assessment cycle time, release reporting effort, defect readiness, and portfolio visibility
+
+Deliverables:
+
+* Modernization assessment output
+* Release readiness scorecard
+* Persona productivity report
+* Product / pod agent adoption model
+
+Month 6: Governed Autonomy
+
+Theme:
+Move from assisted agents to governed autonomy within approved guardrails.
+
+Activities:
+
+* Enable autonomous updates within approved guardrails
+* Auto-generate worklist summaries
+* Auto-create draft backlog candidates
+* Auto-create draft problem records
+* Auto-update knowledge base after approval
+* Enable multi-agent orchestration patterns
+* Finalize scale roadmap across product / pod model
+* Publish final value case
+
+Agents introduced:
+All first-wave and second-wave agents operational in controlled workflows
+
+Value measurement:
+Measure productivity gain, adoption, ROI, cycle time improvement, quality improvement, and governance compliance
+
+Deliverables:
+
+* 6-month value realization report
+* Governed autonomy playbook
+* Scale roadmap
+* Agent operating model
+* Final ROI case
+* Product / pod alignment plan
+
+⸻
+
+TAB 7: GOVERNANCE & GUARDRAILS
+
+Create a governance page with the following sections.
+
+A. Governance principles
+
+1. Human-in-the-loop for critical decisions
+2. Auditability by design
+3. PHI/PII protection
+4. Confidence-based routing
+5. Role-based access control
+6. Explainable recommendations
+7. Source traceability
+8. Approved model and tool usage
+9. Safe escalation paths
+10. Continuous monitoring and tuning
+
+B. Human approval matrix
+
+Create a table:
+
+Action Type | Agent Can Draft | Agent Can Recommend | Human Approval Required | Agent Can Execute
+Ticket summary | Yes | Yes | No for draft | Yes within guardrails
+Production change | Yes | Yes | Yes | No
+Claims action | Yes | Yes | Yes | No initially
+PA routing | Yes | Yes | Yes | Yes only after approval
+Provider data correction | Yes | Yes | Yes | No initially
+Test case generation | Yes | Yes | Yes | Yes after approval
+Release go/no-go | Yes | Yes | Yes | No
+Modernization recommendation | Yes | Yes | Yes | No
+Knowledge article update | Yes | Yes | Yes | Yes after approval
+
+C. Agent maturity model
+
+Show 5 maturity levels:
+
+Level 1: AI-Assisted Search & Summarization
+Description:
+Agent helps users find information, summarize content, and reduce manual reading effort.
+
+Level 2: Recommendation Agent
+Description:
+Agent recommends next-best action with source references and confidence score.
+
+Level 3: Execute with Approval
+Description:
+Agent drafts updates or actions and executes only after human approval.
+
+Level 4: Autonomous within Guardrails
+Description:
+Agent executes low-risk actions automatically within pre-approved rules.
+
+Level 5: Multi-Agent Orchestration
+Description:
+Multiple agents coordinate across operations, QE, business processes, modernization, and governance.
+
+D. Required controls
+
+Create cards for:
+
+* Access control
+* Data masking
+* PHI/PII protection
+* Audit logs
+* Confidence thresholds
+* Prompt governance
+* Model monitoring
+* Exception handling
+* Human approval workflow
+* Source lineage
+* Performance scorecards
+* Security review
+
+E. Horizon-specific risk and mitigation table
+
+Risk | Mitigation
+
+Risk:
+Poor data quality limits agent accuracy
+Mitigation:
+Start with bounded workflows, use IBM’s existing operational knowledge, create confidence scoring, and apply human review.
+
+Risk:
+Users do not trust agent recommendations
+Mitigation:
+Show source references, confidence score, similar past cases, and feedback loop.
+
+Risk:
+Agents create compliance concern
+Mitigation:
+Apply PHI/PII controls, audit logs, role-based access, and human approval for sensitive actions.
+
+Risk:
+Agent value is not measurable
+Mitigation:
+Define baseline in month 1 and track productivity, cycle time, quality, and adoption weekly.
+
+Risk:
+Project-funded model limits adoption
+Mitigation:
+Start with project pilots, then scale through product / pod model as a shared productivity capability.
+
+Risk:
+Too many tools create complexity
+Mitigation:
+Use Horizon-approved AI tools, IBM reusable assets, AIOps, BOB, AWS where appropriate, and a common agent governance pattern.
+
+⸻
+
+TAB 8: IBM FIRST-WAVE RECOMMENDATION
+
+Create a final recommendation page titled:
+IBM Recommended First 4 Agents for Horizon
+
+Show these four first-wave agents as large cards:
+
+1. Incident Triage Agent
+2. QE Test Agent
+3. Claims Process Agent
+4. Prior Authorization Agent
+
+For each card include:
+
+* Why first
+* Data readiness
+* Persona impact
+* Expected productivity
+* 90-day outcome
+
+Incident Triage Agent:
+Why first:
+Uses existing operational data and IBM support knowledge.
+Data readiness:
+AIOps alerts, tickets, runbooks, logs, known errors.
+Persona impact:
+L2 analysts, Ops Leads, Service Managers.
+Expected productivity:
+20–30%.
+90-day outcome:
+Reduced triage effort and improved incident resolution consistency.
+
+QE Test Agent:
+Why first:
+Targets high-effort QE activities and supports modernization delivery.
+Data readiness:
+Requirements, test cases, defects, release scope.
+Persona impact:
+Test Leads, QA Analysts, Product Owners.
+Expected productivity:
+20–30%.
+90-day outcome:
+Faster test case generation, better regression planning, improved traceability.
+
+Claims Process Agent:
+Why first:
+Shows direct business operations value beyond IT automation.
+Data readiness:
+Claims exceptions, denial codes, aging reports, SOPs.
+Persona impact:
+Claims Ops Leads, Business Analysts, Process Owners.
+Expected productivity:
+15–25%.
+90-day outcome:
+Reduced claims exception analysis effort and better backlog candidates.
+
+Prior Authorization Agent:
+Why first:
+Targets a high-visibility payer process with measurable cycle time and intake effort.
+Data readiness:
+PA intake records, documentation checklists, policy rules, eligibility data.
+Persona impact:
+PA Ops Leads, Intake Specialists, Clinical Ops Analysts.
+Expected productivity:
+15–20%.
+90-day outcome:
+Faster intake review, fewer incomplete submissions, better routing.
+
+Add a summary statement:
+“These four agents create the fastest measurable value for Horizon because they combine IBM’s incumbent operational knowledge with high-volume business and technology workflows. They create visible productivity across IT operations, QE, claims operations, and prior authorization within the first 90 days.”
+
+Add another section:
+How IBM scales from first-wave agents to enterprise agent orchestration
+
+Step 1:
+Deploy first-wave agents into controlled workflows.
+
+Step 2:
+Measure adoption, productivity, cycle time, quality, and user trust.
+
+Step 3:
+Add Provider Data, Member Service, Problem Management, Modernization, and Release Readiness agents.
+
+Step 4:
+Connect agents through governed orchestration patterns.
+
+Step 5:
+Align agent adoption to Horizon’s product / pod operating model.
+
+Step 6:
+Scale agent productivity as a managed transformation capability.
+
+⸻
+
+DATA MODEL REQUIREMENTS
+
+Create local JavaScript data arrays for:
+
+* agents
+* personas
+* workflows
+* roadmap
+* governance

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/horizon-agent-sim/"
+title = "Horizon Autonomous Agent Value Simulator"
+version = "1.0.0"
+id = "artifacts/horizon-agent-sim"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/horizon-agent-sim/" ]
+localPort = 20656
+
+[services.development]
+run = "pnpm --filter @workspace/horizon-agent-sim run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/horizon-agent-sim", "run", "build" ]
+publicDir = "artifacts/horizon-agent-sim/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20656"
+BASE_PATH = "/horizon-agent-sim/"
