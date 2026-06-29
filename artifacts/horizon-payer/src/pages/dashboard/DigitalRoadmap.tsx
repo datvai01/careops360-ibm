@@ -279,14 +279,9 @@ const YEAR_OUTCOMES: Record<SectionKey, Record<number, string[]>> = {
     3: ["Full technology stack modernization complete", "100% supported, maintained technology estate"],
   },
   transformation: {
-    1: ["CareOps360 Command Center live for executive leadership", "Key payment and eligibility processes automated", "Cloud migration programs initiated across letter & document generation", "Provider audit cycle reduced 30→10 days"],
-    2: ["API-first integration hub deployed — real-time partner exchange", "Analytics consolidated to single Power BI platform", "Business rules fully self-configurable by business users", "Smartcomm cloud document delivery at scale"],
-    3: ["AI-driven prior auth at 85% auto-approval rate", "GenAI member engagement platform live — NPS +12", "Legacy application footprint eliminated across all domains"],
-  },
-  ticket: {
-    1: ["1,500+ monthly tickets eliminated or meaningfully reduced", "Self-service capabilities live for billing, enrollment, and broker teams", "AIOps event correlation reducing alert noise by 40%+", "Tier-1 resolution rate improved 20%+"],
-    2: ["Full shift-left program operational across all domains", "Predictive monitoring preventing issues before member impact", "Knowledge base achieving 80% first-call resolution"],
-    3: ["AI-driven ticket prevention achieving near-zero reactive work", "Self-healing systems live across all critical workflows"],
+    1: ["CareOps360 Command Center live for executive leadership", "Key payment and eligibility processes automated", "Cloud migration programs initiated across letter & document generation", "Provider audit cycle reduced 30→10 days", "1,500+ monthly tickets eliminated or meaningfully reduced", "Self-service capabilities live for billing, enrollment, and broker teams"],
+    2: ["API-first integration hub deployed — real-time partner exchange", "Analytics consolidated to single Power BI platform", "Business rules fully self-configurable by business users", "Smartcomm cloud document delivery at scale", "Full shift-left program operational across all domains", "Predictive monitoring preventing issues before member impact"],
+    3: ["AI-driven prior auth at 85% auto-approval rate", "GenAI member engagement platform live — NPS +12", "Legacy application footprint eliminated across all domains", "AI-driven ticket prevention achieving near-zero reactive work", "Self-healing systems live across all critical workflows"],
   },
   foundational: {
     1: ["CareOps360 Command Center live — enterprise operational visibility from day one", "AIOps event correlation engine deployed — 40%+ alert noise reduction", "4 pilot POD pods stood up — product-aligned delivery replacing project model", "OpenShift container platform live — hybrid cloud ready for transformation workloads"],
@@ -1277,15 +1272,15 @@ function InitiativeFormModal({
           </div>
 
           <FieldRow label="Description" required>
-            <FormTextarea value={form.description} onChange={set("description")} placeholder="Describe what this initiative entails…" required />
+            <FormTextarea value={form.description ?? ""} onChange={set("description")} placeholder="Describe what this initiative entails…" />
           </FieldRow>
 
           <FieldRow label="Expected Outcome" required>
-            <FormTextarea value={form.expectedOutcome} onChange={set("expectedOutcome")} placeholder="What will be achieved?" required />
+            <FormTextarea value={form.expectedOutcome ?? ""} onChange={set("expectedOutcome")} placeholder="What will be achieved?" />
           </FieldRow>
 
           <FieldRow label="Business Impact">
-            <FormTextarea value={form.businessImpact} onChange={set("businessImpact")} placeholder="Quantified business value (e.g. 25% cost reduction)…" rows={2} />
+            <FormTextarea value={form.businessImpact ?? ""} onChange={set("businessImpact")} placeholder="Quantified business value (e.g. 25% cost reduction)…" rows={2} />
           </FieldRow>
 
           <div className={form.initiativeType === "Upgrade" ? "grid grid-cols-3 gap-4" : "grid grid-cols-1 gap-4"}>
@@ -1295,10 +1290,10 @@ function InitiativeFormModal({
             {form.initiativeType === "Upgrade" && (
               <>
                 <FieldRow label="Current Version">
-                  <FormInput value={form.currentVersion} onChange={set("currentVersion")} placeholder="e.g. 4.8" />
+                  <FormInput value={form.currentVersion ?? ""} onChange={set("currentVersion")} placeholder="e.g. 4.8" />
                 </FieldRow>
                 <FieldRow label="Upgrade Version">
-                  <FormInput value={form.upgradeVersion} onChange={set("upgradeVersion")} placeholder="e.g. 8.0" />
+                  <FormInput value={form.upgradeVersion ?? ""} onChange={set("upgradeVersion")} placeholder="e.g. 8.0" />
                 </FieldRow>
               </>
             )}
@@ -1309,7 +1304,7 @@ function InitiativeFormModal({
               <FormInput value={form.serviceCategory} onChange={set("serviceCategory")} placeholder="e.g. Platform Upgrade" required />
             </FieldRow>
             <FieldRow label="Domain">
-              <FormSelect value={form.domain} onChange={set("domain")} options={DOMAINS.map(d => ({ value: d, label: d }))} />
+              <FormSelect value={form.domain ?? ""} onChange={set("domain")} options={DOMAINS.map(d => ({ value: d, label: d }))} />
             </FieldRow>
           </div>
 
@@ -1322,17 +1317,17 @@ function InitiativeFormModal({
               ]} />
             </FieldRow>
             <FieldRow label="Quarter">
-              <FormSelect value={form.planQuarter} onChange={set("planQuarter")} options={["Q1","Q2","Q3","Q4"].map(q => ({ value: q, label: q }))} />
+              <FormSelect value={form.planQuarter ?? ""} onChange={set("planQuarter")} options={["Q1","Q2","Q3","Q4"].map(q => ({ value: q, label: q }))} />
             </FieldRow>
             <FieldRow label="Complexity">
-              <FormSelect value={form.complexity} onChange={set("complexity")} options={[
+              <FormSelect value={form.complexity ?? ""} onChange={set("complexity")} options={[
                 { value: "Low", label: "Low" },
                 { value: "Med", label: "Medium" },
                 { value: "High", label: "High" },
               ]} />
             </FieldRow>
             <FieldRow label="Dependency (optional)">
-              <FormInput value={form.dependency} onChange={set("dependency")} placeholder="e.g. HLGN-1004, GOV-002" />
+              <FormInput value={form.dependency ?? ""} onChange={set("dependency")} placeholder="e.g. HLGN-1004, GOV-002" />
             </FieldRow>
           </div>
 
@@ -1365,7 +1360,7 @@ function InitiativeFormModal({
 
           <div className="grid grid-cols-2 gap-4">
             <FieldRow label="T-Shirt Size Estimate">
-              <FormSelect value={form.tShirtSize} onChange={set("tShirtSize")} options={[
+              <FormSelect value={form.tShirtSize ?? ""} onChange={set("tShirtSize")} options={[
                 { value: "", label: "— Not sized —" },
                 { value: "XS", label: "XS · ≤ 1 month" },
                 { value: "S", label: "S · 1–3 months" },
@@ -1375,7 +1370,7 @@ function InitiativeFormModal({
               ]} />
             </FieldRow>
             <FieldRow label="T-Shirt Sizing Rationale">
-              <FormTextarea value={form.tShirtRationale} onChange={set("tShirtRationale")} placeholder="Why this size — scope, complexity, dependencies, team count…" rows={2} />
+              <FormTextarea value={form.tShirtRationale ?? ""} onChange={set("tShirtRationale")} placeholder="Why this size — scope, complexity, dependencies, team count…" rows={2} />
             </FieldRow>
           </div>
 
