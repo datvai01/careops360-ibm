@@ -356,7 +356,7 @@ export default function Transition() {
                                 )}
                               </div>
                             </TooltipTrigger>
-                            <TooltipContent side="top" align="start" className="p-3">
+                            <TooltipContent side="top" align="start" className="p-3 bg-popover text-popover-foreground border shadow-lg">
                               <TaskDetail t={t} isMilestone={isMilestone} />
                             </TooltipContent>
                           </Tooltip>
