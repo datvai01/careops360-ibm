@@ -32,7 +32,7 @@ import {
   ResponsiveContainer,
   Treemap,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, Cell, LabelList,
-  ComposedChart, Line, Area,
+  ComposedChart, Line,
   Tooltip as RTooltip,
 } from "recharts";
 import {
@@ -2113,16 +2113,16 @@ const PRODUCTIVITY_UPLIFT = [
 ];
 
 const AI_TOOL_CONTRIBUTION = [
-  { tool: "IBM Bob (watsonx Code Assistant)", short: "IBM Bob", pct: 32, color: C.blue,
+  { tool: "IBM Bob (AI Code Assistant)", short: "IBM Bob", pct: 30, color: C.blue,
     note: "AI pair-programming: code generation, refactoring, test scaffolding & legacy code explanation" },
-  { tool: "AI Code Assistants (Cursor / equiv.)", short: "Code Assistants", pct: 24, color: C.teal,
+  { tool: "AI Code Assistants (Cursor / equiv.)", short: "Code Assistants", pct: 22, color: C.teal,
     note: "In-IDE completion, multi-file edits and rapid prototyping across pod engineers" },
-  { tool: "IBM AI Agents (watsonx Orchestrate)", short: "AI Agents", pct: 22, color: C.purple,
-    note: "Autonomous agents handling repetitive build, deploy and ops tasks end-to-end" },
-  { tool: "Reusable IBM Assets & Accelerators", short: "Assets & Accelerators", pct: 14, color: C.orange,
-    note: "Pre-built blueprints, frameworks and industry accelerators shortcut delivery" },
-  { tool: "AIOps & Automation", short: "AIOps", pct: 8, color: C.green,
-    note: "Self-healing operations and automated remediation free engineer capacity" },
+  { tool: "Process Automation", short: "Process Automation", pct: 18, color: C.purple,
+    note: "Automating repetitive build, deploy and operations runbooks end-to-end" },
+  { tool: "CI/CD Automation", short: "CI/CD", pct: 16, color: C.orange,
+    note: "Automated build, test and release pipelines shorten lead time and cut manual hand-offs" },
+  { tool: "Requirement Improvements", short: "Requirements", pct: 14, color: C.green,
+    note: "Higher-quality, AI-assisted requirements reduce rework, defects and clarification cycles" },
 ];
 
 const LABOR_MIX = [
@@ -2134,15 +2134,15 @@ const LABOR_MIX = [
 
 const DIGITAL_LABOR_FACTORS = [
   { title: "AI Code Assistants", color: C.blue,
-    desc: "IBM Bob & Cursor generate, review and refactor code — shifting routine engineering effort to digital labor" },
-  { title: "Autonomous Agents", color: C.purple,
-    desc: "watsonx Orchestrate agents execute build / test / deploy and ops runbooks without human hand-holding" },
-  { title: "Reusable Assets & Accelerators", color: C.orange,
-    desc: "IBM blueprints and frameworks replace bespoke manual builds with configurable components" },
-  { title: "AIOps Automation", color: C.green,
-    desc: "Self-healing monitoring and auto-remediation absorb L1 / L2 operational toil" },
-  { title: "Self-Service Enablement", color: C.teal,
-    desc: "Tier-0 knowledge and guided workflows deflect manual support effort to the platform" },
+    desc: "IBM Bob & equivalents like Cursor generate, review and refactor code — shifting routine engineering effort to digital labor" },
+  { title: "Process Automation", color: C.purple,
+    desc: "Automated workflows execute repetitive build, deploy and operations runbooks without human hand-holding" },
+  { title: "CI/CD Automation", color: C.orange,
+    desc: "Automated build / test / release pipelines remove manual hand-offs and accelerate delivery" },
+  { title: "Requirement Improvements", color: C.green,
+    desc: "Sharper, AI-assisted requirements cut rework and defect-driven manual effort downstream" },
+  { title: "Reusable Assets & Accelerators", color: C.teal,
+    desc: "Blueprints and frameworks replace bespoke manual builds with configurable components" },
 ];
 
 function PodProductivityLaborSection() {
@@ -2159,7 +2159,7 @@ function PodProductivityLaborSection() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#82cfff]">AI-Driven Productivity & Labor Shift</span>
           </div>
           <p className="text-xs text-white/70 mt-1 max-w-2xl">
-            Year-over-year productivity uplift powered by IBM Bob (watsonx Code Assistant), Cursor and other AI code assistants, IBM AI agents and reusable assets — driving a steady shift from manual to digital labor across the pod model.
+            Year-over-year productivity uplift powered by IBM Bob and equivalent AI code assistants like Cursor, plus requirement improvements, process automation and CI/CD — driving a steady shift from manual to digital labor across the pod model.
           </p>
         </div>
         <div className="flex gap-5 flex-shrink-0">
@@ -2209,7 +2209,10 @@ function PodProductivityLaborSection() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="stage" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${Math.round(v * 100)}%`} />
-                <RTooltip formatter={(v: number, name: string) => [`${v}%`, name === "manual" ? "Manual labor" : "Digital labor"]} />
+                <RTooltip formatter={(v: number, name: string, item: any) => {
+                  const raw = item?.payload?.[name];
+                  return [`${raw ?? Math.round(v * 100)}%`, name === "manual" ? "Manual labor" : "Digital labor"];
+                }} />
                 <Legend iconSize={10} wrapperStyle={{ fontSize: 10 }} formatter={(v: string) => v === "manual" ? "Manual labor (human FTE)" : "Digital labor (AI / automation)"} />
                 <Bar dataKey="manual" name="manual" stackId="a" fill={C.orange} barSize={46} />
                 <Bar dataKey="digital" name="digital" stackId="a" fill={C.blue} radius={[4, 4, 0, 0]} barSize={46} />
