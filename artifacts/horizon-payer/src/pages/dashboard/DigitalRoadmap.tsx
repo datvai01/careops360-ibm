@@ -1,4 +1,8 @@
 import React, { useState, useMemo, useCallback } from "react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, Cell, LabelList,
+} from "recharts";
 import * as XLSX from "xlsx";
 import {
   useGetRoadmapInitiatives,
@@ -1878,6 +1882,198 @@ function YearOutcomes({ sectionKey, year }: { sectionKey: SectionKey; year: Year
   );
 }
 
+// ─── Ticket Reduction Plan Visualisation ─────────────────────────────────────
+
+const TR_REDUCTION_BARS = [
+  { year: "Year 1 · 2026", pct: 20, fill: "#3b82f6" },
+  { year: "Year 2 · 2027", pct: 15, fill: "#22c55e" },
+  { year: "Year 3 · 2028", pct: 8,  fill: "#10b981" },
+];
+
+const TR_FACTOR_STACKED = [
+  {
+    year: "Year 1",
+    AIOps: 8,
+    "Digital Front Door": 7,
+    "Core Modernisation": 3,
+    "Quote-to-Card": 2,
+  },
+  {
+    year: "Year 2",
+    AIOps: 3.75,
+    "Digital Front Door": 6.75,
+    "Core Modernisation": 3,
+    "Quote-to-Card": 1.5,
+  },
+  {
+    year: "Year 3",
+    AIOps: 2.4,
+    "Digital Front Door": 3.2,
+    "Core Modernisation": 1.6,
+    "Quote-to-Card": 0.8,
+  },
+];
+
+const TR_FACTOR_META = [
+  {
+    key: "AIOps",
+    color: "#1e40af",
+    light: "bg-blue-50 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800",
+    title: "AIOps & Operational Intelligence",
+    share: "40% → 25% → 30% of yearly reduction",
+    factors: [
+      "Proactive anomaly detection eliminates reactive incident-ticket storms",
+      "Automated remediation resolves ~60% of L1 issues without human intervention",
+      "Noise reduction cuts duplicate / alert-only tickets by 70%+",
+      "Self-healing operations reduce infrastructure-incident queue volume",
+    ],
+  },
+  {
+    key: "Digital Front Door",
+    color: "#0f766e",
+    light: "bg-teal-50 border-teal-200 dark:bg-teal-950/40 dark:border-teal-800",
+    title: "Digital Front Door",
+    share: "35% → 45% → 40% of yearly reduction",
+    factors: [
+      "Self-service portal deflects member inquiry tickets (EOB, ID cards, benefits)",
+      "AI-assisted chat resolves 50%+ of member questions without agent hand-off",
+      "IVR modernisation deflects routine call volume that generates work orders",
+      "Provider portal automation reduces provider-initiated helpdesk tickets",
+    ],
+  },
+  {
+    key: "Core Modernisation",
+    color: "#6d28d9",
+    light: "bg-violet-50 border-violet-200 dark:bg-violet-950/40 dark:border-violet-800",
+    title: "Core Systems Modernisation",
+    share: "15% → 20% → 20% of yearly reduction",
+    factors: [
+      "Fewer integration failures reduce downstream exception and retry tickets",
+      "Automated batch reconciliation eliminates manual error-correction tickets",
+      "API-first architecture reduces manual-workaround volume across teams",
+      "Event-driven processing reduces SLA-breach escalation tickets",
+    ],
+  },
+  {
+    key: "Quote-to-Card",
+    color: "#b45309",
+    light: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-800",
+    title: "Quote-to-Card Automation",
+    share: "10% · consistent across all years",
+    factors: [
+      "Automated enrollment processing reduces broker error-correction tickets",
+      "EDI 834 validation at ingestion reduces downstream exception queues",
+      "Real-time eligibility status eliminates 'where is my card' inquiry tickets",
+      "Broker self-service reduces agent-assisted enrollment support volume",
+    ],
+  },
+];
+
+function TicketReductionBanner() {
+  return (
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg,#064e3b 0%,#065f46 60%,#047857 100%)" }}>
+        <div className="px-7 py-5 flex flex-col md:flex-row md:items-center gap-5">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Zap className="h-5 w-5 text-emerald-300" />
+              <span className="text-emerald-200 text-xs font-semibold uppercase tracking-wider">Ticket Reduction Plan</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-1">Year-over-Year Reduction Roadmap</h2>
+            <p className="text-emerald-200 text-sm max-w-2xl">
+              IBM will drive a cumulative −38% reduction in Horizon's operational ticket workload over 3 years through four targeted programmes: AIOps intelligence, Digital Front Door self-service, core system modernisation, and Quote-to-Card automation.
+            </p>
+          </div>
+          <div className="flex gap-6 flex-shrink-0">
+            {TR_REDUCTION_BARS.map(b => (
+              <div key={b.year} className="text-center">
+                <div className="text-3xl font-black text-white">−{b.pct}%</div>
+                <div className="text-emerald-300 text-xs mt-0.5">{b.year.split(" · ")[0]}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Charts row */}
+      <div className="grid md:grid-cols-2 gap-5">
+        {/* YoY reduction bar */}
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-5">
+            <CardTitle className="text-sm font-semibold">Year-over-Year Reduction Target (%)</CardTitle>
+            <p className="text-xs text-muted-foreground">Additional reduction achieved each year vs. prior year</p>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={TR_REDUCTION_BARS} margin={{ top: 16, right: 16, left: 0, bottom: 4 }} barSize={56}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="year" tick={{ fontSize: 11 }} tickFormatter={v => v.split(" · ")[0]} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} domain={[0, 25]} />
+                <Tooltip formatter={(v: number) => [`${v}%`, "Reduction target"]} />
+                <Bar dataKey="pct" name="Reduction target" radius={[6, 6, 0, 0]}>
+                  {TR_REDUCTION_BARS.map((b, i) => (
+                    <Cell key={i} fill={b.fill} />
+                  ))}
+                  <LabelList dataKey="pct" position="top" formatter={(v: number) => `−${v}%`} style={{ fontWeight: 700, fontSize: 13, fill: "hsl(var(--foreground))" }} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Stacked factor contribution */}
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-5">
+            <CardTitle className="text-sm font-semibold">Reduction Contribution by Programme (pp)</CardTitle>
+            <p className="text-xs text-muted-foreground">Percentage points contributed per initiative per year</p>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={TR_FACTOR_STACKED} margin={{ top: 16, right: 16, left: 0, bottom: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}pp`} />
+                <Tooltip formatter={(v: number, name: string) => [`${v.toFixed(1)}pp`, name]} />
+                <Legend iconSize={10} wrapperStyle={{ fontSize: 10 }} />
+                {TR_FACTOR_META.map(f => (
+                  <Bar key={f.key} dataKey={f.key} stackId="a" fill={f.color} radius={f.key === "Quote-to-Card" ? [4, 4, 0, 0] : [0, 0, 0, 0]} />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Factor cards */}
+      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {TR_FACTOR_META.map(f => (
+          <div key={f.key} className={`rounded-xl border p-4 ${f.light}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: f.color }} />
+              <span className="text-sm font-semibold text-foreground leading-snug">{f.title}</span>
+            </div>
+            <div className="text-[10px] font-mono font-semibold mb-2 px-2 py-0.5 rounded bg-white/50 dark:bg-black/20 text-muted-foreground inline-block">{f.share}</div>
+            <ul className="space-y-1.5">
+              {f.factors.map((fac, i) => (
+                <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                  <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: f.color }} />
+                  {fac}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-lg border border-border bg-muted/30 px-5 py-3 text-xs text-muted-foreground flex items-start gap-2">
+        <Zap className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-muted-foreground" />
+        Reduction targets are directional business case estimates. Final values require confirmation of Horizon's actual ticket classification taxonomy, channel mix, and current automation baseline.
+      </div>
+    </div>
+  );
+}
+
 // ─── Section View ─────────────────────────────────────────────────────────────
 
 function SectionView({
@@ -1949,6 +2145,9 @@ function SectionView({
 
   return (
     <div className="space-y-4">
+      {/* Ticket Reduction Plan visual banner */}
+      {sectionKey === "ticket" && <TicketReductionBanner />}
+
       {/* Summary KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
