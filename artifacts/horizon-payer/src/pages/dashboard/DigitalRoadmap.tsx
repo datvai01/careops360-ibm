@@ -147,12 +147,12 @@ function exportToXLSX(data: RoadmapInitiative[], filename: string) {
 
 // ─── Types & Constants ────────────────────────────────────────────────────────
 
-type SectionKey = "upgrade" | "transformation" | "ticket" | "foundational";
+type SectionKey = "upgrade" | "transformation" | "foundational";
 type YearFilter = 0 | 1 | 2 | 3;
 
 type SectionTier = "STRATEGIC" | "TACTICAL" | "FOUNDATIONAL";
 
-const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiativeType: string; color: string; accent: string; icon: React.ReactNode; desc: string; tier: SectionTier; tierBadge: string }[] = [
+const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiativeType: string; extraType?: string; extraLabel?: string; color: string; accent: string; icon: React.ReactNode; desc: string; tier: SectionTier; tierBadge: string }[] = [
   {
     key: "foundational",
     label: "Foundational Initiatives",
@@ -170,10 +170,12 @@ const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiative
     label: "Transformation Roadmap",
     shortLabel: "Strategic",
     initiativeType: "Transformation",
+    extraType: "Ticket Reduction",
+    extraLabel: "Ticket Reduction Plan",
     color: "text-purple-700 dark:text-purple-400",
     accent: "border-purple-500 bg-purple-50 dark:bg-purple-950/40",
     icon: <Target className="h-4 w-4" />,
-    desc: "AI-driven operations, intelligent automation, GenAI, platform modernization, CareOps360",
+    desc: "AI-driven operations, intelligent automation, GenAI, platform modernization, CareOps360 — including ticket reduction",
     tier: "STRATEGIC",
     tierBadge: "border-purple-300 bg-purple-100 text-purple-800 dark:border-purple-700 dark:bg-purple-900/60 dark:text-purple-200",
   },
@@ -188,18 +190,6 @@ const SECTIONS: { key: SectionKey; label: string; shortLabel: string; initiative
     desc: "Legacy upgrades, platform modernization, infrastructure refresh, security & compliance upgrades",
     tier: "TACTICAL",
     tierBadge: "border-blue-300 bg-blue-100 text-blue-800 dark:border-blue-700 dark:bg-blue-900/60 dark:text-blue-200",
-  },
-  {
-    key: "ticket",
-    label: "Ticket Reduction Plan",
-    shortLabel: "Ticket Reduction",
-    initiativeType: "Ticket Reduction",
-    color: "text-emerald-700 dark:text-emerald-400",
-    accent: "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40",
-    icon: <Zap className="h-4 w-4" />,
-    desc: "Incident reduction, automation of repetitive work, shift-left strategies, self-service enablement",
-    tier: "TACTICAL",
-    tierBadge: "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200",
   },
 ];
 
@@ -1390,11 +1380,11 @@ function InitiativeFormModal({
           </div>
 
           <FieldRow label="How Horizon Will Get the ROI">
-            <FormTextarea value={form.roiPlan} onChange={set("roiPlan")} placeholder="Quantified value, payback period, cost levers, and the path to realize the ROI…" rows={3} />
+            <FormTextarea value={form.roiPlan ?? ""} onChange={set("roiPlan")} placeholder="Quantified value, payback period, cost levers, and the path to realize the ROI…" rows={3} />
           </FieldRow>
 
           <FieldRow label="Notes">
-            <FormTextarea value={form.notes} onChange={set("notes")} placeholder="Additional context, risks, or decisions…" rows={2} />
+            <FormTextarea value={form.notes ?? ""} onChange={set("notes")} placeholder="Additional context, risks, or decisions…" rows={2} />
           </FieldRow>
 
           {/* Footer */}
@@ -1884,11 +1874,15 @@ function SectionView({
   initiatives,
   sectionKey,
   initiativeType,
+  extraType,
+  extraLabel,
   onSelect,
 }: {
   initiatives: RoadmapInitiative[];
   sectionKey: SectionKey;
   initiativeType: string;
+  extraType?: string;
+  extraLabel?: string;
   onSelect: (i: RoadmapInitiative) => void;
 }) {
   const [yearFilter, setYearFilter] = useState<YearFilter>(0);
@@ -1919,9 +1913,19 @@ function SectionView({
     setFormTarget(null);
   }, [queryClient]);
 
-  const sectionItems = useMemo(
+  const primaryItems = useMemo(
     () => initiatives.filter(i => i.initiativeType === initiativeType),
     [initiatives, initiativeType]
+  );
+
+  const extraItems = useMemo(
+    () => extraType ? initiatives.filter(i => i.initiativeType === extraType) : [],
+    [initiatives, extraType]
+  );
+
+  const sectionItems = useMemo(
+    () => [...primaryItems, ...extraItems],
+    [primaryItems, extraItems]
   );
 
   const yearFiltered = useMemo(
@@ -2041,31 +2045,72 @@ function SectionView({
         <Card className="p-8 text-center">
           <p className="text-muted-foreground text-sm">No initiatives match the current filters.</p>
         </Card>
-      ) : (
-        <div className="space-y-3">
-          {presentDomains.map((domain, idx) => (
-            <DomainGroup
-              key={domain}
-              domain={domain}
-              initiatives={filtered.filter(i => i.domain === domain)}
-              onSelect={onSelect}
-              onEdit={handleEdit}
-              defaultOpen={idx < 3}
-              showSize={initiativeType === "Transformation"}
-            />
-          ))}
-          {filtered.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number])).length > 0 && (
-            <DomainGroup
-              domain="Enterprise Platforms"
-              initiatives={filtered.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number]))}
-              onSelect={onSelect}
-              onEdit={handleEdit}
-              defaultOpen={false}
-              showSize={initiativeType === "Transformation"}
-            />
-          )}
-        </div>
-      )}
+      ) : (() => {
+        const filteredPrimary = filtered.filter(i => i.initiativeType === initiativeType);
+        const filteredExtra   = extraType ? filtered.filter(i => i.initiativeType === extraType) : [];
+        const primaryDomains  = DOMAINS.filter(d => filteredPrimary.some(i => i.domain === d));
+        const extraDomains    = DOMAINS.filter(d => filteredExtra.some(i => i.domain === d));
+        return (
+          <div className="space-y-3">
+            {primaryDomains.map((domain, idx) => (
+              <DomainGroup
+                key={domain}
+                domain={domain}
+                initiatives={filteredPrimary.filter(i => i.domain === domain)}
+                onSelect={onSelect}
+                onEdit={handleEdit}
+                defaultOpen={idx < 3}
+                showSize={initiativeType === "Transformation"}
+              />
+            ))}
+            {filteredPrimary.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number])).length > 0 && (
+              <DomainGroup
+                domain="Enterprise Platforms"
+                initiatives={filteredPrimary.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number]))}
+                onSelect={onSelect}
+                onEdit={handleEdit}
+                defaultOpen={false}
+                showSize={initiativeType === "Transformation"}
+              />
+            )}
+            {filteredExtra.length > 0 && (
+              <>
+                <div className="flex items-center gap-3 pt-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{extraLabel ?? "Ticket Reduction Plan"}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase leading-none border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-200">
+                      <Wrench className="h-2.5 w-2.5" />TACTICAL
+                    </span>
+                  </div>
+                  <div className="flex-1 h-px bg-emerald-200 dark:bg-emerald-800" />
+                </div>
+                {extraDomains.map((domain, idx) => (
+                  <DomainGroup
+                    key={`extra-${domain}`}
+                    domain={domain}
+                    initiatives={filteredExtra.filter(i => i.domain === domain)}
+                    onSelect={onSelect}
+                    onEdit={handleEdit}
+                    defaultOpen={idx < 2}
+                    showSize={false}
+                  />
+                ))}
+                {filteredExtra.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number])).length > 0 && (
+                  <DomainGroup
+                    domain="Enterprise Platforms"
+                    initiatives={filteredExtra.filter(i => !i.domain || !DOMAINS.includes(i.domain as typeof DOMAINS[number]))}
+                    onSelect={onSelect}
+                    onEdit={handleEdit}
+                    defaultOpen={false}
+                    showSize={false}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Form Modal */}
       {formOpen && (
@@ -2940,8 +2985,11 @@ export default function DigitalRoadmap() {
   const currentSection = SECTIONS.find(s => s.key === activeSection)!;
 
   const sectionInitiatives = useMemo(
-    () => initiatives.filter(i => i.initiativeType === currentSection.initiativeType),
-    [initiatives, currentSection.initiativeType]
+    () => initiatives.filter(i =>
+      i.initiativeType === currentSection.initiativeType ||
+      (currentSection.extraType ? i.initiativeType === currentSection.extraType : false)
+    ),
+    [initiatives, currentSection.initiativeType, currentSection.extraType]
   );
 
   const handleExportCSV = useCallback((scope: "all" | "section") => {
@@ -3153,6 +3201,8 @@ export default function DigitalRoadmap() {
             initiatives={initiatives}
             sectionKey={activeSection}
             initiativeType={currentSection.initiativeType}
+            extraType={currentSection.extraType}
+            extraLabel={currentSection.extraLabel}
             onSelect={setSelectedInitiative}
           />
 
