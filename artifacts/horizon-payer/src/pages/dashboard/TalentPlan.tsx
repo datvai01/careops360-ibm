@@ -1370,15 +1370,15 @@ const DOMAIN_ACCENT_MAP: Record<string, string> = {
 };
 const getDomainAccent = (domain: string) => DOMAIN_ACCENT_MAP[domain] ?? C.gray;
 
-// Creative, contextual codenames per domain — used instead of "Pod 1, Pod 2 …".
+// Payer product-domain pod names — named after the business capability each pod owns.
 // Names cycle if a domain has more pods than entries in its bank.
 const POD_NAME_BANK: Record<string, string[]> = {
-  "Horizontal Functions":     ["Atlas", "Vector", "Apex", "Meridian", "Zenith", "Summit", "Vertex", "Solstice", "Nexus", "Praxis"],
-  "Health and Network":       ["Pulse", "Helix", "Synapse", "Cortex", "Vitals", "Neural", "Cirrus", "Axon", "Relay", "Dendrite"],
-  "Service & Administration": ["Anchor", "Keystone", "Pillar", "Harbor", "Beacon", "Citadel", "Bastion", "Rampart"],
-  "Corporate Functions":      ["Bedrock", "Foundation", "Stratum", "Mantle", "Terra", "Granite"],
-  "Specialty Business":       ["Prism", "Spectrum", "Focus", "Vantage", "Locus"],
-  "Market Facing":            ["Vanguard", "Pioneer", "Scout", "Envoy", "Herald"],
+  "Horizontal Functions":     ["Enterprise Data", "Integration Platform", "Digital Platform", "Quality & Analytics", "Reporting & BI", "Workflow Automation", "Security & Compliance", "Architecture", "DevOps & SRE", "Identity & Access"],
+  "Health and Network":       ["Claims", "Prior Authorization", "Network Management", "Provider Relations", "Care Management", "Utilization Mgmt", "Pharmacy Benefits", "Behavioral Health"],
+  "Service & Administration": ["Member Services", "Enrollment & Eligibility", "Billing & Premium", "Appeals & Grievances", "Customer Experience", "Correspondence", "Coordination of Benefits", "Operations Support"],
+  "Corporate Functions":      ["Finance & Actuarial", "Legal & Compliance", "HR & Workforce", "Vendor Management", "IT Governance", "Procurement"],
+  "Specialty Business":       ["Dental & Vision", "Behavioral Health", "Pharmacy", "Stop-Loss", "Supplemental Benefits"],
+  "Market Facing":            ["Individual & Exchange", "Group Benefits", "Medicare Advantage", "Medicaid", "Broker & Sales", "Employer Solutions"],
 };
 
 function getPodCreativeName(domain: string, podN: number): string {
