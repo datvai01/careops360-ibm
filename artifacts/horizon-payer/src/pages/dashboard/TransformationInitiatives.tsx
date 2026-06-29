@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter, ZAxis, Cell, PieChart, Pie, RadarChart, PolarGrid,
-  PolarAngleAxis, Radar,
+  PolarAngleAxis, Radar, ComposedChart, Line, ReferenceLine,
 } from "recharts";
 import {
   ArrowLeft, TrendingUp, Users, FileText, Layers, CheckCircle,
@@ -720,6 +720,324 @@ function WaveRoadmap() {
   );
 }
 
+// ─── Ticket Reduction Plan ───────────────────────────────────────────────────
+
+const TICKET_VOLUME_TREND = [
+  { period: "Baseline", volume: 120000, indexPct: 100, yoyPct: 0 },
+  { period: "Year 1", volume: 96000, indexPct: 80, yoyPct: -20 },
+  { period: "Year 2", volume: 81600, indexPct: 68, yoyPct: -15 },
+  { period: "Year 3+", volume: 75072, indexPct: 62.6, yoyPct: -8 },
+];
+
+const TICKET_REDUCTION_BREAKDOWN = [
+  {
+    period: "Year 1",
+    totalReduction: 24000,
+    yoyLabel: "−20%",
+    aiops: 9600,
+    digitalFrontDoor: 8400,
+    coreMod: 3600,
+    quoteToCard: 2400,
+  },
+  {
+    period: "Year 2",
+    totalReduction: 14400,
+    yoyLabel: "−15%",
+    aiops: 3600,
+    digitalFrontDoor: 6480,
+    coreMod: 2880,
+    quoteToCard: 1440,
+  },
+  {
+    period: "Year 3+",
+    totalReduction: 6528,
+    yoyLabel: "−8%",
+    aiops: 1958,
+    digitalFrontDoor: 2611,
+    coreMod: 1306,
+    quoteToCard: 653,
+  },
+];
+
+const TICKET_INITIATIVE_META = [
+  {
+    key: "aiops" as const,
+    name: "AIOps & Operational Intelligence",
+    color: "#1e40af",
+    y1Pct: "40%", y2Pct: "25%", y3Pct: "30%",
+    factors: [
+      "Proactive anomaly detection eliminates reactive incident-ticket storms",
+      "Automated remediation resolves ~60% of L1 issues without human intervention",
+      "Noise reduction cuts duplicate / alert-only tickets by 70%+",
+      "Self-healing operations reduce infrastructure-incident queue volume",
+    ],
+  },
+  {
+    key: "digitalFrontDoor" as const,
+    name: "Digital Front Door",
+    color: "#0f766e",
+    y1Pct: "35%", y2Pct: "45%", y3Pct: "40%",
+    factors: [
+      "Self-service portal deflects member inquiry tickets (EOB, ID cards, benefits)",
+      "AI-assisted chat resolves 50%+ of member questions without agent hand-off",
+      "IVR modernisation deflects routine call volume that generates work orders",
+      "Provider portal automation reduces provider-initiated helpdesk tickets",
+    ],
+  },
+  {
+    key: "coreMod" as const,
+    name: "Core Systems Modernisation",
+    color: "#6d28d9",
+    y1Pct: "15%", y2Pct: "20%", y3Pct: "20%",
+    factors: [
+      "Fewer integration failures reduce downstream exception and retry tickets",
+      "Automated batch reconciliation eliminates manual error-correction tickets",
+      "API-first architecture reduces manual-workaround volume across teams",
+      "Event-driven processing reduces SLA-breach escalation tickets",
+    ],
+  },
+  {
+    key: "quoteToCard" as const,
+    name: "Quote-to-Card Automation",
+    color: "#b45309",
+    y1Pct: "10%", y2Pct: "10%", y3Pct: "10%",
+    factors: [
+      "Automated enrollment processing reduces broker error-correction tickets",
+      "EDI 834 validation at ingestion reduces downstream exception queues",
+      "Real-time eligibility status eliminates 'where is my card' inquiry tickets",
+      "Broker self-service reduces agent-assisted enrollment support volume",
+    ],
+  },
+];
+
+const TICKET_COLORS = {
+  aiops: "#1e40af",
+  digitalFrontDoor: "#0f766e",
+  coreMod: "#6d28d9",
+  quoteToCard: "#b45309",
+};
+
+function VolumeTrendChart() {
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <ComposedChart data={TICKET_VOLUME_TREND} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+        <YAxis
+          yAxisId="left"
+          tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`}
+          tick={{ fontSize: 11 }}
+          label={{ value: "Ticket Volume", angle: -90, position: "insideLeft", offset: 10, fontSize: 10 }}
+        />
+        <YAxis
+          yAxisId="right"
+          orientation="right"
+          domain={[55, 105]}
+          tickFormatter={(v: number) => `${v}%`}
+          tick={{ fontSize: 11 }}
+          label={{ value: "Index (Baseline=100)", angle: 90, position: "insideRight", offset: 10, fontSize: 10 }}
+        />
+        <Tooltip
+          formatter={(value: number, name: string) => {
+            if (name === "Ticket Volume") return [`${(value / 1000).toFixed(1)}K`, name];
+            return [`${value}%`, "Index vs Baseline"];
+          }}
+        />
+        <ReferenceLine yAxisId="left" y={96000} stroke="#94a3b8" strokeDasharray="4 2" strokeWidth={1} />
+        <Bar yAxisId="left" dataKey="volume" name="Ticket Volume" radius={[4, 4, 0, 0]} maxBarSize={60}>
+          {TICKET_VOLUME_TREND.map((d, i) => (
+            <Cell
+              key={i}
+              fill={i === 0 ? "#94a3b8" : i === 1 ? "#3b82f6" : i === 2 ? "#22c55e" : "#10b981"}
+              fillOpacity={0.85}
+            />
+          ))}
+        </Bar>
+        <Line
+          yAxisId="right"
+          type="monotone"
+          dataKey="indexPct"
+          name="Index vs Baseline"
+          stroke="#0f62fe"
+          strokeWidth={2.5}
+          dot={{ r: 5, fill: "#0f62fe", strokeWidth: 2, stroke: "#fff" }}
+          activeDot={{ r: 7 }}
+        />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}
+
+function ReductionBreakdownChart() {
+  return (
+    <ResponsiveContainer width="100%" height={220}>
+      <BarChart data={TICKET_REDUCTION_BREAKDOWN} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+        <YAxis tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} tick={{ fontSize: 11 }} />
+        <Tooltip
+          formatter={(v: number, name: string) => {
+            const meta = TICKET_INITIATIVE_META.find(m => m.key === name);
+            return [`${v.toLocaleString()} tickets`, meta?.name ?? name];
+          }}
+        />
+        <Legend
+          formatter={(value: string) => {
+            const meta = TICKET_INITIATIVE_META.find(m => m.key === value);
+            return <span style={{ fontSize: 11 }}>{meta?.name ?? value}</span>;
+          }}
+          wrapperStyle={{ paddingTop: 8 }}
+        />
+        <Bar dataKey="aiops" name="aiops" stackId="a" fill={TICKET_COLORS.aiops} radius={[0, 0, 0, 0]} />
+        <Bar dataKey="digitalFrontDoor" name="digitalFrontDoor" stackId="a" fill={TICKET_COLORS.digitalFrontDoor} />
+        <Bar dataKey="coreMod" name="coreMod" stackId="a" fill={TICKET_COLORS.coreMod} />
+        <Bar dataKey="quoteToCard" name="quoteToCard" stackId="a" fill={TICKET_COLORS.quoteToCard} radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function TicketReductionSection() {
+  return (
+    <div>
+      <div className="flex items-start justify-between mb-1">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-800">Ticket Reduction Plan</h2>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Year-over-year operational ticket reduction targets driven by the four transformation initiatives.
+          </p>
+        </div>
+        <div className="flex gap-2 flex-shrink-0 mt-1">
+          <Badge className="bg-blue-50 text-blue-800 border-0 text-xs">−20% Year 1</Badge>
+          <Badge className="bg-emerald-50 text-emerald-800 border-0 text-xs">−15% Year 2</Badge>
+          <Badge className="bg-teal-50 text-teal-800 border-0 text-xs">−8% Year 3+</Badge>
+        </div>
+      </div>
+
+      {/* KPI summary strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 mt-4">
+        {[
+          { label: "Baseline Ticket Volume", value: "120,000", sub: "Annual tickets (indexed)", color: "border-slate-300 bg-slate-50" },
+          { label: "Year 1 Target", value: "96,000", sub: "−24,000 tickets (−20%)", color: "border-blue-200 bg-blue-50" },
+          { label: "Year 2 Target", value: "81,600", sub: "−14,400 tickets (−15%)", color: "border-emerald-200 bg-emerald-50" },
+          { label: "Year 3+ Steady State", value: "75,072", sub: "−6,528 tickets (−8%)", color: "border-teal-200 bg-teal-50" },
+        ].map((kpi, i) => (
+          <div key={i} className={`rounded-xl border px-4 py-3 ${kpi.color}`}>
+            <div className="text-xl font-bold text-slate-900">{kpi.value}</div>
+            <div className="text-xs font-medium text-slate-700 mt-0.5">{kpi.label}</div>
+            <div className="text-xs text-slate-500 mt-0.5">{kpi.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Two charts side by side */}
+      <div className="grid md:grid-cols-2 gap-5 mb-6">
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-5">
+            <CardTitle className="text-sm font-semibold text-slate-700">Total Ticket Volume Trend</CardTitle>
+            <p className="text-xs text-slate-500">Bars = absolute volume · Line = index vs baseline (right axis)</p>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <VolumeTrendChart />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2 pt-4 px-5">
+            <CardTitle className="text-sm font-semibold text-slate-700">Annual Reduction by Initiative</CardTitle>
+            <p className="text-xs text-slate-500">Stacked bars show tickets removed each year, attributed by initiative</p>
+          </CardHeader>
+          <CardContent className="pt-0 pb-4">
+            <ReductionBreakdownChart />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* YoY contribution split table */}
+      <Card className="mb-5">
+        <CardHeader className="pb-2 pt-4 px-5">
+          <CardTitle className="text-sm font-semibold text-slate-700">Initiative Contribution Split</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 pb-4 px-5">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="text-left py-2 pr-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Initiative</th>
+                  <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Year 1</th>
+                  <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Year 2</th>
+                  <th className="text-center py-2 px-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Year 3+</th>
+                  <th className="text-left py-2 pl-4 text-xs font-semibold text-slate-500 uppercase tracking-wide">Primary Lever</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { meta: TICKET_INITIATIVE_META[0], lever: "Automated L1 remediation & alert noise reduction" },
+                  { meta: TICKET_INITIATIVE_META[1], lever: "Self-service deflection & AI-assisted member chat" },
+                  { meta: TICKET_INITIATIVE_META[2], lever: "Integration reliability & batch automation" },
+                  { meta: TICKET_INITIATIVE_META[3], lever: "EDI validation & broker self-service portal" },
+                ].map(({ meta, lever }) => (
+                  <tr key={meta.key} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="py-2.5 pr-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: meta.color }} />
+                        <span className="text-slate-700 font-medium">{meta.name}</span>
+                      </div>
+                    </td>
+                    <td className="text-center py-2.5 px-3">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: `${meta.color}18`, color: meta.color }}>
+                        {meta.y1Pct}
+                      </span>
+                    </td>
+                    <td className="text-center py-2.5 px-3">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: `${meta.color}18`, color: meta.color }}>
+                        {meta.y2Pct}
+                      </span>
+                    </td>
+                    <td className="text-center py-2.5 px-3">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold" style={{ background: `${meta.color}18`, color: meta.color }}>
+                        {meta.y3Pct}
+                      </span>
+                    </td>
+                    <td className="pl-4 py-2.5 text-xs text-slate-500">{lever}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contributing factors cards */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {TICKET_INITIATIVE_META.map(meta => (
+          <div key={meta.key} className="rounded-xl border border-slate-200 overflow-hidden">
+            <div className="px-4 py-3 flex items-center gap-2" style={{ background: `${meta.color}12`, borderBottom: `2px solid ${meta.color}30` }}>
+              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: meta.color }} />
+              <span className="font-semibold text-sm" style={{ color: meta.color }}>{meta.name}</span>
+              <span className="ml-auto text-xs font-medium text-slate-500">
+                Y1: {meta.y1Pct} · Y2: {meta.y2Pct} · Y3+: {meta.y3Pct}
+              </span>
+            </div>
+            <div className="p-4 space-y-2">
+              {meta.factors.map((f, j) => (
+                <div key={j} className="flex items-start gap-2 text-xs text-slate-600">
+                  <CheckCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" style={{ color: meta.color }} />
+                  {f}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-xs text-slate-500 flex items-start gap-2">
+        <Info className="h-3.5 w-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+        Ticket volume figures are directional business case estimates indexed to a normalised baseline. Final targets require confirmation of Horizon's actual operational ticket volumes, classification taxonomy, channel mix, and current automation baseline.
+      </div>
+    </div>
+  );
+}
+
 // ─── Portfolio Landing Page ───────────────────────────────────────────────────
 
 function PortfolioView({ onSelect }: { onSelect: (id: string) => void }) {
@@ -833,6 +1151,9 @@ function PortfolioView({ onSelect }: { onSelect: (id: string) => void }) {
         <p className="text-sm text-slate-500 mb-4">All four initiatives run in parallel waves, optimized for speed-to-value.</p>
         <WaveRoadmap />
       </div>
+
+      {/* Ticket Reduction Plan */}
+      <TicketReductionSection />
 
       {/* Decisions needed */}
       <Card className="border-amber-200">
