@@ -29,6 +29,7 @@ import TransformationMindsetDashboard from "@/pages/dashboard/TransformationMind
 import TransformationMindsetSurvey from "@/pages/TransformationMindsetSurvey";
 import AutonomousAgents from "@/pages/dashboard/AutonomousAgents";
 import TransformationInitiatives from "@/pages/dashboard/TransformationInitiatives";
+import Transition from "@/pages/dashboard/Transition";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -63,6 +64,7 @@ function DashboardRouter() {
         <Route path="/dashboard/help" component={Help} />
         <Route path="/dashboard/capability-uplift" component={CapabilityUplift} />
         <Route path="/dashboard/pod-transformation" component={PodTransformation} />
+        <Route path="/dashboard/transition" component={Transition} />
         <Route path="/dashboard/transformation-ecosystem" component={TransformationEcosystem} />
         <Route path="/dashboard/transformation-mindset" component={TransformationMindsetDashboard} />
         <Route path="/dashboard/autonomous-agents" component={AutonomousAgents} />

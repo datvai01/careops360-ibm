@@ -85,6 +85,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: "AIOps & Service KPIs", path: "/dashboard/ibm-ams", icon: CpuIcon },
       { name: "Transformation Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
+      { name: "Transition Timeline", path: "/dashboard/transition", icon: TrendingUp },
       { name: "Mindset Survey", path: "/dashboard/transformation-mindset", icon: ClipboardCheck },
       { name: "Skills & Enablement", path: "/dashboard/capability-uplift", icon: Award },
       { name: "Autonomous Agents", path: "/dashboard/autonomous-agents", icon: Bot },
