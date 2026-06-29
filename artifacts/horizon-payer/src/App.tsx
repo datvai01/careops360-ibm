@@ -28,6 +28,7 @@ import TransformationEcosystem from "@/pages/dashboard/TransformationEcosystem";
 import TransformationMindsetDashboard from "@/pages/dashboard/TransformationMindsetDashboard";
 import TransformationMindsetSurvey from "@/pages/TransformationMindsetSurvey";
 import AutonomousAgents from "@/pages/dashboard/AutonomousAgents";
+import TransformationInitiatives from "@/pages/dashboard/TransformationInitiatives";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchInterval: 30000, staleTime: 10000 } },
@@ -65,6 +66,7 @@ function DashboardRouter() {
         <Route path="/dashboard/transformation-ecosystem" component={TransformationEcosystem} />
         <Route path="/dashboard/transformation-mindset" component={TransformationMindsetDashboard} />
         <Route path="/dashboard/autonomous-agents" component={AutonomousAgents} />
+        <Route path="/dashboard/transformation-initiatives" component={TransformationInitiatives} />
         <Route path="/dashboard/administration" component={Administration} />
         <Route component={NotFound} />
       </Switch>

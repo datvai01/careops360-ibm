@@ -33,6 +33,7 @@ import {
   Sparkles,
   ClipboardCheck,
   Bot,
+  Rocket,
 } from "lucide-react";
 import { useExportAllData } from "@/hooks/useExportAllData";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -87,6 +88,7 @@ const NAV_GROUPS: NavGroup[] = [
       { name: "Mindset Survey", path: "/dashboard/transformation-mindset", icon: ClipboardCheck },
       { name: "Skills & Enablement", path: "/dashboard/capability-uplift", icon: Award },
       { name: "Autonomous Agents", path: "/dashboard/autonomous-agents", icon: Bot },
+      { name: "Transformation Initiatives", path: "/dashboard/transformation-initiatives", icon: Rocket },
     ],
   },
   {
