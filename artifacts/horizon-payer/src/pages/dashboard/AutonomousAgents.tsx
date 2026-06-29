@@ -1005,7 +1005,7 @@ export default function AutonomousAgents() {
           <Card className="border-0 shadow-sm overflow-hidden">
             <div className="px-6 py-5" style={{ background: `linear-gradient(135deg, ${NAVY} 0%, #0d47a1 100%)` }}>
               <div className="flex flex-wrap gap-2 mb-3">
-                {["CareOps360 Expansion Module", "Governed AI", "6-Month Implementation Path", "Productivity-Focused"].map(b => (
+                {["Governed AI", "6-Month Implementation Path", "Productivity-Focused"].map(b => (
                   <span key={b} className="text-xs bg-white/20 text-white border border-white/30 rounded-full px-3 py-0.5">{b}</span>
                 ))}
               </div>
@@ -1059,7 +1059,7 @@ export default function AutonomousAgents() {
 
             <Card className="border border-slate-200 shadow-sm">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Indicative Productivity by Agent</CardTitle>
+                <CardTitle className="text-sm">Productivity by Agent</CardTitle>
                 <CardDescription className="text-xs">Midpoint productivity improvement across all 10 proposed agents.</CardDescription>
               </CardHeader>
               <CardContent>
