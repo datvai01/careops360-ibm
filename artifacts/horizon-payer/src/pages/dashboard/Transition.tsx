@@ -7,6 +7,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
+  Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
+} from "@/components/ui/tooltip";
+import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
   Cell, LabelList, Tooltip as RTooltip,
 } from "recharts";
@@ -72,6 +75,59 @@ const TOTAL = LAST_DAY + 1;
 const pct = (day: number) => `${Math.max(0, Math.min(100, (day / TOTAL) * 100))}%`;
 const spanPct = (startDay: number, endDay: number) =>
   Math.max(1.2, ((endDay - startDay + 1) / TOTAL) * 100);
+
+function TaskDetail({ t, isMilestone }: { t: Task; isMilestone: boolean }) {
+  const m = PHASE_META[t.phase];
+  const w = WS_META[t.workstream];
+  const statusColor =
+    t.status === "Complete" || t.status === "Completed" ? C.green
+    : t.status === "In Progress" ? C.blue
+    : t.status === "Blocked" || t.status === "At Risk" ? C.red
+    : C.gray;
+  return (
+    <div className="w-72 text-left">
+      <div className="flex items-center gap-1.5 mb-1">
+        <span className="font-mono text-[9px] px-1 py-0.5 rounded" style={{ background: `${m?.color}22`, color: m?.color }}>{t.id}</span>
+        {isMilestone && (
+          <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold" style={{ color: C.yellow }}>
+            <Flag size={9} /> Milestone
+          </span>
+        )}
+        <span className="ml-auto text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: `${statusColor}22`, color: statusColor }}>
+          {t.status}
+        </span>
+      </div>
+      <div className="text-[12px] font-semibold leading-snug mb-1.5">{t.task.replace(/^\[QE\]\s*/, "")}</div>
+
+      <div className="flex flex-wrap gap-1 mb-2">
+        <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: `${w?.color}22`, color: w?.color }}>{t.workstream}</span>
+        <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: `${m?.color}22`, color: m?.color }}>{m?.short ?? t.phase}</span>
+        <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{t.priority} priority</span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px] mb-2">
+        <div><span className="text-muted-foreground">Start</span><div className="font-medium">{t.start}</div></div>
+        <div><span className="text-muted-foreground">End</span><div className="font-medium">{t.end}</div></div>
+        <div><span className="text-muted-foreground">Duration</span><div className="font-medium">{t.durationDays} days</div></div>
+        <div><span className="text-muted-foreground">Progress</span><div className="font-medium">{t.percentComplete}% complete</div></div>
+      </div>
+
+      <div className="space-y-1 text-[10px]">
+        <div><span className="text-muted-foreground">IBM owner: </span><span className="font-medium">{t.ibmOwner}</span></div>
+        <div><span className="text-muted-foreground">Horizon owner: </span><span className="font-medium">{t.horizonOwner}</span></div>
+        {t.deliverable && (
+          <div><span className="text-muted-foreground">Deliverable: </span><span className="font-medium">{t.deliverable}</span></div>
+        )}
+        {t.successMetric && (
+          <div><span className="text-muted-foreground">Success metric: </span><span className="font-medium">{t.successMetric}</span></div>
+        )}
+        {t.dependencies && (
+          <div><span className="text-muted-foreground">Depends on: </span><span className="font-medium">{t.dependencies}</span></div>
+        )}
+      </div>
+    </div>
+  );
+}
 const monthMarks = [
   { day: 0, label: "Jul" }, { day: 31, label: "Aug" }, { day: 62, label: "Sep" },
   { day: 92, label: "Oct" }, { day: 123, label: "Nov" }, { day: 153, label: "Dec" },
@@ -258,6 +314,7 @@ export default function Transition() {
         </div>
 
         {/* Gantt rows grouped by workstream */}
+        <TooltipProvider delayDuration={100}>
         <div className="mt-1 space-y-3">
           {ganttWorkstreams.map(w => {
             const wTasks = tasks.filter(t => t.workstream === w).sort((a, b) => a.startDay - b.startDay);
@@ -288,20 +345,25 @@ export default function Transition() {
                               style={{ left: pct(b.from), width: `${((b.to - b.from) / TOTAL) * 100}%`,
                                 background: PHASE_META[b.name]?.color, opacity: 0.05 }} />
                           ))}
-                          <div
-                            className="absolute top-0.5 h-3 rounded-sm flex items-center transition-all group-hover:brightness-110"
-                            style={{ left, width, background: color }}
-                            title={`${t.task}\n${t.start} → ${t.end} (${t.durationDays}d)\nIBM: ${t.ibmOwner}\nDeliverable: ${t.deliverable}`}
-                          >
-                            {t.percentComplete > 0 && (
-                              <div className="h-full rounded-sm bg-white/35" style={{ width: `${t.percentComplete}%` }} />
-                            )}
-                          </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div
+                                className="absolute top-0.5 h-3 rounded-sm flex items-center cursor-pointer transition-all hover:brightness-110 hover:ring-1 hover:ring-foreground/40"
+                                style={{ left, width, background: color }}
+                              >
+                                {t.percentComplete > 0 && (
+                                  <div className="h-full rounded-sm bg-white/35" style={{ width: `${t.percentComplete}%` }} />
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" className="p-3">
+                              <TaskDetail t={t} isMilestone={isMilestone} />
+                            </TooltipContent>
+                          </Tooltip>
                           {isMilestone && (
                             <div
-                              className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 border border-white shadow"
+                              className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rotate-45 border border-white shadow pointer-events-none"
                               style={{ left: `calc(${pct(t.endDay)} - 5px)`, background: C.yellow }}
-                              title={`Milestone: ${t.deliverable} (${t.end})`}
                             />
                           )}
                         </div>
@@ -313,6 +375,7 @@ export default function Transition() {
             );
           })}
         </div>
+        </TooltipProvider>
 
         <div className="flex items-center gap-4 mt-3 pt-2 border-t text-[10px] text-muted-foreground">
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rotate-45 inline-block" style={{ background: C.yellow }} /> Key milestone</span>
