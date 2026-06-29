@@ -820,7 +820,7 @@ const TICKET_COLORS = {
 function VolumeTrendChart() {
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <ComposedChart data={TICKET_VOLUME_TREND} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
+      <ComposedChart data={TICKET_VOLUME_TREND.filter(d => d.period !== "Baseline")} margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
         <XAxis dataKey="period" tick={{ fontSize: 12 }} />
         <YAxis
@@ -845,10 +845,10 @@ function VolumeTrendChart() {
         />
         <ReferenceLine yAxisId="left" y={96000} stroke="#94a3b8" strokeDasharray="4 2" strokeWidth={1} />
         <Bar yAxisId="left" dataKey="volume" name="Ticket Volume" radius={[4, 4, 0, 0]} maxBarSize={60}>
-          {TICKET_VOLUME_TREND.map((d, i) => (
+          {TICKET_VOLUME_TREND.filter(d => d.period !== "Baseline").map((d, i) => (
             <Cell
               key={i}
-              fill={i === 0 ? "#94a3b8" : i === 1 ? "#3b82f6" : i === 2 ? "#22c55e" : "#10b981"}
+              fill={i === 0 ? "#3b82f6" : i === 1 ? "#22c55e" : "#10b981"}
               fillOpacity={0.85}
             />
           ))}
@@ -915,9 +915,8 @@ function TicketReductionSection() {
       </div>
 
       {/* KPI summary strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 mt-4">
+      <div className="grid grid-cols-3 gap-3 mb-5 mt-4">
         {[
-          { label: "Baseline Ticket Volume", value: "120,000", sub: "Annual tickets (indexed)", color: "border-slate-300 bg-slate-50" },
           { label: "Year 1 Target", value: "96,000", sub: "−24,000 tickets (−20%)", color: "border-blue-200 bg-blue-50" },
           { label: "Year 2 Target", value: "81,600", sub: "−14,400 tickets (−15%)", color: "border-emerald-200 bg-emerald-50" },
           { label: "Year 3+ Steady State", value: "75,072", sub: "−6,528 tickets (−8%)", color: "border-teal-200 bg-teal-50" },
