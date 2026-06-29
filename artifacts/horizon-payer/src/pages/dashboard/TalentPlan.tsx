@@ -2156,7 +2156,7 @@ function PodProductivityLaborSection() {
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <Sparkles size={14} className="text-[#82cfff]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#82cfff]">AI-Driven Productivity & Labor Shift</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#82cfff]">Transformation-Driven Productivity & Labor Shift</span>
           </div>
           <p className="text-xs text-white/70 mt-1 max-w-2xl">
             Year-over-year productivity uplift powered by IBM Bob and equivalent AI code assistants like Cursor, plus requirement improvements, process automation and CI/CD — driving a steady shift from manual to digital labor across the pod model.
