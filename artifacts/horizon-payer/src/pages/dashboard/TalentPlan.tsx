@@ -31,6 +31,9 @@ import {
 import {
   ResponsiveContainer,
   Treemap,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, Cell, LabelList,
+  ComposedChart, Line, Area,
+  Tooltip as RTooltip,
 } from "recharts";
 import {
   Users, MapPin, Briefcase, Code2, Wrench, Brain, ShieldCheck, Activity,
@@ -2101,6 +2104,162 @@ function ScenarioPlanner({ domains, deltas, setDeltas, baselinePodCount, scenari
   );
 }
 
+// ─── AI Productivity & Labor Mix data ────────────────────────────────────────
+
+const PRODUCTIVITY_UPLIFT = [
+  { year: "Year 1", phase: "Foundation", uplift: 20, cumulative: 20, fill: C.teal },
+  { year: "Year 2", phase: "Scale",      uplift: 15, cumulative: 38, fill: C.blue },
+  { year: "Year 3", phase: "Operate",    uplift: 8,  cumulative: 49, fill: C.purple },
+];
+
+const AI_TOOL_CONTRIBUTION = [
+  { tool: "IBM Bob (watsonx Code Assistant)", short: "IBM Bob", pct: 32, color: C.blue,
+    note: "AI pair-programming: code generation, refactoring, test scaffolding & legacy code explanation" },
+  { tool: "AI Code Assistants (Cursor / equiv.)", short: "Code Assistants", pct: 24, color: C.teal,
+    note: "In-IDE completion, multi-file edits and rapid prototyping across pod engineers" },
+  { tool: "IBM AI Agents (watsonx Orchestrate)", short: "AI Agents", pct: 22, color: C.purple,
+    note: "Autonomous agents handling repetitive build, deploy and ops tasks end-to-end" },
+  { tool: "Reusable IBM Assets & Accelerators", short: "Assets & Accelerators", pct: 14, color: C.orange,
+    note: "Pre-built blueprints, frameworks and industry accelerators shortcut delivery" },
+  { tool: "AIOps & Automation", short: "AIOps", pct: 8, color: C.green,
+    note: "Self-healing operations and automated remediation free engineer capacity" },
+];
+
+const LABOR_MIX = [
+  { stage: "Today",  manual: 90, digital: 10 },
+  { stage: "Year 1", manual: 78, digital: 22 },
+  { stage: "Year 2", manual: 64, digital: 36 },
+  { stage: "Year 3", manual: 52, digital: 48 },
+];
+
+const DIGITAL_LABOR_FACTORS = [
+  { title: "AI Code Assistants", color: C.blue,
+    desc: "IBM Bob & Cursor generate, review and refactor code — shifting routine engineering effort to digital labor" },
+  { title: "Autonomous Agents", color: C.purple,
+    desc: "watsonx Orchestrate agents execute build / test / deploy and ops runbooks without human hand-holding" },
+  { title: "Reusable Assets & Accelerators", color: C.orange,
+    desc: "IBM blueprints and frameworks replace bespoke manual builds with configurable components" },
+  { title: "AIOps Automation", color: C.green,
+    desc: "Self-healing monitoring and auto-remediation absorb L1 / L2 operational toil" },
+  { title: "Self-Service Enablement", color: C.teal,
+    desc: "Tier-0 knowledge and guided workflows deflect manual support effort to the platform" },
+];
+
+function PodProductivityLaborSection() {
+  const manualDrop = LABOR_MIX[0].manual - LABOR_MIX[LABOR_MIX.length - 1].manual;
+  const digitalRise = LABOR_MIX[LABOR_MIX.length - 1].digital - LABOR_MIX[0].digital;
+
+  return (
+    <div className="rounded-lg border border-border overflow-hidden">
+      {/* Banner header */}
+      <div className="bg-[#001141] text-white px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <Sparkles size={14} className="text-[#82cfff]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#82cfff]">AI-Driven Productivity & Labor Shift</span>
+          </div>
+          <p className="text-xs text-white/70 mt-1 max-w-2xl">
+            Year-over-year productivity uplift powered by IBM Bob (watsonx Code Assistant), Cursor and other AI code assistants, IBM AI agents and reusable assets — driving a steady shift from manual to digital labor across the pod model.
+          </p>
+        </div>
+        <div className="flex gap-5 flex-shrink-0">
+          {PRODUCTIVITY_UPLIFT.map(p => (
+            <div key={p.year} className="text-center">
+              <div className="text-2xl font-black text-white">+{p.uplift}%</div>
+              <div className="text-[10px] text-[#82cfff]">{p.year}</div>
+            </div>
+          ))}
+          <div className="text-center border-l border-white/20 pl-5">
+            <div className="text-2xl font-black text-[#42be65]">+49%</div>
+            <div className="text-[10px] text-[#82cfff]">Cumulative</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Two-chart grid */}
+        <div className="grid lg:grid-cols-2 gap-4">
+          {/* Productivity uplift */}
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs font-bold mb-0.5">Year-over-Year Productivity Uplift</div>
+            <p className="text-[10px] text-muted-foreground mb-2">Annual uplift (bars) and compounding cumulative gain (line)</p>
+            <ResponsiveContainer width="100%" height={210}>
+              <ComposedChart data={PRODUCTIVITY_UPLIFT} margin={{ top: 18, right: 12, left: -8, bottom: 2 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}%`} domain={[0, 60]} />
+                <RTooltip formatter={(v: number, name: string) => [`${v}%`, name === "uplift" ? "Annual uplift" : "Cumulative"]} />
+                <Bar dataKey="uplift" name="Annual uplift" radius={[5, 5, 0, 0]} barSize={48}>
+                  {PRODUCTIVITY_UPLIFT.map((p, i) => <Cell key={i} fill={p.fill} />)}
+                  <LabelList dataKey="uplift" position="top" formatter={(v: number) => `+${v}%`} style={{ fontWeight: 700, fontSize: 12, fill: "hsl(var(--foreground))" }} />
+                </Bar>
+                <Line type="monotone" dataKey="cumulative" name="Cumulative" stroke={C.green} strokeWidth={2.5} dot={{ r: 4, fill: C.green }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Manual vs digital labor */}
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs font-bold mb-0.5">Manual vs Digital Labor Mix</div>
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Manual labor <span className="font-semibold" style={{ color: C.orange }}>−{manualDrop}pp</span> · digital labor <span className="font-semibold" style={{ color: C.blue }}>+{digitalRise}pp</span> over 3 years
+            </p>
+            <ResponsiveContainer width="100%" height={210}>
+              <BarChart data={LABOR_MIX} stackOffset="expand" margin={{ top: 8, right: 12, left: -8, bottom: 2 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="stage" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${Math.round(v * 100)}%`} />
+                <RTooltip formatter={(v: number, name: string) => [`${v}%`, name === "manual" ? "Manual labor" : "Digital labor"]} />
+                <Legend iconSize={10} wrapperStyle={{ fontSize: 10 }} formatter={(v: string) => v === "manual" ? "Manual labor (human FTE)" : "Digital labor (AI / automation)"} />
+                <Bar dataKey="manual" name="manual" stackId="a" fill={C.orange} barSize={46} />
+                <Bar dataKey="digital" name="digital" stackId="a" fill={C.blue} radius={[4, 4, 0, 0]} barSize={46} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* AI tool contribution to uplift */}
+        <div className="rounded-md border border-border p-3">
+          <div className="text-xs font-bold mb-2">What Drives the Uplift — AI Tools & Assets (share of productivity gain)</div>
+          <div className="space-y-2">
+            {AI_TOOL_CONTRIBUTION.map(t => (
+              <div key={t.tool} className="flex items-center gap-3">
+                <div className="w-44 flex-shrink-0 text-[11px] font-medium truncate" title={t.tool}>{t.tool}</div>
+                <div className="flex-1 h-5 rounded bg-muted/50 overflow-hidden relative">
+                  <div className="h-full rounded flex items-center justify-end pr-1.5" style={{ width: `${t.pct}%`, background: t.color }}>
+                    <span className="text-[10px] font-bold text-white">{t.pct}%</span>
+                  </div>
+                </div>
+                <div className="hidden xl:block w-[42%] flex-shrink-0 text-[10px] text-muted-foreground leading-tight">{t.note}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Contributing factors for digital labor growth */}
+        <div>
+          <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-2">What Grows Digital Labor</div>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-5 gap-2">
+            {DIGITAL_LABOR_FACTORS.map(f => (
+              <div key={f.title} className="rounded-md border border-border p-2.5" style={{ borderTopColor: f.color, borderTopWidth: 2 }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: f.color }} />
+                  <span className="text-[11px] font-semibold leading-tight">{f.title}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-snug">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-[10px] text-muted-foreground italic">
+          Productivity uplift and labor-mix figures are directional IBM business-case estimates for the AI-augmented pod model. Cumulative uplift compounds annually (1.20 × 1.15 × 1.08 ≈ +49%). Final values depend on tool adoption rate, asset reuse and pod maturity.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
   const [pilotSelection, setPilotSelection] = usePilotSelection();
   const [activePhase, setActivePhase] = useState<number>(1);
@@ -2292,6 +2451,8 @@ function PodModelTransformation({ filtered }: { filtered: Resource[] }) {
       </div>
 
       <PodCompositionModelCard />
+
+      <PodProductivityLaborSection />
 
       {/* ── Operating Model Swimlane ──────────────────────── */}
       <div className="rounded-lg border border-border overflow-hidden">
