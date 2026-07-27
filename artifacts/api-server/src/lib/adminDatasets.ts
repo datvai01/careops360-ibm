@@ -152,6 +152,16 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
     category: "Operations",
   },
   {
+    key: "knowledge",
+    label: "Knowledge Articles",
+    page: "Knowledge Base",
+    pageRoute: "/dashboard/knowledge",
+    description:
+      "Knowledge corpus articles (title, markdown body, domain, tags, source). Drives the Knowledge Base page and grounds the AI Ask assistant's answers.",
+    acceptedFormats: ".xlsx",
+    category: "Operations",
+  },
+  {
     key: "capability-uplift",
     label: "Capability Uplift Targets",
     page: "Capability Uplift",

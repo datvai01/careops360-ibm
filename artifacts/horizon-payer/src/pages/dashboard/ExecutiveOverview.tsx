@@ -37,12 +37,12 @@ export default function ExecutiveOverview() {
   const { period, periodOption } = useTimeRange();
 
   const { data: kpis, isLoading: isKpisLoading } = useGetExecutiveKpis(
-    { period },
-    { query: { refetchInterval: 30000 } }
+    { period: period as any },
+    { query: { refetchInterval: 30000 } } as any
   );
   const { data: trends, isLoading: isTrendsLoading } = useGetExecutiveTrends(
-    { period },
-    { query: { refetchInterval: 30000 } }
+    { period: period as any },
+    { query: { refetchInterval: 30000 } } as any
   );
 
   const periodLabel = periodOption.label;

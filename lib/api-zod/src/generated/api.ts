@@ -33,6 +33,7 @@ export const LoginResponse = zod.object({
       "it",
       "support",
       "ibm_delivery",
+      "admin",
     ]),
     email: zod.string(),
     avatar: zod.string().optional(),
@@ -47,7 +48,14 @@ export const GetCurrentUserResponse = zod.object({
   id: zod.string(),
   username: zod.string(),
   name: zod.string(),
-  role: zod.enum(["executive", "operations", "it", "support", "ibm_delivery"]),
+  role: zod.enum([
+    "executive",
+    "operations",
+    "it",
+    "support",
+    "ibm_delivery",
+    "admin",
+  ]),
   email: zod.string(),
   avatar: zod.string().optional(),
 });
@@ -1298,6 +1306,213 @@ export const AskDashboardResponse = zod.object({
     }),
   ),
   followUpQuestions: zod.array(zod.string()),
+  citedArticles: zod
+    .array(
+      zod.object({
+        slug: zod.string(),
+        title: zod.string(),
+        summary: zod.string(),
+        domain: zod.string(),
+        tags: zod.array(zod.string()),
+        sourceType: zod.string(),
+        sourceUrl: zod.string().nullish(),
+        author: zod.string(),
+        viewCount: zod.number(),
+        updatedAt: zod.string(),
+      }),
+    )
+    .optional(),
+  answeredBy: zod.enum(["ai", "rules"]).optional(),
+});
+
+/**
+ * @summary List / search knowledge articles
+ */
+export const ListKnowledgeArticlesQueryParams = zod.object({
+  q: zod.coerce.string().optional(),
+  domain: zod.coerce.string().optional(),
+  sourceType: zod.coerce.string().optional(),
+});
+
+export const ListKnowledgeArticlesResponseItem = zod.object({
+  slug: zod.string(),
+  title: zod.string(),
+  summary: zod.string(),
+  domain: zod.string(),
+  tags: zod.array(zod.string()),
+  sourceType: zod.string(),
+  sourceUrl: zod.string().nullish(),
+  author: zod.string(),
+  viewCount: zod.number(),
+  updatedAt: zod.string(),
+});
+export const ListKnowledgeArticlesResponse = zod.array(
+  ListKnowledgeArticlesResponseItem,
+);
+
+/**
+ * @summary Get a knowledge article by slug
+ */
+export const GetKnowledgeArticleParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const GetKnowledgeArticleResponse = zod
+  .object({
+    slug: zod.string(),
+    title: zod.string(),
+    summary: zod.string(),
+    domain: zod.string(),
+    tags: zod.array(zod.string()),
+    sourceType: zod.string(),
+    sourceUrl: zod.string().nullish(),
+    author: zod.string(),
+    viewCount: zod.number(),
+    updatedAt: zod.string(),
+  })
+  .and(
+    zod.object({
+      body: zod.string(),
+      createdAt: zod.string(),
+    }),
+  );
+
+/**
+ * @summary Record an article view
+ */
+export const RecordKnowledgeArticleViewParams = zod.object({
+  slug: zod.coerce.string(),
+});
+
+export const RecordKnowledgeArticleViewResponse = zod.object({
+  viewCount: zod.number(),
+});
+
+/**
+ * @summary Knowledge corpus health stats
+ */
+export const GetKnowledgeStatsResponse = zod.object({
+  totalArticles: zod.number(),
+  totalViews: zod.number(),
+  byDomain: zod.array(
+    zod.object({
+      domain: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  bySourceType: zod.array(
+    zod.object({
+      sourceType: zod.string(),
+      count: zod.number(),
+    }),
+  ),
+  topViewed: zod.array(
+    zod.object({
+      slug: zod.string(),
+      title: zod.string(),
+      summary: zod.string(),
+      domain: zod.string(),
+      tags: zod.array(zod.string()),
+      sourceType: zod.string(),
+      sourceUrl: zod.string().nullish(),
+      author: zod.string(),
+      viewCount: zod.number(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  aiGeneratedCount: zod.number(),
+  lastUpdatedAt: zod.string().nullish(),
+});
+
+/**
+ * @summary List knowledge source connectors and sync status
+ */
+export const ListKnowledgeSourcesResponseItem = zod.object({
+  sourceType: zod.string(),
+  displayName: zod.string(),
+  status: zod.enum(["not_connected", "connected", "syncing", "error"]),
+  lastSyncAt: zod.string().nullish(),
+  lastSyncMessage: zod.string().nullish(),
+  articleCount: zod.number(),
+});
+export const ListKnowledgeSourcesResponse = zod.array(
+  ListKnowledgeSourcesResponseItem,
+);
+
+/**
+ * @summary Trigger a sync for a knowledge source (admin)
+ */
+export const SyncKnowledgeSourceParams = zod.object({
+  sourceType: zod.coerce.string(),
+});
+
+export const SyncKnowledgeSourceResponse = zod.object({
+  sourceType: zod.string(),
+  status: zod.string(),
+  imported: zod.number(),
+  message: zod.string(),
+});
+
+/**
+ * @summary Generate knowledge articles from live operational data via AI (admin)
+ */
+export const GenerateKnowledgeArticlesBody = zod.object({
+  domains: zod.array(zod.string()).optional(),
+});
+
+export const GenerateKnowledgeArticlesResponse = zod.object({
+  generated: zod.number(),
+  articles: zod.array(
+    zod.object({
+      slug: zod.string(),
+      title: zod.string(),
+      summary: zod.string(),
+      domain: zod.string(),
+      tags: zod.array(zod.string()),
+      sourceType: zod.string(),
+      sourceUrl: zod.string().nullish(),
+      author: zod.string(),
+      viewCount: zod.number(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  llmUsed: zod.boolean(),
+});
+
+/**
+ * @summary Send a message to the Teams-style knowledge bot (demo simulation)
+ */
+export const SendTeamsBotMessageBody = zod.object({
+  message: zod.string(),
+});
+
+export const SendTeamsBotMessageResponse = zod.object({
+  answer: zod.string(),
+  sources: zod.array(zod.string()),
+  relatedMetrics: zod.array(
+    zod.object({
+      label: zod.string(),
+      value: zod.string(),
+    }),
+  ),
+  followUpQuestions: zod.array(zod.string()),
+  citedArticles: zod
+    .array(
+      zod.object({
+        slug: zod.string(),
+        title: zod.string(),
+        summary: zod.string(),
+        domain: zod.string(),
+        tags: zod.array(zod.string()),
+        sourceType: zod.string(),
+        sourceUrl: zod.string().nullish(),
+        author: zod.string(),
+        viewCount: zod.number(),
+        updatedAt: zod.string(),
+      }),
+    )
+    .optional(),
+  answeredBy: zod.enum(["ai", "rules"]).optional(),
 });
 
 /**

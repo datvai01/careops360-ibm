@@ -16,6 +16,8 @@ import VendorInvoices from "@/pages/dashboard/VendorInvoices";
 import AppHealth from "@/pages/dashboard/AppHealth";
 import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
+import Knowledge from "@/pages/dashboard/Knowledge";
+import TeamsBot from "@/pages/dashboard/TeamsBot";
 import DigitalRoadmap from "@/pages/dashboard/DigitalRoadmap";
 import EnrollmentIntelligence from "@/pages/dashboard/EnrollmentIntelligence";
 import DigitalFrontDoorRoadmap from "@/pages/dashboard/DigitalFrontDoorRoadmap";
@@ -58,6 +60,8 @@ function DashboardRouter() {
         <Route path="/dashboard/app-health" component={AppHealth} />
         <Route path="/dashboard/ibm-ams" component={IbmAms} />
         <Route path="/dashboard/ask" component={Ask} />
+        <Route path="/dashboard/knowledge" component={Knowledge} />
+        <Route path="/dashboard/teams-bot" component={TeamsBot} />
         <Route path="/dashboard/digital-roadmap" component={DigitalRoadmap} />
         <Route path="/dashboard/enrollment-intelligence" component={EnrollmentIntelligence} />
         <Route path="/dashboard/digital-front-door-roadmap" component={DigitalFrontDoorRoadmap} />

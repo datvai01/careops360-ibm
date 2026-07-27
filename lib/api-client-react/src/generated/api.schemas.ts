@@ -27,6 +27,7 @@ export const UserRole = {
   it: "it",
   support: "support",
   ibm_delivery: "ibm_delivery",
+  admin: "admin",
 } as const;
 
 export interface User {
@@ -710,11 +711,85 @@ export type AskResponseRelatedMetricsItem = {
   value: string;
 };
 
+export type AskResponseAnsweredBy =
+  (typeof AskResponseAnsweredBy)[keyof typeof AskResponseAnsweredBy];
+
+export const AskResponseAnsweredBy = {
+  ai: "ai",
+  rules: "rules",
+} as const;
+
+export interface KnowledgeArticleSummary {
+  slug: string;
+  title: string;
+  summary: string;
+  domain: string;
+  tags: string[];
+  sourceType: string;
+  sourceUrl?: string | null;
+  author: string;
+  viewCount: number;
+  updatedAt: string;
+}
+
 export interface AskResponse {
   answer: string;
   sources: string[];
   relatedMetrics: AskResponseRelatedMetricsItem[];
   followUpQuestions: string[];
+  citedArticles?: KnowledgeArticleSummary[];
+  answeredBy?: AskResponseAnsweredBy;
+}
+
+export type KnowledgeArticle = KnowledgeArticleSummary & {
+  body: string;
+  createdAt: string;
+};
+
+export type KnowledgeSourceStatus =
+  (typeof KnowledgeSourceStatus)[keyof typeof KnowledgeSourceStatus];
+
+export const KnowledgeSourceStatus = {
+  not_connected: "not_connected",
+  connected: "connected",
+  syncing: "syncing",
+  error: "error",
+} as const;
+
+export interface KnowledgeSource {
+  sourceType: string;
+  displayName: string;
+  status: KnowledgeSourceStatus;
+  lastSyncAt?: string | null;
+  lastSyncMessage?: string | null;
+  articleCount: number;
+}
+
+export interface KnowledgeSyncResult {
+  sourceType: string;
+  status: string;
+  imported: number;
+  message: string;
+}
+
+export type KnowledgeStatsByDomainItem = {
+  domain: string;
+  count: number;
+};
+
+export type KnowledgeStatsBySourceTypeItem = {
+  sourceType: string;
+  count: number;
+};
+
+export interface KnowledgeStats {
+  totalArticles: number;
+  totalViews: number;
+  byDomain: KnowledgeStatsByDomainItem[];
+  bySourceType: KnowledgeStatsBySourceTypeItem[];
+  topViewed: KnowledgeArticleSummary[];
+  aiGeneratedCount: number;
+  lastUpdatedAt?: string | null;
 }
 
 export type RoadmapInitiativeInitiativeType =
@@ -1190,6 +1265,30 @@ export const GetTicketTrendsPeriod = {
   "7d": "7d",
   "14d": "14d",
 } as const;
+
+export type ListKnowledgeArticlesParams = {
+  q?: string;
+  domain?: string;
+  sourceType?: string;
+};
+
+export type RecordKnowledgeArticleView200 = {
+  viewCount: number;
+};
+
+export type GenerateKnowledgeArticlesBody = {
+  domains?: string[];
+};
+
+export type GenerateKnowledgeArticles200 = {
+  generated: number;
+  articles: KnowledgeArticleSummary[];
+  llmUsed: boolean;
+};
+
+export type SendTeamsBotMessageBody = {
+  message: string;
+};
 
 export type GetRoadmapInitiativesParams = {
   portfolio?: string;

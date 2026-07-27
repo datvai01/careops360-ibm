@@ -72,7 +72,7 @@ export default function MemberServices() {
               ) : (
                 <p className="text-2xl font-bold tabular-nums" style={{ color }}>
                   {metric?.value ?? "—"}
-                  {metric?.unit ? <span className="text-sm ml-1 font-normal text-muted-foreground">{metric.unit}</span> : null}
+                  
                 </p>
               )}
               {metric?.trend && (

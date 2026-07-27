@@ -5,11 +5,15 @@
  * Horizon Payer Command Center API
  * OpenAPI spec version: 0.1.0
  */
+import type { AskResponseAnsweredBy } from "./askResponseAnsweredBy";
 import type { AskResponseRelatedMetricsItem } from "./askResponseRelatedMetricsItem";
+import type { KnowledgeArticleSummary } from "./knowledgeArticleSummary";
 
 export interface AskResponse {
   answer: string;
   sources: string[];
   relatedMetrics: AskResponseRelatedMetricsItem[];
   followUpQuestions: string[];
+  citedArticles?: KnowledgeArticleSummary[];
+  answeredBy?: AskResponseAnsweredBy;
 }

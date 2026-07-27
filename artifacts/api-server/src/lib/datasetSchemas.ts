@@ -26,6 +26,7 @@ import {
   executiveAlertsTable,
   dailyTrendsTable,
   aiInsightsTable,
+  knowledgeArticlesTable,
 } from "@workspace/db";
 import type { DatasetSchema } from "./datasetEngine";
 
@@ -637,6 +638,48 @@ export const DATASET_SCHEMAS: Record<string, DatasetSchema> = {
         ],
         sampleRows: [
           { "Insight ID": "INS-001", "Category": "Claims", "Severity": "High", "Headline": "Auto-adjudication drift detected", "Detail": "Rate dropped 14% in 7 days", "Recommendation": "Tune denial rules pack v3.2", "Insight Timestamp (ISO)": "2026-04-25T09:15:00Z", "Affected Area": "Claims Engine" },
+        ],
+      },
+    ],
+  },
+
+  knowledge: {
+    key: "knowledge",
+    title: "Knowledge Articles — CareOps360 Upload Template",
+    introLines: [
+      "This workbook drives the Knowledge Base page and the AI Ask assistant's retrieval corpus.",
+      "One sheet: Articles. Tags are comma-separated. Source Type must be one of: confluence, sharepoint, onedrive, gdrive, uploaded, ai-generated, manual.",
+    ],
+    sheets: [
+      {
+        sheetName: "Articles",
+        tableName: "knowledge_articles",
+        table: knowledgeArticlesTable,
+        columns: [
+          { header: "Slug", key: "slug", type: "str", sample: "edi-835-remittance-delay-runbook", required: true },
+          { header: "Title", key: "title", type: "str", sample: "EDI 835 Remittance Delay — Triage Runbook", required: true },
+          { header: "Summary", key: "summary", type: "str", sample: "Step-by-step triage for outbound 835 remittance delays.", required: true },
+          { header: "Body (Markdown)", key: "body", type: "str", sample: "### When to use\nOutbound 835 files delayed more than 30 minutes...", required: true },
+          { header: "Domain", key: "domain", type: "str", sample: "IT Ops / AIOps", required: true },
+          { header: "Tags (comma-separated)", key: "tags", type: "str", sample: "edi,835,runbook", required: false, nullable: true },
+          { header: "Source Type", key: "sourceType", type: "str", sample: "uploaded", required: true },
+          { header: "Source URL", key: "sourceUrl", type: "str", sample: "", required: false, nullable: true },
+          { header: "Author", key: "author", type: "str", sample: "Maria Chen (Integration Ops)", required: true },
+          { header: "View Count", key: "viewCount", type: "int", sample: 0, required: false, nullable: true },
+        ],
+        sampleRows: [
+          {
+            "Slug": "sample-article",
+            "Title": "Sample Knowledge Article",
+            "Summary": "One-sentence summary shown in search results.",
+            "Body (Markdown)": "### Overview\nWrite the article body in markdown.",
+            "Domain": "Claims",
+            "Tags (comma-separated)": "claims,sample",
+            "Source Type": "uploaded",
+            "Source URL": null,
+            "Author": "Jane Doe (Claims Ops)",
+            "View Count": 0,
+          },
         ],
       },
     ],

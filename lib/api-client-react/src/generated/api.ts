@@ -40,6 +40,8 @@ import type {
   EnrollmentTrends,
   ErrorResponse,
   ExecutiveKpis,
+  GenerateKnowledgeArticles200,
+  GenerateKnowledgeArticlesBody,
   GetClaimsKpisParams,
   GetClaimsQueueParams,
   GetContactCenterKpisParams,
@@ -58,6 +60,12 @@ import type {
   HourlyVolume,
   IbmAmsKpis,
   Incident,
+  KnowledgeArticle,
+  KnowledgeArticleSummary,
+  KnowledgeSource,
+  KnowledgeStats,
+  KnowledgeSyncResult,
+  ListKnowledgeArticlesParams,
   LoginRequest,
   LoginResponse,
   MemberKpis,
@@ -69,10 +77,12 @@ import type {
   ProviderIssue,
   ProviderKpis,
   ProviderListResponse,
+  RecordKnowledgeArticleView200,
   ReviewerWorkload,
   RoadmapAlert,
   RoadmapInitiative,
   RoadmapSummary,
+  SendTeamsBotMessageBody,
   SlaCompliance,
   TicketTrend,
   TransformationDeliverable,
@@ -3716,6 +3726,697 @@ export const useAskDashboard = <
   TContext
 > => {
   return useMutation(getAskDashboardMutationOptions(options));
+};
+
+/**
+ * @summary List / search knowledge articles
+ */
+export const getListKnowledgeArticlesUrl = (
+  params?: ListKnowledgeArticlesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/knowledge/articles?${stringifiedParams}`
+    : `/api/knowledge/articles`;
+};
+
+export const listKnowledgeArticles = async (
+  params?: ListKnowledgeArticlesParams,
+  options?: RequestInit,
+): Promise<KnowledgeArticleSummary[]> => {
+  return customFetch<KnowledgeArticleSummary[]>(
+    getListKnowledgeArticlesUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListKnowledgeArticlesQueryKey = (
+  params?: ListKnowledgeArticlesParams,
+) => {
+  return [`/api/knowledge/articles`, ...(params ? [params] : [])] as const;
+};
+
+export const getListKnowledgeArticlesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listKnowledgeArticles>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListKnowledgeArticlesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listKnowledgeArticles>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListKnowledgeArticlesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listKnowledgeArticles>>
+  > = ({ signal }) =>
+    listKnowledgeArticles(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listKnowledgeArticles>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListKnowledgeArticlesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listKnowledgeArticles>>
+>;
+export type ListKnowledgeArticlesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List / search knowledge articles
+ */
+
+export function useListKnowledgeArticles<
+  TData = Awaited<ReturnType<typeof listKnowledgeArticles>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListKnowledgeArticlesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listKnowledgeArticles>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListKnowledgeArticlesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a knowledge article by slug
+ */
+export const getGetKnowledgeArticleUrl = (slug: string) => {
+  return `/api/knowledge/articles/${slug}`;
+};
+
+export const getKnowledgeArticle = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<KnowledgeArticle> => {
+  return customFetch<KnowledgeArticle>(getGetKnowledgeArticleUrl(slug), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetKnowledgeArticleQueryKey = (slug: string) => {
+  return [`/api/knowledge/articles/${slug}`] as const;
+};
+
+export const getGetKnowledgeArticleQueryOptions = <
+  TData = Awaited<ReturnType<typeof getKnowledgeArticle>>,
+  TError = ErrorType<void>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getKnowledgeArticle>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetKnowledgeArticleQueryKey(slug);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getKnowledgeArticle>>
+  > = ({ signal }) => getKnowledgeArticle(slug, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!slug,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getKnowledgeArticle>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetKnowledgeArticleQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getKnowledgeArticle>>
+>;
+export type GetKnowledgeArticleQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a knowledge article by slug
+ */
+
+export function useGetKnowledgeArticle<
+  TData = Awaited<ReturnType<typeof getKnowledgeArticle>>,
+  TError = ErrorType<void>,
+>(
+  slug: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getKnowledgeArticle>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetKnowledgeArticleQueryOptions(slug, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Record an article view
+ */
+export const getRecordKnowledgeArticleViewUrl = (slug: string) => {
+  return `/api/knowledge/articles/${slug}/view`;
+};
+
+export const recordKnowledgeArticleView = async (
+  slug: string,
+  options?: RequestInit,
+): Promise<RecordKnowledgeArticleView200> => {
+  return customFetch<RecordKnowledgeArticleView200>(
+    getRecordKnowledgeArticleViewUrl(slug),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getRecordKnowledgeArticleViewMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordKnowledgeArticleView>>,
+    TError,
+    { slug: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof recordKnowledgeArticleView>>,
+  TError,
+  { slug: string },
+  TContext
+> => {
+  const mutationKey = ["recordKnowledgeArticleView"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof recordKnowledgeArticleView>>,
+    { slug: string }
+  > = (props) => {
+    const { slug } = props ?? {};
+
+    return recordKnowledgeArticleView(slug, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RecordKnowledgeArticleViewMutationResult = NonNullable<
+  Awaited<ReturnType<typeof recordKnowledgeArticleView>>
+>;
+
+export type RecordKnowledgeArticleViewMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Record an article view
+ */
+export const useRecordKnowledgeArticleView = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordKnowledgeArticleView>>,
+    TError,
+    { slug: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof recordKnowledgeArticleView>>,
+  TError,
+  { slug: string },
+  TContext
+> => {
+  return useMutation(getRecordKnowledgeArticleViewMutationOptions(options));
+};
+
+/**
+ * @summary Knowledge corpus health stats
+ */
+export const getGetKnowledgeStatsUrl = () => {
+  return `/api/knowledge/stats`;
+};
+
+export const getKnowledgeStats = async (
+  options?: RequestInit,
+): Promise<KnowledgeStats> => {
+  return customFetch<KnowledgeStats>(getGetKnowledgeStatsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetKnowledgeStatsQueryKey = () => {
+  return [`/api/knowledge/stats`] as const;
+};
+
+export const getGetKnowledgeStatsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getKnowledgeStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getKnowledgeStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetKnowledgeStatsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getKnowledgeStats>>
+  > = ({ signal }) => getKnowledgeStats({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getKnowledgeStats>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetKnowledgeStatsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getKnowledgeStats>>
+>;
+export type GetKnowledgeStatsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Knowledge corpus health stats
+ */
+
+export function useGetKnowledgeStats<
+  TData = Awaited<ReturnType<typeof getKnowledgeStats>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getKnowledgeStats>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetKnowledgeStatsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List knowledge source connectors and sync status
+ */
+export const getListKnowledgeSourcesUrl = () => {
+  return `/api/knowledge/sources`;
+};
+
+export const listKnowledgeSources = async (
+  options?: RequestInit,
+): Promise<KnowledgeSource[]> => {
+  return customFetch<KnowledgeSource[]>(getListKnowledgeSourcesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListKnowledgeSourcesQueryKey = () => {
+  return [`/api/knowledge/sources`] as const;
+};
+
+export const getListKnowledgeSourcesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listKnowledgeSources>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listKnowledgeSources>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListKnowledgeSourcesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listKnowledgeSources>>
+  > = ({ signal }) => listKnowledgeSources({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listKnowledgeSources>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListKnowledgeSourcesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listKnowledgeSources>>
+>;
+export type ListKnowledgeSourcesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List knowledge source connectors and sync status
+ */
+
+export function useListKnowledgeSources<
+  TData = Awaited<ReturnType<typeof listKnowledgeSources>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listKnowledgeSources>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListKnowledgeSourcesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Trigger a sync for a knowledge source (admin)
+ */
+export const getSyncKnowledgeSourceUrl = (sourceType: string) => {
+  return `/api/knowledge/sources/${sourceType}/sync`;
+};
+
+export const syncKnowledgeSource = async (
+  sourceType: string,
+  options?: RequestInit,
+): Promise<KnowledgeSyncResult> => {
+  return customFetch<KnowledgeSyncResult>(
+    getSyncKnowledgeSourceUrl(sourceType),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getSyncKnowledgeSourceMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof syncKnowledgeSource>>,
+    TError,
+    { sourceType: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof syncKnowledgeSource>>,
+  TError,
+  { sourceType: string },
+  TContext
+> => {
+  const mutationKey = ["syncKnowledgeSource"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof syncKnowledgeSource>>,
+    { sourceType: string }
+  > = (props) => {
+    const { sourceType } = props ?? {};
+
+    return syncKnowledgeSource(sourceType, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SyncKnowledgeSourceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof syncKnowledgeSource>>
+>;
+
+export type SyncKnowledgeSourceMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Trigger a sync for a knowledge source (admin)
+ */
+export const useSyncKnowledgeSource = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof syncKnowledgeSource>>,
+    TError,
+    { sourceType: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof syncKnowledgeSource>>,
+  TError,
+  { sourceType: string },
+  TContext
+> => {
+  return useMutation(getSyncKnowledgeSourceMutationOptions(options));
+};
+
+/**
+ * @summary Generate knowledge articles from live operational data via AI (admin)
+ */
+export const getGenerateKnowledgeArticlesUrl = () => {
+  return `/api/knowledge/generate`;
+};
+
+export const generateKnowledgeArticles = async (
+  generateKnowledgeArticlesBody?: GenerateKnowledgeArticlesBody,
+  options?: RequestInit,
+): Promise<GenerateKnowledgeArticles200> => {
+  return customFetch<GenerateKnowledgeArticles200>(
+    getGenerateKnowledgeArticlesUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(generateKnowledgeArticlesBody),
+    },
+  );
+};
+
+export const getGenerateKnowledgeArticlesMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateKnowledgeArticles>>,
+    TError,
+    { data: BodyType<GenerateKnowledgeArticlesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof generateKnowledgeArticles>>,
+  TError,
+  { data: BodyType<GenerateKnowledgeArticlesBody> },
+  TContext
+> => {
+  const mutationKey = ["generateKnowledgeArticles"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof generateKnowledgeArticles>>,
+    { data: BodyType<GenerateKnowledgeArticlesBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return generateKnowledgeArticles(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GenerateKnowledgeArticlesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof generateKnowledgeArticles>>
+>;
+export type GenerateKnowledgeArticlesMutationBody =
+  BodyType<GenerateKnowledgeArticlesBody>;
+export type GenerateKnowledgeArticlesMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Generate knowledge articles from live operational data via AI (admin)
+ */
+export const useGenerateKnowledgeArticles = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof generateKnowledgeArticles>>,
+    TError,
+    { data: BodyType<GenerateKnowledgeArticlesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof generateKnowledgeArticles>>,
+  TError,
+  { data: BodyType<GenerateKnowledgeArticlesBody> },
+  TContext
+> => {
+  return useMutation(getGenerateKnowledgeArticlesMutationOptions(options));
+};
+
+/**
+ * @summary Send a message to the Teams-style knowledge bot (demo simulation)
+ */
+export const getSendTeamsBotMessageUrl = () => {
+  return `/api/knowledge/teams/message`;
+};
+
+export const sendTeamsBotMessage = async (
+  sendTeamsBotMessageBody: SendTeamsBotMessageBody,
+  options?: RequestInit,
+): Promise<AskResponse> => {
+  return customFetch<AskResponse>(getSendTeamsBotMessageUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(sendTeamsBotMessageBody),
+  });
+};
+
+export const getSendTeamsBotMessageMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendTeamsBotMessage>>,
+    TError,
+    { data: BodyType<SendTeamsBotMessageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendTeamsBotMessage>>,
+  TError,
+  { data: BodyType<SendTeamsBotMessageBody> },
+  TContext
+> => {
+  const mutationKey = ["sendTeamsBotMessage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendTeamsBotMessage>>,
+    { data: BodyType<SendTeamsBotMessageBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return sendTeamsBotMessage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendTeamsBotMessageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendTeamsBotMessage>>
+>;
+export type SendTeamsBotMessageMutationBody = BodyType<SendTeamsBotMessageBody>;
+export type SendTeamsBotMessageMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Send a message to the Teams-style knowledge bot (demo simulation)
+ */
+export const useSendTeamsBotMessage = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendTeamsBotMessage>>,
+    TError,
+    { data: BodyType<SendTeamsBotMessageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof sendTeamsBotMessage>>,
+  TError,
+  { data: BodyType<SendTeamsBotMessageBody> },
+  TContext
+> => {
+  return useMutation(getSendTeamsBotMessageMutationOptions(options));
 };
 
 /**

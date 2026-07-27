@@ -43,12 +43,12 @@ const SENTIMENT_OPTS = [
   { v: "concern",  label: "⚠️ Concern"  },
 ];
 
-type IbmPeriod = "7d" | "14d" | "21d";
+type IbmPeriod = "7d" | "14d" | "30d";
 
 const IBM_PERIOD_OPTIONS = [
   { value: "7d"  as IbmPeriod, label: "Last 7 Days",  shortLabel: "7D"  },
   { value: "14d" as IbmPeriod, label: "Last 14 Days", shortLabel: "14D" },
-  { value: "21d" as IbmPeriod, label: "Last 21 Days", shortLabel: "21D" },
+  { value: "30d" as IbmPeriod, label: "Last 21 Days", shortLabel: "21D" },
 ];
 
 const AUTOMATION_PCT  = 2100000 / 3200000;
@@ -325,8 +325,8 @@ export default function IbmAms() {
     refetchInterval: 30000,
   });
   const { data: trends, isLoading: isTrendsLoading } = useGetTicketTrends(
-    { period: ibmPeriod },
-    { query: { refetchInterval: 30000 } }
+    { period: ibmPeriod as any },
+    { query: { refetchInterval: 30000 } } as any
   );
   const { data: runbooks, isLoading: isRunbooksLoading } = useGetAutomationRunbooks();
   const { data: savings, isLoading: isSavingsLoading } = useGetCostSavings();

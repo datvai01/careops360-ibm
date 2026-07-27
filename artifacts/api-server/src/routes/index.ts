@@ -17,6 +17,7 @@ import adminDatasetsRouter from "./adminDatasets";
 import capabilityRouter from "./capability";
 import transformationSurveyRouter from "./transformationSurvey";
 import kpiTrackerRouter from "./kpiTracker";
+import knowledgeRouter from "./knowledge";
 
 const router: IRouter = Router();
 
@@ -38,5 +39,6 @@ router.use(adminDatasetsRouter);
 router.use(capabilityRouter);
 router.use(transformationSurveyRouter);
 router.use(kpiTrackerRouter);
+router.use(knowledgeRouter);
 
 export default router;

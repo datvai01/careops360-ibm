@@ -14,4 +14,5 @@ export const UserRole = {
   it: "it",
   support: "support",
   ibm_delivery: "ibm_delivery",
+  admin: "admin",
 } as const;

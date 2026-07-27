@@ -2,6 +2,8 @@ import { Router, type IRouter } from "express";
 import { db, ibmamsRunbooksTable, ibmamsSavingsTrendTable, ibmamsTicketTrendsTable, aiInsightsTable } from "@workspace/db";
 import { asc, desc } from "drizzle-orm";
 import { fetchPageKpis } from "../lib/kpiHelper";
+import { askWithRag } from "../lib/knowledgeLlm";
+import { toSummary as toArticleSummary } from "./knowledge";
 
 const router: IRouter = Router();
 
@@ -316,10 +318,25 @@ router.post("/ibmams/ask", async (req, res): Promise<void> => {
   const { question } = req.body;
   const lq = (question ?? "").toLowerCase();
 
+  // RAG + LLM first: retrieve knowledge articles + live KPIs, answer with citations.
+  const llm = await askWithRag(String(question ?? ""));
+  if (llm) {
+    res.json({
+      answer: llm.answer,
+      sources: llm.sources,
+      relatedMetrics: llm.relatedMetrics,
+      followUpQuestions: llm.followUpQuestions,
+      citedArticles: llm.citedArticles.map(toArticleSummary),
+      answeredBy: "ai",
+    });
+    return;
+  }
+
+  // Rule-based fallback when the LLM is unavailable.
   const matched = matchTopic(lq);
 
   if (matched) {
-    res.json(topicToResponse(matched));
+    res.json({ ...topicToResponse(matched), answeredBy: "rules" });
     return;
   }
 

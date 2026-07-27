@@ -16,6 +16,8 @@ import {
   ActivityIcon,
   CpuIcon,
   MessageSquareIcon,
+  BookOpen,
+  MessageCircle,
   MapIcon,
   LogOutIcon,
   SunIcon,
@@ -50,7 +52,7 @@ import { useInactivityTimeout } from "@/hooks/useInactivityTimeout";
 import { SessionTimeoutModal } from "./SessionTimeoutModal";
 
 type NavItem = { name: string; path: string; icon: React.ElementType };
-type NavGroup = { label: string; items: NavItem[] };
+type NavGroup = { label: string; items: NavItem[]; adminOnly?: boolean };
 
 const EXPORT_ENABLED_PATHS = new Set<string>([
   "/dashboard/providers",
@@ -95,6 +97,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Assistant",
     items: [
+      { name: "Knowledge Base", path: "/dashboard/knowledge", icon: BookOpen },
+      { name: "Teams Bot (Preview)", path: "/dashboard/teams-bot", icon: MessageCircle },
       { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
     ],
   },
@@ -257,7 +261,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         
         <div className="flex-1 overflow-y-auto py-2">
           <nav className="px-2 space-y-1">
-            {NAV_GROUPS.filter((g) => !(g as { adminOnly?: boolean }).adminOnly || user?.role === "admin").map((group, gi) => (
+            {NAV_GROUPS.filter((g) => !g.adminOnly || user?.role === "admin").map((group, gi) => (
               <div key={group.label}>
                 {sidebarOpen && (
                   <div className={cn("px-3 mb-0.5", gi > 0 && "pt-1.5")}>

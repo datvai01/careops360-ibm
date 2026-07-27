@@ -14,3 +14,4 @@ export * from "./pageKpis";
 export * from "./capability";
 export * from "./transformationSurvey";
 export * from "./kpiTracker";
+export * from "./knowledge";

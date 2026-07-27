@@ -85,7 +85,7 @@ const SECTIONS = [
   },
 ];
 
-const ALL_RATING_IDS = SECTIONS.flatMap(s => s.qs.filter(q => !q.type).map(q => q.id));
+const ALL_RATING_IDS = SECTIONS.flatMap(s => s.qs.filter(q => !(q as any).type).map(q => q.id));
 
 const Q_NUMBER_MAP = Object.fromEntries(
   SECTIONS.flatMap(s => s.qs).map((q, i) => [q.id, i + 1])
@@ -105,11 +105,11 @@ export default function TransformationMindsetSurvey() {
 
   const sectionAnswered = (si: number) => {
     const sec = SECTIONS[si];
-    return sec.qs.filter(q => !q.type).every(q => answers[q.id] !== undefined);
+    return sec.qs.filter(q => !(q as any).type).every(q => answers[q.id] !== undefined);
   };
 
   const canNext = isIntro || (currentSection && (
-    currentSection.qs.filter(q => !q.type).length === 0 ||
+    currentSection.qs.filter(q => !(q as any).type).length === 0 ||
     sectionAnswered(sectionIdx)
   ));
 
@@ -220,9 +220,9 @@ export default function TransformationMindsetSurvey() {
                       {q.text}
                     </p>
 
-                    {q.type === "radio" && "options" in q ? (
+                    {(q as any).type === "radio" && "options" in q ? (
                       <div className="flex flex-wrap gap-2">
-                        {q.options.map((opt: string) => {
+                        {(q as any).options.map((opt: string) => {
                           const selected = answers[q.id] === opt;
                           return (
                             <button key={opt} type="button"
@@ -238,7 +238,7 @@ export default function TransformationMindsetSurvey() {
                           );
                         })}
                       </div>
-                    ) : !q.type ? (
+                    ) : !(q as any).type ? (
                       <>
                         {/* Scale legend */}
                         <div className="grid grid-cols-5 gap-1.5 mb-3">

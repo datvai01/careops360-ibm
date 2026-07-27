@@ -63,7 +63,7 @@ export default function Help() {
   const { recordingState, progress, startRecording, cancelRecording } = useVideoRecorder();
 
   const handleDownload = () => {
-    startRecording(videoContainerRef, () => setVideoKey((k) => k + 1));
+    startRecording(videoContainerRef as any, () => setVideoKey((k) => k + 1));
   };
 
   const isRecording = recordingState === "recording";

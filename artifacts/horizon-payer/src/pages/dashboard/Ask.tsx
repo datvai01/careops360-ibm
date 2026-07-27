@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "wouter";
 import { SendIcon, SparklesIcon, UserIcon, ActivityIcon, RotateCcwIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,6 +15,8 @@ type Message = {
   metrics?: { label: string; value: string }[];
   sources?: string[];
   followUpQuestions?: string[];
+  citedArticles?: { slug: string; title: string; summary: string }[];
+  answeredBy?: "ai" | "rules";
 };
 
 const WELCOME_MESSAGE: Message = {
@@ -85,6 +88,8 @@ export default function Ask() {
               metrics: data.relatedMetrics,
               sources: data.sources,
               followUpQuestions: data.followUpQuestions,
+              citedArticles: data.citedArticles,
+              answeredBy: data.answeredBy,
             },
           ]);
         }, delay);
@@ -224,6 +229,33 @@ export default function Ask() {
                           </Badge>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {msg.role === "assistant" && msg.citedArticles && msg.citedArticles.length > 0 && (
+                    <div className="mt-3 w-full">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">
+                        Knowledge Base Sources
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {msg.citedArticles.map((article, i) => (
+                          <Link key={i} href={`/dashboard/knowledge?article=${article.slug}`} className="block p-2.5 border rounded-md hover:border-primary/40 hover:bg-primary/5 transition-colors bg-card">
+                            <div className="text-xs font-semibold mb-0.5 truncate text-foreground">{article.title}</div>
+                            <div className="text-[10px] text-muted-foreground line-clamp-2 leading-snug">{article.summary}</div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {msg.role === "assistant" && msg.answeredBy && (
+                    <div className="mt-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {msg.answeredBy === "ai" ? (
+                        <SparklesIcon className="w-3.5 h-3.5 text-primary" />
+                      ) : (
+                        <ActivityIcon className="w-3.5 h-3.5 text-[#24a148]" />
+                      )}
+                      <span>Answered by {msg.answeredBy === "ai" ? "AI Agent" : "Rule Engine"}</span>
                     </div>
                   )}
 
