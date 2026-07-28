@@ -11,200 +11,126 @@ export default function TransformationRoadmap() {
             CareOps360 · IBM × Horizon BCBS
           </div>
           <div className="font-display text-[2.2vw] font-extrabold tracking-tight leading-tight">
-            Year-1 Transformation &amp; Transition Roadmap
+            CareOps360 Transformation — 30-60-90 Day Plan
           </div>
         </div>
-        <div className="text-right pb-[0.5vh] text-[1.5vw] text-muted font-medium">AMS Reinvention · Months 1–12</div>
+        <div className="text-right pb-[0.5vh] text-[1.5vw] text-muted font-medium">
+          From the Horizon AMS Reinvention transition plan
+        </div>
       </div>
 
-      {/* ===== GANTT ===== */}
-      <div className="absolute top-[9.6vh] left-[3vw] right-[3vw]">
-        {/* Quarter header */}
-        <div className="flex ml-[21vw]">
-          <div className="w-1/4 text-center text-[1.5vw] font-bold text-primary border-b-[0.3vh] border-primary pb-[0.3vh]">Q1 · Foundation</div>
-          <div className="w-1/4 text-center text-[1.5vw] font-bold text-primary/80 border-b-[0.3vh] border-primary/60 pb-[0.3vh]">Q2 · Pilot &amp; Scale</div>
-          <div className="w-1/4 text-center text-[1.5vw] font-bold text-primary/80 border-b-[0.3vh] border-primary/60 pb-[0.3vh]">Q3 · Expand</div>
-          <div className="w-1/4 text-center text-[1.5vw] font-bold text-primary/80 border-b-[0.3vh] border-primary/60 pb-[0.3vh]">Q4 · Operate</div>
+      {/* ===== THREE PHASE COLUMNS ===== */}
+      <div className="absolute top-[10.5vh] left-[3vw] right-[3vw] bottom-[13vh] flex gap-[1.4vw]">
+
+        {/* --- DAY 0-30 --- */}
+        <div className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-[#0f62fe] text-white px-[1vw] py-[1vh]">
+            <div className="text-[1.9vw] font-extrabold leading-none">Day 0–30</div>
+            <div className="text-[1.5vw] font-medium opacity-90 mt-[0.4vh]">Foundation — stand up the MVP</div>
+          </div>
+          <div className="px-[1vw] py-[1vh] space-y-[1vh] flex-1">
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">01</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">MVP scope, dashboard personas</span> &amp; success criteria</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">02</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">ARB Light approval</span> &amp; MVP deployment architecture</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">03</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Deploy containerized CareOps360</span> to OCP / AWS dev</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">04</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">RDS Postgres schema</span> &amp; baseline dashboard data model</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">05</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Initial data loads</span> — Exec Overview, Claims, Prior Auth, Providers</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">06</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Dashboard layouts, KPI definitions</span> &amp; role-based access</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#0f62fe] text-[1.5vw] font-bold shrink-0">07</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">MVP playback</span> &amp; production-hardening backlog</div>
+            </div>
+          </div>
+          <div className="px-[1vw] py-[0.9vh] bg-[#0f62fe]/10 border-t border-[#0f62fe]/20 text-[1.5vw] leading-snug">
+            <span className="font-bold text-[#0f62fe]">Exit:</span> MVP live in dev, playback done
+          </div>
         </div>
 
-        <div className="relative mt-[0.4vh]">
-          {/* Quarter gridlines */}
-          <div className="absolute top-0 bottom-0 left-[21vw] right-0">
-            <div className="absolute top-0 bottom-0 left-0 w-px bg-slate-300" />
-            <div className="absolute top-0 bottom-0 left-1/4 w-px bg-slate-300" />
-            <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-300" />
-            <div className="absolute top-0 bottom-0 left-3/4 w-px bg-slate-300" />
-            <div className="absolute top-0 bottom-0 right-0 w-px bg-slate-300" />
+        {/* --- DAY 31-60 --- */}
+        <div className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-[#6929c4] text-white px-[1vw] py-[1vh]">
+            <div className="text-[1.9vw] font-extrabold leading-none">Day 31–60</div>
+            <div className="text-[1.5vw] font-medium opacity-90 mt-[0.4vh]">Production ready — harden &amp; design target state</div>
           </div>
-
-          {/* ---- FOUNDATIONAL ---- */}
-          <div className="relative flex items-center h-[2.7vh] bg-[#0f62fe]/10">
-            <span className="text-[1.5vw] font-bold uppercase tracking-wide text-[#0f62fe] pl-[0.3vw]">Foundational</span>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Transition-in &amp; discovery</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#0f62fe] left-[0%] w-[16.7%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[17.5%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M1–M2 · knowledge transfer, app inventory, service baselining</div>
+          <div className="px-[1vw] py-[1vh] space-y-[1.2vh] flex-1">
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#6929c4] text-[1.5vw] font-bold shrink-0">01</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Promote MVP to production</span> through Horizon release process with SSO &amp; RBAC configured</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#6929c4] text-[1.5vw] font-bold shrink-0">02</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Design near-real-time target architecture</span> with Kafka / MSK and data contracts</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#6929c4] text-[1.5vw] font-bold shrink-0">03</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">ARB approval</span> for the target CareOps360 architecture</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#6929c4] text-[1.5vw] font-bold shrink-0">04</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Operating model</span> — support model &amp; product ownership cadence</div>
             </div>
           </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Governance &amp; backlog</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#0f62fe] left-[0%] w-[16.7%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[16.7%] -ml-[0.5vw] w-[1vw] h-[1vw] rotate-45 bg-[#f1c21b] border border-slate-500" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[18.3%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M1–M2 · steering cadence set, prioritized agent backlog approved</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Value dashboard &amp; KPIs</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#0f62fe]/85 left-[0%] w-[25%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[25.8%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M1–M3 · savings instrumentation, SLA &amp; productivity baselines</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Security &amp; guardrails</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#0f62fe]/85 left-[8.3%] w-[25%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[34.2%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M2–M4 · agent guardrails, HIPAA &amp; compliance reviews</div>
-            </div>
-          </div>
-
-          {/* ---- STRATEGIC ---- */}
-          <div className="relative flex items-center h-[2.7vh] bg-[#6929c4]/10">
-            <span className="text-[1.5vw] font-bold uppercase tracking-wide text-[#6929c4] pl-[0.3vw]">Strategic</span>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Business case &amp; funding</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#6929c4] left-[0%] w-[25%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[25.8%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M1–M3 · expected-case ROI model, stage-gate funding approvals</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Modernization assessment</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#6929c4] left-[25%] w-[25%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[50.8%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M4–M6 · app rationalization &amp; cloud roadmap</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Pod model &amp; talent plan</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#6929c4]/85 left-[25%] w-[33.3%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[59.2%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M4–M7 · pod design &amp; role mapping</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Expansion strategy</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#6929c4]/85 left-[41.7%] w-[33.3%] flex items-center pl-[0.5vw]">
-                <span className="text-white text-[1.5vw] font-medium leading-none whitespace-nowrap">M6–M9 · Provider &amp; Member Svc</span>
-              </div>
-            </div>
-          </div>
-
-          {/* ---- TACTICAL ---- */}
-          <div className="relative flex items-center h-[2.7vh] bg-[#1192e8]/10">
-            <span className="text-[1.5vw] font-bold uppercase tracking-wide text-[#1192e8] pl-[0.3vw]">Tactical</span>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Build four pilot agents</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#1192e8] left-[8.3%] w-[16.7%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[25.8%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M2–M3 · Triage, QE, Claims, Prior Auth</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Pilots &amp; value tracking</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#1192e8] left-[16.7%] w-[16.6%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[25%] -ml-[0.5vw] w-[1vw] h-[1vw] rotate-45 bg-[#f1c21b] border border-slate-500" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[34.2%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M3–M4 · pilots live in production, value report to steering</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Scale to six agents</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#1192e8]/85 left-[25%] w-[25%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[50%] -ml-[0.5vw] w-[1vw] h-[1vw] rotate-45 bg-[#f1c21b] border border-slate-500" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[51.6%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M4–M6 · + Modernization &amp; Release Readiness</div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Knowledge &amp; AI assistant</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#1192e8]/85 left-[25%] w-[41.7%]" />
-              <div className="absolute top-1/2 -translate-y-1/2 left-[67.5%] text-[1.5vw] text-muted leading-none whitespace-nowrap">M4–M8 · corpus, Ask, Teams bot</div>
-            </div>
-          </div>
-
-          {/* ---- OPERATIONAL ---- */}
-          <div className="relative flex items-center h-[2.7vh] bg-[#24a148]/10">
-            <span className="text-[1.5vw] font-bold uppercase tracking-wide text-[#24a148] pl-[0.3vw]">Operational</span>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Triage &amp; runbook ops</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#24a148] left-[16.7%] w-[83.3%] flex items-center pl-[0.5vw]">
-                <span className="text-white text-[1.5vw] font-medium leading-none whitespace-nowrap">M3–M12 · 24×7 ops, automation coverage grows quarterly</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">SLA &amp; value reviews</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#24a148]/85 left-[16.7%] w-[83.3%] flex items-center pl-[0.5vw]">
-                <span className="text-white text-[1.5vw] font-medium leading-none whitespace-nowrap">M3–M12 · monthly scorecards, quarterly value reviews</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh]">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Pod transition</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#24a148]/85 left-[50%] w-[50%] flex items-center pl-[0.5vw]">
-                <span className="text-white text-[1.5vw] font-medium leading-none whitespace-nowrap">M7–M12 · wave cutover to pods</span>
-              </div>
-              <div className="absolute top-1/2 -translate-y-1/2 left-[100%] -ml-[0.8vw] w-[1vw] h-[1vw] rotate-45 bg-[#f1c21b] border border-slate-500" />
-            </div>
-          </div>
-
-          <div className="relative flex items-center h-[4.1vh] bg-white/60">
-            <div className="w-[21vw] pr-[0.8vw] text-[1.5vw] font-semibold leading-none truncate">Governed autonomy</div>
-            <div className="relative flex-1 h-full">
-              <div className="absolute top-1/2 -translate-y-1/2 h-[2.5vh] rounded-sm bg-[#24a148]/70 left-[66.7%] w-[33.3%] flex items-center pl-[0.5vw]">
-                <span className="text-white text-[1.5vw] font-medium leading-none whitespace-nowrap">M9–M12 · autonomy by risk tier</span>
-              </div>
-            </div>
+          <div className="px-[1vw] py-[0.9vh] bg-[#6929c4]/10 border-t border-[#6929c4]/20 text-[1.5vw] leading-snug">
+            <span className="font-bold text-[#6929c4]">Exit:</span> prod MVP, approved architecture
           </div>
         </div>
+
+        {/* --- DAY 61-90 --- */}
+        <div className="flex-1 bg-white rounded-md shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+          <div className="bg-[#1192e8] text-white px-[1vw] py-[1vh]">
+            <div className="text-[1.9vw] font-extrabold leading-none">Day 61–90</div>
+            <div className="text-[1.5vw] font-medium opacity-90 mt-[0.4vh]">Standardize &amp; integrate — automate the data</div>
+          </div>
+          <div className="px-[1vw] py-[1vh] space-y-[1.2vh] flex-1">
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#1192e8] text-[1.5vw] font-bold shrink-0">01</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Build ingestion platform</span> in AWS with infrastructure-as-code, MSK &amp; observability</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#1192e8] text-[1.5vw] font-bold shrink-0">02</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Automate top 4–6 sources</span> — ServiceNow, APM, Databricks</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#1192e8] text-[1.5vw] font-bold shrink-0">03</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Enable remaining dashboard tiles</span> &amp; validate data-quality rules</div>
+            </div>
+            <div className="flex gap-[0.5vw]">
+              <span className="text-[#1192e8] text-[1.5vw] font-bold shrink-0">04</span>
+              <div className="text-[1.5vw] leading-snug"><span className="font-semibold">Publish adoption plan</span> — training assets &amp; leadership consumption cadence</div>
+            </div>
+          </div>
+          <div className="px-[1vw] py-[0.9vh] bg-[#1192e8]/10 border-t border-[#1192e8]/20 text-[1.5vw] leading-snug">
+            <span className="font-bold text-[#1192e8]">Exit:</span> ingestion live, adoption pack
+          </div>
+        </div>
+      </div>
+
+      {/* Beyond day 90 strip */}
+      <div className="absolute bottom-[5.4vh] left-[3vw] right-[3vw] bg-[#0b2e6b] text-white rounded-md px-[1vw] py-[0.9vh] flex items-center gap-[1vw]">
+        <span className="text-[1.5vw] font-bold text-[#8ab4ff] uppercase tracking-wide shrink-0">Beyond Day 90</span>
+        <span className="text-[1.5vw] leading-snug">Scale &amp; optimize — remaining sources · AI Insights &amp; Copilot · ServiceNow/Jira write-back · HA/DR hardening · 180-day value review</span>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-[1.6vh] left-[3vw] right-[3vw] flex items-center justify-between border-t border-slate-300 pt-[0.8vh]">
-        <div className="flex items-center gap-[1.2vw]">
-          <div className="flex items-center gap-[0.4vw]"><div className="w-[0.9vw] h-[0.9vw] rounded-sm bg-[#0f62fe]" /><span className="text-[1.5vw] text-muted">Foundational</span></div>
-          <div className="flex items-center gap-[0.4vw]"><div className="w-[0.9vw] h-[0.9vw] rounded-sm bg-[#6929c4]" /><span className="text-[1.5vw] text-muted">Strategic</span></div>
-          <div className="flex items-center gap-[0.4vw]"><div className="w-[0.9vw] h-[0.9vw] rounded-sm bg-[#1192e8]" /><span className="text-[1.5vw] text-muted">Tactical</span></div>
-          <div className="flex items-center gap-[0.4vw]"><div className="w-[0.9vw] h-[0.9vw] rounded-sm bg-[#24a148]" /><span className="text-[1.5vw] text-muted">Operational</span></div>
-          <div className="flex items-center gap-[0.4vw]"><div className="w-[0.9vw] h-[0.9vw] rotate-45 bg-[#f1c21b] border border-slate-500" /><span className="text-[1.5vw] text-muted">Milestone</span></div>
-        </div>
+      <div className="absolute bottom-[1.4vh] left-[3vw] right-[3vw] flex items-center justify-between">
+        <div className="text-[1.5vw] text-muted">Source: AMS Reinvention transition plan — CareOps360 workstream</div>
         <div className="text-[1.5vw] font-semibold text-muted">IBM Confidential · Demonstration · 2026</div>
       </div>
     </div>
