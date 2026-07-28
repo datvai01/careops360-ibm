@@ -1,0 +1,27 @@
+kind = "slides"
+previewPath = "/transformation-roadmap-slide/"
+title = "Horizon Transformation Year-1 Roadmap"
+version = "1.0.0"
+id = "artifacts/transformation-roadmap-slide"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/transformation-roadmap-slide/" ]
+localPort = 25211
+
+[services.development]
+run = "pnpm --filter @workspace/transformation-roadmap-slide run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/transformation-roadmap-slide", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/transformation-roadmap-slide/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25211"
+BASE_PATH = "/transformation-roadmap-slide/"
