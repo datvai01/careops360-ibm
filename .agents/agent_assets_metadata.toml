@@ -186,3 +186,9 @@ id = "BjkfDtEW8I901Bj5_C3KS"
 uri = "file://artifacts/careops-video/public/audio/bg_music_53.mp3"
 type = "audio"
 title = "background music (53s)"
+
+[[outputs]]
+id = "gykJ9HgRprph7oQhSzM21"
+uri = "file://exports/careops360-capabilities.mp4"
+type = "video"
+title = "CareOps360 Capabilities Video (MP4)"

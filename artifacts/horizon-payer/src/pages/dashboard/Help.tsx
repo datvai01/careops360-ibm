@@ -170,6 +170,42 @@ export default function Help() {
         )}
       </div>
 
+      {/* Capabilities Video */}
+      <div className="rounded-xl overflow-hidden border bg-card shadow-sm">
+        <div className="px-4 pt-4">
+          <h2 className="font-semibold text-sm">Capabilities Video</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            A narrated ~53-second overview of CareOps360 — the command center, six autonomous agents, ROI, knowledge assistant, and the 30-60-90 day plan.
+          </p>
+        </div>
+        <div className="p-4">
+          <video
+            controls
+            preload="metadata"
+            className="w-full rounded-lg border bg-black"
+            src={`${import.meta.env.BASE_URL}videos/careops360-capabilities.mp4`}
+          />
+        </div>
+        <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between gap-4">
+          <span className="text-xs text-muted-foreground font-medium flex-1 min-w-0 truncate">
+            CareOps360 Capabilities · ~0:53 · Narration + music included
+          </span>
+          <a
+            href={`${import.meta.env.BASE_URL}videos/careops360-capabilities.mp4`}
+            download="careops360-capabilities.mp4"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0"
+            style={{
+              background: "rgba(15,98,254,0.1)",
+              color: "#0f62fe",
+              border: "1px solid rgba(15,98,254,0.25)",
+            }}
+          >
+            <DownloadIcon size={12} />
+            Download MP4
+          </a>
+        </div>
+      </div>
+
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Chapter Index */}
