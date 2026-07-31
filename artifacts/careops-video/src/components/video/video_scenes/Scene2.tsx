@@ -59,7 +59,7 @@ export function Scene2() {
 
         {/* Subline */}
         <motion.p
-          className="text-[2.2vw] font-body text-white/80 text-center mb-[5vh] max-w-[60vw]"
+          className="text-[2vw] font-body text-white/80 text-center mb-[3vh] max-w-[60vw]"
           initial={{ opacity: 0, y: 20 }}
           animate={phase >= 3 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6, delay: 0.2 }}
@@ -67,9 +67,24 @@ export function Scene2() {
           Executive dashboards for every operational domain
         </motion.p>
 
-        {/* Dashboard grid */}
+        {/* Live platform screenshot */}
         <motion.div
-          className="grid grid-cols-3 gap-[2vw] max-w-[70vw]"
+          className="relative w-[58vw] rounded-xl overflow-hidden border glow-blue"
+          style={{ borderColor: "rgba(15, 98, 254, 0.4)" }}
+          initial={{ opacity: 0, y: 60, scale: 0.92, rotateX: 8 }}
+          animate={phase >= 4 ? { opacity: 1, y: 0, scale: 1, rotateX: 0 } : { opacity: 0, y: 60, scale: 0.92, rotateX: 8 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}images/app-exec-overview.png`}
+            alt="CareOps360 Executive Overview"
+            className="w-full h-auto"
+          />
+        </motion.div>
+
+        {/* Dashboard grid (hidden, kept for labels) */}
+        <motion.div
+          className="hidden"
           initial={{ opacity: 0, y: 30 }}
           animate={phase >= 4 ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}

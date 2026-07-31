@@ -100,15 +100,20 @@ export function Scene3() {
           ))}
         </motion.div>
 
-        {/* Agent visual */}
-        <motion.img
-          src={`${import.meta.env.BASE_URL}images/agent-visual.png`}
-          alt=""
-          className="w-[15vw] h-auto"
-          initial={{ opacity: 0, scale: 0.5, y: 20 }}
-          animate={phase >= 4 ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.5, y: 20 }}
-          transition={{ duration: 0.8, ease: "backOut" }}
-        />
+        {/* Live agents screenshot */}
+        <motion.div
+          className="relative w-[42vw] rounded-xl overflow-hidden border"
+          style={{ borderColor: "rgba(36, 161, 72, 0.4)", boxShadow: "0 0 40px rgba(36, 161, 72, 0.25)" }}
+          initial={{ opacity: 0, scale: 0.85, y: 30 }}
+          animate={phase >= 4 ? { opacity: 1, scale: 1, y: 0 } : { opacity: 0, scale: 0.85, y: 30 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}images/app-agents.png`}
+            alt="CareOps360 Autonomous Agents"
+            className="w-full h-auto"
+          />
+        </motion.div>
       </div>
     </motion.div>
   );

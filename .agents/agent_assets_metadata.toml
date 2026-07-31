@@ -78,3 +78,63 @@ id = "5aWuhBVaM6DcQg2yHXba1"
 uri = "file://artifacts/careops-video/public/audio/bg_music.mp3"
 type = "audio"
 title = "background music"
+
+[[outputs]]
+id = "8CfPAvPU7G__JZzePwxvD"
+uri = "file://artifacts/careops-video/public/audio/bg_music_2.mp3"
+type = "audio"
+title = "background music (39s)"
+
+[[outputs]]
+id = "dCDgXsyIWfQjmyJsNX2wZ"
+uri = "file://artifacts/careops-video/public/audio/vo_problem.mp3"
+type = "audio"
+title = "vo_problem"
+
+[[outputs]]
+id = "AUJzPEGCSsFtSYjSEVc27"
+uri = "file://artifacts/careops-video/public/audio/vo_intro.mp3"
+type = "audio"
+title = "vo_intro"
+
+[[outputs]]
+id = "ZXKcLUxuRdcw4RLok7B7k"
+uri = "file://artifacts/careops-video/public/audio/vo_outro.mp3"
+type = "audio"
+title = "vo_outro"
+
+[[outputs]]
+id = "gp93chCDUlduwhiZDpl0y"
+uri = "file://artifacts/careops-video/public/audio/vo_knowledge.mp3"
+type = "audio"
+title = "vo_knowledge"
+
+[[outputs]]
+id = "Y3rL7K1AN0PBMUQsBmPcB"
+uri = "file://artifacts/careops-video/public/audio/vo_agents.mp3"
+type = "audio"
+title = "vo_agents"
+
+[[outputs]]
+id = "zpYYan-bWn81q8pBLRage"
+uri = "file://artifacts/careops-video/public/audio/vo_roadmap.mp3"
+type = "audio"
+title = "vo_roadmap"
+
+[[outputs]]
+id = "F_x1A3v7R5ueVGC5imkda"
+uri = "file://artifacts/careops-video/public/audio/vo_roi.mp3"
+type = "audio"
+title = "vo_roi"
+
+[[outputs]]
+id = "bfDiFWpsKdNBHaIFQXBXT"
+uri = "file://artifacts/careops-video/public/audio/vo_commandCenter.mp3"
+type = "audio"
+title = "vo_commandCenter"
+
+[[outputs]]
+id = "X0LunAYmLyQOA7oF3wXyq"
+uri = "file://artifacts/careops-video/public/audio/bg_music_49.mp3"
+type = "audio"
+title = "background music (49s)"
