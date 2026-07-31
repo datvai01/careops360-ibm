@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+
+:root {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 96%;
+  
+  --card: 220 13% 9%;
+  --card-foreground: 0 0% 96%;
+  
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+  
+  --secondary: 142 69% 40%;
+  --secondary-foreground: 0 0% 100%;
+  
+  --muted: 220 13% 18%;
+  --muted-foreground: 0 0% 63%;
+  
+  --accent: 221 83% 53%;
+  --accent-foreground: 0 0% 100%;
+  
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  --border: 220 13% 18%;
+  --input: 220 13% 18%;
+  --ring: 221 83% 53%;
+  
+  --radius: 0.5rem;
+  
+  --font-display: 'IBM Plex Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  --ibm-blue: #0f62fe;
+  --ibm-green: #24a148;
+  --ibm-dark: #161616;
+  --ibm-gray: #393939;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  
+  .font-body {
+    font-family: var(--font-body);
+  }
+  
+  .text-gradient-blue {
+    background: linear-gradient(135deg, #0f62fe 0%, #4589ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .text-gradient-green {
+    background: linear-gradient(135deg, #24a148 0%, #42be65 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Noise texture overlay */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' /%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+/* Hexagon grid pattern */
+@keyframes hex-drift {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-20px) translateX(10px); }
+}
+
+.hex-pattern {
+  background-image: 
+    linear-gradient(30deg, rgba(15, 98, 254, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(15, 98, 254, 0.05) 87.5%, rgba(15, 98, 254, 0.05)),
+    linear-gradient(150deg, rgba(15, 98, 254, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(15, 98, 254, 0.05) 87.5%, rgba(15, 98, 254, 0.05)),
+    linear-gradient(30deg, rgba(15, 98, 254, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(15, 98, 254, 0.05) 87.5%, rgba(15, 98, 254, 0.05)),
+    linear-gradient(150deg, rgba(15, 98, 254, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(15, 98, 254, 0.05) 87.5%, rgba(15, 98, 254, 0.05)),
+    linear-gradient(60deg, rgba(15, 98, 254, 0.03) 25%, transparent 25.5%, transparent 75%, rgba(15, 98, 254, 0.03) 75%, rgba(15, 98, 254, 0.03)),
+    linear-gradient(60deg, rgba(15, 98, 254, 0.03) 25%, transparent 25.5%, transparent 75%, rgba(15, 98, 254, 0.03) 75%, rgba(15, 98, 254, 0.03));
+  background-size: 80px 140px;
+  background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+}
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.gradient-animated {
+  background: linear-gradient(135deg, #000000 0%, #0f62fe15 50%, #24a14815 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 20s ease infinite;
+}
+
+/* Glow effects */
+.glow-blue {
+  box-shadow: 0 0 40px rgba(15, 98, 254, 0.4), 0 0 80px rgba(15, 98, 254, 0.2);
+}
+
+.glow-green {
+  box-shadow: 0 0 40px rgba(36, 161, 72, 0.4), 0 0 80px rgba(36, 161, 72, 0.2);
+}

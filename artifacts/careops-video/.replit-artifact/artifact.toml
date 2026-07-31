@@ -1,0 +1,27 @@
+kind = "video"
+previewPath = "/careops-video/"
+title = "CareOps360 Capabilities Video"
+version = "1.0.0"
+id = "artifacts/careops-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/careops-video/" ]
+localPort = 18531
+
+[services.development]
+run = "pnpm --filter @workspace/careops-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/careops-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/careops-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18531"
+BASE_PATH = "/careops-video/"

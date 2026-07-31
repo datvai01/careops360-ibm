@@ -72,3 +72,9 @@ id = "csP18DYt-bMO4BpvqSnCA"
 uri = "file://.local/outputs/Horizon-CareOps.pptx"
 type = "slides"
 title = "Horizon CareOps.pptx"
+
+[[outputs]]
+id = "5aWuhBVaM6DcQg2yHXba1"
+uri = "file://artifacts/careops-video/public/audio/bg_music.mp3"
+type = "audio"
+title = "background music"
