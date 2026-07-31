@@ -15,9 +15,9 @@ export function Scene5() {
   }, []);
 
   const features = [
+    "Ask the Dashboard in plain language",
     "Enterprise knowledge corpus",
-    "AI Ask assistant with context",
-    "Teams-style knowledge bot",
+    "Self-service answers — no ticket needed",
   ];
 
   return (
@@ -71,20 +71,35 @@ export function Scene5() {
         </div>
       </div>
 
-      {/* Right visual - live Knowledge Base screenshot */}
-      <motion.div
-        className="relative w-[42vw] rounded-2xl border overflow-hidden glow-blue"
-        style={{ borderColor: "rgba(15, 98, 254, 0.4)" }}
-        initial={{ opacity: 0, x: 100, scale: 0.9 }}
-        animate={phase >= 4 ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: 100, scale: 0.9 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <img
-          src={`${import.meta.env.BASE_URL}images/app-knowledge.png`}
-          alt="CareOps360 Knowledge Base"
-          className="w-full h-auto"
-        />
-      </motion.div>
+      {/* Right visual - layered live screenshots: Knowledge Base behind, Ask Assistant front */}
+      <div className="relative w-[44vw] h-[62vh]">
+        <motion.div
+          className="absolute top-0 right-0 w-[38vw] rounded-2xl border overflow-hidden"
+          style={{ borderColor: "rgba(255, 255, 255, 0.15)" }}
+          initial={{ opacity: 0, x: 100, scale: 0.9 }}
+          animate={phase >= 3 ? { opacity: 0.55, x: 0, scale: 1 } : { opacity: 0, x: 100, scale: 0.9 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}images/app-knowledge.png`}
+            alt="CareOps360 Knowledge Base"
+            className="w-full h-auto"
+          />
+        </motion.div>
+        <motion.div
+          className="absolute bottom-0 left-0 w-[38vw] rounded-2xl border overflow-hidden glow-blue"
+          style={{ borderColor: "rgba(15, 98, 254, 0.45)" }}
+          initial={{ opacity: 0, x: 100, y: 40, scale: 0.9 }}
+          animate={phase >= 4 ? { opacity: 1, x: 0, y: 0, scale: 1 } : { opacity: 0, x: 100, y: 40, scale: 0.9 }}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <img
+            src={`${import.meta.env.BASE_URL}images/app-ask-assistant.png`}
+            alt="CareOps360 Ask Assistant"
+            className="w-full h-auto"
+          />
+        </motion.div>
+      </div>
 
       {/* Chat mockup removed in favor of live screenshot */}
       <motion.div className="hidden">

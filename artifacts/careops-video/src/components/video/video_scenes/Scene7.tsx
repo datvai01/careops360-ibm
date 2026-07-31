@@ -30,7 +30,11 @@ export function Scene7() {
         <div className="text-[8vw] font-display font-bold text-white leading-[1] mb-[2vh]">
           CareOps<span className="text-gradient-blue">360</span>
         </div>
-        <div className="text-[2.5vw] font-body font-light text-white/70 mb-[4vh]">
+        <div className="text-[2.5vw] font-body font-light text-white/80 mb-[1.5vh]">
+          Not just running operations —{" "}
+          <span className="text-gradient-blue font-normal">transforming how you operate</span>
+        </div>
+        <div className="text-[1.6vw] font-body font-light text-white/50 mb-[4vh]">
           Transform payer operations with AI
         </div>
       </motion.div>

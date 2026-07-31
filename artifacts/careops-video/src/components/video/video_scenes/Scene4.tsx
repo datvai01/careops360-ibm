@@ -136,6 +136,17 @@ export function Scene4() {
           </motion.div>
         ))}
       </motion.div>
+
+      {/* Punch line */}
+      <motion.div
+        className="relative z-10 mt-[4vh] text-[2vw] font-display font-semibold text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={phase >= 4 ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        transition={{ duration: 0.7, delay: 1.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <span className="text-white/70">This isn't automation at the edges — </span>
+        <span className="text-gradient-green">it's the operating model, reimagined.</span>
+      </motion.div>
     </motion.div>
   );
 }

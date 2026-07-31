@@ -40,7 +40,7 @@ export function Scene6() {
 
       {/* Main headline */}
       <motion.h2
-        className="text-[6vw] font-display font-bold text-white text-center leading-[1.1] mb-[6vh]"
+        className="text-[4.5vw] font-display font-bold text-white text-center leading-[1.1] mb-[3vh]"
         initial={{ opacity: 0, y: 40, scale: 0.95 }}
         animate={phase >= 2 ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.95 }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
@@ -48,9 +48,24 @@ export function Scene6() {
         30-60-90 day <span className="text-gradient-blue">roadmap</span>
       </motion.h2>
 
+      {/* Live transition timeline screenshot */}
+      <motion.div
+        className="relative w-[52vw] rounded-xl overflow-hidden border mb-[3vh]"
+        style={{ borderColor: "rgba(36, 161, 72, 0.4)", boxShadow: "0 0 40px rgba(36, 161, 72, 0.2)" }}
+        initial={{ opacity: 0, y: 40, scale: 0.94 }}
+        animate={phase >= 3 ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.94 }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <img
+          src={`${import.meta.env.BASE_URL}images/app-timeline.png`}
+          alt="Transition Program Timeline"
+          className="w-full h-auto"
+        />
+      </motion.div>
+
       {/* Timeline */}
       <motion.div
-        className="flex items-start gap-[3vw] max-w-[85vw]"
+        className="hidden items-start gap-[3vw] max-w-[85vw]"
         initial={{ opacity: 0, y: 30 }}
         animate={phase >= 3 ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
         transition={{ duration: 0.6 }}
