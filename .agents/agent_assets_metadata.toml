@@ -138,3 +138,51 @@ id = "X0LunAYmLyQOA7oF3wXyq"
 uri = "file://artifacts/careops-video/public/audio/bg_music_49.mp3"
 type = "audio"
 title = "background music (49s)"
+
+[[outputs]]
+id = "utJmc3XoYalU8tgwh82tg"
+uri = "file://artifacts/careops-video/public/audio/vo_intro_2.mp3"
+type = "audio"
+title = "vo_intro (female voice)"
+
+[[outputs]]
+id = "C1rtl1MZi6wbI458Re6ej"
+uri = "file://artifacts/careops-video/public/audio/vo_agents_2.mp3"
+type = "audio"
+title = "vo_agents (female voice)"
+
+[[outputs]]
+id = "bi2O1sZnVK81Z21BSoUy4"
+uri = "file://artifacts/careops-video/public/audio/vo_outro_2.mp3"
+type = "audio"
+title = "vo_outro (female voice)"
+
+[[outputs]]
+id = "krpMOPQbpCy8WyhTIi1w5"
+uri = "file://artifacts/careops-video/public/audio/vo_roadmap_2.mp3"
+type = "audio"
+title = "vo_roadmap (female voice)"
+
+[[outputs]]
+id = "_bYskm6nu1lBi8hHOtWss"
+uri = "file://artifacts/careops-video/public/audio/vo_knowledge_2.mp3"
+type = "audio"
+title = "vo_knowledge (female voice)"
+
+[[outputs]]
+id = "QZ519-TMhTsA4gf7NM_N2"
+uri = "file://artifacts/careops-video/public/audio/vo_roi_2.mp3"
+type = "audio"
+title = "vo_roi (female voice)"
+
+[[outputs]]
+id = "g8DXGfChjj8-0DD_m_sis"
+uri = "file://artifacts/careops-video/public/audio/vo_commandCenter_2.mp3"
+type = "audio"
+title = "vo_commandCenter (female voice)"
+
+[[outputs]]
+id = "BjkfDtEW8I901Bj5_C3KS"
+uri = "file://artifacts/careops-video/public/audio/bg_music_53.mp3"
+type = "audio"
+title = "background music (53s)"
