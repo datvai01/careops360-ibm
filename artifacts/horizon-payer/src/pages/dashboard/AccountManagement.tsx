@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useGetCurrentUser } from "@workspace/api-client-react";
@@ -30,6 +30,8 @@ import {
   ClipboardListIcon,
   LayoutDashboardIcon,
   ArrowRightIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -399,6 +401,14 @@ function InvoicesTab({ rows, month, isAdmin }: { rows: InvoiceRow[]; month: stri
   const qc = useQueryClient();
   const { toast } = useToast();
   const [editing, setEditing] = useState<InvoiceForm | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const toggle = (invoiceNo: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(invoiceNo)) next.delete(invoiceNo);
+      else next.add(invoiceNo);
+      return next;
+    });
 
   const save = useMutation({
     mutationFn: async (form: InvoiceForm) =>
@@ -452,87 +462,94 @@ function InvoicesTab({ rows, month, isAdmin }: { rows: InvoiceRow[]; month: stri
           )
         }
       >
-        {/* Summary by invoice */}
-        <div className="rounded-lg border overflow-auto mb-4">
+        {/* Single collapsible table: click an invoice row to expand its line items */}
+        <div className="rounded-lg border overflow-auto">
           <Table>
             <TableHeader className="bg-muted/60">
               <TableRow>
+                <TableHead className="w-8" />
                 <TableHead>Invoice No</TableHead>
                 <TableHead>PO Number</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Note</TableHead>
+                {isAdmin && <TableHead className="w-20" />}
               </TableRow>
             </TableHeader>
             <TableBody>
               {invoices.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="text-center py-6 text-sm text-muted-foreground">No invoices for {month}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={isAdmin ? 6 : 5} className="text-center py-6 text-sm text-muted-foreground">No invoices for {month}</TableCell></TableRow>
               )}
-              {invoices.map((inv) => (
-                <TableRow key={inv.invoiceNo}>
-                  <TableCell className="text-xs font-semibold whitespace-nowrap">{inv.invoiceNo}</TableCell>
-                  <TableCell className="text-xs whitespace-nowrap">{inv.poNumber || "—"}</TableCell>
-                  <TableCell className={`text-right text-xs font-semibold tabular-nums ${inv.total < 0 ? "text-destructive" : ""}`}>{fmtUsd(inv.total)}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground max-w-[380px]">{inv.note}</TableCell>
-                </TableRow>
-              ))}
+              {invoices.map((inv) => {
+                const isOpen = expanded.has(inv.invoiceNo);
+                return (
+                  <Fragment key={inv.invoiceNo}>
+                    <TableRow className="cursor-pointer hover:bg-muted/30" onClick={() => toggle(inv.invoiceNo)}>
+                      <TableCell className="pr-0">
+                        {isOpen ? <ChevronDownIcon className="w-4 h-4 text-muted-foreground" /> : <ChevronRightIcon className="w-4 h-4 text-muted-foreground" />}
+                      </TableCell>
+                      <TableCell className="text-xs font-semibold whitespace-nowrap">{inv.invoiceNo}</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">{inv.poNumber || "—"}</TableCell>
+                      <TableCell className={`text-right text-xs font-semibold tabular-nums ${inv.total < 0 ? "text-destructive" : ""}`}>{fmtUsd(inv.total)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[380px]">{inv.note}</TableCell>
+                      {isAdmin && <TableCell />}
+                    </TableRow>
+                    {isOpen && (
+                      <>
+                        <TableRow className="bg-muted/20 hover:bg-muted/20">
+                          <TableCell />
+                          <TableCell className="text-[10px] font-semibold uppercase text-muted-foreground" colSpan={2}>Description · SOW</TableCell>
+                          <TableCell className="text-right text-[10px] font-semibold uppercase text-muted-foreground">Hours · Amount</TableCell>
+                          <TableCell />
+                          {isAdmin && <TableCell />}
+                        </TableRow>
+                        {inv.lines.map((r) => (
+                          <TableRow key={r.id} className="bg-muted/10 hover:bg-muted/20">
+                            <TableCell />
+                            <TableCell className="text-xs pl-6" colSpan={2}>
+                              {r.lineItem}
+                              {r.sow && <span className="text-muted-foreground"> · {r.sow}</span>}
+                            </TableCell>
+                            <TableCell className={`text-right text-xs font-medium tabular-nums ${r.amountUsd < 0 ? "text-destructive" : ""}`}>
+                              {r.hours ? `${r.hours.toLocaleString()} h · ` : ""}{fmtUsd(r.amountUsd)}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{r.note !== inv.note ? r.note : ""}</TableCell>
+                            {isAdmin && (
+                              <TableCell onClick={(e) => e.stopPropagation()}>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditing({ id: r.id, invoiceNo: r.invoiceNo, poNumber: r.poNumber, sow: r.sow, lineItem: r.lineItem, hours: r.hours, amountUsd: r.amountUsd, note: r.note })}>
+                                    <PencilIcon className="w-3.5 h-3.5" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => remove.mutate(r.id)}>
+                                    <Trash2Icon className="w-3.5 h-3.5" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                        <TableRow className="bg-muted/10 hover:bg-muted/10">
+                          <TableCell />
+                          <TableCell className="text-xs pl-6 font-semibold" colSpan={2}>Invoice {inv.invoiceNo} total</TableCell>
+                          <TableCell className={`text-right text-xs font-semibold tabular-nums ${inv.total < 0 ? "text-destructive" : ""}`}>{fmtUsd(inv.total)}</TableCell>
+                          <TableCell />
+                          {isAdmin && <TableCell />}
+                        </TableRow>
+                      </>
+                    )}
+                  </Fragment>
+                );
+              })}
               {invoices.length > 0 && (
                 <TableRow className="bg-muted/40 font-semibold">
+                  <TableCell />
                   <TableCell className="text-xs" colSpan={2}>Grand total</TableCell>
                   <TableCell className={`text-right text-xs tabular-nums ${grandTotal < 0 ? "text-destructive" : ""}`}>{fmtUsd(grandTotal)}</TableCell>
                   <TableCell />
+                  {isAdmin && <TableCell />}
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </div>
-
-        {/* Per-invoice line-item detail */}
-        <div className="space-y-4">
-          {invoices.map((inv) => (
-            <div key={inv.invoiceNo} className="rounded-lg border overflow-auto">
-              <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-muted/40 border-b">
-                <p className="text-xs font-semibold">
-                  Invoice {inv.invoiceNo}
-                  {inv.poNumber && <span className="text-muted-foreground font-normal"> · {inv.poNumber}</span>}
-                </p>
-                <p className={`text-xs font-semibold tabular-nums ${inv.total < 0 ? "text-destructive" : ""}`}>{fmtUsd(inv.total)}</p>
-              </div>
-              <Table>
-                <TableHeader className="bg-muted/60">
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>SOW</TableHead>
-                    <TableHead className="text-right">Hours</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    {isAdmin && <TableHead className="w-20" />}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {inv.lines.map((r) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="text-xs">{r.lineItem}</TableCell>
-                      <TableCell className="text-xs whitespace-nowrap text-muted-foreground">{r.sow}</TableCell>
-                      <TableCell className="text-right text-xs tabular-nums">{r.hours ? r.hours.toLocaleString() : "—"}</TableCell>
-                      <TableCell className={`text-right text-xs font-medium tabular-nums ${r.amountUsd < 0 ? "text-destructive" : ""}`}>{fmtUsd(r.amountUsd)}</TableCell>
-                      {isAdmin && (
-                        <TableCell>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditing({ id: r.id, invoiceNo: r.invoiceNo, poNumber: r.poNumber, sow: r.sow, lineItem: r.lineItem, hours: r.hours, amountUsd: r.amountUsd, note: r.note })}>
-                              <PencilIcon className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => remove.mutate(r.id)}>
-                              <Trash2Icon className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {inv.note && <p className="px-3 py-2 text-[11px] text-muted-foreground border-t">{inv.note}</p>}
-            </div>
-          ))}
         </div>
       </SectionCard>
 
