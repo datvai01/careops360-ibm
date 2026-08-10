@@ -46,7 +46,6 @@ import {
   Legend,
   ReferenceLine,
 } from "recharts";
-import VendorInvoices from "./VendorInvoices";
 
 const IBM_BLUE = "#0f62fe";
 const GREEN = "#24a148";
@@ -81,7 +80,7 @@ type Initiative = { id: number; title: string; description: string; actions: str
 type Meeting = { id: number; domainArea: string; meetingDate: string; horizonAttendees: string; ibmAttendees: string; deckLink: string };
 type HeadcountRow = { id: number; monthLabel: string; startHc: number; onboards: number; offboards: number; endHc: number; attritionPct: number };
 type StaffChange = { id: number; personName: string; team: string; changeType: string; reason: string };
-type InvoiceRow = { id: number; sow: string; lineItem: string; hours: number; amountUsd: number };
+type InvoiceRow = { id: number; invoiceNo: string; poNumber: string; sow: string; lineItem: string; hours: number; amountUsd: number; note: string };
 type HourlyTrend = { id: number; monthLabel: string; onshoreNonCr: number; offshoreNonCr: number; onshoreCr: number; offshoreCr: number };
 type MipsTrend = { id: number; monthLabel: string; usageK: number; baselineK: number; note: string };
 type MipsInsight = { id: number; section: string; title: string; detail: string; ord: number };
@@ -106,7 +105,7 @@ type AdmReport = {
 const TAB_DEFS = [
   { key: "overview", label: "Overview", icon: LayoutDashboardIcon },
   { key: "action-items", label: "Action Items", icon: ClipboardListIcon },
-  { key: "meetings", label: "Director Meetings", icon: CalendarIcon },
+  { key: "meetings", label: "Key Monthly Meeting", icon: CalendarIcon },
   { key: "ibm-team", label: "IBM Team", icon: UsersIcon },
   { key: "invoices", label: "Invoice Summary", icon: DollarSignIcon },
   { key: "mips", label: "MIPS", icon: CpuIcon },
@@ -385,6 +384,206 @@ function ActionItemsTab({ items, isAdmin }: { items: ActionItem[]; isAdmin: bool
         </DialogContent>
       </Dialog>
     </SectionCard>
+  );
+}
+
+// ─── Invoices tab (editable) ─────────────────────────────────────────────────
+
+const EMPTY_INVOICE = { invoiceNo: "", poNumber: "", sow: "", lineItem: "", hours: 0, amountUsd: 0, note: "" };
+type InvoiceForm = typeof EMPTY_INVOICE & { id?: number };
+
+const fmtUsd = (n: number) =>
+  `${n < 0 ? "-" : ""}$${Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function InvoicesTab({ rows, month, isAdmin }: { rows: InvoiceRow[]; month: string; isAdmin: boolean }) {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [editing, setEditing] = useState<InvoiceForm | null>(null);
+
+  const save = useMutation({
+    mutationFn: async (form: InvoiceForm) =>
+      form.id
+        ? apiSend("PATCH", `/adm/invoices/${form.id}`, form)
+        : apiSend("POST", "/adm/invoices", { ...form, reportMonth: month }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adm-report"] });
+      setEditing(null);
+      toast({ title: "Invoice row saved" });
+    },
+    onError: (e: Error) => toast({ title: "Save failed", description: e.message, variant: "destructive" }),
+  });
+  const remove = useMutation({
+    mutationFn: async (id: number) => apiSend("DELETE", `/adm/invoices/${id}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adm-report"] });
+      toast({ title: "Invoice row deleted" });
+    },
+    onError: (e: Error) => toast({ title: "Delete failed", description: e.message, variant: "destructive" }),
+  });
+
+  const grandTotal = rows.reduce((s, r) => s + r.amountUsd, 0);
+
+  // Group rows into invoices by invoice number (unlabeled rows grouped as "—")
+  const invoices = useMemo(() => {
+    const map = new Map<string, { invoiceNo: string; poNumber: string; note: string; total: number; lines: InvoiceRow[] }>();
+    for (const r of rows) {
+      const key = r.invoiceNo || "—";
+      const cur = map.get(key) ?? { invoiceNo: key, poNumber: r.poNumber, note: r.note, total: 0, lines: [] };
+      cur.total += r.amountUsd;
+      cur.lines.push(r);
+      if (!cur.poNumber && r.poNumber) cur.poNumber = r.poNumber;
+      if (!cur.note && r.note) cur.note = r.note;
+      map.set(key, cur);
+    }
+    return [...map.values()].sort((a, b) => a.invoiceNo.localeCompare(b.invoiceNo));
+  }, [rows]);
+
+  return (
+    <>
+      <SectionCard
+        icon={DollarSignIcon}
+        title={`Invoice — ${month}`}
+        description="Invoices submitted for the month, by invoice and purchase order"
+        actions={
+          isAdmin && (
+            <Button size="sm" className="h-8 text-xs" onClick={() => setEditing({ ...EMPTY_INVOICE })}>
+              <PlusIcon className="w-3.5 h-3.5 mr-1" /> Add line item
+            </Button>
+          )
+        }
+      >
+        {/* Summary by invoice */}
+        <div className="rounded-lg border overflow-auto mb-4">
+          <Table>
+            <TableHeader className="bg-muted/60">
+              <TableRow>
+                <TableHead>Invoice No</TableHead>
+                <TableHead>PO Number</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Note</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.length === 0 && (
+                <TableRow><TableCell colSpan={4} className="text-center py-6 text-sm text-muted-foreground">No invoices for {month}</TableCell></TableRow>
+              )}
+              {invoices.map((inv) => (
+                <TableRow key={inv.invoiceNo}>
+                  <TableCell className="text-xs font-semibold whitespace-nowrap">{inv.invoiceNo}</TableCell>
+                  <TableCell className="text-xs whitespace-nowrap">{inv.poNumber || "—"}</TableCell>
+                  <TableCell className={`text-right text-xs font-semibold tabular-nums ${inv.total < 0 ? "text-destructive" : ""}`}>{fmtUsd(inv.total)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground max-w-[380px]">{inv.note}</TableCell>
+                </TableRow>
+              ))}
+              {invoices.length > 0 && (
+                <TableRow className="bg-muted/40 font-semibold">
+                  <TableCell className="text-xs" colSpan={2}>Grand total</TableCell>
+                  <TableCell className={`text-right text-xs tabular-nums ${grandTotal < 0 ? "text-destructive" : ""}`}>{fmtUsd(grandTotal)}</TableCell>
+                  <TableCell />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Per-invoice line-item detail */}
+        <div className="space-y-4">
+          {invoices.map((inv) => (
+            <div key={inv.invoiceNo} className="rounded-lg border overflow-auto">
+              <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-muted/40 border-b">
+                <p className="text-xs font-semibold">
+                  Invoice {inv.invoiceNo}
+                  {inv.poNumber && <span className="text-muted-foreground font-normal"> · {inv.poNumber}</span>}
+                </p>
+                <p className={`text-xs font-semibold tabular-nums ${inv.total < 0 ? "text-destructive" : ""}`}>{fmtUsd(inv.total)}</p>
+              </div>
+              <Table>
+                <TableHeader className="bg-muted/60">
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>SOW</TableHead>
+                    <TableHead className="text-right">Hours</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    {isAdmin && <TableHead className="w-20" />}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {inv.lines.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="text-xs">{r.lineItem}</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap text-muted-foreground">{r.sow}</TableCell>
+                      <TableCell className="text-right text-xs tabular-nums">{r.hours ? r.hours.toLocaleString() : "—"}</TableCell>
+                      <TableCell className={`text-right text-xs font-medium tabular-nums ${r.amountUsd < 0 ? "text-destructive" : ""}`}>{fmtUsd(r.amountUsd)}</TableCell>
+                      {isAdmin && (
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditing({ id: r.id, invoiceNo: r.invoiceNo, poNumber: r.poNumber, sow: r.sow, lineItem: r.lineItem, hours: r.hours, amountUsd: r.amountUsd, note: r.note })}>
+                              <PencilIcon className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => remove.mutate(r.id)}>
+                              <Trash2Icon className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {inv.note && <p className="px-3 py-2 text-[11px] text-muted-foreground border-t">{inv.note}</p>}
+            </div>
+          ))}
+        </div>
+      </SectionCard>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editing?.id ? "Edit invoice line item" : `New invoice line item — ${month}`}</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Invoice No</Label>
+                  <Input value={editing.invoiceNo} onChange={(e) => setEditing({ ...editing, invoiceNo: e.target.value })} placeholder="HBC0726a" />
+                </div>
+                <div>
+                  <Label className="text-xs">PO Number</Label>
+                  <Input value={editing.poNumber} onChange={(e) => setEditing({ ...editing, poNumber: e.target.value })} placeholder="PO-016703" />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Description</Label>
+                <Textarea value={editing.lineItem} onChange={(e) => setEditing({ ...editing, lineItem: e.target.value })} rows={2} />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs">SOW</Label>
+                  <Input value={editing.sow} onChange={(e) => setEditing({ ...editing, sow: e.target.value })} placeholder="T&M CareRadius" />
+                </div>
+                <div>
+                  <Label className="text-xs">Hours</Label>
+                  <Input type="number" value={editing.hours} onChange={(e) => setEditing({ ...editing, hours: Number(e.target.value) || 0 })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Amount (USD)</Label>
+                  <Input type="number" step="0.01" value={editing.amountUsd} onChange={(e) => setEditing({ ...editing, amountUsd: Number(e.target.value) || 0 })} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Note</Label>
+                <Textarea value={editing.note} onChange={(e) => setEditing({ ...editing, note: e.target.value })} rows={2} placeholder="e.g. Purchase Order reference or credit explanation" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button disabled={!editing?.lineItem.trim() || save.isPending} onClick={() => editing && save.mutate(editing)}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -714,7 +913,7 @@ export default function AccountManagement() {
                 </div>
               </OverviewSummaryCard>
 
-              <OverviewSummaryCard icon={CalendarIcon} title="Director Meetings" onOpen={() => setTab("meetings")}>
+              <OverviewSummaryCard icon={CalendarIcon} title="Key Monthly Meeting" onOpen={() => setTab("meetings")}>
                 <div className="space-y-1.5">
                   {sortedMeetings.slice(0, 4).map((m) => (
                     <div key={m.id} className="flex items-center justify-between gap-2">
@@ -783,9 +982,9 @@ export default function AccountManagement() {
             <ActionItemsTab items={report.actionItems} isAdmin={isAdmin} />
           </TabsContent>
 
-          {/* ── Director Meetings ── */}
+          {/* ── Key Monthly Meeting ── */}
           <TabsContent value="meetings" className="mt-4">
-            <SectionCard icon={CalendarIcon} title="Monthly Meetings with Directors" description={`Director-level reviews held in ${report.month}, sorted by date`}>
+            <SectionCard icon={CalendarIcon} title="Key Monthly Meetings" description={`Key reviews held in ${report.month}, sorted by date`}>
               <div className="space-y-3">
                 {sortedMeetings.length === 0 && (
                   <p className="text-sm text-muted-foreground py-6 text-center">No meetings recorded for {report.month}</p>
@@ -906,49 +1105,7 @@ export default function AccountManagement() {
 
           {/* ── Invoice Summary ── */}
           <TabsContent value="invoices" className="mt-4 space-y-4">
-            <SectionCard icon={DollarSignIcon} title={`Invoice Summary — ${report.month}`} description="T&M invoices by SOW and line item">
-              <div className="grid md:grid-cols-3 gap-3 mb-4">
-                {sowTotals.map(([sow, t]) => (
-                  <div key={sow} className="rounded-lg border p-3">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">{sow}</p>
-                    <p className="text-xl font-bold tabular-nums">${t.amountUsd.toLocaleString()}</p>
-                    <p className="text-[11px] text-muted-foreground">{t.hours.toLocaleString()} hours · {t.lines} line item{t.lines === 1 ? "" : "s"}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="rounded-lg border overflow-auto">
-                <Table>
-                  <TableHeader className="bg-muted/60">
-                    <TableRow>
-                      <TableHead>SOW</TableHead>
-                      <TableHead>Line Item</TableHead>
-                      <TableHead className="text-right">Hours</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report.invoiceSummary.length === 0 && (
-                      <TableRow><TableCell colSpan={4} className="text-center py-6 text-sm text-muted-foreground">No invoice rows for {report.month}</TableCell></TableRow>
-                    )}
-                    {report.invoiceSummary.map((r) => (
-                      <TableRow key={r.id}>
-                        <TableCell className="text-xs font-medium whitespace-nowrap">{r.sow}</TableCell>
-                        <TableCell className="text-xs">{r.lineItem}</TableCell>
-                        <TableCell className="text-right text-xs tabular-nums">{r.hours.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-xs font-semibold tabular-nums">${r.amountUsd.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                    {report.invoiceSummary.length > 0 && (
-                      <TableRow className="bg-muted/40 font-semibold">
-                        <TableCell className="text-xs" colSpan={2}>Total</TableCell>
-                        <TableCell className="text-right text-xs tabular-nums">{invoiceHours.toLocaleString()}</TableCell>
-                        <TableCell className="text-right text-xs tabular-nums">${invoiceTotal.toLocaleString()}</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </SectionCard>
+            <InvoicesTab rows={report.invoiceSummary} month={report.month} isAdmin={isAdmin} />
 
             <SectionCard icon={DollarSignIcon} title="Hourly Trends" description="Monthly hours by shore and CareRadius split">
               <div className="h-64 mb-4">
@@ -997,9 +1154,6 @@ export default function AccountManagement() {
               </div>
             </SectionCard>
 
-            <SectionCard icon={DollarSignIcon} title="Vendor Invoice Detail" description="Underlying vendor invoices">
-              <VendorInvoices />
-            </SectionCard>
           </TabsContent>
 
           {/* ── MIPS ── */}

@@ -13,6 +13,8 @@ export interface ColumnDef {
   sample: string | number;
   required?: boolean;
   nullable?: boolean;
+  /** If set, non-empty string values must be one of these (validated before import). */
+  allowedValues?: string[];
 }
 
 export interface SheetDef {
@@ -198,6 +200,12 @@ function prepareImport(
         const result = coerce(raw, col.type, col.nullable === true);
         if (!result.ok) {
           rowErrors.push(`[${sheet.sheetName} row ${idx + 2}] "${col.header}" — ${result.error}.`);
+          continue;
+        }
+        if (col.allowedValues && typeof result.value === "string" && result.value !== "" && !col.allowedValues.includes(result.value)) {
+          rowErrors.push(
+            `[${sheet.sheetName} row ${idx + 2}] "${col.header}" — "${result.value}" is not an allowed value. Allowed: ${col.allowedValues.join(" | ")}.`,
+          );
           continue;
         }
         rec[col.key] = result.value;

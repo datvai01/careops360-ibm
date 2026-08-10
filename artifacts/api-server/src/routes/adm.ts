@@ -190,6 +190,93 @@ router.delete("/adm/action-items/:id", requireAdmin, async (req, res): Promise<v
   res.json({ ok: true });
 });
 
+// ---- invoice rows CRUD (admin) ----
+
+router.post("/adm/invoices", requireAdmin, async (req, res): Promise<void> => {
+  const { reportMonth, invoiceNo, poNumber, sow, lineItem, hours, amountUsd, note } = req.body ?? {};
+  if (!reportMonth || typeof reportMonth !== "string" || !/^[A-Za-z]{3} \d{4}$/.test(reportMonth.trim())) {
+    res.status(400).json({ error: "reportMonth is required in 'Mon YYYY' format, e.g. 'Jun 2026'" });
+    return;
+  }
+  if (!lineItem || typeof lineItem !== "string") {
+    res.status(400).json({ error: "lineItem is required" });
+    return;
+  }
+  if (hours !== undefined && (typeof hours !== "number" || !Number.isFinite(hours))) {
+    res.status(400).json({ error: "hours must be a finite number" });
+    return;
+  }
+  if (amountUsd !== undefined && (typeof amountUsd !== "number" || !Number.isFinite(amountUsd))) {
+    res.status(400).json({ error: "amountUsd must be a finite number" });
+    return;
+  }
+  const inserted = await db
+    .insert(admInvoiceSummaryTable)
+    .values({
+      reportMonth: reportMonth.trim(),
+      invoiceNo: typeof invoiceNo === "string" ? invoiceNo.trim() : "",
+      poNumber: typeof poNumber === "string" ? poNumber.trim() : "",
+      sow: typeof sow === "string" ? sow : "",
+      lineItem: lineItem.trim(),
+      hours: typeof hours === "number" ? hours : 0,
+      amountUsd: typeof amountUsd === "number" ? amountUsd : 0,
+      note: typeof note === "string" ? note : "",
+    })
+    .returning();
+  res.status(201).json(inserted[0]);
+});
+
+router.patch("/adm/invoices/:id", requireAdmin, async (req, res): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  const body = req.body ?? {};
+  const update: Record<string, unknown> = {};
+  for (const k of ["invoiceNo", "poNumber", "sow", "lineItem", "note"] as const) {
+    if (body[k] !== undefined) {
+      if (typeof body[k] !== "string") {
+        res.status(400).json({ error: `${k} must be a string` });
+        return;
+      }
+      update[k] = body[k];
+    }
+  }
+  if (body.reportMonth !== undefined) {
+    if (typeof body.reportMonth !== "string" || !/^[A-Za-z]{3} \d{4}$/.test(body.reportMonth.trim())) {
+      res.status(400).json({ error: "reportMonth must be in 'Mon YYYY' format" });
+      return;
+    }
+    update.reportMonth = body.reportMonth.trim();
+  }
+  for (const k of ["hours", "amountUsd"] as const) {
+    if (body[k] !== undefined) {
+      if (typeof body[k] !== "number" || !Number.isFinite(body[k])) {
+        res.status(400).json({ error: `${k} must be a number` });
+        return;
+      }
+      update[k] = body[k];
+    }
+  }
+  if (Object.keys(update).length === 0) {
+    res.status(400).json({ error: "No fields to update" });
+    return;
+  }
+  const updated = await db.update(admInvoiceSummaryTable).set(update).where(eq(admInvoiceSummaryTable.id, id)).returning();
+  if (updated.length === 0) {
+    res.status(404).json({ error: "Invoice row not found" });
+    return;
+  }
+  res.json(updated[0]);
+});
+
+router.delete("/adm/invoices/:id", requireAdmin, async (req, res): Promise<void> => {
+  const id = parseInt(String(req.params.id), 10);
+  const deleted = await db.delete(admInvoiceSummaryTable).where(eq(admInvoiceSummaryTable.id, id)).returning();
+  if (deleted.length === 0) {
+    res.status(404).json({ error: "Invoice row not found" });
+    return;
+  }
+  res.json({ ok: true });
+});
+
 // ---- initiatives CRUD (admin) ----
 
 const INITIATIVE_STATUSES = ["Active", "On Hold", "Completed"];
@@ -357,8 +444,8 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
     [160, 160, 55, 70, 67],
   );
 
-  // 2. Director meetings
-  sectionHeader(doc, 2, "Monthly Meetings with Directors");
+  // 2. Key monthly meetings
+  sectionHeader(doc, 2, "Key Monthly Meetings");
   drawTable(
     doc,
     ["Domain / Area", "Date", "Horizon Attendees", "IBM Attendees", "Deck"],
@@ -389,10 +476,15 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
   sectionHeader(doc, 4, "Invoice Summary");
   drawTable(
     doc,
-    ["SOW", "Line Item", "Hours", "Amount (USD)"],
-    r.invoiceSummary.map((i) => [i.sow, i.lineItem, i.hours.toLocaleString(), `$${i.amountUsd.toLocaleString()}`]),
-    [120, 202, 80, 110],
+    ["Invoice", "PO", "Line Item", "Hours", "Amount (USD)", "Note"],
+    r.invoiceSummary.map((i) => [i.invoiceNo, i.poNumber, i.lineItem, i.hours ? i.hours.toLocaleString() : "", `$${i.amountUsd.toLocaleString()}`, i.note]),
+    [70, 70, 140, 50, 82, 100],
   );
+  {
+    const grandTotal = r.invoiceSummary.reduce((s, i) => s + i.amountUsd, 0);
+    doc.font("Helvetica-Bold").fontSize(9).text(`Grand total: $${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+    doc.moveDown(0.5);
+  }
   doc.font("Helvetica-Bold").fontSize(10).text("Hourly Trends");
   doc.moveDown(0.3);
   drawTable(

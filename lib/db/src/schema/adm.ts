@@ -1,4 +1,4 @@
-import { pgTable, varchar, integer, real, serial, text } from "drizzle-orm/pg-core";
+import { pgTable, varchar, integer, real, doublePrecision, serial, text } from "drizzle-orm/pg-core";
 
 /**
  * Account Management (ADM) monthly report tables.
@@ -61,10 +61,13 @@ export const admStaffChangesTable = pgTable("adm_staff_changes", {
 export const admInvoiceSummaryTable = pgTable("adm_invoice_summary", {
   id: serial("id").primaryKey(),
   reportMonth: varchar("report_month", { length: 20 }).notNull(),
-  sow: varchar("sow", { length: 60 }).notNull(), // T&M CareRadius | T&M Data | T&M Non-Data
+  invoiceNo: varchar("invoice_no", { length: 40 }).notNull().default(""), // e.g. "HBC0726a"
+  poNumber: varchar("po_number", { length: 40 }).notNull().default(""), // e.g. "PO-016703"
+  sow: varchar("sow", { length: 60 }).notNull(), // T&M CareRadius | T&M Data | T&M Non-Data | Managed Services | Fixed Price …
   lineItem: varchar("line_item", { length: 160 }).notNull(),
-  hours: real("hours").notNull().default(0),
-  amountUsd: real("amount_usd").notNull().default(0),
+  hours: doublePrecision("hours").notNull().default(0),
+  amountUsd: doublePrecision("amount_usd").notNull().default(0),
+  note: text("note").notNull().default(""),
 });
 
 export const admHourlyTrendsTable = pgTable("adm_hourly_trends", {

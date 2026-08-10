@@ -1853,11 +1853,20 @@ CREATE TABLE IF NOT EXISTS public.adm_staff_changes (
 CREATE TABLE IF NOT EXISTS public.adm_invoice_summary (
     id serial PRIMARY KEY,
     report_month varchar(20) NOT NULL,
+    invoice_no varchar(40) NOT NULL DEFAULT '',
+    po_number varchar(40) NOT NULL DEFAULT '',
     sow varchar(60) NOT NULL,
     line_item varchar(200) NOT NULL,
-    hours real NOT NULL DEFAULT 0,
-    amount_usd real NOT NULL DEFAULT 0
+    hours double precision NOT NULL DEFAULT 0,
+    amount_usd double precision NOT NULL DEFAULT 0,
+    note text NOT NULL DEFAULT ''
 );
+
+ALTER TABLE public.adm_invoice_summary ADD COLUMN IF NOT EXISTS invoice_no varchar(40) NOT NULL DEFAULT '';
+ALTER TABLE public.adm_invoice_summary ADD COLUMN IF NOT EXISTS po_number varchar(40) NOT NULL DEFAULT '';
+ALTER TABLE public.adm_invoice_summary ADD COLUMN IF NOT EXISTS note text NOT NULL DEFAULT '';
+ALTER TABLE public.adm_invoice_summary ALTER COLUMN hours TYPE double precision;
+ALTER TABLE public.adm_invoice_summary ALTER COLUMN amount_usd TYPE double precision;
 
 CREATE TABLE IF NOT EXISTS public.adm_hourly_trends (
     id serial PRIMARY KEY,
