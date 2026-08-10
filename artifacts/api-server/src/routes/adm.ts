@@ -46,13 +46,22 @@ function monthSortValue(label: string): number {
   const m = /^([A-Za-z]{3})\w*\s+(\d{4})$/.exec(label.trim());
   if (!m) return 0;
   const idx = MONTHS.findIndex((x) => x.toLowerCase() === m[1].toLowerCase());
-  return parseInt(m[2], 10) * 12 + (idx >= 0 ? idx : 0);
+  if (idx < 0) return 0;
+  return parseInt(m[2], 10) * 12 + idx;
 }
 function sortByMonth<T>(rows: T[], get: (r: T) => string): T[] {
   return [...rows].sort((a, b) => monthSortValue(get(a)) - monthSortValue(get(b)));
 }
 
 async function collectReport(month: string) {
+  const cutoff = monthSortValue(month);
+  const upToMonth = <T>(rows: T[], get: (r: T) => string): T[] =>
+    cutoff > 0
+      ? rows.filter((r) => {
+          const v = monthSortValue(get(r));
+          return v > 0 && v <= cutoff;
+        })
+      : rows;
   const [meetings, headcount, staffChanges, invoiceSummary, hourlyTrends, mipsTrend, mipsInsights, teamComposition, otherUpdates, actionItems, initiatives] =
     await Promise.all([
       db.select().from(admMeetingsTable).where(eq(admMeetingsTable.reportMonth, month)),
@@ -72,11 +81,11 @@ async function collectReport(month: string) {
     actionItems,
     initiatives,
     meetings,
-    headcount: sortByMonth(headcount, (r) => r.monthLabel),
+    headcount: sortByMonth(upToMonth(headcount, (r) => r.monthLabel), (r) => r.monthLabel),
     staffChanges,
     invoiceSummary,
-    hourlyTrends: sortByMonth(hourlyTrends, (r) => r.monthLabel),
-    mipsTrend: sortByMonth(mipsTrend, (r) => r.monthLabel),
+    hourlyTrends: sortByMonth(upToMonth(hourlyTrends, (r) => r.monthLabel), (r) => r.monthLabel),
+    mipsTrend: sortByMonth(upToMonth(mipsTrend, (r) => r.monthLabel), (r) => r.monthLabel),
     mipsInsights,
     teamComposition,
     otherUpdates,

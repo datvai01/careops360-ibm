@@ -220,7 +220,7 @@ function ActionItemsTab({ items, isAdmin }: { items: ActionItem[]; isAdmin: bool
     <SectionCard
       icon={ClipboardListIcon}
       title="Action Items"
-      description="Living list maintained by the IBM account team — click any row for full detail"
+      description="Current living list (not month-scoped) maintained by the IBM account team — click any row for full detail"
       actions={
         isAdmin && (
           <Button size="sm" className="h-8 text-xs" onClick={() => setEditing({ ...EMPTY_ACTION })}>
@@ -420,7 +420,7 @@ function InitiativesTab({ initiatives, isAdmin }: { initiatives: Initiative[]; i
     <SectionCard
       icon={RocketIcon}
       title="Transformation Initiatives"
-      description="Actions, owners, and next steps — maintained by the IBM account team"
+      description="Current living list (not month-scoped) — actions, owners, and next steps maintained by the IBM account team"
       actions={
         isAdmin && (
           <Button size="sm" className="h-8 text-xs" onClick={() => setEditing({ ...EMPTY_INITIATIVE })}>
