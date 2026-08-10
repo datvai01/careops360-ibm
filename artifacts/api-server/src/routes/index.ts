@@ -18,6 +18,7 @@ import capabilityRouter from "./capability";
 import transformationSurveyRouter from "./transformationSurvey";
 import kpiTrackerRouter from "./kpiTracker";
 import knowledgeRouter from "./knowledge";
+import admRouter from "./adm";
 
 const router: IRouter = Router();
 
@@ -40,5 +41,6 @@ router.use(capabilityRouter);
 router.use(transformationSurveyRouter);
 router.use(kpiTrackerRouter);
 router.use(knowledgeRouter);
+router.use(admRouter);
 
 export default router;

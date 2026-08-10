@@ -78,7 +78,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Operations & Support",
     items: [
-      { name: "Vendor Invoices",  path: "/dashboard/vendor-invoices",  icon: DollarSignIcon },
+      { name: "Account Management",  path: "/dashboard/account-management",  icon: DollarSignIcon },
       { name: "Member Services", path: "/dashboard/member-services", icon: HeadphonesIcon  },
     ],
   },

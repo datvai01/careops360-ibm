@@ -15,3 +15,4 @@ export * from "./capability";
 export * from "./transformationSurvey";
 export * from "./kpiTracker";
 export * from "./knowledge";
+export * from "./adm";

@@ -12,7 +12,7 @@ import ExecutiveOverview from "@/pages/dashboard/ExecutiveOverview";
 import Claims from "@/pages/dashboard/Claims";
 import PriorAuth from "@/pages/dashboard/PriorAuth";
 import Providers from "@/pages/dashboard/Providers";
-import VendorInvoices from "@/pages/dashboard/VendorInvoices";
+import AccountManagement from "@/pages/dashboard/AccountManagement";
 import AppHealth from "@/pages/dashboard/AppHealth";
 import IbmAms from "@/pages/dashboard/IbmAms";
 import Ask from "@/pages/dashboard/Ask";
@@ -55,7 +55,8 @@ function DashboardRouter() {
         <Route path="/dashboard/prior-auth" component={PriorAuth} />
         <Route path="/dashboard/providers" component={Providers} />
         <Route path="/dashboard/contact-center" component={() => <Redirect to="/dashboard/enrollment-intelligence" />} />
-        <Route path="/dashboard/vendor-invoices"  component={VendorInvoices}  />
+        <Route path="/dashboard/vendor-invoices" component={() => <Redirect to="/dashboard/account-management" />} />
+        <Route path="/dashboard/account-management" component={AccountManagement} />
         <Route path="/dashboard/member-services"  component={MemberServices}  />
         <Route path="/dashboard/app-health" component={AppHealth} />
         <Route path="/dashboard/ibm-ams" component={IbmAms} />

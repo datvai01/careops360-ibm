@@ -43,5 +43,14 @@
     "sizeBytes": 27317,
     "version": 2,
     "storedFilename": "transformation-roadmap__v1782343540312.xlsx"
+  },
+  "account-management": {
+    "key": "account-management",
+    "uploadedAt": "2026-08-10T16:24:37.914Z",
+    "uploadedBy": "admin@horizon.com",
+    "sourceFilename": "adm-jul26-empty-meetings.xlsx",
+    "sizeBytes": 22449,
+    "version": 3,
+    "storedFilename": "account-management__v1786379077914.xlsx"
   }
 }

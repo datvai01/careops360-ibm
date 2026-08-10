@@ -1,7 +1,8 @@
 import * as XLSX from "xlsx";
 import { db } from "@workspace/db";
 import type { PgTable } from "drizzle-orm/pg-core";
-import type { SQL } from "drizzle-orm";
+import { inArray, type SQL } from "drizzle-orm";
+import type { PgColumn } from "drizzle-orm/pg-core";
 
 export type ColType = "str" | "int" | "real" | "date";
 
@@ -29,6 +30,12 @@ export interface SheetDef {
    * Fixed fields injected into every inserted row (e.g. { page: "members" }).
    */
   fixedFields?: Record<string, unknown>;
+  /**
+   * If set, upload replaces only rows whose value in this record key matches
+   * a value present in the uploaded sheet (e.g. scopeKey "reportMonth" makes a
+   * Jun 2026 upload replace only Jun 2026 rows, leaving other months intact).
+   */
+  scopeKey?: string;
 }
 
 export interface DatasetSchema {
@@ -182,6 +189,12 @@ function prepareImport(
           continue;
         }
 
+        // Optional empty cell on a non-nullable column: omit the key so the
+        // database column default applies (avoids NOT NULL violations).
+        if (isEmpty && !col.required && col.nullable !== true) {
+          continue;
+        }
+
         const result = coerce(raw, col.type, col.nullable === true);
         if (!result.ok) {
           rowErrors.push(`[${sheet.sheetName} row ${idx + 2}] "${col.header}" — ${result.error}.`);
@@ -225,6 +238,20 @@ export async function importDatasetWorkbook(
 
   const results: ImportResult[] = [];
 
+  // Workbook-level scope: union scope values per scopeKey name across all
+  // present sheets, so a present-but-empty sheet still clears the uploaded
+  // scope (true replace semantics) instead of silently keeping stale rows.
+  const scopeValuesByKey = new Map<string, Set<string>>();
+  for (const { sheet, records } of prepared) {
+    if (!sheet.scopeKey) continue;
+    const set = scopeValuesByKey.get(sheet.scopeKey) ?? new Set<string>();
+    for (const r of records) {
+      const v = r[sheet.scopeKey];
+      if (v != null) set.add(String(v));
+    }
+    scopeValuesByKey.set(sheet.scopeKey, set);
+  }
+
   await db.transaction(async (tx) => {
     for (const { sheet, records, warnings: sheetWarnings } of prepared) {
       if (sheetWarnings.length > 0 && records.length === 0) {
@@ -232,7 +259,13 @@ export async function importDatasetWorkbook(
         continue;
       }
 
-      if (sheet.deleteWhere) {
+      if (sheet.scopeKey) {
+        const col = (sheet.table as unknown as Record<string, PgColumn>)[sheet.scopeKey];
+        const values = [...(scopeValuesByKey.get(sheet.scopeKey) ?? new Set<string>())];
+        if (col && values.length > 0) {
+          await tx.delete(sheet.table).where(inArray(col, values));
+        }
+      } else if (sheet.deleteWhere) {
         await tx.delete(sheet.table).where(sheet.deleteWhere);
       } else {
         await tx.delete(sheet.table);

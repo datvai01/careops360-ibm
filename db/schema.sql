@@ -1793,3 +1793,112 @@ CREATE INDEX page_kpis_page_idx ON public.page_kpis USING btree (page);
 
 \unrestrict U5mcX9C5zMu740s8sfuxOzbbLSEzz76aNYrmswYEl43Cd555i3wdblLmyafboYI
 
+
+--
+-- ADM (Account Management) tables — idempotent bootstrap DDL matching lib/db/src/schema/adm.ts
+--
+
+CREATE TABLE IF NOT EXISTS public.adm_action_items (
+    id serial PRIMARY KEY,
+    item varchar(300) NOT NULL,
+    latest_update varchar(600) NOT NULL DEFAULT '',
+    status varchar(20) NOT NULL DEFAULT 'Open',
+    owner varchar(120) NOT NULL DEFAULT '',
+    progress_source varchar(200) NOT NULL DEFAULT '',
+    created_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_initiatives (
+    id serial PRIMARY KEY,
+    title varchar(200) NOT NULL,
+    description varchar(600) NOT NULL DEFAULT '',
+    actions varchar(600) NOT NULL DEFAULT '',
+    owner varchar(120) NOT NULL DEFAULT '',
+    next_steps varchar(600) NOT NULL DEFAULT '',
+    status varchar(20) NOT NULL DEFAULT 'Active',
+    created_at timestamp NOT NULL DEFAULT now(),
+    updated_at timestamp NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_meetings (
+    id serial PRIMARY KEY,
+    report_month varchar(20) NOT NULL,
+    domain_area varchar(160) NOT NULL,
+    meeting_date varchar(20) NOT NULL DEFAULT '',
+    horizon_attendees varchar(300) NOT NULL DEFAULT '',
+    ibm_attendees varchar(300) NOT NULL DEFAULT '',
+    deck_link varchar(400) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_headcount (
+    id serial PRIMARY KEY,
+    month_label varchar(20) NOT NULL,
+    start_hc integer NOT NULL,
+    onboards integer NOT NULL DEFAULT 0,
+    offboards integer NOT NULL DEFAULT 0,
+    end_hc integer NOT NULL,
+    attrition_pct real NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_staff_changes (
+    id serial PRIMARY KEY,
+    report_month varchar(20) NOT NULL,
+    person_name varchar(120) NOT NULL,
+    team varchar(120) NOT NULL DEFAULT '',
+    change_type varchar(20) NOT NULL,
+    reason varchar(200) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_invoice_summary (
+    id serial PRIMARY KEY,
+    report_month varchar(20) NOT NULL,
+    sow varchar(60) NOT NULL,
+    line_item varchar(200) NOT NULL,
+    hours real NOT NULL DEFAULT 0,
+    amount_usd real NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_hourly_trends (
+    id serial PRIMARY KEY,
+    month_label varchar(20) NOT NULL,
+    onshore_non_cr real NOT NULL DEFAULT 0,
+    offshore_non_cr real NOT NULL DEFAULT 0,
+    onshore_cr real NOT NULL DEFAULT 0,
+    offshore_cr real NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_mips_trend (
+    id serial PRIMARY KEY,
+    month_label varchar(20) NOT NULL,
+    usage_k real NOT NULL,
+    baseline_k real NOT NULL DEFAULT 96,
+    note varchar(160) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_mips_insights (
+    id serial PRIMARY KEY,
+    report_month varchar(20) NOT NULL,
+    section varchar(40) NOT NULL,
+    title varchar(200) NOT NULL,
+    detail varchar(600) NOT NULL DEFAULT '',
+    ord integer NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_team_composition (
+    id serial PRIMARY KEY,
+    report_month varchar(20) NOT NULL,
+    category varchar(60) NOT NULL,
+    label varchar(120) NOT NULL,
+    value real NOT NULL,
+    unit varchar(12) NOT NULL DEFAULT '',
+    note varchar(200) NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS public.adm_other_updates (
+    id serial PRIMARY KEY,
+    report_month varchar(20) NOT NULL,
+    title varchar(200) NOT NULL,
+    detail varchar(600) NOT NULL DEFAULT '',
+    status varchar(30) NOT NULL DEFAULT ''
+);

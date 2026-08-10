@@ -162,6 +162,16 @@ export const DATASET_REGISTRY: DatasetDefinition[] = [
     category: "Operations",
   },
   {
+    key: "account-management",
+    label: "Account Management (ADM) Monthly Report",
+    page: "Account Management",
+    pageRoute: "/dashboard/account-management",
+    description:
+      "Monthly ADM report data: director meetings, IBM team headcount & staff changes, invoice summary & hourly trends, MIPS usage & insights, team composition, and other updates. Month-scoped: uploading a month replaces only that month.",
+    acceptedFormats: ".xlsx",
+    category: "Finance",
+  },
+  {
     key: "capability-uplift",
     label: "Capability Uplift Targets",
     page: "Capability Uplift",
