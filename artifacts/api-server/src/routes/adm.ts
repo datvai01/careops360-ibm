@@ -406,6 +406,158 @@ function drawTable(doc: Doc, headers: string[], rows: (string | number)[][], wid
   doc.x = 50;
 }
 
+const GREEN = "#24a148";
+const PURPLE = "#8a3ffc";
+const ORANGE = "#ff832b";
+const RED = "#da1e28";
+const PAGE_W = 512; // usable width at LETTER with 50pt margins
+
+function fmtMoney(n: number): string {
+  const abs = Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n < 0 ? `($${abs})` : `$${abs}`;
+}
+
+/** One-line gray narrative under a section header — tells the story of the section. */
+function narrative(doc: Doc, text: string) {
+  if (doc.y > doc.page.height - 90) doc.addPage();
+  doc.font("Helvetica-Oblique").fontSize(9).fillColor(GRAY).text(text, 50, doc.y, { width: PAGE_W });
+  doc.moveDown(0.6);
+  doc.font("Helvetica").fontSize(9).fillColor(DARK);
+  doc.x = 50;
+}
+
+/** Row of KPI stat cards. */
+function kpiCards(doc: Doc, items: { label: string; value: string; sub: string }[]) {
+  const gap = 10;
+  const cardW = (PAGE_W - gap * (items.length - 1)) / items.length;
+  const cardH = 58;
+  if (doc.y + cardH > doc.page.height - 60) doc.addPage();
+  const y = doc.y;
+  items.forEach((it, i) => {
+    const x = 50 + i * (cardW + gap);
+    doc.rect(x, y, cardW, cardH).fill(LIGHT);
+    doc.rect(x, y, cardW, 3).fill(IBM_BLUE);
+    doc.fillColor(GRAY).font("Helvetica").fontSize(6.5).text(it.label.toUpperCase(), x + 8, y + 10, { width: cardW - 16 });
+    doc.fillColor(DARK).font("Helvetica-Bold").fontSize(15).text(it.value, x + 8, y + 20, { width: cardW - 16 });
+    doc.fillColor(GRAY).font("Helvetica").fontSize(6.5).text(it.sub, x + 8, y + 40, { width: cardW - 16 });
+  });
+  doc.y = y + cardH + 12;
+  doc.x = 50;
+  doc.fillColor(DARK);
+}
+
+type ChartSeries = { name: string; color: string; values: number[] };
+
+function chartFrame(doc: Doc, title: string, h: number): { x0: number; y0: number; plotW: number; plotH: number } {
+  if (doc.y + h + 60 > doc.page.height - 60) doc.addPage();
+  doc.font("Helvetica-Bold").fontSize(9.5).fillColor(DARK).text(title, 50, doc.y);
+  doc.moveDown(0.4);
+  return { x0: 92, y0: doc.y, plotW: PAGE_W - 52, plotH: h };
+}
+
+function chartAxes(doc: Doc, f: { x0: number; y0: number; plotW: number; plotH: number }, maxV: number, yFmt: (v: number) => string) {
+  for (let g = 0; g <= 4; g++) {
+    const gy = f.y0 + (f.plotH * g) / 4;
+    doc.moveTo(f.x0, gy).lineTo(f.x0 + f.plotW, gy).lineWidth(0.5).strokeColor(g === 4 ? "#c6c6c6" : "#e8e8e8").stroke();
+    doc.font("Helvetica").fontSize(6.5).fillColor(GRAY).text(yFmt(maxV * (1 - g / 4)), 50, gy - 3, { width: 38, align: "right" });
+  }
+}
+
+function chartXLabels(doc: Doc, f: { x0: number; y0: number; plotW: number; plotH: number }, labels: string[], xAt: (i: number) => number) {
+  const step = Math.max(1, Math.ceil(labels.length / 9));
+  labels.forEach((l, i) => {
+    if (i % step !== 0 && i !== labels.length - 1) return;
+    doc.font("Helvetica").fontSize(6).fillColor(GRAY).text(l, xAt(i) - 20, f.y0 + f.plotH + 4, { width: 40, align: "center" });
+  });
+}
+
+function chartLegend(doc: Doc, f: { x0: number; y0: number; plotW: number; plotH: number }, series: { name: string; color: string }[]) {
+  let lx = f.x0;
+  const ly = f.y0 + f.plotH + 16;
+  series.forEach((s) => {
+    doc.rect(lx, ly, 7, 7).fill(s.color);
+    doc.font("Helvetica").fontSize(7).fillColor(DARK).text(s.name, lx + 10, ly, { lineBreak: false });
+    lx += 14 + doc.widthOfString(s.name) + 14;
+  });
+  doc.y = ly + 18;
+  doc.x = 50;
+  doc.fillColor(DARK);
+}
+
+/** Multi-series line chart. */
+function drawLineChart(doc: Doc, title: string, labels: string[], series: ChartSeries[], yFmt: (v: number) => string, h = 130) {
+  if (labels.length === 0) return;
+  const f = chartFrame(doc, title, h);
+  const maxV = Math.max(1, ...series.flatMap((s) => s.values)) * 1.15;
+  const xAt = (i: number) => f.x0 + (labels.length === 1 ? f.plotW / 2 : (f.plotW * i) / (labels.length - 1));
+  const yAt = (v: number) => f.y0 + f.plotH - (f.plotH * v) / maxV;
+  chartAxes(doc, f, maxV, yFmt);
+  for (const s of series) {
+    s.values.forEach((v, i) => {
+      if (i === 0) doc.moveTo(xAt(0), yAt(v));
+      else doc.lineTo(xAt(i), yAt(v));
+    });
+    doc.lineWidth(1.5).strokeColor(s.color).stroke();
+    s.values.forEach((v, i) => doc.circle(xAt(i), yAt(v), 1.8).fill(s.color));
+  }
+  chartXLabels(doc, f, labels, xAt);
+  chartLegend(doc, f, series);
+}
+
+/** Stacked vertical bar chart. */
+function drawStackedBarChart(doc: Doc, title: string, labels: string[], series: ChartSeries[], yFmt: (v: number) => string, h = 130) {
+  if (labels.length === 0) return;
+  const f = chartFrame(doc, title, h);
+  const totals = labels.map((_, i) => series.reduce((s, sr) => s + (sr.values[i] || 0), 0));
+  const maxV = Math.max(1, ...totals) * 1.15;
+  const slot = f.plotW / labels.length;
+  const barW = Math.min(26, slot * 0.55);
+  chartAxes(doc, f, maxV, yFmt);
+  labels.forEach((_, i) => {
+    let acc = 0;
+    const bx = f.x0 + slot * i + (slot - barW) / 2;
+    for (const s of series) {
+      const v = s.values[i] || 0;
+      if (v <= 0) continue;
+      const y1 = f.y0 + f.plotH - (f.plotH * (acc + v)) / maxV;
+      const bh = (f.plotH * v) / maxV;
+      doc.rect(bx, y1, barW, bh).fill(s.color);
+      acc += v;
+    }
+  });
+  chartXLabels(doc, f, labels, (i) => f.x0 + slot * i + slot / 2);
+  chartLegend(doc, f, series);
+}
+
+/** Horizontal bar chart (one bar per label). */
+function drawHBarChart(doc: Doc, title: string, items: { label: string; value: number; color?: string }[], vFmt: (v: number) => string) {
+  if (items.length === 0) return;
+  const rowH = 18;
+  const h = items.length * rowH;
+  if (doc.y + h + 50 > doc.page.height - 60) doc.addPage();
+  doc.font("Helvetica-Bold").fontSize(9.5).fillColor(DARK).text(title, 50, doc.y);
+  doc.moveDown(0.4);
+  const y0 = doc.y;
+  const labelW = 120;
+  const valueW = 78;
+  const barMax = PAGE_W - labelW - valueW - 8;
+  const maxV = Math.max(1, ...items.map((i) => Math.abs(i.value)));
+  items.forEach((it, i) => {
+    const y = y0 + i * rowH;
+    doc.font("Helvetica").fontSize(7.5).fillColor(DARK).text(it.label, 50, y + 4, { width: labelW - 6, lineBreak: false });
+    const bw = Math.max(1.5, (barMax * Math.abs(it.value)) / maxV);
+    doc.rect(50 + labelW, y + 3, bw, rowH - 8).fill(it.color || (it.value < 0 ? RED : IBM_BLUE));
+    doc.font("Helvetica-Bold").fontSize(7.5).fillColor(it.value < 0 ? RED : DARK).text(fmtMoneyShort(it.value, vFmt), 50 + labelW + bw + 5, y + 4, { lineBreak: false });
+  });
+  doc.y = y0 + h + 10;
+  doc.x = 50;
+  doc.fillColor(DARK);
+}
+
+function fmtMoneyShort(v: number, vFmt: (v: number) => string): string {
+  return vFmt(v);
+}
+
 router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
   const month = String(req.query.month || "").trim();
   if (!/^[A-Za-z]{3} \d{4}$/.test(month)) {
@@ -435,8 +587,79 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
   doc.addPage();
   doc.x = 50;
 
+  // ── Executive Summary ──
+  const latestHc = r.headcount[r.headcount.length - 1];
+  const latestMips = r.mipsTrend[r.mipsTrend.length - 1];
+  const grandTotal = r.invoiceSummary.reduce((s, i) => s + i.amountUsd, 0);
+  const openItems = r.actionItems.filter((a) => a.status !== "Closed").length;
+  const activeInits = r.initiatives.filter((i) => i.status === "Active").length;
+  const latestHours = r.hourlyTrends[r.hourlyTrends.length - 1];
+  const totalHours = latestHours
+    ? latestHours.onshoreNonCr + latestHours.offshoreNonCr + latestHours.onshoreCr + latestHours.offshoreCr
+    : 0;
+
+  // Invoice groups (shared by summary + invoice section)
+  const invoiceGroups = (() => {
+    const map = new Map<string, { invoiceNo: string; poNumber: string; note: string; total: number; lines: typeof r.invoiceSummary }>();
+    for (const i of r.invoiceSummary) {
+      const key = i.invoiceNo || "—";
+      const cur = map.get(key) ?? { invoiceNo: key, poNumber: i.poNumber, note: i.note, total: 0, lines: [] as typeof r.invoiceSummary };
+      cur.total += i.amountUsd;
+      cur.lines.push(i);
+      if (!cur.poNumber && i.poNumber) cur.poNumber = i.poNumber;
+      if (!cur.note && i.note) cur.note = i.note;
+      map.set(key, cur);
+    }
+    return [...map.values()].sort((a, b) => a.invoiceNo.localeCompare(b.invoiceNo));
+  })();
+  const topInvoice = [...invoiceGroups].sort((a, b) => b.total - a.total)[0];
+  const mipsPct = latestMips && latestMips.baselineK > 0 ? Math.round((latestMips.usageK / latestMips.baselineK) * 100) : null;
+
+  doc.rect(50, doc.y, 4, 18).fill(IBM_BLUE);
+  doc.fill(DARK).font("Helvetica-Bold").fontSize(14).text("Executive Summary", 62, doc.y + 1);
+  doc.moveDown(0.8);
+  doc.x = 50;
+
+  kpiCards(doc, [
+    { label: "IBM Team @ Horizon", value: latestHc ? String(latestHc.endHc) : "—", sub: latestHc ? `Attrition ${latestHc.attritionPct}%` : "No data" },
+    { label: `Invoiced — ${month}`, value: grandTotal >= 1e6 ? `$${(grandTotal / 1e6).toFixed(2)}M` : fmtMoney(grandTotal), sub: `${invoiceGroups.length} invoice${invoiceGroups.length === 1 ? "" : "s"} submitted` },
+    { label: "MIPS Usage", value: latestMips ? `${latestMips.usageK}K` : "—", sub: latestMips ? (mipsPct !== null ? `vs ${latestMips.baselineK}K baseline (${mipsPct}%)` : "baseline unavailable") : "No data" },
+    { label: "Delivery Governance", value: `${openItems}`, sub: `open action items · ${activeInits} active initiatives` },
+  ]);
+
+  const storyLines: string[] = [];
+  if (latestHc) {
+    const first = r.headcount[0];
+    const dir = first && latestHc.endHc >= first.endHc ? "grew" : "reduced";
+    storyLines.push(
+      `The IBM team at Horizon ${dir} from ${first ? first.endHc : "—"} to ${latestHc.endHc} practitioners over the reported period, closing ${month} with ${latestHc.onboards} onboard${latestHc.onboards === 1 ? "" : "s"}, ${latestHc.offboards} offboard${latestHc.offboards === 1 ? "" : "s"}, and attrition at ${latestHc.attritionPct}%.`,
+    );
+  }
+  if (invoiceGroups.length > 0 && topInvoice) {
+    storyLines.push(
+      `Commercially, ${invoiceGroups.length} invoice${invoiceGroups.length === 1 ? " was" : "s were"} submitted for ${month} totaling ${fmtMoney(grandTotal)}, led by invoice ${topInvoice.invoiceNo} (${topInvoice.poNumber || "no PO"}) at ${fmtMoney(topInvoice.total)}.${totalHours > 0 ? ` Delivery effort for the month reached ${Math.round(totalHours).toLocaleString()} hours across onshore and offshore teams.` : ""}`,
+    );
+  }
+  if (latestMips) {
+    storyLines.push(
+      mipsPct !== null
+        ? `Mainframe consumption stands at ${latestMips.usageK}K MIPS against the ${latestMips.baselineK}K contracted baseline (${mipsPct}%), ${mipsPct <= 100 ? "within contracted capacity" : "above contracted capacity — optimization actions are detailed in the MIPS section"}.`
+        : `Mainframe consumption stands at ${latestMips.usageK}K MIPS; no contracted baseline is recorded for comparison.`,
+    );
+  }
+  storyLines.push(
+    `Governance remains active with ${openItems} open action item${openItems === 1 ? "" : "s"} and ${activeInits} transformation initiative${activeInits === 1 ? "" : "s"} in flight; details follow in each section.`,
+  );
+  doc.font("Helvetica").fontSize(9.5).fillColor(DARK);
+  for (const line of storyLines) {
+    doc.text(line, 50, doc.y, { width: PAGE_W, lineGap: 2 });
+    doc.moveDown(0.5);
+  }
+  doc.moveDown(0.5);
+
   // 1. Action items
   sectionHeader(doc, 1, "Action Items");
+  narrative(doc, `Living list maintained by the IBM account team — ${openItems} of ${r.actionItems.length} item${r.actionItems.length === 1 ? "" : "s"} currently open.`);
   drawTable(
     doc,
     ["Item", "Latest Update", "Status", "Owner", "Source"],
@@ -446,6 +669,9 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
 
   // 2. Key monthly meetings
   sectionHeader(doc, 2, "Key Monthly Meetings");
+  narrative(doc, r.meetings.length > 0
+    ? `${r.meetings.length} key review${r.meetings.length === 1 ? "" : "s"} held with Horizon leadership in ${month}.`
+    : `No key meetings recorded for ${month}.`);
   drawTable(
     doc,
     ["Domain / Area", "Date", "Horizon Attendees", "IBM Attendees", "Deck"],
@@ -455,6 +681,16 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
 
   // 3. IBM Team @ Horizon
   sectionHeader(doc, 3, "IBM Team @ Horizon — Headcount");
+  if (latestHc) {
+    narrative(doc, `Team of ${latestHc.endHc} at ${month} close · attrition ${latestHc.attritionPct}% · ${latestHc.onboards} onboarded, ${latestHc.offboards} offboarded this month.`);
+  }
+  drawLineChart(
+    doc,
+    "Headcount trend (end of month)",
+    r.headcount.map((h) => h.monthLabel),
+    [{ name: "End HC", color: IBM_BLUE, values: r.headcount.map((h) => h.endHc) }],
+    (v) => String(Math.round(v)),
+  );
   drawTable(
     doc,
     ["Month", "Start HC", "Onboards", "Offboards", "End HC", "Attrition %"],
@@ -472,21 +708,84 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
     );
   }
 
-  // 4. Invoice summary
-  sectionHeader(doc, 4, "Invoice Summary");
-  drawTable(
-    doc,
-    ["Invoice", "PO", "Line Item", "Hours", "Amount (USD)", "Note"],
-    r.invoiceSummary.map((i) => [i.invoiceNo, i.poNumber, i.lineItem, i.hours ? i.hours.toLocaleString() : "", `$${i.amountUsd.toLocaleString()}`, i.note]),
-    [70, 70, 140, 50, 82, 100],
-  );
-  {
-    const grandTotal = r.invoiceSummary.reduce((s, i) => s + i.amountUsd, 0);
-    doc.font("Helvetica-Bold").fontSize(9).text(`Grand total: $${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
-    doc.moveDown(0.5);
+  // 4. Invoice summary — grouped by invoice, line items indented
+  sectionHeader(doc, 4, `Invoice — ${month}`);
+  if (invoiceGroups.length > 0) {
+    narrative(doc, `${invoiceGroups.length} invoice${invoiceGroups.length === 1 ? "" : "s"} submitted for ${month} totaling ${fmtMoney(grandTotal)}. Credits for separately-invoiced charges are shown in parentheses.`);
+    drawHBarChart(
+      doc,
+      "Invoice composition",
+      invoiceGroups.map((g) => ({ label: `${g.invoiceNo}${g.poNumber ? ` · ${g.poNumber}` : ""}`, value: g.total })),
+      (v) => fmtMoney(v),
+    );
+
+    const rowGap = 4;
+    const invoiceHeader = (g: { invoiceNo: string; poNumber: string; total: number }, continued = false) => {
+      const hy = doc.y;
+      doc.rect(50, hy, PAGE_W, 18).fill("#edf5ff");
+      doc.rect(50, hy, 3, 18).fill(IBM_BLUE);
+      doc.fillColor(DARK).font("Helvetica-Bold").fontSize(9)
+        .text(`Invoice ${g.invoiceNo}${g.poNumber ? `  ·  ${g.poNumber}` : ""}${continued ? "  (continued)" : ""}`, 60, hy + 5, { lineBreak: false });
+      doc.fillColor(g.total < 0 ? RED : DARK).font("Helvetica-Bold").fontSize(9)
+        .text(fmtMoney(g.total), 50 + PAGE_W - 130, hy + 5, { width: 124, align: "right" });
+      doc.y = hy + 18 + rowGap;
+    };
+    const ensure = (h: number) => { if (doc.y + h > doc.page.height - 60) { doc.addPage(); return true; } return false; };
+    for (const g of invoiceGroups) {
+      ensure(60);
+      invoiceHeader(g);
+      // Indented line items
+      for (const li of g.lines) {
+        doc.font("Helvetica").fontSize(8);
+        const descW = PAGE_W - 24 - 70 - 90;
+        const lh = Math.max(11, doc.heightOfString(li.lineItem, { width: descW }) + 3);
+        if (ensure(lh + 2)) invoiceHeader(g, true);
+        const ly = doc.y;
+        doc.fillColor(DARK).text(li.lineItem, 74, ly, { width: descW });
+        doc.fillColor(GRAY).text(li.hours ? `${li.hours.toLocaleString()} h` : "", 74 + descW, ly, { width: 66, align: "right", lineBreak: false });
+        doc.fillColor(li.amountUsd < 0 ? RED : DARK).font(li.amountUsd < 0 ? "Helvetica" : "Helvetica").fontSize(8)
+          .text(fmtMoney(li.amountUsd), 74 + descW + 70, ly, { width: 86, align: "right" });
+        doc.y = ly + lh;
+      }
+      // Subtotal rule + note
+      doc.moveTo(74, doc.y + 1).lineTo(50 + PAGE_W, doc.y + 1).lineWidth(0.5).strokeColor("#d0d0d0").stroke();
+      doc.y += 4;
+      if (g.note) {
+        ensure(14);
+        doc.font("Helvetica-Oblique").fontSize(7.5).fillColor(GRAY).text(`Note: ${g.note}`, 74, doc.y, { width: PAGE_W - 24 });
+        doc.y += 2;
+      }
+      doc.y += 6;
+      doc.x = 50;
+      doc.fillColor(DARK);
+    }
+    // Grand total banner
+    ensure(24);
+    const gy = doc.y;
+    doc.rect(50, gy, PAGE_W, 20).fill(IBM_BLUE);
+    doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(10).text("Grand total — final invoice total", 60, gy + 5, { lineBreak: false });
+    doc.fillColor("#ffffff").font("Helvetica-Bold").fontSize(10).text(fmtMoney(grandTotal), 50 + PAGE_W - 150, gy + 5, { width: 144, align: "right" });
+    doc.y = gy + 20 + 10;
+    doc.x = 50;
+    doc.fillColor(DARK);
+  } else {
+    narrative(doc, `No invoices recorded for ${month}.`);
   }
+
   doc.font("Helvetica-Bold").fontSize(10).text("Hourly Trends");
   doc.moveDown(0.3);
+  drawStackedBarChart(
+    doc,
+    "Monthly delivery hours by shore and CareRadius split",
+    r.hourlyTrends.map((h) => h.monthLabel),
+    [
+      { name: "Offshore Non-CR", color: IBM_BLUE, values: r.hourlyTrends.map((h) => h.offshoreNonCr) },
+      { name: "Onshore Non-CR", color: PURPLE, values: r.hourlyTrends.map((h) => h.onshoreNonCr) },
+      { name: "Offshore CR", color: GREEN, values: r.hourlyTrends.map((h) => h.offshoreCr) },
+      { name: "Onshore CR", color: ORANGE, values: r.hourlyTrends.map((h) => h.onshoreCr) },
+    ],
+    (v) => `${Math.round(v / 1000)}K`,
+  );
   drawTable(
     doc,
     ["Month", "Onshore Non-CR", "Offshore Non-CR", "Onshore CR", "Offshore CR"],
@@ -496,6 +795,21 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
 
   // 5. MIPS
   sectionHeader(doc, 5, "MIPS Usage & Capacity");
+  if (latestMips) {
+    narrative(doc, mipsPct !== null
+      ? `Current usage ${latestMips.usageK}K MIPS vs ${latestMips.baselineK}K contracted baseline (${mipsPct}% of capacity).`
+      : `Current usage ${latestMips.usageK}K MIPS; no contracted baseline recorded.`);
+  }
+  drawLineChart(
+    doc,
+    "MIPS usage vs contracted baseline (K MIPS)",
+    r.mipsTrend.map((m) => m.monthLabel),
+    [
+      { name: "Usage", color: IBM_BLUE, values: r.mipsTrend.map((m) => m.usageK) },
+      { name: "Baseline", color: RED, values: r.mipsTrend.map((m) => m.baselineK) },
+    ],
+    (v) => `${Math.round(v)}K`,
+  );
   drawTable(
     doc,
     ["Month", "Usage (K MIPS)", "Baseline (K MIPS)", "Note"],
@@ -513,6 +827,9 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
 
   // 6. Initiatives
   sectionHeader(doc, 6, "Transformation Initiatives");
+  narrative(doc, r.initiatives.length > 0
+    ? `${activeInits} of ${r.initiatives.length} initiative${r.initiatives.length === 1 ? "" : "s"} currently active — living list maintained by the IBM account team.`
+    : "No transformation initiatives recorded.");
   drawTable(
     doc,
     ["Initiative", "Description", "Actions", "Owner", "Next Steps", "Status"],
@@ -522,6 +839,9 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
 
   // 7. Team composition
   sectionHeader(doc, 7, "Team Composition");
+  narrative(doc, r.teamComposition.length > 0
+    ? `Composition of the IBM team at Horizon for ${month}, across ${[...new Set(r.teamComposition.map((t) => t.category))].length} dimensions.`
+    : `No team composition data recorded for ${month}.`);
   const cats = [...new Set(r.teamComposition.map((t) => t.category))];
   for (const cat of cats) {
     doc.font("Helvetica-Bold").fontSize(10).text(cat);
@@ -536,6 +856,9 @@ router.get("/adm/export-pdf", requireAuth, async (req, res): Promise<void> => {
 
   // 8. Other updates
   sectionHeader(doc, 8, "Other Updates");
+  narrative(doc, r.otherUpdates.length > 0
+    ? `${r.otherUpdates.length} additional update${r.otherUpdates.length === 1 ? "" : "s"} reported for ${month}.`
+    : `No additional updates for ${month}.`);
   drawTable(
     doc,
     ["Update", "Detail", "Status"],
