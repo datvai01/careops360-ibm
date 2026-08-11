@@ -74,9 +74,15 @@ router.post("/admin/datasets/:key/upload", requireAdmin, upload.single("file"), 
     const sessionUser = (req as Request & { sessionUser: { email: string } }).sessionUser;
     const uploader = sessionUser?.email || "unknown";
 
+    const reportMonthRaw = typeof req.body?.reportMonth === "string" ? req.body.reportMonth.trim() : "";
+    if (reportMonthRaw && !/^[A-Za-z]{3} \d{4}$/.test(reportMonthRaw)) {
+      res.status(400).json({ error: "reportMonth must be in 'Mon YYYY' format, e.g. 'Jun 2026'" });
+      return;
+    }
+
     let importResults: { results?: unknown; totalRows?: number; warnings?: string[] } = {};
     if (hasImporter(req.params.key)) {
-      const out = await runImporterForKey(req.params.key, req.file.buffer);
+      const out = await runImporterForKey(req.params.key, req.file.buffer, reportMonthRaw ? { defaultReportMonth: reportMonthRaw } : undefined);
       if (!out.ok) {
         logger.warn(
           { key: req.params.key, uploader, errors: out.validationErrors?.length, warnings: out.warnings?.length },

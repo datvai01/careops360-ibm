@@ -158,7 +158,9 @@ interface PreparedSheet {
 function prepareImport(
   schema: DatasetSchema,
   buffer: Buffer,
+  opts?: { defaultReportMonth?: string },
 ): { prepared: PreparedSheet[]; errors: string[]; warnings: string[] } {
+  const defaultMonth = opts?.defaultReportMonth?.trim() || undefined;
   const wb = XLSX.read(buffer, { type: "buffer", cellDates: true });
   const prepared: PreparedSheet[] = [];
   const errors: string[] = [];
@@ -175,6 +177,7 @@ function prepareImport(
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: null });
     const sheetWarnings: string[] = [];
     const records: Record<string, unknown>[] = [];
+    let monthOverrides = 0;
 
     rows.forEach((row, idx) => {
       const rec: Record<string, unknown> = {};
@@ -182,6 +185,16 @@ function prepareImport(
       const rowErrors: string[] = [];
 
       for (const col of sheet.columns) {
+        // Explicitly selected report month wins over whatever the workbook says
+        // for month-scoped snapshot sheets ("Report Month" columns). Trend
+        // sheets keyed by "Month" per series row are untouched.
+        if (defaultMonth && col.key === "reportMonth") {
+          const raw = row[col.header];
+          if (raw !== null && raw !== undefined && raw !== "" && String(raw).trim() !== defaultMonth) monthOverrides++;
+          rec[col.key] = defaultMonth;
+          allEmpty = false;
+          continue;
+        }
         const raw = row[col.header];
         const isEmpty = raw === null || raw === undefined || raw === "";
         if (!isEmpty) allEmpty = false;
@@ -220,6 +233,13 @@ function prepareImport(
       records.push(rec);
     });
 
+    if (monthOverrides > 0) {
+      sheetWarnings.push(
+        `Sheet "${sheet.sheetName}": ${monthOverrides} row${monthOverrides === 1 ? "" : "s"} had a different Report Month in the file — replaced with the selected month "${defaultMonth}".`,
+      );
+      warnings.push(sheetWarnings[sheetWarnings.length - 1]);
+    }
+
     prepared.push({ sheet, records, warnings: sheetWarnings });
   }
 
@@ -229,8 +249,9 @@ function prepareImport(
 export async function importDatasetWorkbook(
   schema: DatasetSchema,
   buffer: Buffer,
+  opts?: { defaultReportMonth?: string },
 ): Promise<{ results: ImportResult[]; totalRows: number; warnings: string[] }> {
-  const { prepared, errors, warnings } = prepareImport(schema, buffer);
+  const { prepared, errors, warnings } = prepareImport(schema, buffer, opts);
 
   if (errors.length > 0) {
     throw new DatasetImportError(errors, warnings);

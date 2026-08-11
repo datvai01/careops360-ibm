@@ -10,8 +10,11 @@ import {
   Settings, Users, ShieldAlert, Upload, FileSpreadsheet,
   CheckCircle2, ExternalLink, Loader2, Lock, Database, ChevronRight, AlertCircle, FileDown,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { RefreshDataTab } from "./TalentPlan";
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const IBM_BLUE = "#0F62FE";
 
@@ -98,6 +101,16 @@ function DatasetDetail({ ds, onUploaded }: { ds: DatasetRow; onUploaded: () => v
 
   const hasUpload = !!ds.storedFilename;
 
+  // Account Management uploads are for an explicit report month, chosen here.
+  const monthAware = ds.key === "account-management";
+  const now = new Date();
+  const [repMonth, setRepMonth] = useState<string>(MONTH_NAMES[now.getMonth()]);
+  const [repYear, setRepYear] = useState<string>(String(now.getFullYear()));
+  const yearOptions = useMemo(() => {
+    const y = now.getFullYear();
+    return [y - 2, y - 1, y, y + 1].map(String);
+  }, []);
+
   async function uploadFile(file: File) {
     if (ds.hasImporter) {
       const ok = window.confirm(
@@ -113,6 +126,7 @@ function DatasetDetail({ ds, onUploaded }: { ds: DatasetRow; onUploaded: () => v
     try {
       const fd = new FormData();
       fd.append("file", file);
+      if (monthAware) fd.append("reportMonth", `${repMonth} ${repYear}`);
       const res = await authedFetch(`/api/admin/datasets/${ds.key}/upload`, {
         method: "POST",
         body: fd,
@@ -244,6 +258,28 @@ function DatasetDetail({ ds, onUploaded }: { ds: DatasetRow; onUploaded: () => v
           <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
             Drop the {ds.acceptedFormats} file. The system validates it, replaces the underlying tables, and the page refreshes automatically.
           </p>
+          {monthAware && (
+            <div className="mb-3">
+              <p className="text-xs font-semibold mb-1.5">Report month for this upload</p>
+              <div className="flex gap-2">
+                <Select value={repMonth} onValueChange={setRepMonth}>
+                  <SelectTrigger className="h-8 w-28 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {MONTH_NAMES.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select value={repYear} onValueChange={setRepYear}>
+                  <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {yearOptions.map((y) => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5 leading-relaxed">
+                Month-scoped sheets (Meetings, Staff Changes, Invoice Summary, MIPS Insights, Team Composition, Other Updates) are saved under this month — any Report Month values inside the file are overridden. Trend sheets keep their own per-row months.
+              </p>
+            </div>
+          )}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}

@@ -282,6 +282,7 @@ export async function buildTemplateForKey(key: string): Promise<Buffer | null> {
 export async function runImporterForKey(
   key: string,
   buffer: Buffer,
+  opts?: { defaultReportMonth?: string },
 ): Promise<
   | { ok: true; results: ImportResult[]; totalRows: number; warnings: string[] }
   | { ok: false; error: string; validationErrors?: string[]; warnings?: string[] }
@@ -289,7 +290,7 @@ export async function runImporterForKey(
   const schema = DATASET_SCHEMAS[key];
   if (!schema) return { ok: false, error: `No importer registered for "${key}"` };
   try {
-    const out = await importDatasetWorkbook(schema, buffer);
+    const out = await importDatasetWorkbook(schema, buffer, opts);
     return { ok: true, ...out };
   } catch (err) {
     if (err instanceof DatasetImportError) {
