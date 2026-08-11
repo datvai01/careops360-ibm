@@ -107,8 +107,9 @@ function DatasetDetail({ ds, onUploaded }: { ds: DatasetRow; onUploaded: () => v
   const [repMonth, setRepMonth] = useState<string>(MONTH_NAMES[now.getMonth()]);
   const [repYear, setRepYear] = useState<string>(String(now.getFullYear()));
   const yearOptions = useMemo(() => {
-    const y = now.getFullYear();
-    return [y - 2, y - 1, y, y + 1].map(String);
+    const start = now.getFullYear() - 2;
+    const end = Math.max(2032, now.getFullYear() + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => String(start + i));
   }, []);
 
   async function uploadFile(file: File) {
