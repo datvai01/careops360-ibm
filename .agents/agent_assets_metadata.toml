@@ -192,3 +192,10 @@ id = "gykJ9HgRprph7oQhSzM21"
 uri = "file://exports/careops360-capabilities.mp4"
 type = "video"
 title = "CareOps360 Capabilities Video (MP4)"
+
+[[outputs]]
+id = "40rem_C-yPcLjyECZj1E2"
+uri = "file://.local/outputs/Horizon-Transformation-Plan-Deck.pptx"
+type = "slides"
+title = "Horizon Transformation Plan (PPTX)"
+description = "9-slide executive transformation deck with per-category Gantt charts and the team transformation journey."

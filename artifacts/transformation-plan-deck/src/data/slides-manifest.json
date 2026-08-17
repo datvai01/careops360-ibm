@@ -1,0 +1,74 @@
+[
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000001",
+    "position": 1,
+    "filepath": "src/pages/slides/TitleSlide.tsx",
+    "title": "Horizon Transformation Plan",
+    "description": "Title slide: IBM x Horizon BCBS CareOps360 transformation, 2026-2028, headline stats.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000002",
+    "position": 2,
+    "filepath": "src/pages/slides/OverviewSlide.tsx",
+    "title": "Transformation at a Glance",
+    "description": "Portfolio overview: 79 initiatives across 4 categories, status mix, and the 3-year arc.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000003",
+    "position": 3,
+    "filepath": "src/pages/slides/FoundationalGantt.tsx",
+    "title": "Foundational Initiatives",
+    "description": "Detailed Gantt: 19 foundational initiatives across 2026 with milestones and expected outcomes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000004",
+    "position": 4,
+    "filepath": "src/pages/slides/StrategicGantt.tsx",
+    "title": "Strategic Initiatives",
+    "description": "Detailed Gantt: 16 strategic initiatives spanning 2026-2028 with milestones and expected outcomes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000005",
+    "position": 5,
+    "filepath": "src/pages/slides/TechRemediationGantt.tsx",
+    "title": "Technical Remediation (N-1/2 Upgrades)",
+    "description": "Detailed Gantt: 25 version-currency upgrade initiatives across 2026 with milestones and expected outcomes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000006",
+    "position": 6,
+    "filepath": "src/pages/slides/TicketReductionGantt.tsx",
+    "title": "Ticket Reduction Initiatives",
+    "description": "Detailed Gantt: 19 ticket-reduction initiatives across 2026 with milestones and expected outcomes.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000007",
+    "position": 7,
+    "filepath": "src/pages/slides/TeamTransformation.tsx",
+    "title": "IBM Team Transformation",
+    "description": "Year-by-year resource mix: roles transitioned out, re-trained, net-new; 54% new talent by 2028; operating-model shift.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000008",
+    "position": 8,
+    "filepath": "src/pages/slides/HorizonEnablement.tsx",
+    "title": "Horizon Enablement Journey",
+    "description": "Shadow, co-deliver, self-sufficient phases with certifications and knowledge-transfer milestones through 2028.",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-1111-4a2b-9c3d-000000000009",
+    "position": 9,
+    "filepath": "src/pages/slides/ClosingSlide.tsx",
+    "title": "Commitment to 2028",
+    "description": "Closing slide: one plan, four portfolios, a workforce built for 2028.",
+    "speakerNotes": ""
+  }
+]

@@ -1,0 +1,28 @@
+kind = "slides"
+previewPath = "/transformation-plan-deck/"
+title = "Horizon Transformation Plan"
+description = "Executive PowerPoint-style deck presenting the Horizon 3-year transformation plan: detailed Gantt slides for all 4 initiative categories built from real roadmap data, plus the IBM team transformation resource-mix model and the Horizon team training & enablement journey."
+version = "1.0.0"
+id = "artifacts/transformation-plan-deck"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/transformation-plan-deck/" ]
+localPort = 25155
+
+[services.development]
+run = "pnpm --filter @workspace/transformation-plan-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/transformation-plan-deck", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/transformation-plan-deck/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25155"
+BASE_PATH = "/transformation-plan-deck/"
