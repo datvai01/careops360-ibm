@@ -50,8 +50,10 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useInactivityTimeout } from "@/hooks/useInactivityTimeout";
 import { SessionTimeoutModal } from "./SessionTimeoutModal";
+import { useFeatureToggles } from "@/hooks/useFeatureToggles";
+import { useToast } from "@/hooks/use-toast";
 
-type NavItem = { name: string; path: string; icon: React.ElementType };
+type NavItem = { key: string; name: string; path: string; icon: React.ElementType };
 type NavGroup = { label: string; items: NavItem[]; adminOnly?: boolean };
 
 const EXPORT_ENABLED_PATHS = new Set<string>([
@@ -62,57 +64,57 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { name: "Executive Overview", path: "/dashboard", icon: LayoutDashboardIcon },
-      { name: "App Health", path: "/dashboard/app-health", icon: ActivityIcon },
+      { key: "executive-overview", name: "Executive Overview", path: "/dashboard", icon: LayoutDashboardIcon },
+      { key: "app-health", name: "App Health", path: "/dashboard/app-health", icon: ActivityIcon },
     ],
   },
   {
     label: "Member & Care Operations",
     items: [
-      { name: "Member & Enrollment Ops", path: "/dashboard/enrollment-intelligence", icon: HeadphonesIcon },
-      { name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
-      { name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
-      { name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
+      { key: "enrollment-intelligence", name: "Member & Enrollment Ops", path: "/dashboard/enrollment-intelligence", icon: HeadphonesIcon },
+      { key: "claims", name: "Claims", path: "/dashboard/claims", icon: FileTextIcon },
+      { key: "prior-auth", name: "Prior Auth", path: "/dashboard/prior-auth", icon: StethoscopeIcon },
+      { key: "providers", name: "Providers", path: "/dashboard/providers", icon: BuildingIcon },
     ],
   },
   {
     label: "Operations & Support",
     items: [
-      { name: "Account Management",  path: "/dashboard/account-management",  icon: DollarSignIcon },
-      { name: "Member Services", path: "/dashboard/member-services", icon: HeadphonesIcon  },
+      { key: "account-management", name: "Account Management", path: "/dashboard/account-management", icon: DollarSignIcon },
+      { key: "member-services", name: "Member Services", path: "/dashboard/member-services", icon: HeadphonesIcon },
     ],
   },
   {
     label: "Value & Insights",
     items: [
-      { name: "AIOps & Service KPIs", path: "/dashboard/ibm-ams", icon: CpuIcon },
-      { name: "Transformation Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
-      { name: "Transition Timeline", path: "/dashboard/transition", icon: TrendingUp },
-      { name: "Mindset Survey", path: "/dashboard/transformation-mindset", icon: ClipboardCheck },
-      { name: "Skills & Enablement", path: "/dashboard/capability-uplift", icon: Award },
-      { name: "Autonomous Agents", path: "/dashboard/autonomous-agents", icon: Bot },
-      { name: "Transformation Initiatives", path: "/dashboard/transformation-initiatives", icon: Rocket },
+      { key: "ibm-ams", name: "AIOps & Service KPIs", path: "/dashboard/ibm-ams", icon: CpuIcon },
+      { key: "digital-roadmap", name: "Transformation Roadmap", path: "/dashboard/digital-roadmap", icon: MapIcon },
+      { key: "transition", name: "Transition Timeline", path: "/dashboard/transition", icon: TrendingUp },
+      { key: "transformation-mindset", name: "Mindset Survey", path: "/dashboard/transformation-mindset", icon: ClipboardCheck },
+      { key: "capability-uplift", name: "Skills & Enablement", path: "/dashboard/capability-uplift", icon: Award },
+      { key: "autonomous-agents", name: "Autonomous Agents", path: "/dashboard/autonomous-agents", icon: Bot },
+      { key: "transformation-initiatives", name: "Transformation Initiatives", path: "/dashboard/transformation-initiatives", icon: Rocket },
     ],
   },
   {
     label: "Assistant",
     items: [
-      { name: "Knowledge Base", path: "/dashboard/knowledge", icon: BookOpen },
-      { name: "Teams Bot (Preview)", path: "/dashboard/teams-bot", icon: MessageCircle },
-      { name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
+      { key: "knowledge", name: "Knowledge Base", path: "/dashboard/knowledge", icon: BookOpen },
+      { key: "teams-bot", name: "Teams Bot (Preview)", path: "/dashboard/teams-bot", icon: MessageCircle },
+      { key: "ask", name: "Ask Assistant", path: "/dashboard/ask", icon: MessageSquareIcon },
     ],
   },
   {
     label: "Resources",
     items: [
-      { name: "Help & Walkthrough", path: "/dashboard/help", icon: HelpCircleIcon },
+      { key: "help", name: "Help & Walkthrough", path: "/dashboard/help", icon: HelpCircleIcon },
     ],
   },
   {
     label: "Administration",
     adminOnly: true,
     items: [
-      { name: "Administration", path: "/dashboard/administration", icon: Settings },
+      { key: "administration", name: "Administration", path: "/dashboard/administration", icon: Settings },
     ],
   },
 ];
@@ -166,10 +168,53 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   const logoutMutation = useLogout();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const {
+    data: featureData,
+    isLoading: featureSettingsLoading,
+    isError: featureSettingsError,
+  } = useFeatureToggles();
   
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState(0);
   const [sessionWarning, setSessionWarning] = useState(false);
+  const enabledFeatures = new Map(
+    (featureData?.features ?? []).map((feature) => [feature.key, feature.enabled]),
+  );
+  const visibleGroups = NAV_GROUPS
+    .filter((group) => !group.adminOnly || user?.role === "admin")
+    .map((group) => ({
+      ...group,
+      items: group.adminOnly
+        ? group.items
+        : group.items.filter(
+            (item) =>
+              item.key === "executive-overview" ||
+              enabledFeatures.get(item.key) === true,
+          ),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  useEffect(() => {
+    if (!featureData || location === "/dashboard/administration") return;
+    const current = featureData.features.find((feature) => feature.path === location);
+    if (current && !current.enabled) {
+      setLocation("/dashboard");
+      toast({
+        title: "Feature unavailable",
+        description: `${current.name} has been turned off by an administrator.`,
+      });
+    }
+  }, [featureData, location, setLocation, toast]);
+
+  const isRecoveryRoute =
+    location === "/dashboard" || location === "/dashboard/administration";
+  const currentFeature = featureData?.features.find(
+    (feature) => feature.path === location,
+  );
+  const accessPending = !isRecoveryRoute && featureSettingsLoading;
+  const accessUnavailable = !isRecoveryRoute && featureSettingsError;
+  const accessDisabled = !isRecoveryRoute && currentFeature?.enabled === false;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -261,7 +306,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         
         <div className="flex-1 overflow-y-auto py-2">
           <nav className="px-2 space-y-1">
-            {NAV_GROUPS.filter((g) => !g.adminOnly || user?.role === "admin").map((group, gi) => (
+            {visibleGroups.map((group, gi) => (
               <div key={group.label}>
                 {sidebarOpen && (
                   <div className={cn("px-3 mb-0.5", gi > 0 && "pt-1.5")}>
@@ -530,7 +575,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         {/* Main scrollable area */}
         <main className="flex-1 overflow-auto bg-muted/20 p-6">
-          {children}
+          {accessPending || accessDisabled ? (
+            <div className="h-full flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <LoaderIcon className="w-4 h-4 animate-spin" />
+              Checking feature access…
+            </div>
+          ) : accessUnavailable ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="max-w-md rounded-lg border bg-card p-6 text-center shadow-sm">
+                <Settings className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
+                <h2 className="font-semibold">Feature settings unavailable</h2>
+                <p className="text-sm text-muted-foreground mt-2">
+                  This page cannot be opened until portal feature settings are available.
+                  Return to the Executive Overview and try again.
+                </p>
+                <Button className="mt-4" size="sm" onClick={() => setLocation("/dashboard")}>
+                  Return to Executive Overview
+                </Button>
+              </div>
+            </div>
+          ) : (
+            children
+          )}
         </main>
 
         {/* IBM Disclaimer Bar */}

@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import { Link } from "wouter";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useGetCurrentUser } from "@workspace/api-client-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,11 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Settings, Users, ShieldAlert, Upload, FileSpreadsheet,
-  CheckCircle2, ExternalLink, Loader2, Lock, Database, ChevronRight, AlertCircle, FileDown,
+  CheckCircle2, ExternalLink, Loader2, Lock, Database, ChevronRight, AlertCircle, FileDown, SlidersHorizontal,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { RefreshDataTab } from "./TalentPlan";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { featureToggleHeaders, useFeatureToggles, type FeatureToggle } from "@/hooks/useFeatureToggles";
 
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -556,6 +559,107 @@ function DatasetRepository() {
   );
 }
 
+function FeatureToggleManager() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data, isLoading, error } = useFeatureToggles();
+  const mutation = useMutation({
+    mutationFn: async ({ key, enabled }: { key: string; enabled: boolean }) => {
+      const response = await fetch(`/api/feature-toggles/${key}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...featureToggleHeaders() },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        throw new Error(result?.message || result?.error || "Unable to update feature");
+      }
+      return response.json();
+    },
+    onSuccess: (_result, variables) => {
+      queryClient.setQueryData<{ features: FeatureToggle[] }>(["feature-toggles"], (current) => ({
+        features: (current?.features ?? []).map((feature) =>
+          feature.key === variables.key ? { ...feature, enabled: variables.enabled } : feature,
+        ),
+      }));
+      const feature = data?.features.find((item) => item.key === variables.key);
+      toast({
+        title: variables.enabled ? "Feature turned on" : "Feature turned off",
+        description: `${feature?.name ?? "Feature"} is now ${variables.enabled ? "visible" : "hidden"} in the portal.`,
+      });
+    },
+    onError: (mutationError: Error) => {
+      toast({ title: "Update failed", description: mutationError.message, variant: "destructive" });
+    },
+  });
+
+  const groups = useMemo(() => {
+    const grouped = new Map<string, FeatureToggle[]>();
+    for (const feature of data?.features ?? []) {
+      const items = grouped.get(feature.group) ?? [];
+      items.push(feature);
+      grouped.set(feature.group, items);
+    }
+    return Array.from(grouped.entries());
+  }, [data]);
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground gap-2"><Loader2 size={16} className="animate-spin" /> Loading feature settings…</div>;
+  }
+  if (error) {
+    return <div className="text-sm text-red-600 py-8">Failed to load feature settings.</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-5">
+        <div className="flex items-start gap-3">
+          <div className="rounded-lg p-2" style={{ background: `${IBM_BLUE}15` }}>
+            <SlidersHorizontal size={18} style={{ color: IBM_BLUE }} />
+          </div>
+          <div>
+            <h2 className="font-bold">Portal feature visibility</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Changes apply to all signed-in users. Disabled pages are removed from navigation and cannot be opened by direct link.
+            </p>
+          </div>
+        </div>
+      </Card>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        {groups.map(([group, features]) => (
+          <Card key={group} className="p-4">
+            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">{group}</h3>
+            <div className="divide-y">
+              {features.map((feature) => {
+                const pending = mutation.isPending && mutation.variables?.key === feature.key;
+                return (
+                  <div key={feature.key} className="flex items-center justify-between gap-4 py-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{feature.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{feature.path}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-xs font-medium", feature.enabled ? "text-green-700" : "text-muted-foreground")}>
+                        {feature.locked ? "Always on" : feature.enabled ? "On" : "Off"}
+                      </span>
+                      <Switch
+                        checked={feature.enabled}
+                        disabled={pending || feature.locked}
+                        aria-label={`${feature.enabled ? "Turn off" : "Turn on"} ${feature.name}`}
+                        onCheckedChange={(enabled) => mutation.mutate({ key: feature.key, enabled })}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function AccessDenied({ role }: { role: string | undefined }) {
   return (
     <div className="p-6">
@@ -614,17 +718,21 @@ export default function Administration() {
               </Badge>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground mt-1">
-              Refresh source-of-truth data for any CareOps360 page. For each dataset you can
-              download a ready-to-fill Excel template, drop a completed file back, and the
-              underlying database tables are replaced and the page refreshes automatically.
+              Manage portal feature visibility and refresh source-of-truth datasets.
               Signed in as <span className="font-semibold text-foreground">{user.name}</span> ({user.email}).
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Page Datasets — Talent Plan is rendered inline via the live workflow */}
-      <DatasetRepository />
+      <Tabs defaultValue="features" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="features" className="gap-2"><SlidersHorizontal size={14} /> Feature Toggles</TabsTrigger>
+          <TabsTrigger value="datasets" className="gap-2"><Database size={14} /> Dataset Management</TabsTrigger>
+        </TabsList>
+        <TabsContent value="features"><FeatureToggleManager /></TabsContent>
+        <TabsContent value="datasets"><DatasetRepository /></TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS feature_toggles (
+  feature_key varchar(100) PRIMARY KEY,
+  enabled boolean NOT NULL DEFAULT true,
+  updated_at timestamp NOT NULL DEFAULT now(),
+  updated_by varchar(255)
+);
 --
 -- PostgreSQL database dump
 --

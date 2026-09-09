@@ -16,3 +16,4 @@ export * from "./transformationSurvey";
 export * from "./kpiTracker";
 export * from "./knowledge";
 export * from "./adm";
+export * from "./featureToggles";

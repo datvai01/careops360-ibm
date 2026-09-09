@@ -19,6 +19,7 @@ import transformationSurveyRouter from "./transformationSurvey";
 import kpiTrackerRouter from "./kpiTracker";
 import knowledgeRouter from "./knowledge";
 import admRouter from "./adm";
+import featureTogglesRouter from "./featureToggles";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use(transformationSurveyRouter);
 router.use(kpiTrackerRouter);
 router.use(knowledgeRouter);
 router.use(admRouter);
+router.use(featureTogglesRouter);
 
 export default router;
