@@ -4,6 +4,14 @@ import { getSessionUser } from "./auth";
 
 const router: IRouter = Router();
 
+/** Database row shape shared by reads and writes. */
+type FeatureToggleRow = {
+  feature_key: string;
+  enabled: boolean;
+  updated_at: Date;
+  updated_by: string | null;
+};
+
 export const FEATURE_REGISTRY = [
   { key: "executive-overview", name: "Executive Overview", path: "/dashboard", group: "Overview", locked: true },
   { key: "app-health", name: "App Health", path: "/dashboard/app-health", group: "Overview" },
@@ -51,12 +59,9 @@ function requireAdmin(req: Request, res: Response, next: NextFunction): void {
 }
 
 router.get("/feature-toggles", requireAuth, async (_req, res): Promise<void> => {
-  const result = await pool.query<{
-    feature_key: string;
-    enabled: boolean;
-    updated_at: Date;
-    updated_by: string | null;
-  }>("SELECT feature_key, enabled, updated_at, updated_by FROM feature_toggles");
+  const result = await pool.query<FeatureToggleRow>(
+    "SELECT feature_key, enabled, updated_at, updated_by FROM public.feature_toggles",
+  );
   const byKey = new Map(result.rows.map((row) => [row.feature_key, row]));
   res.json({
     features: FEATURE_REGISTRY.map((feature) => ({
@@ -84,13 +89,8 @@ router.patch("/feature-toggles/:key", requireAdmin, async (req, res): Promise<vo
   }
 
   const user = (req as Request & { sessionUser: NonNullable<ReturnType<typeof getSessionUser>> }).sessionUser;
-  const result = await pool.query<{
-    feature_key: string;
-    enabled: boolean;
-    updated_at: Date;
-    updated_by: string | null;
-  }>(
-    `INSERT INTO feature_toggles (feature_key, enabled, updated_at, updated_by)
+  const result = await pool.query<FeatureToggleRow>(
+    `INSERT INTO public.feature_toggles (feature_key, enabled, updated_at, updated_by)
      VALUES ($1, $2, now(), $3)
      ON CONFLICT (feature_key) DO UPDATE
      SET enabled = EXCLUDED.enabled, updated_at = now(), updated_by = EXCLUDED.updated_by

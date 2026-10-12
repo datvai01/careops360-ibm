@@ -1,3 +1,4 @@
+- [Database handoff](database-handoff.md) — downloadable DDLs, separate fresh-install and upgrade paths, no Office deliverables in Git.
 - [Pod Transformation page](pod-transformation-page.md) — self-contained page at /dashboard/pod-transformation; reads talentPlan.json directly, no API needed.
 - [Role gating conventions](role-gating.md) — admin role is exactly "admin"; subagents have regressed frontend gating before, review those diffs.
 - [Drizzle push prompts](drizzle-push-prompts.md) — every DB table (even raw-SQL-created ones) must be in the drizzle schema or push hangs on rename prompts.

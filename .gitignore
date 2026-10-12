@@ -52,3 +52,10 @@ Thumbs.db
 screenshots/
 Horizon_Talent_Transformation_Plan.pptx
 *.pptx
+
+# Office deliverables stay local, not in source control (any letter case).
+*.[pP][pP][tT]
+*.[pP][pP][tT][xX]
+*.[dD][oO][cC]
+*.[dD][oO][cC][xX]
+/generated-artifacts/
