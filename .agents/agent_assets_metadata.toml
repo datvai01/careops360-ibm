@@ -205,3 +205,10 @@ id = "etW2-6NhoP-GJg8qAnU43"
 uri = "file://.local/outputs/Horizon-Transformation-Plan.pptx"
 type = "slides"
 title = "Horizon Transformation Plan.pptx"
+
+[[outputs]]
+id = "huU2eyFLOM94PopWxSin1"
+uri = "file://generated-artifacts/careops360-database-ddl.zip"
+type = "unspecified"
+title = "CareOps360 Database DDL Handoff"
+description = "Validated schema-only snapshot, rerunnable feature-toggle migration, and installation instructions. No application data included."
